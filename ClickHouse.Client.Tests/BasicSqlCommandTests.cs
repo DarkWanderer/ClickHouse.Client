@@ -15,7 +15,7 @@ namespace ClickHouse.Client.Tests
             using var connection = new ClickHouseConnection();
             var command = connection.CreateCommand();
             command.CommandText = "SELECT 1";
-            Assert.Equals(1, command.ExecuteScalar());
+            Assert.AreEqual(1, command.ExecuteScalar());
         }
 
         [Test]
@@ -28,9 +28,9 @@ namespace ClickHouse.Client.Tests
 
             var results = new List<int>();
             Assert.IsTrue(reader.HasRows);
-            Assert.Equals(1, reader.FieldCount);
+            Assert.AreEqual(1, reader.FieldCount);
             while (reader.HasRows)
-                Assert.Equals(typeof(int), reader.GetFieldType(1));
+                Assert.AreEqual(typeof(int), reader.GetFieldType(1));
                 results.Add((int)reader.GetValue(1));
             CollectionAssert.AreEqual(Enumerable.Range(1, 10), results);
         }
