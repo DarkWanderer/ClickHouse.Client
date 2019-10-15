@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29318.209
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.Client", "ClickHouse.Client\ClickHouse.Client.csproj", "{8AF494DB-67AD-4A3D-8B54-513A968AFAD2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.Client.Tests", "ClickHouse.Client.Tests\ClickHouse.Client.Tests.csproj", "{0FAA543E-0480-490A-90DA-A6C6AC9ACC50}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8AF494DB-67AD-4A3D-8B54-513A968AFAD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AF494DB-67AD-4A3D-8B54-513A968AFAD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AF494DB-67AD-4A3D-8B54-513A968AFAD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AF494DB-67AD-4A3D-8B54-513A968AFAD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FAA543E-0480-490A-90DA-A6C6AC9ACC50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FAA543E-0480-490A-90DA-A6C6AC9ACC50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FAA543E-0480-490A-90DA-A6C6AC9ACC50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FAA543E-0480-490A-90DA-A6C6AC9ACC50}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C3B949F3-E467-4C00-8922-3D45B3FB7AF8}
+	EndGlobalSection
+EndGlobal
