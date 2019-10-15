@@ -1,0 +1,11 @@
+version: 0.{build}
+image: Ubuntu
+
+services:
+- docker
+
+build:
+  verbosity: minimal
+
+before_test:
+- docker run -d --name clickhouse-server --ulimit nofile=262144:262144 yandex/clickhouse-server

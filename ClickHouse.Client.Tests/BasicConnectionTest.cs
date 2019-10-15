@@ -15,5 +15,15 @@ namespace ClickHouse.Client.Tests
                 Assert.Throws<HttpRequestException>(() => connection.Open());
             }
         }
+
+        [Test]
+        public void ShouldConnectToExistingServer()
+        {
+            var connectionString = "Host=localhost;Port=8123";
+            using (var connection = new ClickHouseConnection(connectionString))
+            {
+                connection.Open();
+            }
+        }
     }
 }
