@@ -55,15 +55,9 @@ namespace ClickHouse.Client
 
         public override string DataSource { get; }
 
-        public override string ServerVersion
-        {
-            get
-            {
-                return PostSqlQueryAsync("select version();").GetAwaiter().GetResult();
-            }
-        }
+        public override string ServerVersion => PostSqlQueryAsync("select version();").GetAwaiter().GetResult() as string;
 
-        private async Task<string> PostSqlQueryAsync(string sqlQuery)
+        internal async Task<object> PostSqlQueryAsync(string sqlQuery)
         {
             var httpContent = new StringContent(sqlQuery);
             var response = await httpClient.PostAsync(serverUri, httpContent);

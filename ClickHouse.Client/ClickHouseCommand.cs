@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
 
 namespace ClickHouse.Client
 {
     internal class ClickHouseCommand : DbCommand
     {
         private readonly ClickHouseConnection dbConnection;
+        private readonly CancellationTokenSource cts = new CancellationTokenSource();
 
         public ClickHouseCommand(ClickHouseConnection connection)
         {
@@ -33,16 +35,16 @@ namespace ClickHouse.Client
 
         protected override DbTransaction DbTransaction { get; set; }
 
-        public override void Cancel() => throw new System.NotImplementedException();
+        public override void Cancel() => cts.Cancel();
 
-        public override int ExecuteNonQuery() => throw new System.NotImplementedException();
+        public override int ExecuteNonQuery() => throw new NotImplementedException();
 
-        public override object ExecuteScalar() => throw new System.NotImplementedException();
+        public override object ExecuteScalar() => dbConnection.PostSqlQueryAsync(CommandText).GetAwaiter().GetResult();
 
-        public override void Prepare() => throw new System.NotImplementedException();
+        public override void Prepare() => throw new NotImplementedException();
 
-        protected override DbParameter CreateDbParameter() => throw new System.NotImplementedException();
+        protected override DbParameter CreateDbParameter() => throw new NotImplementedException();
 
-        protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => throw new System.NotImplementedException();
+        protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => throw new NotImplementedException();
     }
 }

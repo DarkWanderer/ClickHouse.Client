@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
@@ -32,6 +33,17 @@ namespace ClickHouse.Client.Tests
                 Assert.Equals(typeof(int), reader.GetFieldType(1));
                 results.Add((int)reader.GetValue(1));
             CollectionAssert.AreEqual(Enumerable.Range(1, 10), results);
+        }
+
+        [Test]
+        public async Task ShouldCancelRunningAsyncQuery()
+        {
+            using var connection = new ClickHouseConnection();
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT sleep(5)";
+            var task = command.ExecuteScalarAsync();
+            command.Cancel();
+            await task;
         }
     }
 }
