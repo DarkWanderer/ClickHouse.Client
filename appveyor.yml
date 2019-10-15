@@ -8,4 +8,5 @@ build:
   verbosity: minimal
 
 before_test:
-- docker run -d --name clickhouse-server --ulimit nofile=262144:262144 yandex/clickhouse-server
+- docker run --network host -d --name clickhouse-server --ulimit nofile=262144:262144 yandex/clickhouse-server
+- sleep 10
