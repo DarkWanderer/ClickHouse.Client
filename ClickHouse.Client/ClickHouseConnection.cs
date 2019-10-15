@@ -17,6 +17,7 @@ namespace ClickHouse.Client
 
         public ClickHouseConnection()
         {
+            ConnectionString = "";  // Initialize with default values
         }
 
         public ClickHouseConnection(string connectionString)
@@ -54,7 +55,22 @@ namespace ClickHouse.Client
 
         public override string DataSource { get; }
 
-        public override string ServerVersion { get; }
+        public override string ServerVersion
+        {
+            get
+            {
+                return PostSqlQueryAsync("select version();").GetAwaiter().GetResult();
+            }
+        }
+
+        private async Task<string> PostSqlQueryAsync(string sqlQuery)
+        {
+            var httpContent = new StringContent(sqlQuery);
+            var response = await httpClient.PostAsync(serverUri, httpContent);
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadAsStringAsync();
+            return result;
+        }
 
         public override ConnectionState State => state;
         public override void ChangeDatabase(string databaseName) => database = databaseName;
@@ -70,7 +86,7 @@ namespace ClickHouse.Client
             var response = await httpClient.GetAsync(serverUri);
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadAsStringAsync();
-            if (result == "Ok.")
+            if (result.ToLowerInvariant().StartsWith("ok"))
             {
                 state = ConnectionState.Open;
             }

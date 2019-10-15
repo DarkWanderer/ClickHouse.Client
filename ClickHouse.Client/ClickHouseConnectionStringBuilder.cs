@@ -30,7 +30,7 @@ namespace ClickHouse.Client
 
         public string Host
         {
-            get => base.TryGetValue("Host", out var value) ? value as string : string.Empty;
+            get => base.TryGetValue("Host", out var value) ? value as string : "localhost";
             set => this["Host"] = value;
         }
 

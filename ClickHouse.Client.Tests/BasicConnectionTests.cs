@@ -4,12 +4,12 @@ using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
-    public class BasicConnectionTest
+    public class BasicConnectionTests
     {
         [Test]
         public void ShouldThrowHttpExceptionOnInvalidPort()
         {
-            var connectionString = "Host=localhost;Port=44444";
+            var connectionString = "Host=localhost,Port=44444";
             using var connection = new ClickHouseConnection(connectionString);
             Assert.Throws<HttpRequestException>(() => connection.Open());
         }
@@ -17,8 +17,14 @@ namespace ClickHouse.Client.Tests
         [Test]
         public void ShouldConnectToExistingServer()
         {
-            var connectionString = "Host=localhost;Port=8123";
-            using var connection = new ClickHouseConnection(connectionString);
+            using var connection = new ClickHouseConnection();
+            connection.Open();
+        }
+
+        [Test]
+        public void ShouldDetermineServerVersion()
+        {
+            using var connection = new ClickHouseConnection();
             connection.Open();
         }
     }
