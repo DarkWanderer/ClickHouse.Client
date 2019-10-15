@@ -77,7 +77,7 @@ namespace ClickHouse.Client
             else
             {
                 state = ConnectionState.Broken;
-                throw new ClickHouseServerException("Invalid handshake");
+                throw new ClickHouseServerException("Invalid handshake, got " + result);
             }
         }
 
