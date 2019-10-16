@@ -39,7 +39,7 @@ namespace ClickHouse.Client
 
         public override int Depth { get; }
 
-        public override int FieldCount => FieldOrdinals.Count;
+        public override int FieldCount => FieldTypes.Length;
 
         public override bool HasRows => InputStream.Position < InputStream.Length;
 

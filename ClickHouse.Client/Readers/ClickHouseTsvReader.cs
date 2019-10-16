@@ -13,18 +13,37 @@ namespace ClickHouse.Client
             inputReader = new StreamReader(InputStream);
         }
 
-        public override bool Read() => throw new NotImplementedException();
+        public override bool Read()
+        {
+            if (!HasRows)
+                return false;
+            var rowItems = inputReader.ReadLine().Split('\t');
+            if (rowItems.Length != FieldCount)
+                throw new InvalidOperationException($"Wrong number of items in row ({rowItems.Length}), expected {FieldCount}");
+
+            var rowData = new object[FieldCount];
+            for (int i = 0; i < FieldCount; i++)
+            {
+                rowData[i] = Convert.ChangeType(rowItems[i], FieldTypes[i]);
+            }
+            CurrentRow = rowData;
+            return true;
+        }
 
         protected override void ReadHeaders()
         {
             var names = inputReader.ReadLine().Split('\t');
             var types = inputReader.ReadLine().Split('\t');
 
-            for (int i = 0; i < names.Length; i++)
+            if (names.Length != types.Length)
+                throw new InvalidOperationException($"Count mismatch between names ({names.Length}) and types ({types.Length})");
+            var fieldCount = names.Length;
+
+            for (int i = 0; i < fieldCount; i++)
                 FieldOrdinals.Add(names[i], i);
 
-            FieldTypes = new Type[types.Length];
-            for (int i = 0; i < types.Length; i++)
+            FieldTypes = new Type[fieldCount];
+            for (int i = 0; i < fieldCount; i++)
                 FieldTypes[i] = ClickHouseTypeConverter.FromClickHouseType(types[i]);
         }
     }

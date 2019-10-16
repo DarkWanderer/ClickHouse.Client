@@ -12,7 +12,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public void ShouldExecuteSelect1()
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
+            using var connection = new ClickHouseConnection();
             var command = connection.CreateCommand();
             command.CommandText = "SELECT 1";
             Assert.AreEqual(1, command.ExecuteScalar());
