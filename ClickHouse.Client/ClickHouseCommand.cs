@@ -41,8 +41,11 @@ namespace ClickHouse.Client
         protected override bool CanRaiseEvents => base.CanRaiseEvents;
 
         public override void Cancel() => cts.Cancel();
+
         public override ValueTask DisposeAsync() => base.DisposeAsync();
+
         public override int ExecuteNonQuery() => throw new NotImplementedException();
+
         public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) => base.ExecuteNonQueryAsync(cancellationToken);
 
         public override object ExecuteScalar() => ExecuteScalarAsync(cts.Token).GetAwaiter().GetResult();
@@ -57,7 +60,7 @@ namespace ClickHouse.Client
             }
             else
             {
-                throw new InvalidOperationException("No data returned from query");
+                return null;
             }
         }
 

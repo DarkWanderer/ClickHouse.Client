@@ -80,6 +80,14 @@ namespace ClickHouse.Client.Types
 
         public static Type FromClickHouseSimpleType(DataType type) => directMapping[type];
 
+        public static DataType GetClickHouseSimpleType(string type)
+        {
+            if (Enum.TryParse<DataType>(type, out var chType))
+                return chType;
+            else
+                throw new ArgumentOutOfRangeException("type");
+        }
+
         /// <summary>
         /// Recursively build ClickHouse type from .NET complex type
         /// Supports nullable and arrays
