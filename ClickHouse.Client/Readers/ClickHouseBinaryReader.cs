@@ -64,6 +64,7 @@ namespace ClickHouse.Client
 
         public override bool Read()
         {
+            var initialPosition = stream.Position;
             var count = FieldCount;
             var data = new object[count];
             for (int i = 0; i < count; i++)
@@ -103,6 +104,9 @@ namespace ClickHouse.Client
                 }
             }
             CurrentRow = data;
+            // infinite cycle prevention: if stream position did not move, something went wrong
+            if (initialPosition == stream.Position)
+                throw new InvalidOperationException("Internal error: stale stream");
             return true;
         }
 
