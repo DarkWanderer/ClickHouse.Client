@@ -3,6 +3,13 @@ using System.Data.Common;
 
 namespace ClickHouse.Client
 {
+    public enum ClickHouseConnectionDriver
+    {
+        Binary,
+        JSON,
+        TSV
+    }
+
     public class ClickHouseConnectionStringBuilder : DbConnectionStringBuilder
     {
         public ClickHouseConnectionStringBuilder()
@@ -37,15 +44,22 @@ namespace ClickHouse.Client
         public ushort Port
         {
             get {
-                if (base.TryGetValue("Port", out var value))
-                {
-                    if (value is string @string && ushort.TryParse(@string as string, out var @ushort))
-                        return @ushort;
-                }
+                if (base.TryGetValue("Port", out var value) && value is string @string && ushort.TryParse(@string as string, out var @ushort))
+                    return @ushort;
                 return 8123;
             }
             set => this["Port"] = value;
         }
 
+        public ClickHouseConnectionDriver Driver
+        {
+            get
+            {
+                if (base.TryGetValue("Driver", out var value) && value is string @string && Enum.TryParse<ClickHouseConnectionDriver>(@string, out var @enum))
+                    return @enum;
+                return ClickHouseConnectionDriver.Binary;
+            }
+            set => this["Driver"] = value.ToString();
+        }
     }
 }

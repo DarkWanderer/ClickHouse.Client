@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
@@ -40,7 +38,7 @@ namespace ClickHouse.Client.Tests
         {
             using var connection = new ClickHouseConnection();
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT sleep(5)";
+            command.CommandText = "sleep(5); SELECT 1";
             var task = command.ExecuteScalarAsync();
             command.Cancel();
             await task;

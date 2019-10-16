@@ -35,7 +35,8 @@ namespace ClickHouse.Client
                     Username = username,
                     Password = password,
                     Host = serverUri?.Host,
-                    Port = (ushort)serverUri?.Port
+                    Port = (ushort)serverUri?.Port,
+                    Driver = Driver
                 };
                 return builder.ToString();
             }
@@ -47,7 +48,7 @@ namespace ClickHouse.Client
                 username = builder.Username;
                 password = builder.Password;
                 serverUri = new UriBuilder("http", builder.Host, builder.Port).Uri;
-
+                Driver = builder.Driver;
             }
         }
 
@@ -55,16 +56,15 @@ namespace ClickHouse.Client
 
         public override string DataSource { get; }
 
-        public override string ServerVersion => PostSqlQueryAsync("select version();").GetAwaiter().GetResult() as string;
+        public override string ServerVersion => throw new NotImplementedException();
 
-        internal async Task<object> PostSqlQueryAsync(string sqlQuery)
+        internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery)
         {
             var httpContent = new StringContent(sqlQuery);
-            var response = await httpClient.PostAsync(serverUri, httpContent);
-            response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadAsStringAsync();
-            return result;
+            return await httpClient.PostAsync(serverUri, httpContent);
         }
+
+        internal ClickHouseConnectionDriver Driver { get; private set; }
 
         public override ConnectionState State => state;
         public override void ChangeDatabase(string databaseName) => database = databaseName;
