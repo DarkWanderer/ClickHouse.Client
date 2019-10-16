@@ -1,8 +1,10 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ClickHouse.Client
 {
@@ -25,7 +27,7 @@ namespace ClickHouse.Client
         public override bool DesignTimeVisible { get; set; }
 
         public override UpdateRowSource UpdatedRowSource { get; set; }
-
+        public override ISite Site { get => base.Site; set => base.Site = value; }
         protected override DbConnection DbConnection
         {
             get => dbConnection;
@@ -36,9 +38,12 @@ namespace ClickHouse.Client
 
         protected override DbTransaction DbTransaction { get; set; }
 
-        public override void Cancel() => cts.Cancel();
+        protected override bool CanRaiseEvents => base.CanRaiseEvents;
 
+        public override void Cancel() => cts.Cancel();
+        public override ValueTask DisposeAsync() => base.DisposeAsync();
         public override int ExecuteNonQuery() => throw new NotImplementedException();
+        public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) => base.ExecuteNonQueryAsync(cancellationToken);
 
         public override object ExecuteScalar()
         {
@@ -54,11 +59,17 @@ namespace ClickHouse.Client
             }
         }
 
-        public override void Prepare() => throw new NotImplementedException();
+        public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken) => base.ExecuteScalarAsync(cancellationToken);
 
+        public override void Prepare() { /* ClickHouse has no notion of prepared statements */ }
+
+        public override Task PrepareAsync(CancellationToken cancellationToken = default) => base.PrepareAsync(cancellationToken);
         protected override DbParameter CreateDbParameter() => throw new NotImplementedException();
+        protected override void Dispose(bool disposing) => base.Dispose(disposing);
 
-        protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
+        protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => ExecuteDbDataReaderAsync(behavior, cts.Token).GetAwaiter().GetResult();
+
+        protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
             var sqlBuilder = new StringBuilder(CommandText);
             var driver = dbConnection.Driver;
@@ -92,7 +103,7 @@ namespace ClickHouse.Client
                     break;
             }
 
-            var result = dbConnection.PostSqlQueryAsync(sqlBuilder.ToString()).GetAwaiter().GetResult();
+            var result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token);
             ClickHouseDataReader reader = driver switch
             {
                 ClickHouseConnectionDriver.Binary => new ClickHouseBinaryReader(result),
@@ -101,6 +112,9 @@ namespace ClickHouse.Client
                 _ => throw new NotSupportedException("Unknown driver: " + driver.ToString()),
             };
             return reader;
+
         }
+
+        protected override object GetService(Type service) => base.GetService(service);
     }
 }

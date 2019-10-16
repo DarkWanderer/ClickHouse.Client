@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.Common;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ClickHouse.Client
@@ -58,10 +59,10 @@ namespace ClickHouse.Client
 
         public override string ServerVersion => throw new NotImplementedException();
 
-        internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery)
+        internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token)
         {
             var httpContent = new StringContent(sqlQuery);
-            return await httpClient.PostAsync(serverUri, httpContent);
+            return await httpClient.PostAsync(serverUri, httpContent, token);
         }
 
         internal ClickHouseConnectionDriver Driver { get; private set; }
@@ -75,9 +76,9 @@ namespace ClickHouse.Client
 
         public override void Open() => OpenAsync().GetAwaiter().GetResult();
 
-        public new async Task OpenAsync()
+        public override async Task OpenAsync(CancellationToken token)
         {
-            var response = await httpClient.GetAsync(serverUri);
+            var response = await httpClient.GetAsync(serverUri, token);
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadAsStringAsync();
             if (result.ToLowerInvariant().StartsWith("ok"))

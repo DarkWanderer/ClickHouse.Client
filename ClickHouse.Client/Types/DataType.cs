@@ -1,6 +1,6 @@
-﻿namespace ClickHouse.Client
+﻿namespace ClickHouse.Client.Types
 {
-    public enum ClickHouseDataType
+    public enum DataType
     {
         UInt16,
         UInt32,

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
+using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client
 {
@@ -39,13 +40,12 @@ namespace ClickHouse.Client
             if (names.Length != types.Length)
                 throw new InvalidOperationException($"Count mismatch between names ({names.Length}) and types ({types.Length})");
             var fieldCount = names.Length;
-
-            for (int i = 0; i < fieldCount; i++)
-                FieldOrdinals.Add(names[i], i);
-
             FieldTypes = new Type[fieldCount];
+            FieldNames = new string[fieldCount];
+
+            names.CopyTo(FieldNames, 0);
             for (int i = 0; i < fieldCount; i++)
-                FieldTypes[i] = ClickHouseTypeConverter.FromClickHouseType(types[i]);
+                FieldTypes[i] = TypeConverter.FromClickHouseType(types[i]);
         }
     }
 }
