@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace ClickHouse.Client
 {
     [Serializable]
-    internal class ClickHouseServerException : Exception
+    public class ClickHouseServerException : Exception
     {
         public ClickHouseServerException()
         {

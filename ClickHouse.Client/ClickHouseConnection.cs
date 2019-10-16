@@ -11,6 +11,7 @@ namespace ClickHouse.Client
     {
         private static readonly HttpClient httpClient = new HttpClient();
         private ConnectionState state = ConnectionState.Closed;
+        private string serverVersion;
         private string database;
         private string username;
         private string password;
@@ -57,12 +58,18 @@ namespace ClickHouse.Client
 
         public override string DataSource { get; }
 
-        public override string ServerVersion => throw new NotImplementedException();
+        public override string ServerVersion => serverVersion;
 
         internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token)
         {
             var httpContent = new StringContent(sqlQuery);
-            return await httpClient.PostAsync(serverUri, httpContent, token);
+            var response = await httpClient.PostAsync(serverUri, httpContent, token);
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new ClickHouseServerException(error);
+            }
+            return response;
         }
 
         internal ClickHouseConnectionDriver Driver { get; private set; }
@@ -78,17 +85,16 @@ namespace ClickHouse.Client
 
         public override async Task OpenAsync(CancellationToken token)
         {
-            var response = await httpClient.GetAsync(serverUri, token);
-            response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadAsStringAsync();
-            if (result.ToLowerInvariant().StartsWith("ok"))
+            try
             {
+                var response = await PostSqlQueryAsync("SELECT version()", CancellationToken.None);
+                response.EnsureSuccessStatusCode();
+                serverVersion = await response.Content.ReadAsStringAsync();
                 state = ConnectionState.Open;
             }
-            else
+            catch
             {
                 state = ConnectionState.Broken;
-                throw new ClickHouseServerException("Invalid handshake, got " + result);
             }
         }
 

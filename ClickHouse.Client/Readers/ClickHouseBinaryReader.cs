@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text;
 using ClickHouse.Client.Types;
 
@@ -64,6 +65,9 @@ namespace ClickHouse.Client
 
         public override bool Read()
         {
+            if (stream.Position >= stream.Length)
+                return false;
+
             var initialPosition = stream.Position;
             var count = FieldCount;
             var data = new object[count];
@@ -72,35 +76,44 @@ namespace ClickHouse.Client
                 switch (RawTypes[i])
                 {
                     case DataType.UInt16:
+                        data[i] = BitConverter.ToUInt16(ReadBytesForType<ushort>(stream), 0);
                         break;
                     case DataType.UInt32:
+                        data[i] = BitConverter.ToUInt32(ReadBytesForType<uint>(stream), 0);
                         break;
                     case DataType.UInt64:
+                        data[i] = BitConverter.ToUInt64(ReadBytesForType<ulong>(stream), 0);
                         break;
                     case DataType.Int16:
+                        data[i] = BitConverter.ToInt16(ReadBytesForType<short>(stream), 0);
                         break;
                     case DataType.Int32:
+                        data[i] = BitConverter.ToInt32(ReadBytesForType<int>(stream), 0);
                         break;
                     case DataType.Int64:
-                        data[i] = ReadInt64(stream);
+                        data[i] = BitConverter.ToInt64(ReadBytesForType<long>(stream), 0);
                         break;
                     case DataType.Float32:
+                        data[i] = BitConverter.ToSingle(ReadBytesForType<float>(stream), 0);
                         break;
                     case DataType.Float64:
+                        data[i] = BitConverter.ToDouble(ReadBytesForType<double>(stream), 0);
                         break;
                     case DataType.String:
+                        data[i] = ReadStringBinary(stream);
                         break;
                     case DataType.DateTime:
                         break;
                     case DataType.UInt8:
-                        data[i] = ReadUInt8(stream);
+                        data[i] = (byte)stream.ReadByte();
                         break;
                     case DataType.Int8:
+                        data[i] = (sbyte)stream.ReadByte();
                         break;
                     case DataType.Date:
-                        break;
+                        throw new NotImplementedException();
                     case DataType.FixedString:
-                        break;
+                        throw new NotImplementedException();
                 }
             }
             CurrentRow = data;
@@ -110,13 +123,13 @@ namespace ClickHouse.Client
             return true;
         }
 
-        private long ReadInt64(Stream stream)
+        private byte[] ReadBytesForType<T>(Stream stream) where T: struct
         {
-            var length = sizeof(Int64);
+            var length = Marshal.SizeOf<T>();
             var bytes = new byte[length];
             stream.Read(bytes, 0, length);
-            return BitConverter.ToInt64(bytes, 0);
+            return bytes;
         }
-        private byte ReadUInt8(Stream stream) => (byte)stream.ReadByte();
+
     }
 }

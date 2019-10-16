@@ -44,9 +44,14 @@ namespace ClickHouse.Client
 
         public override ValueTask DisposeAsync() => base.DisposeAsync();
 
-        public override int ExecuteNonQuery() => throw new NotImplementedException();
+        public override int ExecuteNonQuery() => ExecuteNonQueryAsync(cts.Token).GetAwaiter().GetResult();
 
-        public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) => base.ExecuteNonQueryAsync(cancellationToken);
+        public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
+        {
+            var response = await dbConnection.PostSqlQueryAsync(CommandText, cts.Token);
+            var result = await response.Content.ReadAsStringAsync();
+            return int.TryParse(result, out var r) ? r : 0;
+        }
 
         public override object ExecuteScalar() => ExecuteScalarAsync(cts.Token).GetAwaiter().GetResult();
 
@@ -80,12 +85,12 @@ namespace ClickHouse.Client
             {
                 case CommandBehavior.SingleRow:
                 case CommandBehavior.SingleResult:
-                    sqlBuilder.Append("\nLIMIT 1");
+                    sqlBuilder.Append(" LIMIT 1");
                     break;
                 case CommandBehavior.SchemaOnly:
                     if (driver == ClickHouseConnectionDriver.JSON)
                         throw new NotSupportedException("JSON driver does not support fetching schema");
-                    sqlBuilder.Append("\nLIMIT 0");
+                    sqlBuilder.Append(" LIMIT 0");
                     break;
                 case CommandBehavior.CloseConnection:
                 case CommandBehavior.Default:
@@ -96,13 +101,13 @@ namespace ClickHouse.Client
             switch (driver)
             {
                 case ClickHouseConnectionDriver.Binary:
-                    sqlBuilder.Append("\nFORMAT RowBinaryWithNamesAndTypes");
+                    sqlBuilder.Append(" FORMAT RowBinaryWithNamesAndTypes");
                     break;
                 case ClickHouseConnectionDriver.JSON:
-                    sqlBuilder.Append("\nFORMAT JSONEachRow");
+                    sqlBuilder.Append(" FORMAT JSONEachRow");
                     break;
                 case ClickHouseConnectionDriver.TSV:
-                    sqlBuilder.Append("\nFORMAT TSVWithNamesAndTypes");
+                    sqlBuilder.Append(" FORMAT TSVWithNamesAndTypes");
                     break;
             }
 
@@ -115,7 +120,6 @@ namespace ClickHouse.Client
                 _ => throw new NotSupportedException("Unknown driver: " + driver.ToString()),
             };
             return reader;
-
         }
 
         protected override object GetService(Type service) => base.GetService(service);

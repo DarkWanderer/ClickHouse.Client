@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ClickHouse.Client.Types;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
@@ -30,16 +31,34 @@ namespace ClickHouse.Client.Tests
             Assert.AreEqual(3, reader.FieldCount);
             Assert.IsTrue(reader.HasRows);
             Assert.IsTrue(reader.Read());
+
             CollectionAssert.AreEqual(new[]{ "a", "b", "c"}, Enumerable.Range(0, 3).Select(reader.GetName));
             CollectionAssert.AreEqual(new[] { 1, 2, 3 }, Enumerable.Range(0, 3).Select(reader.GetValue));
             Assert.IsFalse(reader.HasRows);
         }
 
         [Test]
+        public async Task ShouldSelectMultipleTypes()
+        {
+            var types = Enum.GetValues(typeof(DataType))
+                .Cast<DataType>()
+                .Select(dt => dt.ToString())
+                .Where(dt => dt.Contains("Int") || dt.Contains("Float"))
+                .Select(dt => $"to{dt.ToString()}(1)");
+            var sql = $"select {string.Join(',', types)}";
+
+            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
+            var command = connection.CreateCommand();
+            command.CommandText = sql;
+            using var reader = await command.ExecuteReaderAsync();
+            Assert.IsTrue(reader.HasRows);
+            Assert.IsTrue(reader.Read());
+        }
+
+        [Test]
         public async Task ShouldSelectSingleColumnRange()
         {
-            if (Driver == ClickHouseConnectionDriver.JSON)
-                Assert.Inconclusive("ClickHouse returns incorrect type for 'SELECT number FROM system.numbers' in JSON");
+                //Assert.Inconclusive("ClickHouse returns incorrect type for 'SELECT number FROM system.numbers' in JSON");
 
             const int count = 100;
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
@@ -51,11 +70,12 @@ namespace ClickHouse.Client.Tests
 
             Assert.IsTrue(reader.HasRows);
             Assert.AreEqual(1, reader.FieldCount);
-            Assert.AreEqual(typeof(ulong), reader.GetFieldType(0));
 
-            while (reader.HasRows)
+            if (Driver != ClickHouseConnectionDriver.JSON)
+                Assert.AreEqual(typeof(ulong), reader.GetFieldType(0));
+
+            while (reader.Read())
             {
-                reader.Read();
                 results.Add(reader.GetInt32(0)); // Intentional conversion to int32
             }
 
