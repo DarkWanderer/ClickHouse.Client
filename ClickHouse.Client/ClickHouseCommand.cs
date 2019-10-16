@@ -45,9 +45,11 @@ namespace ClickHouse.Client
         public override int ExecuteNonQuery() => throw new NotImplementedException();
         public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) => base.ExecuteNonQueryAsync(cancellationToken);
 
-        public override object ExecuteScalar()
+        public override object ExecuteScalar() => ExecuteScalarAsync(cts.Token).GetAwaiter().GetResult();
+
+        public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
-            using var reader = ExecuteDbDataReader(CommandBehavior.Default);
+            using var reader = await ExecuteDbDataReaderAsync(CommandBehavior.Default, cancellationToken);
             if (reader.HasRows)
             {
                 reader.Read();
@@ -58,8 +60,6 @@ namespace ClickHouse.Client
                 throw new InvalidOperationException("No data returned from query");
             }
         }
-
-        public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken) => base.ExecuteScalarAsync(cancellationToken);
 
         public override void Prepare() { /* ClickHouse has no notion of prepared statements */ }
 

@@ -45,8 +45,6 @@ namespace ClickHouse.Client
 
         public override int FieldCount => FieldTypes.Length;
 
-        public override bool HasRows => InputStream.Position < InputStream.Length;
-
         public override bool IsClosed => !HasRows;
 
         public override int RecordsAffected { get; }

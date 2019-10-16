@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -9,41 +10,56 @@ namespace ClickHouse.Client.Tests
     {
         protected abstract ClickHouseConnectionDriver Driver { get; }
 
-        [Test]
-        public void ShouldExecuteSelect1()
+        [Test(Description = "Trivial 'SELECT 1' query")]
+        public async Task ShouldExecuteSelect1()
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
             command.CommandText = "SELECT 1";
-            Assert.AreEqual(1, command.ExecuteScalar());
+            Assert.AreEqual(1, await command.ExecuteScalarAsync());
         }
 
-        [Test]
+        [Test(Description = "Trivial 'SELECT from numbers' query")]
         public void ShouldExecuteSelectRange()
         {
+            const int count = 100;
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT number FROM system.numbers LIMIT 10";
+            command.CommandText = $"SELECT number FROM system.numbers LIMIT {count}";
             using var reader = command.ExecuteReader();
 
             var results = new List<int>();
+
             Assert.IsTrue(reader.HasRows);
             Assert.AreEqual(1, reader.FieldCount);
+            Assert.AreEqual(typeof(ulong), reader.GetFieldType(0));
+
             while (reader.HasRows)
-                Assert.AreEqual(typeof(int), reader.GetFieldType(1));
-                results.Add((int)reader.GetValue(1));
-            CollectionAssert.AreEqual(Enumerable.Range(1, 10), results);
+            {
+                reader.Read();
+                results.Add(reader.GetInt32(0)); // Intentional conversion to int32
+            }
+
+            CollectionAssert.AreEqual(Enumerable.Range(0, count), results);
         }
 
-        [Test]
+        [Test(Description = "Cancel running query")]
         public async Task ShouldCancelRunningAsyncQuery()
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
-            command.CommandText = "sleep(5); SELECT 1";
+            command.CommandText = "SELECT number FROM system.numbers LIMIT 100000000";
             var task = command.ExecuteScalarAsync();
             command.Cancel();
-            await task;
+
+            try
+            {
+                await task;
+            }
+            catch (TaskCanceledException)
+            {
+                // Correct
+            }
         }
     }
 

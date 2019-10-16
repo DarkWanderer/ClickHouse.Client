@@ -14,11 +14,14 @@ namespace ClickHouse.Client.Tests
         public static ClickHouseConnection GetTestClickHouseConnection(ClickHouseConnectionDriver driver)
         {
             // Developer override for Windows machine
-            var devConnectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION") ?? "Host=localhost;Port=8123";
+            var devConnectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION") ??
+                (IsUnix ? "Host=localhost;Port=8123" : throw new InvalidOperationException("Must set CLICKHOUSE_CONNECTION variable on Windows"));
 
             var builder = new ClickHouseConnectionStringBuilder() { ConnectionString = devConnectionString };
             builder.Driver = driver; // Override driver with requested one
             return new ClickHouseConnection(builder.ConnectionString);
         }
+
+        private static bool IsUnix => Environment.OSVersion.Platform == PlatformID.Unix;
     }
 }

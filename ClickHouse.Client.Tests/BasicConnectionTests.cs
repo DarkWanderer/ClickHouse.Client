@@ -6,6 +6,7 @@ namespace ClickHouse.Client.Tests
     public class BasicConnectionTests
     {
         [Test]
+        [Explicit]
         public void ShouldThrowHttpExceptionOnInvalidPort()
         {
             var connectionString = "Host=localhost;Port=44444";

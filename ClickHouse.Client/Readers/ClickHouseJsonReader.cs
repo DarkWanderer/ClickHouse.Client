@@ -7,6 +7,8 @@ namespace ClickHouse.Client
         {
         }
 
+        public override bool HasRows { get; }
+
         public override bool Read() => throw new System.NotImplementedException();
     }
 }

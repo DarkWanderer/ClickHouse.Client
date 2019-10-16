@@ -15,6 +15,8 @@ namespace ClickHouse.Client
             ReadHeaders();
         }
 
+        public override bool HasRows => inputReader.Peek() != -1;
+
         public override bool Read()
         {
             if (!HasRows)
