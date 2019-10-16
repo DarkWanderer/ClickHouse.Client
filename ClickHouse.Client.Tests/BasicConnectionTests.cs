@@ -17,15 +17,16 @@ namespace ClickHouse.Client.Tests
         [Test]
         public void ShouldConnectToExistingServer()
         {
-            using var connection = new ClickHouseConnection();
+            using var connection = TestUtilities.GetTestClickHouseConnection(ClickHouseConnectionDriver.JSON);
             connection.Open();
         }
 
         [Test]
         public void ShouldDetermineServerVersion()
         {
-            using var connection = new ClickHouseConnection();
+            using var connection = TestUtilities.GetTestClickHouseConnection(ClickHouseConnectionDriver.JSON);
             connection.Open();
+            Assert.IsNotEmpty(connection.ServerVersion);
         }
     }
 }

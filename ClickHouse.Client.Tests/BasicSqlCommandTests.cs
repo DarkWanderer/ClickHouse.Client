@@ -5,12 +5,14 @@ using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
-    public class BasicSqlCommandTests
+    public abstract class SqlCommandsTestSuiteBase
     {
+        protected abstract ClickHouseConnectionDriver Driver { get; }
+
         [Test]
         public void ShouldExecuteSelect1()
         {
-            using var connection = new ClickHouseConnection();
+            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
             command.CommandText = "SELECT 1";
             Assert.AreEqual(1, command.ExecuteScalar());
@@ -19,7 +21,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public void ShouldExecuteSelectRange()
         {
-            using var connection = new ClickHouseConnection();
+            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
             command.CommandText = "SELECT number FROM system.numbers LIMIT 10";
             using var reader = command.ExecuteReader();
@@ -36,12 +38,25 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldCancelRunningAsyncQuery()
         {
-            using var connection = new ClickHouseConnection();
+            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
             command.CommandText = "sleep(5); SELECT 1";
             var task = command.ExecuteScalarAsync();
             command.Cancel();
             await task;
         }
+    }
+
+    public class JsonDriverSqlQueryTestSuite : SqlCommandsTestSuiteBase
+    {
+        protected override ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.JSON;
+    }
+    public class BinaryDriverSqlQueryTestSuite : SqlCommandsTestSuiteBase
+    {
+        protected override ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.Binary;
+    }
+    public class TsvDriverSqlQueryTestSuite : SqlCommandsTestSuiteBase
+    {
+        protected override ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.TSV;
     }
 }
