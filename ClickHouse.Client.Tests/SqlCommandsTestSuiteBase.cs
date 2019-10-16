@@ -38,7 +38,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        public async Task ShouldSelectMultipleTypes()
+        public async Task ShouldSelectNumericTypes()
         {
             var types = Enum.GetValues(typeof(DataType))
                 .Cast<DataType>()
@@ -58,6 +58,27 @@ namespace ClickHouse.Client.Tests
 
             for (int i = 0; i < reader.FieldCount; i++)
                 Assert.AreEqual("1", reader.GetValue(i).ToString());
+
+            Assert.IsFalse(reader.HasRows);
+            Assert.IsFalse(reader.Read());
+        }
+
+        [Test]
+        public async Task ShouldSelectStringTypes()
+        {
+            var sql = $"select 'ASD', toFixedString('ASD', 3)";
+
+            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
+            var command = connection.CreateCommand();
+            command.CommandText = sql;
+            using var reader = await command.ExecuteReaderAsync();
+            
+            Assert.IsTrue(reader.HasRows);
+            Assert.IsTrue(reader.Read());
+            Assert.AreEqual(2, reader.FieldCount);
+
+            for (int i = 0; i < reader.FieldCount; i++)
+                Assert.AreEqual("ASD", reader.GetValue(i));
 
             Assert.IsFalse(reader.HasRows);
             Assert.IsFalse(reader.Read());
@@ -93,13 +114,14 @@ namespace ClickHouse.Client.Tests
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT number FROM system.numbers LIMIT 100000000";
+            command.CommandText = "SELECT sleep(5)";
             var task = command.ExecuteScalarAsync();
             command.Cancel();
 
             try
             {
                 await task;
+                Assert.Fail("Expected to receive TaskCancelledException from task");
             }
             catch (TaskCanceledException)
             {

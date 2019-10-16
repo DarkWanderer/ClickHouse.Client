@@ -45,7 +45,8 @@ namespace ClickHouse.Client.Types
 
         private static bool TryExtractComposite(string type, out string composite, out string underlyingType)
         {
-            if (type.EndsWith(")") && type.Contains("(")) {
+            if (type.EndsWith(")") && type.Contains("(")) 
+            {
                 var split = type.Remove(type.Length - 1).Split('(', 2, StringSplitOptions.RemoveEmptyEntries);
                 composite = split[0];
                 underlyingType = split[1];
