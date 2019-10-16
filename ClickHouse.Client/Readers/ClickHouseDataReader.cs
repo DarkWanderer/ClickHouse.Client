@@ -19,10 +19,7 @@ namespace ClickHouse.Client
         {
             ServerResponse = httpResponse;
             InputStream = httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
-            ReadHeaders();
         }
-
-        protected abstract void ReadHeaders();
 
         /// <summary>
         /// Values of current reader row. Must be filled in Read implementation of derived class

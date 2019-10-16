@@ -93,13 +93,14 @@ namespace ClickHouse.Client
             }
 
             var result = dbConnection.PostSqlQueryAsync(sqlBuilder.ToString()).GetAwaiter().GetResult();
-            return driver switch
+            ClickHouseDataReader reader = driver switch
             {
                 ClickHouseConnectionDriver.Binary => new ClickHouseBinaryReader(result),
                 ClickHouseConnectionDriver.JSON => new ClickHouseJsonReader(result),
                 ClickHouseConnectionDriver.TSV => new ClickHouseTsvReader(result),
                 _ => throw new NotSupportedException("Unknown driver: " + driver.ToString()),
             };
+            return reader;
         }
     }
 }

@@ -11,6 +11,7 @@ namespace ClickHouse.Client
         public ClickHouseTsvReader(HttpResponseMessage httpResponse) : base(httpResponse)
         {
             inputReader = new StreamReader(InputStream);
+            ReadHeaders();
         }
 
         public override bool Read()
@@ -30,7 +31,7 @@ namespace ClickHouse.Client
             return true;
         }
 
-        protected override void ReadHeaders()
+        private void ReadHeaders()
         {
             var names = inputReader.ReadLine().Split('\t');
             var types = inputReader.ReadLine().Split('\t');
