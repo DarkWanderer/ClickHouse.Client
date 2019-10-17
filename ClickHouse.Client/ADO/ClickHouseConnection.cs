@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ClickHouse.Client
+namespace ClickHouse.Client.ADO
 {
-    public class ClickHouseConnection : DbConnection, ICloneable, IDisposable
+    public class ClickHouseConnection : DbConnection, ICloneable
     {
         private static readonly HttpClient httpClient = new HttpClient();
         private ConnectionState state = ConnectionState.Closed;
@@ -94,14 +94,15 @@ namespace ClickHouse.Client
         {
             try
             {
-                var response = await PostSqlQueryAsync("SELECT version()", CancellationToken.None);
+                var response = await PostSqlQueryAsync("SELECT version()", token).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
-                serverVersion = await response.Content.ReadAsStringAsync();
+                serverVersion = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 state = ConnectionState.Open;
             }
             catch
             {
                 state = ConnectionState.Broken;
+                throw;
             }
         }
 

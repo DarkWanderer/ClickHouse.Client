@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 
-namespace ClickHouse.Client
+namespace ClickHouse.Client.Readers
 {
     internal class ClickHouseJsonReader : ClickHouseDataReader
     {

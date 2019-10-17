@@ -1,4 +1,4 @@
-using System.Net.Http;
+using ClickHouse.Client.ADO;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests

@@ -1,15 +1,8 @@
 ﻿using System;
 using System.Data.Common;
 
-namespace ClickHouse.Client
+namespace ClickHouse.Client.ADO
 {
-    public enum ClickHouseConnectionDriver
-    {
-        Binary,
-        JSON,
-        TSV
-    }
-
     public class ClickHouseConnectionStringBuilder : DbConnectionStringBuilder
     {
         public ClickHouseConnectionStringBuilder()
@@ -43,7 +36,8 @@ namespace ClickHouse.Client
 
         public ushort Port
         {
-            get {
+            get
+            {
                 if (base.TryGetValue("Port", out var value) && value is string @string && ushort.TryParse(@string as string, out var @ushort))
                     return @ushort;
                 return 8123;

@@ -1,25 +1,24 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.Types;
 
-namespace ClickHouse.Client
+namespace ClickHouse.Client.Readers
 {
-    public abstract class ClickHouseDataReader : DbDataReader, IDisposable
+    public abstract class ClickHouseDataReader : DbDataReader
     {
         protected readonly HttpResponseMessage ServerResponse;
         protected readonly Stream InputStream;
 
         protected ClickHouseDataReader(HttpResponseMessage httpResponse)
         {
-            ServerResponse = httpResponse;
+            ServerResponse = httpResponse ?? throw new ArgumentNullException(nameof(httpResponse));
             InputStream = httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
         }
 
@@ -43,13 +42,13 @@ namespace ClickHouse.Client
 
         private protected TypeInfo[] RawTypes { get; set; }
 
-        public override bool GetBoolean(int ordinal) => Convert.ToBoolean(GetValue(ordinal));
+        public override bool GetBoolean(int ordinal) => Convert.ToBoolean(GetValue(ordinal), CultureInfo.InvariantCulture);
 
-        public override byte GetByte(int ordinal) => Convert.ToByte(GetValue(ordinal));
+        public override byte GetByte(int ordinal) => Convert.ToByte(GetValue(ordinal), CultureInfo.InvariantCulture);
 
         public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length) => throw new NotImplementedException();
 
-        public override char GetChar(int ordinal) => Convert.ToChar(GetValue(ordinal));
+        public override char GetChar(int ordinal) => Convert.ToChar(GetValue(ordinal), CultureInfo.InvariantCulture);
 
         public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => throw new NotImplementedException();
 
@@ -57,23 +56,23 @@ namespace ClickHouse.Client
 
         public override DateTime GetDateTime(int ordinal) => throw new NotImplementedException();
 
-        public override decimal GetDecimal(int ordinal) => Convert.ToDecimal(GetValue(ordinal));
+        public override decimal GetDecimal(int ordinal) => Convert.ToDecimal(GetValue(ordinal), CultureInfo.InvariantCulture);
 
-        public override double GetDouble(int ordinal) => Convert.ToDouble(GetValue(ordinal));
+        public override double GetDouble(int ordinal) => Convert.ToDouble(GetValue(ordinal), CultureInfo.InvariantCulture);
 
         public override IEnumerator GetEnumerator() => throw new NotImplementedException();
 
         public override Type GetFieldType(int ordinal) => RawTypes[ordinal].EquivalentType;
 
-        public override float GetFloat(int ordinal) => Convert.ToSingle(GetValue(ordinal));
+        public override float GetFloat(int ordinal) => Convert.ToSingle(GetValue(ordinal), CultureInfo.InvariantCulture);
 
         public override Guid GetGuid(int ordinal) => throw new NotImplementedException();
 
-        public override short GetInt16(int ordinal) => Convert.ToInt16(GetValue(ordinal));
+        public override short GetInt16(int ordinal) => Convert.ToInt16(GetValue(ordinal), CultureInfo.InvariantCulture);
 
-        public override int GetInt32(int ordinal) => Convert.ToInt32(GetValue(ordinal));
+        public override int GetInt32(int ordinal) => Convert.ToInt32(GetValue(ordinal), CultureInfo.InvariantCulture);
 
-        public override long GetInt64(int ordinal) => Convert.ToInt64(GetValue(ordinal));
+        public override long GetInt64(int ordinal) => Convert.ToInt64(GetValue(ordinal), CultureInfo.InvariantCulture);
 
         public override string GetName(int ordinal) => FieldNames[ordinal];
 
@@ -85,7 +84,7 @@ namespace ClickHouse.Client
             return index;
         }
 
-        public override string GetString(int ordinal) => Convert.ToString(GetValue(ordinal));
+        public override string GetString(int ordinal) => Convert.ToString(GetValue(ordinal), CultureInfo.InvariantCulture);
 
         public override object GetValue(int ordinal) => CurrentRow[ordinal];
 
@@ -105,7 +104,13 @@ namespace ClickHouse.Client
 
         public override Task CloseAsync() => base.CloseAsync();
 
-        protected override void Dispose(bool disposing) => base.Dispose(disposing);
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                InputStream.Dispose();
+            }
+        }
 
         public override ValueTask DisposeAsync() => base.DisposeAsync();
 

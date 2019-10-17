@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("ClickHouse.Client.Tests")] // assembly-level tag to expose below classes to tests
@@ -78,7 +77,7 @@ namespace ClickHouse.Client.Types
             }
             if (Enum.TryParse<ClickHouseDataType>(type, out var chType) && simpleTypes.TryGetValue(chType, out var typeInfo))
                 return typeInfo;
-            throw new ArgumentException(nameof(type));
+            throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type);
         }
 
         public static TypeInfo GetSimpleTypeInfo(string type)

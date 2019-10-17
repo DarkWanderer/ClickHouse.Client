@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using ClickHouse.Client.Types;
 
-namespace ClickHouse.Client
+namespace ClickHouse.Client.Readers
 {
     // TODO: use Span to avoid creating byte arrays all the time
     internal class ClickHouseBinaryReader : ClickHouseDataReader

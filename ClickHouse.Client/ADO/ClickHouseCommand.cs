@@ -5,9 +5,12 @@ using System.Data.Common;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ClickHouse.Client.ADO;
+using ClickHouse.Client.Readers;
 
-namespace ClickHouse.Client
+namespace ClickHouse.Client.ADO
 {
+
     internal class ClickHouseCommand : DbCommand
     {
         private readonly ClickHouseConnection dbConnection;
@@ -48,8 +51,8 @@ namespace ClickHouse.Client
 
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
-            var response = await dbConnection.PostSqlQueryAsync(CommandText, cts.Token);
-            var result = await response.Content.ReadAsStringAsync();
+            var response = await dbConnection.PostSqlQueryAsync(CommandText, cts.Token).ConfigureAwait(false);
+            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return int.TryParse(result, out var r) ? r : 0;
         }
 
@@ -57,7 +60,7 @@ namespace ClickHouse.Client
 
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
-            using var reader = await ExecuteDbDataReaderAsync(CommandBehavior.Default, cancellationToken);
+            using var reader = await ExecuteDbDataReaderAsync(CommandBehavior.Default, cancellationToken).ConfigureAwait(false);
             if (reader.HasRows)
             {
                 reader.Read();
@@ -72,8 +75,16 @@ namespace ClickHouse.Client
         public override void Prepare() { /* ClickHouse has no notion of prepared statements */ }
 
         public override Task PrepareAsync(CancellationToken cancellationToken = default) => base.PrepareAsync(cancellationToken);
+
         protected override DbParameter CreateDbParameter() => throw new NotImplementedException();
-        protected override void Dispose(bool disposing) => base.Dispose(disposing);
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                cts.Dispose();
+            }
+        }
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => ExecuteDbDataReaderAsync(behavior, cts.Token).GetAwaiter().GetResult();
 
@@ -111,7 +122,7 @@ namespace ClickHouse.Client
                     break;
             }
 
-            var result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token);
+            var result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token).ConfigureAwait(false);
             ClickHouseDataReader reader = driver switch
             {
                 ClickHouseConnectionDriver.Binary => new ClickHouseBinaryReader(result),
