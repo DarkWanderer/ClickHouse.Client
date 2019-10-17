@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client
 {
@@ -22,34 +23,25 @@ namespace ClickHouse.Client
             InputStream = httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
         }
 
-        /// <summary>
-        /// Values of current reader row. Must be filled in Read implementation of derived class
-        /// </summary>
-        protected object[] CurrentRow;
-
-        /// <summary>
-        /// Types of fields in reader. Must be filled in ReadHeaders implementation of derived class
-        /// </summary>
-        protected Type[] FieldTypes;
-
-        /// <summary>
-        /// Names of fields in reader. Must be filled in ReadHeaders implementation of derived class
-        /// </summary>
-        protected string[] FieldNames;
-
         public override object this[int ordinal] => GetValue(ordinal);
 
         public override object this[string name] => this[GetOrdinal(name)];
 
         public override int Depth { get; }
 
-        public override int FieldCount => FieldTypes.Length;
+        public override int FieldCount => RawTypes.Length;
 
         public override bool IsClosed => !HasRows;
 
         public override int RecordsAffected { get; }
 
         public override int VisibleFieldCount => base.VisibleFieldCount;
+
+        protected object[] CurrentRow { get; set; }
+
+        protected string[] FieldNames { get; set; }
+
+        private protected TypeInfo[] RawTypes { get; set; }
 
         public override bool GetBoolean(int ordinal) => Convert.ToBoolean(GetValue(ordinal));
 
@@ -71,7 +63,7 @@ namespace ClickHouse.Client
 
         public override IEnumerator GetEnumerator() => throw new NotImplementedException();
 
-        public override Type GetFieldType(int ordinal) => FieldTypes[ordinal];
+        public override Type GetFieldType(int ordinal) => RawTypes[ordinal].EquivalentType;
 
         public override float GetFloat(int ordinal) => Convert.ToSingle(GetValue(ordinal));
 
@@ -105,24 +97,42 @@ namespace ClickHouse.Client
             return CurrentRow.Length;
         }
 
-        public override bool IsDBNull(int ordinal) => throw new NotImplementedException();
+        public override bool IsDBNull(int ordinal) => GetValue(ordinal) is DBNull;
+
         public override bool NextResult() => throw new NotSupportedException();
+
         public override void Close() => base.Close();
+
         public override Task CloseAsync() => base.CloseAsync();
+
         protected override void Dispose(bool disposing) => base.Dispose(disposing);
+
         public override ValueTask DisposeAsync() => base.DisposeAsync();
+
         protected override DbDataReader GetDbDataReader(int ordinal) => base.GetDbDataReader(ordinal);
+
         public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken) => base.GetFieldValueAsync<T>(ordinal, cancellationToken);
-        public override T GetFieldValue<T>(int ordinal) => base.GetFieldValue<T>(ordinal);
+
+        public override T GetFieldValue<T>(int ordinal) => (T)GetValue(ordinal);
+
         public override Type GetProviderSpecificFieldType(int ordinal) => base.GetProviderSpecificFieldType(ordinal);
+
         public override object GetProviderSpecificValue(int ordinal) => base.GetProviderSpecificValue(ordinal);
+
         public override int GetProviderSpecificValues(object[] values) => base.GetProviderSpecificValues(values);
+
         public override DataTable GetSchemaTable() => base.GetSchemaTable();
+
         public override Stream GetStream(int ordinal) => base.GetStream(ordinal);
+
         public override TextReader GetTextReader(int ordinal) => base.GetTextReader(ordinal);
+
         public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken) => base.IsDBNullAsync(ordinal, cancellationToken);
-        public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => base.NextResultAsync(cancellationToken);
-        public override bool Read() => throw new NotImplementedException();
+
+        public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public abstract override bool Read();
+
         public override Task<bool> ReadAsync(CancellationToken cancellationToken) => base.ReadAsync(cancellationToken);
     }
 }

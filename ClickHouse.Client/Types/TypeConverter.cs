@@ -1,51 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("ClickHouse.Client.Tests")] // assembly-level tag to expose below classes to tests
 
 namespace ClickHouse.Client.Types
 {
-    public static class TypeConverter
+    internal static class TypeConverter
     {
-        private static IDictionary<DataType, Type> directMapping = new Dictionary<DataType, Type>();
-        private static IDictionary<Type, DataType> reverseMapping = new Dictionary<Type, DataType>();
+        private static IDictionary<ClickHouseDataType, TypeInfo> simpleTypes = new Dictionary<ClickHouseDataType, TypeInfo>();
+        private static IDictionary<Type, TypeInfo> reverseMapping = new Dictionary<Type, TypeInfo>();
 
         static TypeConverter()
         {
             // Bijective mappings
             // Unsigned integral types
-            Add(typeof(byte), DataType.UInt8);
-            Add(typeof(ushort), DataType.UInt16);
-            Add(typeof(uint), DataType.UInt32);
-            Add(typeof(ulong), DataType.UInt64);
+            RegisterPlainTypeInfo<byte>(ClickHouseDataType.UInt8);
+            RegisterPlainTypeInfo<ushort>(ClickHouseDataType.UInt16);
+            RegisterPlainTypeInfo<uint>(ClickHouseDataType.UInt32);
+            RegisterPlainTypeInfo<ulong>(ClickHouseDataType.UInt64);
 
             // Signed integral types
-            Add(typeof(sbyte), DataType.Int8);
-            Add(typeof(short), DataType.Int16);
-            Add(typeof(int), DataType.Int32);
-            Add(typeof(long), DataType.Int64);
+            RegisterPlainTypeInfo<sbyte>(ClickHouseDataType.Int8);
+            RegisterPlainTypeInfo<short>(ClickHouseDataType.Int16);
+            RegisterPlainTypeInfo<int>(ClickHouseDataType.Int32);
+            RegisterPlainTypeInfo<long>(ClickHouseDataType.Int64);
 
             // Float types
-            Add(typeof(float), DataType.Float32);
-            Add(typeof(double), DataType.Float64);
+            RegisterPlainTypeInfo<float>(ClickHouseDataType.Float32);
+            RegisterPlainTypeInfo<double>(ClickHouseDataType.Float64);
 
             // String types
-            Add(typeof(string), DataType.String);
-            Add(typeof(DateTime), DataType.DateTime);
+            RegisterPlainTypeInfo<string>(ClickHouseDataType.String);
 
-            // Non-bijective mappings
-            directMapping.Add(DataType.Date, typeof(DateTime));
-            directMapping.Add(DataType.FixedString, typeof(string));
+            // Date/datetime mappings
+            RegisterPlainTypeInfo<DateTime>(ClickHouseDataType.DateTime);
+            RegisterPlainTypeInfo<DateTime>(ClickHouseDataType.Date);
+
+            // complex types like FixedString/Array/Nested etc. are handled separately because they have extended parameters
         }
 
-        private static void Add(Type type, DataType chType)
+        private static void RegisterPlainTypeInfo<T>(ClickHouseDataType type)
         {
-            directMapping.Add(chType, type);
-            reverseMapping.Add(type, chType);
+            var typeInfo = new PlainDataTypeInfo<T>(type);
+            simpleTypes.Add(type, typeInfo);
+            if (!reverseMapping.ContainsKey(typeInfo.EquivalentType))
+                reverseMapping.Add(typeInfo.EquivalentType, typeInfo);
         }
 
-        private static bool TryExtractComposite(string type, out string composite, out string underlyingType)
+        private static bool TryParseComposite(string type, out string composite, out string underlyingType)
         {
-            if (type.EndsWith(")") && type.Contains("(")) 
+            if (type.EndsWith(")", StringComparison.InvariantCulture) && type.Contains("(", StringComparison.InvariantCulture))
             {
                 var split = type.Remove(type.Length - 1).Split('(', 2, StringSplitOptions.RemoveEmptyEntries);
                 composite = split[0];
@@ -57,36 +64,28 @@ namespace ClickHouse.Client.Types
             return false;
         }
 
-        /// <summary>
-        /// Recursively build .NET type from complex ClickHouse type
-        /// /// Supports nullable and arrays
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static Type FromClickHouseType(string type)
+        public static TypeInfo ParseClickHouseType(string type)
         {
-            if (TryExtractComposite(type, out string composite, out string underlyingType))
+            if (TryParseComposite(type, out string composite, out string underlyingType))
             {
                 return composite switch
                 {
-                    "Nullable" => typeof(Nullable<>).MakeGenericType(FromClickHouseType(underlyingType)),
-                    "Array" => FromClickHouseType(underlyingType).MakeArrayType(),
+                    "Nullable" => new NullableTypeInfo() { UnderlyingType = ParseClickHouseType(underlyingType)},
+                    "Array" => new ArrayTypeInfo() { UnderlyingType = ParseClickHouseType(underlyingType) },
+                    "FixedString" => new FixedStringTypeInfo { Length = int.Parse(underlyingType, CultureInfo.InvariantCulture) },
                     _ => throw new ArgumentException("Unknown composite type: " + composite),
                 };
             }
-            if (Enum.TryParse<DataType>(type, out var chType))
-                return FromClickHouseSimpleType(chType);
-            throw new ArgumentException("Unknown type: " + type);
+            if (Enum.TryParse<ClickHouseDataType>(type, out var chType) && simpleTypes.TryGetValue(chType, out var typeInfo))
+                return typeInfo;
+            throw new ArgumentException(nameof(type));
         }
 
-        public static Type FromClickHouseSimpleType(DataType type) => directMapping[type];
-
-        public static DataType GetClickHouseSimpleType(string type)
+        public static TypeInfo GetSimpleTypeInfo(string type)
         {
-            if (Enum.TryParse<DataType>(type, out var chType))
-                return chType;
-            else
-                throw new ArgumentOutOfRangeException("type");
+            if (Enum.TryParse<ClickHouseDataType>(type, out var chType) && simpleTypes.TryGetValue(chType, out var typeInfo))
+                return typeInfo;
+            throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type);
         }
 
         /// <summary>
@@ -95,13 +94,13 @@ namespace ClickHouse.Client.Types
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static string ToClickHouseType(Type type) {
+        public static TypeInfo ToClickHouseType(Type type) {
             if (type.IsArray)
-                return $"Array({ToClickHouseType(type.GetElementType())})";
+                return new ArrayTypeInfo() { UnderlyingType = ToClickHouseType(type.GetElementType()) };
             var underlyingType = Nullable.GetUnderlyingType(type);
             if (underlyingType != null)
-                return $"Nullable({ToClickHouseType(underlyingType)})";
-            return reverseMapping[type].ToString();
+                return new NullableTypeInfo() { UnderlyingType = ToClickHouseType(underlyingType) };
+            return reverseMapping[type];
         }
     }
 }

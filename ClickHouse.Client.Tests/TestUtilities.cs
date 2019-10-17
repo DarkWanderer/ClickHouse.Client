@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Linq;
 using System.Text;
+using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
@@ -23,5 +26,26 @@ namespace ClickHouse.Client.Tests
         }
 
         private static bool IsUnix => Environment.OSVersion.Platform == PlatformID.Unix;
+
+        public static object[] GetEnsureSingleRow(this DbDataReader reader)
+        {
+            Assert.IsTrue(reader.HasRows);
+            Assert.IsTrue(reader.Read());
+
+            var data = reader.GetFieldValues();
+
+            Assert.IsFalse(reader.HasRows);
+            Assert.IsFalse(reader.Read());
+
+            return data;
+        }
+
+        public static Type[] GetFieldTypes(this DbDataReader reader) => Enumerable.Range(0, reader.FieldCount).Select(reader.GetFieldType).ToArray();
+
+        public static string[] GetFieldNames(this DbDataReader reader) => Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToArray();
+
+        public static object[] GetFieldValues(this DbDataReader reader) => Enumerable.Range(0, reader.FieldCount).Select(reader.GetValue).ToArray();
+
+        public static void EnsureFieldCount(this DbDataReader reader, int expectedCount) => Assert.AreEqual(expectedCount, reader.FieldCount);
     }
 }

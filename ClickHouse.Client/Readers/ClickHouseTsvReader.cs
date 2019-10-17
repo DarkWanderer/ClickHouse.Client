@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using ClickHouse.Client.Types;
 
@@ -28,10 +30,29 @@ namespace ClickHouse.Client
             var rowData = new object[FieldCount];
             for (int i = 0; i < FieldCount; i++)
             {
-                rowData[i] = Convert.ChangeType(rowItems[i], FieldTypes[i]);
+                var typeInfo = RawTypes[i];
+                rowData[i] = ConvertString(rowItems[i], typeInfo);
             }
             CurrentRow = rowData;
             return true;
+        }
+
+        private object ConvertString(string item, TypeInfo typeInfo)
+        {
+            switch (typeInfo)
+
+            {
+                case ArrayTypeInfo ati:
+                    return item
+                        .Trim('[', ']')
+                        .Split(',')
+                        .Select(v => ConvertString(v, ati.UnderlyingType))
+                        .ToArray();
+                case NullableTypeInfo nti:
+                    return item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType);
+                default:
+                    return Convert.ChangeType(item, typeInfo.EquivalentType, CultureInfo.InvariantCulture);
+            }
         }
 
         private void ReadHeaders()
@@ -42,12 +63,12 @@ namespace ClickHouse.Client
             if (names.Length != types.Length)
                 throw new InvalidOperationException($"Count mismatch between names ({names.Length}) and types ({types.Length})");
             var fieldCount = names.Length;
-            FieldTypes = new Type[fieldCount];
+            RawTypes = new TypeInfo[fieldCount];
             FieldNames = new string[fieldCount];
 
             names.CopyTo(FieldNames, 0);
             for (int i = 0; i < fieldCount; i++)
-                FieldTypes[i] = TypeConverter.FromClickHouseType(types[i]);
+                RawTypes[i] = TypeConverter.ParseClickHouseType(types[i]);
         }
     }
 }
