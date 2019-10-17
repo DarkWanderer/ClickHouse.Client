@@ -3,6 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/DarkWanderer/ClickHouse.Client</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/DarkWanderer/ClickHouse.Client</RepositoryUrl>
+    <PackageTags>clickhouse, ado.net, client</PackageTags>
+    <Authors>elquentaro@gmail.com</Authors>
+    <Description>.NET data provider for ClickHouse, implementing Binary, TSV and JSON protocols</Description>
+    <PackageLicenseExpression>LGPL-2.1-only</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
