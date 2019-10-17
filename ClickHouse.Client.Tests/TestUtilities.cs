@@ -24,8 +24,6 @@ namespace ClickHouse.Client.Tests
             return new ClickHouseConnection(builder.ConnectionString);
         }
 
-        private static bool IsUnix => Environment.OSVersion.Platform == PlatformID.Unix;
-
         public static object[] GetEnsureSingleRow(this DbDataReader reader)
         {
             Assert.IsTrue(reader.HasRows);

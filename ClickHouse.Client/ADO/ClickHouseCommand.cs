@@ -5,7 +5,6 @@ using System.Data.Common;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ClickHouse.Client.ADO;
 using ClickHouse.Client.Readers;
 
 namespace ClickHouse.Client.ADO

@@ -9,8 +9,8 @@ namespace ClickHouse.Client.Types
 {
     internal static class TypeConverter
     {
-        private static IDictionary<ClickHouseDataType, TypeInfo> simpleTypes = new Dictionary<ClickHouseDataType, TypeInfo>();
-        private static IDictionary<Type, TypeInfo> reverseMapping = new Dictionary<Type, TypeInfo>();
+        private static readonly IDictionary<ClickHouseDataType, TypeInfo> simpleTypes = new Dictionary<ClickHouseDataType, TypeInfo>();
+        private static readonly IDictionary<Type, TypeInfo> reverseMapping = new Dictionary<Type, TypeInfo>();
 
         static TypeConverter()
         {
@@ -65,11 +65,11 @@ namespace ClickHouse.Client.Types
 
         public static TypeInfo ParseClickHouseType(string type)
         {
-            if (TryParseComposite(type, out string composite, out string underlyingType))
+            if (TryParseComposite(type, out var composite, out var underlyingType))
             {
                 return composite switch
                 {
-                    "Nullable" => new NullableTypeInfo() { UnderlyingType = ParseClickHouseType(underlyingType)},
+                    "Nullable" => new NullableTypeInfo() { UnderlyingType = ParseClickHouseType(underlyingType) },
                     "Array" => new ArrayTypeInfo() { UnderlyingType = ParseClickHouseType(underlyingType) },
                     "FixedString" => new FixedStringTypeInfo { Length = int.Parse(underlyingType, CultureInfo.InvariantCulture) },
                     _ => throw new ArgumentException("Unknown composite type: " + composite),
@@ -93,7 +93,8 @@ namespace ClickHouse.Client.Types
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static TypeInfo ToClickHouseType(Type type) {
+        public static TypeInfo ToClickHouseType(Type type)
+        {
             if (type.IsArray)
                 return new ArrayTypeInfo() { UnderlyingType = ToClickHouseType(type.GetElementType()) };
             var underlyingType = Nullable.GetUnderlyingType(type);

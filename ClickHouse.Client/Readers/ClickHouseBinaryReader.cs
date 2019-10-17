@@ -12,7 +12,7 @@ namespace ClickHouse.Client.Readers
     {
         private readonly Stream stream;
 
-        public ClickHouseBinaryReader(HttpResponseMessage httpResponse) : base(httpResponse) 
+        public ClickHouseBinaryReader(HttpResponseMessage httpResponse) : base(httpResponse)
         {
             stream = httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
             ReadHeaders();
@@ -24,9 +24,9 @@ namespace ClickHouse.Client.Readers
             FieldNames = new string[count];
             RawTypes = new TypeInfo[count];
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
                 FieldNames[i] = ReadStringBinary(stream);
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 var chType = ReadStringBinary(stream);
                 RawTypes[i] = TypeConverter.ParseClickHouseType(chType);
@@ -35,11 +35,11 @@ namespace ClickHouse.Client.Readers
 
         private static int ReadLEB128Integer(Stream stream)
         {
-            int result = 0;
+            var result = 0;
             byte shift = 0;
             while (true)
             {
-                int @byte = stream.ReadByte();
+                var @byte = stream.ReadByte();
                 if (@byte < 0)
                     throw new InvalidOperationException();
                 result |= (@byte & 0x7F) << shift;
@@ -72,7 +72,7 @@ namespace ClickHouse.Client.Readers
             var initialPosition = stream.Position;
             var count = FieldCount;
             var data = new object[count];
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 var rawTypeInfo = RawTypes[i];
                 data[i] = ReadBinaryDataType(stream, rawTypeInfo);
@@ -121,7 +121,7 @@ namespace ClickHouse.Client.Readers
                     var arrayTypeInfo = (ArrayTypeInfo)rawTypeInfo;
                     var length = ReadLEB128Integer(stream);
                     var data = new object[length];
-                    for (int i = 0; i < length; i++)
+                    for (var i = 0; i < length; i++)
                         data[i] = ReadBinaryDataType(stream, arrayTypeInfo.UnderlyingType);
                     return data;
                 case ClickHouseDataType.Nullable:
@@ -131,7 +131,7 @@ namespace ClickHouse.Client.Readers
             throw new NotImplementedException();
         }
 
-        private static byte[] ReadBytesForType<T>(Stream stream) where T: struct
+        private static byte[] ReadBytesForType<T>(Stream stream) where T : struct
         {
             var length = Marshal.SizeOf<T>();
             var bytes = new byte[length];

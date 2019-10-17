@@ -28,7 +28,7 @@ namespace ClickHouse.Client.Readers
                 throw new InvalidOperationException($"Wrong number of items in row ({rowItems.Length}), expected {FieldCount}");
 
             var rowData = new object[FieldCount];
-            for (int i = 0; i < FieldCount; i++)
+            for (var i = 0; i < FieldCount; i++)
             {
                 var typeInfo = RawTypes[i];
                 rowData[i] = ConvertString(rowItems[i], typeInfo);
@@ -37,23 +37,17 @@ namespace ClickHouse.Client.Readers
             return true;
         }
 
-        private object ConvertString(string item, TypeInfo typeInfo)
+        private object ConvertString(string item, TypeInfo typeInfo) => typeInfo switch
         {
-            switch (typeInfo)
+            ArrayTypeInfo ati => item
+                   .Trim('[', ']')
+                   .Split(',')
+                   .Select(v => ConvertString(v, ati.UnderlyingType))
+                   .ToArray(),
+            NullableTypeInfo nti => item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType),
+            _ => Convert.ChangeType(item, typeInfo.EquivalentType, CultureInfo.InvariantCulture),
+        };
 
-            {
-                case ArrayTypeInfo ati:
-                    return item
-                        .Trim('[', ']')
-                        .Split(',')
-                        .Select(v => ConvertString(v, ati.UnderlyingType))
-                        .ToArray();
-                case NullableTypeInfo nti:
-                    return item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType);
-                default:
-                    return Convert.ChangeType(item, typeInfo.EquivalentType, CultureInfo.InvariantCulture);
-            }
-        }
 
         private void ReadHeaders()
         {
@@ -67,7 +61,7 @@ namespace ClickHouse.Client.Readers
             FieldNames = new string[fieldCount];
 
             names.CopyTo(FieldNames, 0);
-            for (int i = 0; i < fieldCount; i++)
+            for (var i = 0; i < fieldCount; i++)
                 RawTypes[i] = TypeConverter.ParseClickHouseType(types[i]);
         }
     }

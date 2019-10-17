@@ -71,7 +71,7 @@ namespace ClickHouse.Client.Tests
             reader.EnsureFieldCount(2);
             var data = reader.GetEnsureSingleRow();
 
-            for (int i = 0; i < reader.FieldCount; i++)
+            for (var i = 0; i < reader.FieldCount; i++)
                 Assert.AreEqual("ASD", data[i]);
         }
 

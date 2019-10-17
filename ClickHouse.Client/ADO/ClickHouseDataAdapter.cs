@@ -18,7 +18,6 @@ namespace ClickHouse.Client.ADO
         public override int Update(DataSet dataSet) => base.Update(dataSet);
         protected override int AddToBatch(IDbCommand command) => base.AddToBatch(command);
         protected override void ClearBatch() => base.ClearBatch();
-        protected override DataAdapter CloneInternals() => base.CloneInternals();
         protected override RowUpdatedEventArgs CreateRowUpdatedEvent(DataRow dataRow, IDbCommand command, StatementType statementType, DataTableMapping tableMapping) => base.CreateRowUpdatedEvent(dataRow, command, statementType, tableMapping);
         protected override RowUpdatingEventArgs CreateRowUpdatingEvent(DataRow dataRow, IDbCommand command, StatementType statementType, DataTableMapping tableMapping) => base.CreateRowUpdatingEvent(dataRow, command, statementType, tableMapping);
         protected override DataTableMappingCollection CreateTableMappings() => base.CreateTableMappings();

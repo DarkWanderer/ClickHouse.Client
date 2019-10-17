@@ -91,7 +91,7 @@ namespace ClickHouse.Client.Readers
         public override int GetValues(object[] values)
         {
             if (CurrentRow == null)
-                throw new InvalidOperationException("Cannot get values before 'Read'");
+                throw new InvalidOperationException();
             CurrentRow.CopyTo(values, 0);
             return CurrentRow.Length;
         }
