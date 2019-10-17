@@ -1,14 +1,24 @@
 version: 0.{build}
 image: Ubuntu
 
-environment:
-  CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
-
 services:
 - docker
 
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+
+environment:
+  CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+
 build:
   verbosity: minimal
+  publish_nuget: true
 
 before_test:
 - docker run --network host -d --name clickhouse-server --ulimit nofile=262144:262144 yandex/clickhouse-server
