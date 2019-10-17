@@ -18,7 +18,7 @@ namespace ClickHouse.Client.Tests
         {
             // Developer override for Windows machine
             var devConnectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION") ??
-                (IsUnix ? "Host=localhost;Port=8123" : throw new InvalidOperationException("Must set CLICKHOUSE_CONNECTION variable on Windows"));
+                throw new InvalidOperationException("Must set CLICKHOUSE_CONNECTION pointing at ClickHouse server");
 
             var builder = new ClickHouseConnectionStringBuilder() { ConnectionString = devConnectionString };
             builder.Driver = driver; // Override driver with requested one

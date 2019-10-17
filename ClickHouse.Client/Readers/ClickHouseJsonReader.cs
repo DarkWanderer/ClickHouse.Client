@@ -17,7 +17,7 @@ namespace ClickHouse.Client
         private Type[] FieldTypes;
         private bool skipAdvancing = false;
 
-        public ClickHouseJsonReader(HttpResponseMessage httpResponse) : base(httpResponse)
+        public ClickHouseJsonReader(HttpResponseMessage httpResponse) : base(httpResponse) 
         {
             textReader = new StreamReader(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult());
             jsonReader = new JsonTextReader(textReader) { SupportMultipleContent = true, CloseInput = false };
@@ -32,7 +32,7 @@ namespace ClickHouse.Client
         public override int FieldCount => FieldTypes.Length;
 
         public override bool Read()
-        {
+        { 
             if (skipAdvancing)
             {
                 skipAdvancing = false;
@@ -81,7 +81,13 @@ namespace ClickHouse.Client
                     return base.ReadJson(reader, objectType, existingValue, serializer);
 
                 if (reader.TokenType == JsonToken.StartArray)
-                    return JToken.ReadFrom(reader).ToObject<object[]>();
+                {
+                    var array = JToken.ReadFrom(reader).ToObject<object[]>();
+                    for (int i = 0; i < array.Length; i++) // Hack, TODO: rewrite properly
+                        if (array[i] == null)
+                            array[i] = DBNull.Value;
+                    return array;
+                }
 
                 // if the next token is not an object
                 // then fall back on standard deserializer (strings, numbers etc.)

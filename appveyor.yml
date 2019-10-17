@@ -1,6 +1,9 @@
 version: 0.{build}
 image: Ubuntu
 
+environment:
+  CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+
 services:
 - docker
 

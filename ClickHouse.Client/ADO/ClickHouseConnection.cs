@@ -2,6 +2,8 @@
 using System.Data;
 using System.Data.Common;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -62,11 +64,13 @@ namespace ClickHouse.Client
 
         internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token)
         {
-            var httpContent = new StringContent(sqlQuery);
-            var response = await httpClient.PostAsync(serverUri, httpContent, token);
+            using var httpContent = new StringContent(sqlQuery);
+            using var postMessage = new HttpRequestMessage(HttpMethod.Post, serverUri);
+            postMessage.Headers.Authorization = AuthenticationHeader;
+            var response = await httpClient.PostAsync(serverUri, httpContent, token).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                var error = await response.Content.ReadAsStringAsync();
+                var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 throw new ClickHouseServerException(error);
             }
             return response;
@@ -75,6 +79,9 @@ namespace ClickHouse.Client
         internal ClickHouseConnectionDriver Driver { get; private set; }
 
         public override ConnectionState State => state;
+
+        private AuthenticationHeaderValue AuthenticationHeader => new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}")));
+
         public override void ChangeDatabase(string databaseName) => database = databaseName;
 
         public object Clone() => throw new NotImplementedException();
