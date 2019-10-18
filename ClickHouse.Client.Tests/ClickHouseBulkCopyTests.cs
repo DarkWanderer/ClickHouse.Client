@@ -17,7 +17,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldBulkCopyData()
         {
-            const int count = 3000000;
+            const int count = 300000; // Increase to run a performance test
             const string targetDatabase = "default";
             const string targetTable = "discard";
 
