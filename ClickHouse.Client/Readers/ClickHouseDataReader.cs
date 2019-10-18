@@ -108,7 +108,9 @@ namespace ClickHouse.Client.Readers
         {
             if (disposing)
             {
-                InputStream.Dispose();
+                using (InputStream)
+                using (ServerResponse)
+                { }
             }
         }
 

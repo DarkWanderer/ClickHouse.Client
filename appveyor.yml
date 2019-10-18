@@ -2,7 +2,8 @@ version: 0.{build}
 image: Ubuntu
 
 environment:
-  nuget_key:
+  CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+  NUGET_KEY:
     secure: n3cWbN9kLcg8FjeAiqxg5fBcRqo+s9M6v1cc7ABtMte1ukSDzNgwjds6ztXALQ0w
 
 services:
@@ -16,9 +17,6 @@ dotnet_csproj:
   assembly_version: '{version}'
   file_version: '{version}'
   informational_version: '{version}'
-
-environment:
-  CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
 build:
   verbosity: minimal

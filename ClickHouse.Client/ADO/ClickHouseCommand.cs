@@ -29,7 +29,7 @@ namespace ClickHouse.Client.ADO
         public override bool DesignTimeVisible { get; set; }
 
         public override UpdateRowSource UpdatedRowSource { get; set; }
-        public override ISite Site { get => base.Site; set => base.Site = value; }
+
         protected override DbConnection DbConnection
         {
             get => dbConnection;
@@ -122,16 +122,13 @@ namespace ClickHouse.Client.ADO
             }
 
             var result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token).ConfigureAwait(false);
-            ClickHouseDataReader reader = driver switch
+            return driver switch
             {
                 ClickHouseConnectionDriver.Binary => new ClickHouseBinaryReader(result),
                 ClickHouseConnectionDriver.JSON => new ClickHouseJsonReader(result),
                 ClickHouseConnectionDriver.TSV => new ClickHouseTsvReader(result),
                 _ => throw new NotSupportedException("Unknown driver: " + driver.ToString()),
             };
-            return reader;
         }
-
-        protected override object GetService(Type service) => base.GetService(service);
     }
 }
