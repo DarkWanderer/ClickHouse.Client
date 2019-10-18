@@ -137,7 +137,7 @@ namespace ClickHouse.Client.Tests
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT sleep(10)";
+            command.CommandText = "SELECT sleep(3)";
             var task = command.ExecuteScalarAsync();
             command.Cancel();
 
