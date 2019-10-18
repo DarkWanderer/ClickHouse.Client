@@ -11,14 +11,14 @@ namespace ClickHouse.Client.ADO
 
         public string Database
         {
-            get => base.TryGetValue("Database", out var value) ? value as string : string.Empty;
+            get => base.TryGetValue("Database", out var value) ? value as string : "default";
 
             set => this["Database"] = value;
         }
 
         public string Username
         {
-            get => base.TryGetValue("Username", out var value) ? value as string : string.Empty;
+            get => base.TryGetValue("Username", out var value) ? value as string : "default";
             set => this["Username"] = value;
         }
 

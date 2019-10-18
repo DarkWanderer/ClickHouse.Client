@@ -14,7 +14,7 @@ namespace ClickHouse.Client.Types
 
         static TypeConverter()
         {
-            // Bijective mappings
+
             // Unsigned integral types
             RegisterPlainTypeInfo<byte>(ClickHouseDataType.UInt8);
             RegisterPlainTypeInfo<ushort>(ClickHouseDataType.UInt16);
@@ -37,6 +37,11 @@ namespace ClickHouse.Client.Types
             // Date/datetime mappings
             RegisterPlainTypeInfo<DateTime>(ClickHouseDataType.DateTime);
             RegisterPlainTypeInfo<DateTime>(ClickHouseDataType.Date);
+
+            // Special 'nothing' type
+            var nti = new NothingTypeInfo();
+            simpleTypes.Add(ClickHouseDataType.Nothing, nti);
+            reverseMapping.Add(typeof(DBNull), nti);
 
             // complex types like FixedString/Array/Nested etc. are handled separately because they have extended parameters
         }

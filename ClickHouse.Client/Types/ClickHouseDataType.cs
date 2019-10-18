@@ -3,6 +3,8 @@
 #pragma warning disable CA1720 // Identifier contains type name
     public enum ClickHouseDataType
     {
+        Nothing,
+
         UInt8,
         UInt16,
         UInt32,

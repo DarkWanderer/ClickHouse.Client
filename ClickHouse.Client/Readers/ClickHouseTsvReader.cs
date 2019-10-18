@@ -37,17 +37,24 @@ namespace ClickHouse.Client.Readers
             return true;
         }
 
-        private object ConvertString(string item, TypeInfo typeInfo) => typeInfo switch
+        private object ConvertString(string item, TypeInfo typeInfo)
         {
-            ArrayTypeInfo ati => item
-                   .Trim('[', ']')
-                   .Split(',')
-                   .Select(v => ConvertString(v, ati.UnderlyingType))
-                   .ToArray(),
-            NullableTypeInfo nti => item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType),
-            _ => Convert.ChangeType(item, typeInfo.EquivalentType, CultureInfo.InvariantCulture),
-        };
-
+            switch (typeInfo)
+            {
+                case ArrayTypeInfo ati:
+                    return item
+                       .Trim('[', ']')
+                       .Split(',')
+                       .Select(v => ConvertString(v, ati.UnderlyingType))
+                       .ToArray();
+                case NothingTypeInfo ti:
+                    return item == "\\N" ? DBNull.Value : throw new InvalidOperationException();
+                case NullableTypeInfo nti:
+                    return item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType);
+                default:
+                    return Convert.ChangeType(item, typeInfo.EquivalentType, CultureInfo.InvariantCulture);
+            };
+        }
 
         private void ReadHeaders()
         {

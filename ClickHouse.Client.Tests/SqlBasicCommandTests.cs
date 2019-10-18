@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace ClickHouse.Client.Tests
 {
     [Parallelizable]
-    public abstract class SqlCommandsTestSuiteBase
+    public abstract class SqlBasicCommandTests
     {
         protected abstract ClickHouseConnectionDriver Driver { get; }
 
@@ -20,6 +20,15 @@ namespace ClickHouse.Client.Tests
             var command = connection.CreateCommand();
             command.CommandText = "SELECT 1";
             Assert.AreEqual(1, await command.ExecuteScalarAsync());
+        }
+
+        [Test]
+        public async Task ShouldSelectNull()
+        {
+            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT NULL";
+            Assert.AreEqual(DBNull.Value, await command.ExecuteScalarAsync());
         }
 
         [Test]
@@ -128,7 +137,7 @@ namespace ClickHouse.Client.Tests
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT sleep(5)";
+            command.CommandText = "SELECT sleep(10)";
             var task = command.ExecuteScalarAsync();
             command.Cancel();
 
@@ -144,15 +153,15 @@ namespace ClickHouse.Client.Tests
         }
     }
 
-    public class JsonDriverSqlQueryTestSuite : SqlCommandsTestSuiteBase
+    public class JsonDriverSqlQueryTestSuite : SqlBasicCommandTests
     {
         protected override ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.JSON;
     }
-    public class BinaryDriverSqlQueryTestSuite : SqlCommandsTestSuiteBase
+    public class BinaryDriverSqlQueryTestSuite : SqlBasicCommandTests
     {
         protected override ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.Binary;
     }
-    public class TsvDriverSqlQueryTestSuite : SqlCommandsTestSuiteBase
+    public class TsvDriverSqlQueryTestSuite : SqlBasicCommandTests
     {
         protected override ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.TSV;
     }
