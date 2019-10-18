@@ -6,6 +6,10 @@ environment:
   NUGET_KEY:
     secure: n3cWbN9kLcg8FjeAiqxg5fBcRqo+s9M6v1cc7ABtMte1ukSDzNgwjds6ztXALQ0w
 
+nuget:
+  project_feed: true
+  disable_publish_on_pr: true
+
 services:
 - docker
 
