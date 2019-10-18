@@ -1,6 +1,10 @@
 version: 0.{build}
 image: Ubuntu
 
+environment:
+  nuget_key:
+    secure: n3cWbN9kLcg8FjeAiqxg5fBcRqo+s9M6v1cc7ABtMte1ukSDzNgwjds6ztXALQ0w
+
 services:
 - docker
 
