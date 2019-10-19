@@ -94,7 +94,7 @@ namespace ClickHouse.Client.ADO
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
             postMessage.Headers.Authorization = AuthenticationHeader;
 
-            var response = await httpClient.SendAsync(postMessage).ConfigureAwait(false);
+            var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
