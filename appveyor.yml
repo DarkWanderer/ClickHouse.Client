@@ -25,6 +25,7 @@ dotnet_csproj:
 build:
   verbosity: minimal
   publish_nuget: true
+  include_nuget_references: true
 
 before_test:
 - docker run --network host -d --name clickhouse-server --ulimit nofile=262144:262144 yandex/clickhouse-server
