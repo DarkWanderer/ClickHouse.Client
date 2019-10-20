@@ -57,10 +57,7 @@ namespace ClickHouse.Client.Copy
         {
             var sb = new StringBuilder();
             foreach (var row in values)
-            {
-                sb.AppendJoin('\t', row);
-                sb.AppendLine();
-            }
+                sb.AppendLine(string.Join("\t", row));
 
             var query = $"INSERT INTO {DestinationTableName} FORMAT TabSeparated";
             using var reader = new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));

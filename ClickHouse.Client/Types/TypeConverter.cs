@@ -14,7 +14,6 @@ namespace ClickHouse.Client.Types
 
         static TypeConverter()
         {
-
             // Unsigned integral types
             RegisterPlainTypeInfo<byte>(ClickHouseDataType.UInt8);
             RegisterPlainTypeInfo<ushort>(ClickHouseDataType.UInt16);
@@ -56,9 +55,9 @@ namespace ClickHouse.Client.Types
 
         private static bool TryParseComposite(string type, out string composite, out string underlyingType)
         {
-            if (type.EndsWith(")", StringComparison.InvariantCulture) && type.Contains("(", StringComparison.InvariantCulture))
+            if (type.EndsWith(")", StringComparison.InvariantCulture) && type.Contains("("))
             {
-                var split = type.Remove(type.Length - 1).Split('(', 2, StringSplitOptions.RemoveEmptyEntries);
+                var split = type.Remove(type.Length - 1).Split(new[] { '(' }, 2, StringSplitOptions.RemoveEmptyEntries);
                 composite = split[0];
                 underlyingType = split[1];
                 return true;

@@ -43,7 +43,7 @@ namespace ClickHouse.Client.Readers
                 return false;
 
             var dictionary = serializer.Deserialize<Dictionary<string, object>>(jsonReader);
-            CurrentRow = FieldNames.Select(fn => dictionary.GetValueOrDefault(fn, null)).ToArray();
+            CurrentRow = MapDictionaryToFields(dictionary);
 
             return true;
         }
@@ -55,9 +55,23 @@ namespace ClickHouse.Client.Readers
             var dictionary = serializer.Deserialize<Dictionary<string, object>>(jsonReader);
             FieldNames = dictionary.Keys.ToArray();
 
-            CurrentRow = FieldNames.Select(fn => dictionary.GetValueOrDefault(fn, null)).ToArray();
+            CurrentRow = MapDictionaryToFields(dictionary);
             FieldTypes = CurrentRow.Select(v => v?.GetType() ?? typeof(object)).ToArray();
             skipAdvancing = true;
+        }
+
+        private object[] MapDictionaryToFields(IDictionary<string,object> dictionary)
+        {
+            var data = new object[FieldNames.Length];
+            for (int i = 0; i < data.Length; i++)
+            {
+                var key = FieldNames[i];
+                if (dictionary.ContainsKey(key))
+                    data[i] = dictionary[key];
+                else
+                    data[i] = null;
+            }
+            return data;
         }
 
         private class DatabaseValueConverter : CustomCreationConverter<IDictionary<string, object>>

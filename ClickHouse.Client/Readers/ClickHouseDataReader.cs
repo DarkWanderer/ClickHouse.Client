@@ -100,8 +100,6 @@ namespace ClickHouse.Client.Readers
 
         public override void Close() => Dispose();
 
-        public override Task CloseAsync() => base.CloseAsync();
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -109,8 +107,6 @@ namespace ClickHouse.Client.Readers
                 httpResponse?.Dispose();
             }
         }
-
-        public override ValueTask DisposeAsync() => base.DisposeAsync();
 
         protected override DbDataReader GetDbDataReader(int ordinal) => base.GetDbDataReader(ordinal);
 

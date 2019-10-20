@@ -44,8 +44,6 @@ namespace ClickHouse.Client.ADO
 
         public override void Cancel() => cts.Cancel();
 
-        public override ValueTask DisposeAsync() => base.DisposeAsync();
-
         public override int ExecuteNonQuery() => ExecuteNonQueryAsync(cts.Token).GetAwaiter().GetResult();
 
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
@@ -72,8 +70,6 @@ namespace ClickHouse.Client.ADO
         }
 
         public override void Prepare() { /* ClickHouse has no notion of prepared statements */ }
-
-        public override Task PrepareAsync(CancellationToken cancellationToken = default) => base.PrepareAsync(cancellationToken);
 
         protected override DbParameter CreateDbParameter() => throw new NotImplementedException();
 
