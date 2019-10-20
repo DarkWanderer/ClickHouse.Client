@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -167,13 +168,13 @@ namespace ClickHouse.Client.ADO
             public bool Compress
             {
                 get => parameterCollection.Get("compress") == "true";
-                set => parameterCollection.Set("compress", value.ToString());
+                set => parameterCollection.Set("compress", value.ToString(CultureInfo.InvariantCulture));
             }
 
             public bool Decompress
             {
                 get => parameterCollection.Get("decompress") == "true";
-                set => parameterCollection.Set("decompress", value.ToString());
+                set => parameterCollection.Set("decompress", value.ToString(CultureInfo.InvariantCulture));
             }
 
             public string SqlQuery

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using ClickHouse.Client.Properties;
 using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.Formats
 {
-    internal class RowBinaryWriter : IRowDataWriter
+    internal class RowBinaryWriter : IRowDataWriter, IDisposable
     {
         private readonly TypeInfo[] columnTypes;
         private readonly ExtendedBinaryWriter writer;
@@ -20,7 +21,7 @@ namespace ClickHouse.Client.Formats
         {
             var count = columnTypes.Length;
             if (row.Length != count)
-                throw new ArgumentException("Invalid number of items in row", nameof(row));
+                throw new ArgumentException(Resources.InvalidNumberOfColumnsInRowMessage, nameof(row));
             for (var i = 0; i < count; i++)
             {
                 var type = columnTypes[i];
@@ -69,7 +70,7 @@ namespace ClickHouse.Client.Formats
                     var stringInfo = (FixedStringTypeInfo)rawTypeInfo;
                     var buffer = Encoding.UTF8.GetBytes((string)data);
                     if (buffer.Length > stringInfo.Length)
-                        throw new InvalidOperationException("String is too large to fit in FixedString");
+                        throw new InvalidOperationException(Resources.StringIsTooLargeForFixedStringMessage);
                     writer.Write(buffer);
                     var delta = stringInfo.Length - buffer.Length;
                     for (var i = 0; i < delta; i++)
@@ -98,5 +99,9 @@ namespace ClickHouse.Client.Formats
             throw new NotImplementedException();
         }
 
+        public void Dispose()
+        {
+            writer?.Dispose();
+        }
     }
 }

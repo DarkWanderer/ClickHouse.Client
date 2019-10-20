@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
+using ClickHouse.Client.Properties;
 using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.Readers
@@ -68,7 +69,7 @@ namespace ClickHouse.Client.Readers
             CurrentRow = data;
             // infinite cycle prevention: if stream position did not move, something went wrong
             if (initialPosition == stream.Position)
-                throw new InvalidOperationException("Internal error: stale stream");
+                throw new InvalidOperationException(Resources.InternalErrorMessage);
             return true;
         }
 

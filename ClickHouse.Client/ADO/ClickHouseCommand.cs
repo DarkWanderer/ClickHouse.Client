@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ClickHouse.Client.Properties;
 using ClickHouse.Client.Readers;
 
 namespace ClickHouse.Client.ADO
@@ -98,7 +99,7 @@ namespace ClickHouse.Client.ADO
                     break;
                 case CommandBehavior.SchemaOnly:
                     if (driver == ClickHouseConnectionDriver.JSON)
-                        throw new NotSupportedException("JSON driver does not support fetching schema");
+                        throw new NotSupportedException(Resources.JsonDoesNotSupportSchemaMessage);
                     sqlBuilder.Append(" LIMIT 0");
                     break;
                 case CommandBehavior.CloseConnection:

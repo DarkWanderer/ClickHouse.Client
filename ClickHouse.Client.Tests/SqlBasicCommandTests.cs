@@ -127,7 +127,7 @@ namespace ClickHouse.Client.Tests
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
             command.CommandText = "SELECT toDate(now()), toDateTime(now())";
-            using var reader = command.ExecuteReader();
+            using var reader = await command.ExecuteReaderAsync();
             var data = reader.GetEnsureSingleRow();
         }
 

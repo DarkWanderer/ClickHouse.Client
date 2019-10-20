@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
+using ClickHouse.Client.Properties;
 
 namespace ClickHouse.Client.Copy
 {
@@ -31,7 +32,7 @@ namespace ClickHouse.Client.Copy
             if (reader is null)
                 throw new ArgumentNullException(nameof(reader));
             if (string.IsNullOrWhiteSpace(DestinationTableName))
-                throw new InvalidOperationException("Destination table not set");
+                throw new InvalidOperationException(Resources.DestinationTableNotSetMessage);
 
             var batch = new List<object[]>();
 
@@ -81,6 +82,10 @@ namespace ClickHouse.Client.Copy
         }
 
         // This code added to correctly implement the disposable pattern.
-        public void Dispose() => Dispose(true);
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }
