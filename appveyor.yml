@@ -22,10 +22,14 @@ dotnet_csproj:
   file_version: '{version}'
   informational_version: '{version}'
 
-build:
-  verbosity: minimal
-  publish_nuget: true
+build_script:
+- msbuild /t:Restore
+- msbuild
+- msbuild /t:Publish /p:Configuration=Release
 
 before_test:
 - docker run --network host -d --name clickhouse-server --ulimit nofile=262144:262144 yandex/clickhouse-server
 - sleep 3
+
+test_script:
+- dotnet test
