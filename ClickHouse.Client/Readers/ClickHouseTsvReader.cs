@@ -13,7 +13,7 @@ namespace ClickHouse.Client.Readers
 
         public ClickHouseTsvReader(HttpResponseMessage httpResponse) : base(httpResponse)
         {
-            inputReader = new StreamReader(InputStream);
+            inputReader = new StreamReader(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult());
             ReadHeaders();
         }
 
@@ -35,6 +35,15 @@ namespace ClickHouse.Client.Readers
             }
             CurrentRow = rowData;
             return true;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                inputReader.Dispose();
+            }
+            base.Dispose(disposing);
         }
 
         private object ConvertString(string item, TypeInfo typeInfo)

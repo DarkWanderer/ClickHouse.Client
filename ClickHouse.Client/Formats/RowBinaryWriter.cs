@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using ClickHouse.Client.Types;
@@ -22,7 +21,7 @@ namespace ClickHouse.Client.Formats
             var count = columnTypes.Length;
             if (row.Length != count)
                 throw new ArgumentException("Invalid number of items in row", nameof(row));
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 var type = columnTypes[i];
                 WriteItem(row[i], type);
@@ -73,9 +72,9 @@ namespace ClickHouse.Client.Formats
                         throw new InvalidOperationException("String is too large to fit in FixedString");
                     writer.Write(buffer);
                     var delta = stringInfo.Length - buffer.Length;
-                    for (int i = 0; i < delta; i++)
+                    for (var i = 0; i < delta; i++)
                         writer.Write((byte)0); // Add padding to reach the size of FixedString
-                        break;
+                    break;
                 case ClickHouseDataType.Array:
                     var arrayTypeInfo = (ArrayTypeInfo)rawTypeInfo;
                     var array = (object[])data;
@@ -86,7 +85,9 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseDataType.Nullable:
                     var nullableTypeInfo = (NullableTypeInfo)rawTypeInfo;
                     if (data == null || data is DBNull)
+                    {
                         writer.Write((byte)1);
+                    }
                     else
                     {
                         writer.Write((byte)0);

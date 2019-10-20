@@ -114,6 +114,13 @@ namespace ClickHouse.Client.Readers
                 case ClickHouseDataType.Nullable:
                     var nullableTypeInfo = (NullableTypeInfo)rawTypeInfo;
                     return reader.ReadByte() > 0 ? DBNull.Value : ReadBinaryDataType(reader, nullableTypeInfo.UnderlyingType);
+
+                case ClickHouseDataType.Date:
+                    var days = reader.ReadUInt16();
+                    return new DateTime(1970, 1, 1).AddDays(days);
+                case ClickHouseDataType.DateTime:
+                    var milliseconds = reader.ReadUInt32();
+                    return new DateTime(1970, 1, 1).AddMilliseconds(milliseconds);
             }
             throw new NotImplementedException();
         }
@@ -132,8 +139,8 @@ namespace ClickHouse.Client.Readers
             {
                 reader.Dispose();
                 stream.Dispose();
-                base.Dispose(disposing);
             }
+            base.Dispose(disposing);
         }
     }
 }

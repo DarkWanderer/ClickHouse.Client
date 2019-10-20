@@ -77,6 +77,7 @@ namespace ClickHouse.Client.Types
                     "Nullable" => new NullableTypeInfo() { UnderlyingType = ParseClickHouseType(underlyingType) },
                     "Array" => new ArrayTypeInfo() { UnderlyingType = ParseClickHouseType(underlyingType) },
                     "FixedString" => new FixedStringTypeInfo { Length = int.Parse(underlyingType, CultureInfo.InvariantCulture) },
+                    "DateTime" => DateTimeTypeInfo.ParseTimeZone(underlyingType),
                     _ => throw new ArgumentException("Unknown composite type: " + composite),
                 };
             }

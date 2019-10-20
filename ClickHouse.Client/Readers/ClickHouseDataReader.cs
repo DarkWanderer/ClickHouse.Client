@@ -13,13 +13,11 @@ namespace ClickHouse.Client.Readers
 {
     public abstract class ClickHouseDataReader : DbDataReader
     {
-        protected readonly HttpResponseMessage ServerResponse;
-        protected readonly Stream InputStream;
+        private readonly HttpResponseMessage httpResponse; // Used to dispose at the end of reader
 
         protected ClickHouseDataReader(HttpResponseMessage httpResponse)
         {
-            ServerResponse = httpResponse ?? throw new ArgumentNullException(nameof(httpResponse));
-            InputStream = httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+            this.httpResponse = httpResponse ?? throw new ArgumentNullException(nameof(httpResponse));
         }
 
         public override object this[int ordinal] => GetValue(ordinal);
@@ -52,15 +50,15 @@ namespace ClickHouse.Client.Readers
 
         public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => throw new NotImplementedException();
 
-        public override string GetDataTypeName(int ordinal) => throw new NotImplementedException();
+        public override string GetDataTypeName(int ordinal) => RawTypes[ordinal].ToString();
 
-        public override DateTime GetDateTime(int ordinal) => throw new NotImplementedException();
+        public override DateTime GetDateTime(int ordinal) => (DateTime)GetValue(ordinal);
 
         public override decimal GetDecimal(int ordinal) => Convert.ToDecimal(GetValue(ordinal), CultureInfo.InvariantCulture);
 
         public override double GetDouble(int ordinal) => Convert.ToDouble(GetValue(ordinal), CultureInfo.InvariantCulture);
 
-        public override IEnumerator GetEnumerator() => throw new NotImplementedException();
+        public override IEnumerator GetEnumerator() => CurrentRow.GetEnumerator();
 
         public override Type GetFieldType(int ordinal) => RawTypes[ordinal].EquivalentType;
 
@@ -100,7 +98,7 @@ namespace ClickHouse.Client.Readers
 
         public override bool NextResult() => throw new NotSupportedException();
 
-        public override void Close() => base.Close();
+        public override void Close() => Dispose();
 
         public override Task CloseAsync() => base.CloseAsync();
 
@@ -108,10 +106,9 @@ namespace ClickHouse.Client.Readers
         {
             if (disposing)
             {
-                using (InputStream)
-                using (ServerResponse)
-                { }
+                httpResponse?.Dispose();
             }
+            base.Dispose(disposing);
         }
 
         public override ValueTask DisposeAsync() => base.DisposeAsync();

@@ -116,9 +116,19 @@ namespace ClickHouse.Client.Tests
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
             command.CommandText = "SELECT array(1, 2, 3, 4, 5)";
-            var reader = await command.ExecuteReaderAsync();
+            using var reader = await command.ExecuteReaderAsync();
             var data = reader.GetEnsureSingleRow().Single() as object[];
             CollectionAssert.AreEqual(new[] { 1, 2, 3, 4, 5 }, data);
+        }
+
+        [Test]
+        public async Task ShouldSelectDateTime()
+        {
+            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT toDate(now()), toDateTime(now())";
+            using var reader = command.ExecuteReader();
+            var data = reader.GetEnsureSingleRow();
         }
 
         [Test]
@@ -127,7 +137,7 @@ namespace ClickHouse.Client.Tests
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
             command.CommandText = "SELECT array(1, 2, 3, NULL)";
-            var reader = await command.ExecuteReaderAsync();
+            using var reader = await command.ExecuteReaderAsync();
             var data = reader.GetEnsureSingleRow().Single() as object[];
             CollectionAssert.AreEqual(new object[] { 1, 2, 3, DBNull.Value }, data);
         }

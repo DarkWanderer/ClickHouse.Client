@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Threading;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Copy;
@@ -17,7 +13,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldBulkCopyData()
         {
-            const int count = 10000000; // Increase to run a performance test
+            const int count = 500000; // Increase this number to use in profiling
             const string targetDatabase = "default";
             const string targetTable = "discard";
 
@@ -25,7 +21,7 @@ namespace ClickHouse.Client.Tests
             using var sourceConnection = TestUtilities.GetTestClickHouseConnection(Driver, true);
             using var targetConnection = TestUtilities.GetTestClickHouseConnection(Driver, true);
             targetConnection.ChangeDatabase(targetDatabase);
-            
+
             using var tcommand = targetConnection.CreateCommand();
             tcommand.CommandText = $"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE Null";
             tcommand.ExecuteNonQuery(); // Create target table

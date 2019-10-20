@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,9 +36,9 @@ namespace ClickHouse.Client.Copy
             var batch = new List<object[]>();
 
             async Task Flush()
-            { 
-                await PushBatch(batch, token).ConfigureAwait(false); 
-                batch.Clear(); 
+            {
+                await PushBatch(batch, token).ConfigureAwait(false);
+                batch.Clear();
             }
 
             while (reader.Read())
@@ -82,9 +81,6 @@ namespace ClickHouse.Client.Copy
         }
 
         // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            Dispose(true);
-        }
+        public void Dispose() => Dispose(true);
     }
 }
