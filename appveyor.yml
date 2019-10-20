@@ -24,14 +24,14 @@ dotnet_csproj:
 
 build_script:
 - dotnet restore
-- msbuild /p:Configuration=Release
+- msbuild /p:Configuration=Release -verbosity:minimal
 
 before_test:
 - docker run --network host -d --name clickhouse-server --ulimit nofile=262144:262144 yandex/clickhouse-server
 - sleep 3
 
 test_script:
-- dotnet test
+- nunit-console test /home/appveyor/projects/clickhouse-client/ClickHouse.Client.Tests/bin/Debug/netcoreapp3.0/ClickHouse.Client.Tests.dll
 
 after_test:
 - dotnet pack --no-build --include-source
