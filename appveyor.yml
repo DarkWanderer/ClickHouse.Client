@@ -33,5 +33,6 @@ before_test:
 test_script:
 - dotnet test --framework netcoreapp3.0
 
-after_test:
-- dotnet pack --no-build --include-source
+artifacts:
+- path: '**/*.nupkg'
+  name: NuGet
