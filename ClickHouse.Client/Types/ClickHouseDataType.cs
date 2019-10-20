@@ -24,8 +24,11 @@
         String,
         FixedString,
 
+        UUID,
+
         Array,
         Nested,
+        Tuple,
         Nullable
     }
 #pragma warning restore CA1720 // Identifier contains type name

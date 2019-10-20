@@ -11,9 +11,13 @@ namespace ClickHouse.Client.ADO
         protected override bool CanRaiseEvents => base.CanRaiseEvents;
 
         public override int Fill(DataSet dataSet) => base.Fill(dataSet);
+
         public override DataTable[] FillSchema(DataSet dataSet, SchemaType schemaType) => base.FillSchema(dataSet, schemaType);
+
         public override IDataParameter[] GetFillParameters() => base.GetFillParameters();
+
         public override bool ShouldSerializeAcceptChangesDuringFill() => base.ShouldSerializeAcceptChangesDuringFill();
+
         public override bool ShouldSerializeFillLoadOption() => base.ShouldSerializeFillLoadOption();
         public override int Update(DataSet dataSet) => base.Update(dataSet);
         protected override int AddToBatch(IDbCommand command) => base.AddToBatch(command);

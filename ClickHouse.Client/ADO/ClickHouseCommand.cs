@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ClickHouse.Client.ADO.Parameters;
 using ClickHouse.Client.Properties;
 using ClickHouse.Client.Readers;
 
@@ -71,7 +72,12 @@ namespace ClickHouse.Client.ADO
 
         public override void Prepare() { /* ClickHouse has no notion of prepared statements */ }
 
-        protected override DbParameter CreateDbParameter() => throw new NotImplementedException();
+        protected override DbParameter CreateDbParameter()
+        {
+            var parameter = new ClickHouseDbParameter();
+            DbParameterCollection.Add(parameter);
+            return parameter;
+        }
 
         protected override void Dispose(bool disposing)
         {

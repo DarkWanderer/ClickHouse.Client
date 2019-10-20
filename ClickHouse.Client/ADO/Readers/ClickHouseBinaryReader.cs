@@ -44,8 +44,7 @@ namespace ClickHouse.Client.Readers
 
         private static string ReadFixedStringBinary(BinaryReader reader, int length)
         {
-            var bytes = new byte[length];
-            reader.Read(bytes, 0, length);
+            var bytes = reader.ReadBytes(length);
             return Encoding.UTF8.GetString(bytes);
         }
 
@@ -118,10 +117,28 @@ namespace ClickHouse.Client.Readers
 
                 case ClickHouseDataType.Date:
                     var days = reader.ReadUInt16();
-                    return new DateTime(1970, 1, 1).AddDays(days);
+                    return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddDays(days);
                 case ClickHouseDataType.DateTime:
                     var milliseconds = reader.ReadUInt32();
-                    return new DateTime(1970, 1, 1).AddMilliseconds(milliseconds);
+                    return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(milliseconds);
+
+                case ClickHouseDataType.UUID:
+                    // Weird byte manipulation because of C#'s strange Guid implementation
+                    var bytes = new byte[16];
+                    reader.Read(bytes, 6, 2);
+                    reader.Read(bytes, 4, 2);
+                    reader.Read(bytes, 0, 4);
+                    reader.Read(bytes, 8, 8);
+                    Array.Reverse(bytes, 8, 8);
+                    return new Guid(bytes);
+
+                case ClickHouseDataType.Tuple:
+                    var tupleTypeInfo = (TupleTypeInfo)rawTypeInfo;
+                    var count = tupleTypeInfo.UnderlyingTypes.Length;
+                    var contents = new object[count];
+                    for (int i = 0; i < count; i++)
+                        contents[i] = ReadBinaryDataType(reader, tupleTypeInfo.UnderlyingTypes[i]);
+                    return contents;
             }
             throw new NotImplementedException();
         }

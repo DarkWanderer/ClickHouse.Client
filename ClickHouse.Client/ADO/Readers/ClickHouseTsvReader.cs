@@ -54,10 +54,22 @@ namespace ClickHouse.Client.Readers
                       .Split(',')
                       .Select(v => ConvertString(v, ati.UnderlyingType))
                       .ToArray(),
+                TupleTypeInfo tti => ParseTuple(item, tti),
                 NothingTypeInfo ti => item == "\\N" ? DBNull.Value : throw new InvalidOperationException(),
                 NullableTypeInfo nti => item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType),
                 _ => Convert.ChangeType(item, typeInfo.EquivalentType, CultureInfo.InvariantCulture),
             };
+        }
+
+        private object[] ParseTuple(string item, TupleTypeInfo tti)
+        {
+            var trimmed = item.Substring(1).Remove(item.Length - 2);
+            var types = tti.UnderlyingTypes;
+            var items = trimmed.Split(',');
+            var result = new object[types.Length];
+            for (int i = 0; i < types.Length; i++)
+                result[i] = ConvertString(items[i].Trim('\''), types[i]);
+            return result;
         }
 
         private void ReadHeaders()

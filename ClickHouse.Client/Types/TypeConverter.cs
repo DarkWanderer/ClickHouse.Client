@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("ClickHouse.Client.Tests")] // assembly-level tag to expose below classes to tests
@@ -36,6 +37,8 @@ namespace ClickHouse.Client.Types
             // Date/datetime mappings
             RegisterPlainTypeInfo<DateTime>(ClickHouseDataType.DateTime);
             RegisterPlainTypeInfo<DateTime>(ClickHouseDataType.Date);
+
+            RegisterPlainTypeInfo<Guid>(ClickHouseDataType.UUID);
 
             // Special 'nothing' type
             var nti = new NothingTypeInfo();
@@ -73,23 +76,17 @@ namespace ClickHouse.Client.Types
             {
                 return composite switch
                 {
-                    "Nullable" => new NullableTypeInfo() { UnderlyingType = ParseClickHouseType(underlyingType) },
-                    "Array" => new ArrayTypeInfo() { UnderlyingType = ParseClickHouseType(underlyingType) },
+                    "Nullable" => new NullableTypeInfo { UnderlyingType = ParseClickHouseType(underlyingType) },
+                    "Array" => new ArrayTypeInfo { UnderlyingType = ParseClickHouseType(underlyingType) },
                     "FixedString" => new FixedStringTypeInfo { Length = int.Parse(underlyingType, CultureInfo.InvariantCulture) },
                     "DateTime" => DateTimeTypeInfo.ParseTimeZone(underlyingType),
+                    "Tuple" => new TupleTypeInfo { UnderlyingTypes = underlyingType.Split(',').Select(s => s.Trim()).Select(ParseClickHouseType).ToArray() },
                     _ => throw new ArgumentException("Unknown composite type: " + composite),
                 };
             }
             if (Enum.TryParse<ClickHouseDataType>(type, out var chType) && simpleTypes.TryGetValue(chType, out var typeInfo))
                 return typeInfo;
-            throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type);
-        }
-
-        public static TypeInfo GetSimpleTypeInfo(string type)
-        {
-            if (Enum.TryParse<ClickHouseDataType>(type, out var chType) && simpleTypes.TryGetValue(chType, out var typeInfo))
-                return typeInfo;
-            throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type);
+            throw new ArgumentOutOfRangeException("Unknown type: " + type);
         }
 
         /// <summary>
