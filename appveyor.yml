@@ -23,6 +23,7 @@ dotnet_csproj:
   informational_version: '{version}'
 
 build_script:
+- dotnet restore
 - msbuild /p:Configuration=Release
 
 before_test:
@@ -31,3 +32,6 @@ before_test:
 
 test_script:
 - dotnet test
+
+after_test:
+- dotnet pack --no-build --include-source
