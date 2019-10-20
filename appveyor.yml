@@ -23,7 +23,7 @@ dotnet_csproj:
   informational_version: '{version}'
 
 build_script:
-- msbuild /t:Restore;Build /p:Configuration=Release
+- msbuild /p:Configuration=Release
 
 before_test:
 - docker run --network host -d --name clickhouse-server --ulimit nofile=262144:262144 yandex/clickhouse-server
