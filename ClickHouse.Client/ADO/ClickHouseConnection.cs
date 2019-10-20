@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Data;
 using System.Data.Common;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -14,12 +15,15 @@ namespace ClickHouse.Client.ADO
 {
     public class ClickHouseConnection : DbConnection, ICloneable
     {
-        private static readonly HttpClient httpClient = new HttpClient();
+        private static readonly HttpClientHandler handler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+        private static readonly HttpClient httpClient = new HttpClient(handler);
+
         private ConnectionState state = ConnectionState.Closed;
         private string serverVersion;
         private string database = "default";
         private string username;
         private string password;
+        private bool useCompression;
         private Uri serverUri;
 
         public ClickHouseConnection()
@@ -43,7 +47,8 @@ namespace ClickHouse.Client.ADO
                     Password = password,
                     Host = serverUri?.Host,
                     Port = (ushort)serverUri?.Port,
-                    Driver = Driver
+                    Driver = Driver,
+                    Compression = useCompression
                 };
                 return builder.ToString();
             }
@@ -55,6 +60,7 @@ namespace ClickHouse.Client.ADO
                 username = builder.Username;
                 password = builder.Password;
                 serverUri = new UriBuilder("http", builder.Host, builder.Port).Uri;
+                useCompression = builder.Compression;
                 Driver = builder.Driver;
             }
         }
@@ -68,7 +74,8 @@ namespace ClickHouse.Client.ADO
         internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token)
         {
             var uriBuilder = new UriBuilder(serverUri);
-            uriBuilder.Query = (new NameValueCollection() { { "database", database } }).ToString();
+            var queryParameters = new HttpQueryParameters() { Database = database, Compress = useCompression };
+            uriBuilder.Query = queryParameters.ToString();
 
             using var httpContent = new StringContent(sqlQuery);
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
@@ -85,10 +92,13 @@ namespace ClickHouse.Client.ADO
         internal async Task<HttpResponseMessage> PostBulkDataAsync(string sql, Stream data, CancellationToken token)
         {
             var uriBuilder = new UriBuilder(serverUri);
-            var query = HttpUtility.ParseQueryString(uriBuilder.Query);
-            query.Add("query", sql);
-            query.Add("database", database);
-            uriBuilder.Query = Uri.EscapeUriString(HttpUtility.UrlDecode(query.ToString()));
+            var queryParameters = new HttpQueryParameters()
+            {
+                SqlQuery = sql,
+                Database = database,
+                Compress = useCompression
+            };
+            uriBuilder.Query = queryParameters.ToString();
 
             using var httpContent = new StreamContent(data);
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
@@ -136,5 +146,43 @@ namespace ClickHouse.Client.ADO
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
 
         protected override DbCommand CreateDbCommand() => new ClickHouseCommand(this);
+
+        private class HttpQueryParameters
+        {
+            private readonly NameValueCollection parameterCollection;
+
+            public HttpQueryParameters() : this("") { }
+
+            public HttpQueryParameters(string query)
+            {
+                parameterCollection = HttpUtility.ParseQueryString(query);
+            }
+
+            public string Database
+            {
+                get => parameterCollection.Get("database");
+                set => parameterCollection.Set("database", value);
+            }
+
+            public bool Compress
+            {
+                get => parameterCollection.Get("compress") == "true";
+                set => parameterCollection.Set("compress", value.ToString());
+            }
+
+            public bool Decompress
+            {
+                get => parameterCollection.Get("decompress") == "true";
+                set => parameterCollection.Set("decompress", value.ToString());
+            }
+
+            public string SqlQuery
+            {
+                get => parameterCollection.Get("query");
+                set => parameterCollection.Set("query", value);
+            }
+
+            public override string ToString() => Uri.EscapeUriString(HttpUtility.UrlDecode(parameterCollection.ToString()));
+        }
     }
 }

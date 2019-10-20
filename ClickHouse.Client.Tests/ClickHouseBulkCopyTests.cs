@@ -17,13 +17,13 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldBulkCopyData()
         {
-            const int count = 300000; // Increase to run a performance test
+            const int count = 10000000; // Increase to run a performance test
             const string targetDatabase = "default";
             const string targetTable = "discard";
 
             var stopwatch = new Stopwatch();
-            using var sourceConnection = TestUtilities.GetTestClickHouseConnection(Driver);
-            using var targetConnection = TestUtilities.GetTestClickHouseConnection(Driver);
+            using var sourceConnection = TestUtilities.GetTestClickHouseConnection(Driver, true);
+            using var targetConnection = TestUtilities.GetTestClickHouseConnection(Driver, true);
             targetConnection.ChangeDatabase(targetDatabase);
             
             using var tcommand = targetConnection.CreateCommand();
@@ -42,7 +42,7 @@ namespace ClickHouse.Client.Tests
             };
 
             stopwatch.Start();
-            await bulkCopyInterface.WriteToServerAsync(reader, CancellationToken.None);
+            await bulkCopyInterface.WriteToServerAsync(reader);
             stopwatch.Stop();
 
             var rps = (double)count / stopwatch.ElapsedMilliseconds * 1000;

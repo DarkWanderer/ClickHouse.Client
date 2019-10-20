@@ -34,6 +34,12 @@ namespace ClickHouse.Client.ADO
             set => this["Host"] = value;
         }
 
+        public bool Compression
+        {
+            get => base.TryGetValue("Compression", out var value) ? (value as string) == "true" : false;
+            set => this["Compression"] = value;
+        }
+
         public ushort Port
         {
             get

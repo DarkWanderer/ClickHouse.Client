@@ -13,7 +13,7 @@ namespace ClickHouse.Client.Tests
         /// </summary>
         /// <param name="driver">Type of ClickHouse driver to use</param>
         /// <returns></returns>
-        public static ClickHouseConnection GetTestClickHouseConnection(ClickHouseConnectionDriver driver)
+        public static ClickHouseConnection GetTestClickHouseConnection(ClickHouseConnectionDriver driver, bool compression = false)
         {
             // Developer override for Windows machine
             var devConnectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION") ??
@@ -21,6 +21,7 @@ namespace ClickHouse.Client.Tests
 
             var builder = new ClickHouseConnectionStringBuilder() { ConnectionString = devConnectionString };
             builder.Driver = driver; // Override driver with requested one
+            builder.Compression = compression;
             return new ClickHouseConnection(builder.ConnectionString);
         }
 

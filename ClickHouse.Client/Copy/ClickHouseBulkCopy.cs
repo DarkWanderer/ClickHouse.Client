@@ -25,6 +25,8 @@ namespace ClickHouse.Client.Copy
 
         public string DestinationTableName { get; set; }
 
+        public Task WriteToServerAsync(IDataReader reader) => WriteToServerAsync(reader, CancellationToken.None);
+
         public async Task WriteToServerAsync(IDataReader reader, CancellationToken token)
         {
             if (reader is null)
@@ -53,10 +55,15 @@ namespace ClickHouse.Client.Copy
 
         private async Task PushBatch(List<object[]> values, CancellationToken token)
         {
-            var query = $"INSERT INTO {DestinationTableName} FORMAT TabSeparated";
-            var data = string.Join('\n', values.Select(row => string.Join('\t', row)));
+            var sb = new StringBuilder();
+            foreach (var row in values)
+            {
+                sb.AppendJoin('\t', row);
+                sb.AppendLine();
+            }
 
-            using var reader = new MemoryStream(Encoding.UTF8.GetBytes(data));
+            var query = $"INSERT INTO {DestinationTableName} FORMAT TabSeparated";
+            using var reader = new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
             await connection.PostBulkDataAsync(query, reader, token).ConfigureAwait(false);
         }
 

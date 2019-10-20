@@ -11,62 +11,50 @@ namespace ClickHouse.Client.Readers
     internal class ClickHouseBinaryReader : ClickHouseDataReader
     {
         private readonly Stream stream;
+        private readonly ExtendedBinaryReader reader;
 
         public ClickHouseBinaryReader(HttpResponseMessage httpResponse) : base(httpResponse)
         {
             stream = httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+            reader = new ExtendedBinaryReader(stream);
             ReadHeaders();
         }
 
         private void ReadHeaders()
         {
-            var count = ReadLEB128Integer(stream);
+            var count = reader.Read7BitEncodedInt();
             FieldNames = new string[count];
             RawTypes = new TypeInfo[count];
 
             for (var i = 0; i < count; i++)
-                FieldNames[i] = ReadStringBinary(stream);
+                FieldNames[i] = ReadStringBinary(reader);
             for (var i = 0; i < count; i++)
             {
-                var chType = ReadStringBinary(stream);
+                var chType = ReadStringBinary(reader);
                 RawTypes[i] = TypeConverter.ParseClickHouseType(chType);
             }
         }
 
-        private static int ReadLEB128Integer(Stream stream)
+        private static string ReadStringBinary(ExtendedBinaryReader reader)
         {
-            var result = 0;
-            byte shift = 0;
-            while (true)
-            {
-                var @byte = stream.ReadByte();
-                if (@byte < 0)
-                    throw new InvalidOperationException();
-                result |= (@byte & 0x7F) << shift;
-                if ((@byte & 0x80) == 0)
-                    break;
-                shift += 7;
-            }
-            return result;
+            var length = reader.Read7BitEncodedInt();
+            return ReadFixedStringBinary(reader, length);
         }
 
-        private static string ReadStringBinary(Stream stream)
-        {
-            var length = ReadLEB128Integer(stream);
-            return ReadFixedStringBinary(stream, length);
-        }
-        private static string ReadFixedStringBinary(Stream stream, int length)
+        private static string ReadFixedStringBinary(BinaryReader reader, int length)
         {
             var bytes = new byte[length];
-            stream.Read(bytes, 0, length);
+            reader.Read(bytes, 0, length);
             return Encoding.UTF8.GetString(bytes);
         }
 
-        public override bool HasRows => stream.Position < stream.Length;
+        private bool StreamHasMoreData => stream.Position < stream.Length;
+
+        public override bool HasRows => StreamHasMoreData;
 
         public override bool Read()
         {
-            if (stream.Position >= stream.Length)
+            if (!StreamHasMoreData)
                 return false;
 
             var initialPosition = stream.Position;
@@ -75,7 +63,7 @@ namespace ClickHouse.Client.Readers
             for (var i = 0; i < count; i++)
             {
                 var rawTypeInfo = RawTypes[i];
-                data[i] = ReadBinaryDataType(stream, rawTypeInfo);
+                data[i] = ReadBinaryDataType(reader, rawTypeInfo);
             }
             CurrentRow = data;
             // infinite cycle prevention: if stream position did not move, something went wrong
@@ -84,49 +72,48 @@ namespace ClickHouse.Client.Readers
             return true;
         }
 
-        private static object ReadBinaryDataType(Stream stream, TypeInfo rawTypeInfo)
+        private static object ReadBinaryDataType(ExtendedBinaryReader reader, TypeInfo rawTypeInfo)
         {
             switch (rawTypeInfo.DataType)
             {
                 case ClickHouseDataType.UInt8:
-                    return (byte)stream.ReadByte();
+                    return reader.ReadByte();
                 case ClickHouseDataType.UInt16:
-                    return BitConverter.ToUInt16(ReadBytesForType<ushort>(stream), 0);
+                    return reader.ReadUInt16();
                 case ClickHouseDataType.UInt32:
-                    return BitConverter.ToUInt32(ReadBytesForType<uint>(stream), 0);
+                    return reader.ReadUInt32();
                 case ClickHouseDataType.UInt64:
-                    return BitConverter.ToUInt64(ReadBytesForType<ulong>(stream), 0);
+                    return reader.ReadUInt64();
 
                 case ClickHouseDataType.Int8:
-                    return (sbyte)stream.ReadByte();
+                    return reader.ReadSByte();
                 case ClickHouseDataType.Int16:
-                    return BitConverter.ToInt16(ReadBytesForType<short>(stream), 0);
+                    return reader.ReadInt16();
                 case ClickHouseDataType.Int32:
-                    return BitConverter.ToInt32(ReadBytesForType<int>(stream), 0);
+                    return reader.ReadInt32();
                 case ClickHouseDataType.Int64:
-                    return BitConverter.ToInt64(ReadBytesForType<long>(stream), 0);
+                    return reader.ReadInt64();
 
                 case ClickHouseDataType.Float32:
-                    return BitConverter.ToSingle(ReadBytesForType<float>(stream), 0);
+                    return reader.ReadSingle();
                 case ClickHouseDataType.Float64:
-                    return BitConverter.ToDouble(ReadBytesForType<double>(stream), 0);
-
+                    return reader.ReadDouble();
                 case ClickHouseDataType.String:
-                    return ReadStringBinary(stream);
+                    return reader.ReadString();
                 case ClickHouseDataType.FixedString:
                     var stringInfo = (FixedStringTypeInfo)rawTypeInfo;
-                    return ReadFixedStringBinary(stream, stringInfo.Length);
+                    return ReadFixedStringBinary(reader, stringInfo.Length);
 
                 case ClickHouseDataType.Array:
                     var arrayTypeInfo = (ArrayTypeInfo)rawTypeInfo;
-                    var length = ReadLEB128Integer(stream);
+                    var length = reader.Read7BitEncodedInt();
                     var data = new object[length];
                     for (var i = 0; i < length; i++)
-                        data[i] = ReadBinaryDataType(stream, arrayTypeInfo.UnderlyingType);
+                        data[i] = ReadBinaryDataType(reader, arrayTypeInfo.UnderlyingType);
                     return data;
                 case ClickHouseDataType.Nullable:
                     var nullableTypeInfo = (NullableTypeInfo)rawTypeInfo;
-                    return (byte)stream.ReadByte() > 0 ? DBNull.Value : ReadBinaryDataType(stream, nullableTypeInfo.UnderlyingType);
+                    return reader.ReadByte() > 0 ? DBNull.Value : ReadBinaryDataType(reader, nullableTypeInfo.UnderlyingType);
             }
             throw new NotImplementedException();
         }
@@ -139,5 +126,14 @@ namespace ClickHouse.Client.Readers
             return bytes;
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                reader.Dispose();
+                stream.Dispose();
+                base.Dispose(disposing);
+            }
+        }
     }
 }
