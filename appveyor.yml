@@ -31,7 +31,7 @@ before_test:
 - sleep 3
 
 test_script:
-- nunit-console test /home/appveyor/projects/clickhouse-client/ClickHouse.Client.Tests/bin/Debug/netcoreapp3.0/ClickHouse.Client.Tests.dll
+- dotnet test --framework netcoreapp3.0
 
 after_test:
 - dotnet pack --no-build --include-source
