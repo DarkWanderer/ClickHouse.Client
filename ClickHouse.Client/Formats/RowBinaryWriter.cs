@@ -99,9 +99,6 @@ namespace ClickHouse.Client.Formats
             throw new NotImplementedException();
         }
 
-        public void Dispose()
-        {
-            writer?.Dispose();
-        }
+        public void Dispose() => writer?.Dispose();
     }
 }

@@ -60,10 +60,10 @@ namespace ClickHouse.Client.Readers
             skipAdvancing = true;
         }
 
-        private object[] MapDictionaryToFields(IDictionary<string,object> dictionary)
+        private object[] MapDictionaryToFields(IDictionary<string, object> dictionary)
         {
             var data = new object[FieldNames.Length];
-            for (int i = 0; i < data.Length; i++)
+            for (var i = 0; i < data.Length; i++)
             {
                 var key = FieldNames[i];
                 if (dictionary.ContainsKey(key))

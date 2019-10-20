@@ -47,20 +47,16 @@ namespace ClickHouse.Client.Readers
 
         private object ConvertString(string item, TypeInfo typeInfo)
         {
-            switch (typeInfo)
+            return typeInfo switch
             {
-                case ArrayTypeInfo ati:
-                    return item
-                       .Trim('[', ']')
-                       .Split(',')
-                       .Select(v => ConvertString(v, ati.UnderlyingType))
-                       .ToArray();
-                case NothingTypeInfo ti:
-                    return item == "\\N" ? DBNull.Value : throw new InvalidOperationException();
-                case NullableTypeInfo nti:
-                    return item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType);
-                default:
-                    return Convert.ChangeType(item, typeInfo.EquivalentType, CultureInfo.InvariantCulture);
+                ArrayTypeInfo ati => item
+                      .Trim('[', ']')
+                      .Split(',')
+                      .Select(v => ConvertString(v, ati.UnderlyingType))
+                      .ToArray(),
+                NothingTypeInfo ti => item == "\\N" ? DBNull.Value : throw new InvalidOperationException(),
+                NullableTypeInfo nti => item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType),
+                _ => Convert.ChangeType(item, typeInfo.EquivalentType, CultureInfo.InvariantCulture),
             };
         }
 

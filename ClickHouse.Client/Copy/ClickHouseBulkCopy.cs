@@ -21,8 +21,6 @@ namespace ClickHouse.Client.Copy
 
         public int BatchSize { get; set; } = 50000;
 
-        public TimeSpan BulkCopyTimeout { get; set; }
-
         public string DestinationTableName { get; set; }
 
         public Task WriteToServerAsync(IDataReader reader) => WriteToServerAsync(reader, CancellationToken.None);
@@ -44,6 +42,7 @@ namespace ClickHouse.Client.Copy
 
             while (reader.Read())
             {
+                token.ThrowIfCancellationRequested();
                 var values = new object[reader.FieldCount];
                 reader.GetValues(values);
                 batch.Add(values);
@@ -68,12 +67,9 @@ namespace ClickHouse.Client.Copy
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (!disposed && disposing)
             {
-                if (disposing)
-                {
-                    connection?.Dispose();
-                }
+                connection?.Dispose();
                 disposed = true;
             }
         }

@@ -126,14 +126,6 @@ namespace ClickHouse.Client.Readers
             throw new NotImplementedException();
         }
 
-        private static byte[] ReadBytesForType<T>(Stream stream) where T : struct
-        {
-            var length = Marshal.SizeOf<T>();
-            var bytes = new byte[length];
-            stream.Read(bytes, 0, length);
-            return bytes;
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
