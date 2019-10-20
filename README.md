@@ -2,10 +2,13 @@
 
 .NET ADO.NET driver for ClickHouse
 
-Key features:
+[![License](https://img.shields.io/github/license/DarkWanderer/ClickHouse.Client?style=plastic)](https://github.com/DarkWanderer/ClickHouse.Client/blob/master/LICENSE)
+[![Build status](https://img.shields.io/appveyor/ci/DarkWanderer/clickhouse-client/master?style=plastic)](https://ci.appveyor.com/project/DarkWanderer/clickhouse-client/branch/master)
+[![NuGet status](https://img.shields.io/nuget/dt/ClickHouse.Client?style=plastic)](https://www.nuget.org/packages/ClickHouse.Client/)
+
+## Key features
 
 * Uses HTTP protocol internally, so is version-agnostic with respect to server
 * Supports Binary, JSON, TSV protocols (selectable via Driver connection string parameter)
 * Has a 'bulk copy' interface with up to 2 million values per second performance
 
-[![Build status](https://ci.appveyor.com/api/projects/status/2tex8lslgd93ha9l/branch/master?svg=true)](https://ci.appveyor.com/project/DarkWanderer/clickhouse-client/branch/master)
