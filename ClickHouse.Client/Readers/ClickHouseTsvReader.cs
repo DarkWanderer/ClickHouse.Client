@@ -43,7 +43,6 @@ namespace ClickHouse.Client.Readers
             {
                 inputReader.Dispose();
             }
-            base.Dispose(disposing);
         }
 
         private object ConvertString(string item, TypeInfo typeInfo)

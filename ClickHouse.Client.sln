@@ -3,13 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29318.209
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.Client", "ClickHouse.Client\ClickHouse.Client.csproj", "{8AF494DB-67AD-4A3D-8B54-513A968AFAD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClickHouse.Client", "ClickHouse.Client\ClickHouse.Client.csproj", "{8AF494DB-67AD-4A3D-8B54-513A968AFAD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.Client.Tests", "ClickHouse.Client.Tests\ClickHouse.Client.Tests.csproj", "{0FAA543E-0480-490A-90DA-A6C6AC9ACC50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClickHouse.Client.Tests", "ClickHouse.Client.Tests\ClickHouse.Client.Tests.csproj", "{0FAA543E-0480-490A-90DA-A6C6AC9ACC50}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F53FBE79-8B86-47CE-B93C-70137FF29384}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
+		README.md = README.md
 	EndProjectSection
 EndProject
 Global

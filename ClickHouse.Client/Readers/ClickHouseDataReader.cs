@@ -108,7 +108,6 @@ namespace ClickHouse.Client.Readers
             {
                 httpResponse?.Dispose();
             }
-            base.Dispose(disposing);
         }
 
         public override ValueTask DisposeAsync() => base.DisposeAsync();
