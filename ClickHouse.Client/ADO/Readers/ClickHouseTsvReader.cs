@@ -31,7 +31,10 @@ namespace ClickHouse.Client.Readers
             for (var i = 0; i < FieldCount; i++)
             {
                 var typeInfo = RawTypes[i];
-                rowData[i] = ConvertString(rowItems[i], typeInfo);
+                if (typeInfo.DataType == ClickHouseDataType.UUID)
+                    rowData[i] = new Guid(rowItems[i]);
+                else
+                    rowData[i] = ConvertString(rowItems[i], typeInfo);
             }
             CurrentRow = rowData;
             return true;
@@ -47,17 +50,24 @@ namespace ClickHouse.Client.Readers
 
         private object ConvertString(string item, TypeInfo typeInfo)
         {
-            return typeInfo switch
+            switch (typeInfo)
             {
-                ArrayTypeInfo ati => item
+                case ArrayTypeInfo ati:
+                    return item
                       .Trim('[', ']')
                       .Split(',')
                       .Select(v => ConvertString(v, ati.UnderlyingType))
-                      .ToArray(),
-                TupleTypeInfo tti => ParseTuple(item, tti),
-                NothingTypeInfo ti => item == "\\N" ? DBNull.Value : throw new InvalidOperationException(),
-                NullableTypeInfo nti => item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType),
-                _ => Convert.ChangeType(item, typeInfo.EquivalentType, CultureInfo.InvariantCulture),
+                      .ToArray();
+                case TupleTypeInfo tti:
+                    return ParseTuple(item, tti);
+                case NothingTypeInfo ti:
+                    return item == "\\N" ? DBNull.Value : throw new InvalidOperationException();
+                case NullableTypeInfo nti:
+                    return item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType);
+                default:
+                    return typeInfo.DataType == ClickHouseDataType.UUID
+                        ? (object)new Guid(item)
+                        : Convert.ChangeType(item, typeInfo.EquivalentType, CultureInfo.InvariantCulture);
             };
         }
 

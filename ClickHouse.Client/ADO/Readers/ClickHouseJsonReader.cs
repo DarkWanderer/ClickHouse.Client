@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -22,6 +23,7 @@ namespace ClickHouse.Client.Readers
             textReader = new StreamReader(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult());
             jsonReader = new JsonTextReader(textReader) { SupportMultipleContent = true, CloseInput = false };
             serializer.Converters.Add(new DatabaseValueConverter());
+            serializer.DateFormatString = "";
             ReadHeaders();
         }
 
@@ -104,6 +106,18 @@ namespace ClickHouse.Client.Readers
                     }
 
                     return array;
+                }
+
+                if (reader.TokenType == JsonToken.String)
+                {
+                    var token = JToken.ReadFrom(reader).ToString();
+                    if (Guid.TryParse(token, out var guid))
+                        return guid;
+                    if (DateTime.TryParseExact(token, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime))
+                        return dateTime;
+                    if (DateTime.TryParseExact(token, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+                        return date;
+                    return token;
                 }
 
                 // if the next token is not an object
