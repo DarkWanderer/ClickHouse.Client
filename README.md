@@ -8,7 +8,8 @@
 
 ## Key features
 
-* Uses HTTP protocol internally, so is version-agnostic with respect to server
+* Uses HTTP, so is compatible with any server version
 * Supports Binary, JSON, TSV protocols (selectable via Driver connection string parameter)
-* Has a 'bulk copy' interface with up to 2 million values per second performance
+* Supports recursive types (array of nullable of Int, etc.)
+* Has a 'bulk copy' TSV-based interface with up to 2 million values/s throughput
 
