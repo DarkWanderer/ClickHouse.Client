@@ -17,6 +17,7 @@
 
         Float32,
         Float64,
+        Decimal,
 
         DateTime,
         Date,
@@ -29,7 +30,7 @@
         Array,
         Nested,
         Tuple,
-        Nullable
+        Nullable,
     }
 #pragma warning restore CA1720 // Identifier contains type name
 }

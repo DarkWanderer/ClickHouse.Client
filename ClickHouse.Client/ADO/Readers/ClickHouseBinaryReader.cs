@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Text;
 using ClickHouse.Client.Properties;
 using ClickHouse.Client.Types;
@@ -25,7 +24,7 @@ namespace ClickHouse.Client.Readers
         {
             var count = reader.Read7BitEncodedInt();
             FieldNames = new string[count];
-            RawTypes = new TypeInfo[count];
+            RawTypes = new ClickHouseTypeInfo[count];
 
             for (var i = 0; i < count; i++)
                 FieldNames[i] = ReadStringBinary(reader);
@@ -72,7 +71,7 @@ namespace ClickHouse.Client.Readers
             return true;
         }
 
-        private static object ReadBinaryDataType(ExtendedBinaryReader reader, TypeInfo rawTypeInfo)
+        private static object ReadBinaryDataType(ExtendedBinaryReader reader, ClickHouseTypeInfo rawTypeInfo)
         {
             switch (rawTypeInfo.DataType)
             {
@@ -136,7 +135,7 @@ namespace ClickHouse.Client.Readers
                     var tupleTypeInfo = (TupleTypeInfo)rawTypeInfo;
                     var count = tupleTypeInfo.UnderlyingTypes.Length;
                     var contents = new object[count];
-                    for (int i = 0; i < count; i++)
+                    for (var i = 0; i < count; i++)
                         contents[i] = ReadBinaryDataType(reader, tupleTypeInfo.UnderlyingTypes[i]);
                     return contents;
             }

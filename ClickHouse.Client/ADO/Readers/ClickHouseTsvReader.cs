@@ -48,7 +48,7 @@ namespace ClickHouse.Client.Readers
             }
         }
 
-        private object ConvertString(string item, TypeInfo typeInfo)
+        private object ConvertString(string item, ClickHouseTypeInfo typeInfo)
         {
             switch (typeInfo)
             {
@@ -66,7 +66,7 @@ namespace ClickHouse.Client.Readers
                     return item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType);
                 default:
                     return typeInfo.DataType == ClickHouseDataType.UUID
-                        ? (object)new Guid(item)
+                        ? new Guid(item)
                         : Convert.ChangeType(item, typeInfo.EquivalentType, CultureInfo.InvariantCulture);
             };
         }
@@ -77,7 +77,7 @@ namespace ClickHouse.Client.Readers
             var types = tti.UnderlyingTypes;
             var items = trimmed.Split(',');
             var result = new object[types.Length];
-            for (int i = 0; i < types.Length; i++)
+            for (var i = 0; i < types.Length; i++)
                 result[i] = ConvertString(items[i].Trim('\''), types[i]);
             return result;
         }
@@ -90,7 +90,7 @@ namespace ClickHouse.Client.Readers
             if (names.Length != types.Length)
                 throw new InvalidOperationException($"Count mismatch between names ({names.Length}) and types ({types.Length})");
             var fieldCount = names.Length;
-            RawTypes = new TypeInfo[fieldCount];
+            RawTypes = new ClickHouseTypeInfo[fieldCount];
             FieldNames = new string[fieldCount];
 
             names.CopyTo(FieldNames, 0);

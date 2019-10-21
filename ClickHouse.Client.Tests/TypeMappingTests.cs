@@ -19,10 +19,16 @@ namespace ClickHouse.Client.Tests
         [TestCase("Float32", ExpectedResult = typeof(float))]
         [TestCase("Float64", ExpectedResult = typeof(double))]
 
+        [TestCase("Decimal(18,3)", ExpectedResult = typeof(decimal))]
+        [TestCase("Decimal32(3)", ExpectedResult = typeof(decimal))]
+        [TestCase("Decimal64(3)", ExpectedResult = typeof(decimal))]
+        [TestCase("Decimal128(3)", ExpectedResult = typeof(decimal))]
+
         [TestCase("FixedString(5)", ExpectedResult = typeof(string))]
 
         [TestCase("Date", ExpectedResult = typeof(DateTime))]
         [TestCase("DateTime", ExpectedResult = typeof(DateTime))]
+        [TestCase("DateTime('Etc/UTC')", ExpectedResult = typeof(DateTime))]
 
         [TestCase("Nullable(UInt32)", ExpectedResult = typeof(uint?))]
         [TestCase("Array(Array(String))", ExpectedResult = typeof(string[][]))]

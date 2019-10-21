@@ -2,7 +2,7 @@
 
 namespace ClickHouse.Client.Types
 {
-    internal abstract class TypeInfo
+    internal abstract class ClickHouseTypeInfo
     {
         public abstract ClickHouseDataType DataType { get; }
 
@@ -10,4 +10,6 @@ namespace ClickHouse.Client.Types
 
         public abstract override string ToString();
     }
+
+
 }

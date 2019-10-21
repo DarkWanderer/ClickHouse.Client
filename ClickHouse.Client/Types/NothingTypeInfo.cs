@@ -2,7 +2,7 @@
 
 namespace ClickHouse.Client.Types
 {
-    internal class NothingTypeInfo : TypeInfo
+    internal class NothingTypeInfo : ClickHouseTypeInfo
     {
         public override ClickHouseDataType DataType => ClickHouseDataType.Nothing;
 

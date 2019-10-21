@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("ClickHouse.Client.Tests")] // assembly-level tag to expose below classes to tests
@@ -10,8 +8,9 @@ namespace ClickHouse.Client.Types
 {
     internal static class TypeConverter
     {
-        private static readonly IDictionary<ClickHouseDataType, TypeInfo> simpleTypes = new Dictionary<ClickHouseDataType, TypeInfo>();
-        private static readonly IDictionary<Type, TypeInfo> reverseMapping = new Dictionary<Type, TypeInfo>();
+        private static readonly IDictionary<ClickHouseDataType, ClickHouseTypeInfo> simpleTypes = new Dictionary<ClickHouseDataType, ClickHouseTypeInfo>();
+        private static readonly IDictionary<string, ParameterizedTypeInfo> parameterizedTypes = new Dictionary<string, ParameterizedTypeInfo>();
+        private static readonly IDictionary<Type, ClickHouseTypeInfo> reverseMapping = new Dictionary<Type, ClickHouseTypeInfo>();
 
         static TypeConverter()
         {
@@ -34,18 +33,28 @@ namespace ClickHouse.Client.Types
             // String types
             RegisterPlainTypeInfo<string>(ClickHouseDataType.String);
 
-            // Date/datetime mappings
+            RegisterPlainTypeInfo<Guid>(ClickHouseDataType.UUID);
             RegisterPlainTypeInfo<DateTime>(ClickHouseDataType.DateTime);
             RegisterPlainTypeInfo<DateTime>(ClickHouseDataType.Date);
-
-            RegisterPlainTypeInfo<Guid>(ClickHouseDataType.UUID);
 
             // Special 'nothing' type
             var nti = new NothingTypeInfo();
             simpleTypes.Add(ClickHouseDataType.Nothing, nti);
             reverseMapping.Add(typeof(DBNull), nti);
 
-            // complex types like FixedString/Array/Nested etc. are handled separately because they have extended parameters
+            // complex types like FixedString/Array/Nested etc.
+            RegisterParameterizedType<FixedStringTypeInfo>();
+            RegisterParameterizedType<ArrayTypeInfo>();
+            RegisterParameterizedType<NullableTypeInfo>();
+            RegisterParameterizedType<TupleTypeInfo>();
+            RegisterParameterizedType<NestedTypeInfo>();
+            RegisterParameterizedType<DateTypeInfo>();
+            RegisterParameterizedType<DateTimeTypeInfo>();
+
+            RegisterParameterizedType<DecimalTypeInfo>();
+            RegisterParameterizedType<Decimal32TypeInfo>();
+            RegisterParameterizedType<Decimal64TypeInfo>();
+            RegisterParameterizedType<Decimal128TypeInfo>();
         }
 
         private static void RegisterPlainTypeInfo<T>(ClickHouseDataType type)
@@ -56,37 +65,24 @@ namespace ClickHouse.Client.Types
                 reverseMapping.Add(typeInfo.EquivalentType, typeInfo);
         }
 
-        private static bool TryParseComposite(string type, out string composite, out string underlyingType)
+        private static void RegisterParameterizedType<T>() where T : ParameterizedTypeInfo, new()
         {
-            if (type.EndsWith(")", StringComparison.InvariantCulture) && type.Contains("("))
-            {
-                var split = type.Remove(type.Length - 1).Split(new[] { '(' }, 2, StringSplitOptions.RemoveEmptyEntries);
-                composite = split[0];
-                underlyingType = split[1];
-                return true;
-            }
-            composite = null;
-            underlyingType = null;
-            return false;
+            var t = new T();
+            parameterizedTypes.Add(t.Name, t);
         }
 
-        public static TypeInfo ParseClickHouseType(string type)
+        public static ClickHouseTypeInfo ParseClickHouseType(string type)
         {
-            if (TryParseComposite(type, out var composite, out var underlyingType))
-            {
-                return composite switch
-                {
-                    "Nullable" => new NullableTypeInfo { UnderlyingType = ParseClickHouseType(underlyingType) },
-                    "Array" => new ArrayTypeInfo { UnderlyingType = ParseClickHouseType(underlyingType) },
-                    "FixedString" => new FixedStringTypeInfo { Length = int.Parse(underlyingType, CultureInfo.InvariantCulture) },
-                    "DateTime" => DateTimeTypeInfo.ParseTimeZone(underlyingType),
-                    "Tuple" => new TupleTypeInfo { UnderlyingTypes = underlyingType.Split(',').Select(s => s.Trim()).Select(ParseClickHouseType).ToArray() },
-                    _ => throw new ArgumentException("Unknown composite type: " + composite),
-                };
-            }
             if (Enum.TryParse<ClickHouseDataType>(type, out var chType) && simpleTypes.TryGetValue(chType, out var typeInfo))
                 return typeInfo;
-            throw new ArgumentOutOfRangeException("Unknown type: " + type);
+            var index = type.IndexOf('(');
+            if (index > 0)
+            {
+                var parameterizedTypeName = type.Substring(0, index);
+                if (parameterizedTypes.ContainsKey(parameterizedTypeName))
+                    return parameterizedTypes[parameterizedTypeName].Parse(type, ParseClickHouseType);
+            }
+            throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type);
         }
 
         /// <summary>
@@ -95,14 +91,18 @@ namespace ClickHouse.Client.Types
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static TypeInfo ToClickHouseType(Type type)
+        public static ClickHouseTypeInfo ToClickHouseType(Type type)
         {
+            if (reverseMapping.ContainsKey(type))
+                return reverseMapping[type];
+
             if (type.IsArray)
                 return new ArrayTypeInfo() { UnderlyingType = ToClickHouseType(type.GetElementType()) };
             var underlyingType = Nullable.GetUnderlyingType(type);
             if (underlyingType != null)
                 return new NullableTypeInfo() { UnderlyingType = ToClickHouseType(underlyingType) };
-            return reverseMapping[type];
+
+            throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type.ToString());
         }
     }
 }
