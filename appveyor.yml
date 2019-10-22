@@ -1,4 +1,4 @@
-version: 0.1.0.{build}
+version: 0.2.0.{build}
 image: Visual Studio 2019
 
 environment:
@@ -17,7 +17,7 @@ dotnet_csproj:
   patch: true
   file: '**\*.csproj'
   version: '{version}'
-  package_version: '{version}-dev'
+  package_version: '{version}'
   assembly_version: '{version}'
   file_version: '{version}'
   informational_version: '{version}'
@@ -32,9 +32,6 @@ before_test:
 
 test_script:
 - dotnet test
-
-after_test:
-- docker stop clickhouse-server
 
 artifacts:
 - path: '**/*.nupkg'
