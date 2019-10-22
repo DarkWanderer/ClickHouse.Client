@@ -26,11 +26,14 @@ build_script:
 - dotnet build
 
 before_test:
-- docker run --network host -d --name clickhouse-server yandex/clickhouse-server
+- docker run --network transparent -d --name clickhouse-server yandex/clickhouse-server
 - sleep 3
 
 test_script:
 - dotnet test
+
+after_test:
+- docker stop clickhouse-server
 
 artifacts:
 - path: '**/*.nupkg'
