@@ -22,8 +22,16 @@ dotnet_csproj:
   file_version: '{version}'
   informational_version: '{version}'
 
+install:
+- cmd: choco install resharper-clt
+
 build_script:
 - dotnet build
+
+after_build:
+- cmd: InspectCode.exe -o=resharper-clt-output.xml src\ProjectA.sln
+- ps: $result = [xml](Get-Content .\resharper-clt-output.xml)
+- ps: $result.Report.Issues.ChildNodes | ForEach-Object {$project = $_.Name; $_.ChildNodes | ForEach-Object {Add-AppveyorCompilationMessage -Message $_.Message -Line $_.Line -FileName $_.File -ProjectName $project}}
 
 before_test:
 - docker pull yandex/clickhouse-server
