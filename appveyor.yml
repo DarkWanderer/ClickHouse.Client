@@ -1,5 +1,5 @@
 version: 0.1.0.{build}
-image: Ubuntu
+image: Visual Studio 2019
 
 environment:
   CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
@@ -23,15 +23,14 @@ dotnet_csproj:
   informational_version: '{version}'
 
 build_script:
-- dotnet restore
-- msbuild /p:Configuration=Release -verbosity:minimal
+- dotnet build
 
 before_test:
 - docker run --network host -d --name clickhouse-server --ulimit nofile=262144:262144 yandex/clickhouse-server
 - sleep 3
 
 test_script:
-- dotnet test --framework netcoreapp3.0
+- dotnet test
 
 artifacts:
 - path: '**/*.nupkg'
