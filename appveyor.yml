@@ -26,7 +26,8 @@ build_script:
 - dotnet build
 
 before_test:
-- docker run --network transparent -d --name clickhouse-server yandex/clickhouse-server
+- docker pull yandex/clickhouse-server
+- docker run -p 8123:8123 -d --name clickhouse-server yandex/clickhouse-server
 - sleep 3
 
 test_script:
