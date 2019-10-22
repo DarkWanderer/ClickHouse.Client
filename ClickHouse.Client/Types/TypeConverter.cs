@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("ClickHouse.Client.Tests")] // assembly-level tag to expose below classes to tests
@@ -55,6 +56,8 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<Decimal32TypeInfo>();
             RegisterParameterizedType<Decimal64TypeInfo>();
             RegisterParameterizedType<Decimal128TypeInfo>();
+
+            reverseMapping.Add(typeof(decimal), new Decimal128TypeInfo());
         }
 
         private static void RegisterPlainTypeInfo<T>(ClickHouseDataType type)
@@ -98,9 +101,13 @@ namespace ClickHouse.Client.Types
 
             if (type.IsArray)
                 return new ArrayTypeInfo() { UnderlyingType = ToClickHouseType(type.GetElementType()) };
+            
             var underlyingType = Nullable.GetUnderlyingType(type);
             if (underlyingType != null)
                 return new NullableTypeInfo() { UnderlyingType = ToClickHouseType(underlyingType) };
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition().FullName.StartsWith("System.Tuple"))
+                return new TupleTypeInfo { UnderlyingTypes = type.GetGenericArguments().Select(ToClickHouseType).ToArray() };
 
             throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type.ToString());
         }

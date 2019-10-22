@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
+using System.Numerics;
 using System.Text;
 using ClickHouse.Client.Properties;
 using ClickHouse.Client.Types;
@@ -138,6 +139,13 @@ namespace ClickHouse.Client.Readers
                     for (var i = 0; i < count; i++)
                         contents[i] = ReadBinaryDataType(reader, tupleTypeInfo.UnderlyingTypes[i]);
                     return contents;
+
+                case ClickHouseDataType.Decimal:
+                    var decimalTypeInfo = (DecimalTypeInfo)rawTypeInfo;
+                    var scale = decimalTypeInfo.Scale;
+                    var factor = (int)Math.Pow(10, scale);
+                    var value = new BigInteger(reader.ReadBytes(decimalTypeInfo.Size));
+                    return (decimal)value / factor;
             }
             throw new NotImplementedException();
         }

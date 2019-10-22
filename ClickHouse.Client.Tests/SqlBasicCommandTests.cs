@@ -22,6 +22,10 @@ namespace ClickHouse.Client.Tests
             yield return new TestCaseData("SELECT 'ASD'") { ExpectedResult = "ASD" };
             yield return new TestCaseData("SELECT toFixedString('ASD',3)") { ExpectedResult = "ASD" };
             yield return new TestCaseData("SELECT array(1, 2, 3)") { ExpectedResult = new[] { 1, 2, 3 } };
+
+            yield return new TestCaseData("SELECT toDecimal32(123.45, 3)") { ExpectedResult = new decimal(123.45) };
+            yield return new TestCaseData("SELECT toDecimal64(1.2345, 7)") { ExpectedResult = new decimal(1.2345) };
+            yield return new TestCaseData("SELECT toDecimal128(12.34, 9)") { ExpectedResult = new decimal(12.34) };
             yield return new TestCaseData("SELECT tuple(1, 'a', NULL)") { ExpectedResult = new object[] { 1, "a", DBNull.Value } };
 
             yield return new TestCaseData("SELECT toDateOrNull('1988-11-12')") { ExpectedResult = new DateTime(1988, 11, 12) };

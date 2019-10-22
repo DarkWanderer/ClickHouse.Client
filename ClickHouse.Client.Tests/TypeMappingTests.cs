@@ -48,6 +48,7 @@ namespace ClickHouse.Client.Tests
 
         [TestCase(typeof(float), ExpectedResult = "Float32")]
         [TestCase(typeof(double), ExpectedResult = "Float64")]
+        [TestCase(typeof(decimal), ExpectedResult = "Decimal128(0)")]
 
         [TestCase(typeof(string), ExpectedResult = "String")]
 
@@ -56,6 +57,7 @@ namespace ClickHouse.Client.Tests
         [TestCase(typeof(uint?), ExpectedResult = "Nullable(UInt32)")]
         [TestCase(typeof(string[][]), ExpectedResult = "Array(Array(String))")]
         [TestCase(typeof(uint?[]), ExpectedResult = "Array(Nullable(UInt32))")]
+        [TestCase(typeof(Tuple<int,byte,float?,string[]>), ExpectedResult="Tuple(Int32,UInt8,Nullable(Float32),Array(String))")]
         public string ShouldConvertToClickHouseType(Type type) => TypeConverter.ToClickHouseType(type).ToString();
     }
 }
