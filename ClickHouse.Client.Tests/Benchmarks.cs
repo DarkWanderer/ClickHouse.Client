@@ -6,14 +6,40 @@ using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
-    public class ClickHouseBulkCopyTests
+    [NonParallelizable]
+    public class Benchmarks
     {
         private ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.Binary;
 
-        [Test]
-        public async Task ShouldBulkCopyData()
+        private const int Multiplier = 1; // Increase this number to run actual benchmark or profiling
+
+        [Test(Description = "Select single integer column")]
+        public async Task SelectSingleColumnBenchmark()
         {
-            const int count = 500000; // Increase this number to use in profiling
+            var stopwatch = new Stopwatch();
+
+            const int count = 1000000 * Multiplier;
+            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
+            var command = connection.CreateCommand();
+            command.CommandText = $"SELECT number FROM system.numbers LIMIT {count}";
+            using var reader = await command.ExecuteReaderAsync();
+
+            int counter = 0;
+            Assert.IsTrue(reader.HasRows);
+            stopwatch.Start();
+            while (reader.Read())
+                counter++;
+            stopwatch.Stop();
+            Assert.AreEqual(count, counter);
+
+            var rps = (double)count / stopwatch.ElapsedMilliseconds * 1000;
+            Assert.Pass($"{rps:#0.} rows/s");
+        }
+
+        [Test]
+        public async Task BulkCopyBenchmark()
+        {
+            const int count = 200000 * Multiplier;
             const string targetDatabase = "default";
             const string targetTable = "discard";
 

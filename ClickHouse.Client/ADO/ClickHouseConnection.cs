@@ -37,7 +37,7 @@ namespace ClickHouse.Client.ADO
             ConnectionString = connectionString;
         }
 
-        public override string ConnectionString
+        public sealed override string ConnectionString
         {
             get
             {

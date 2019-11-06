@@ -3,12 +3,12 @@ using System.IO;
 using System.Net.Http;
 using System.Numerics;
 using System.Text;
+using ClickHouse.Client.Formats;
 using ClickHouse.Client.Properties;
 using ClickHouse.Client.Types;
 
-namespace ClickHouse.Client.Readers
+namespace ClickHouse.Client.ADO.Readers
 {
-    // TODO: use Span to avoid creating byte arrays all the time
     internal class ClickHouseBinaryReader : ClickHouseDataReader
     {
         private readonly Stream stream;

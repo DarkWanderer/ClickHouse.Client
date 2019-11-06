@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.Types;
 
-namespace ClickHouse.Client.Readers
+namespace ClickHouse.Client.ADO.Readers
 {
     public abstract class ClickHouseDataReader : DbDataReader
     {
@@ -26,7 +26,7 @@ namespace ClickHouse.Client.Readers
 
         public override int Depth { get; }
 
-        public override int FieldCount => RawTypes.Length;
+        public override int FieldCount => RawTypes?.Length ?? throw new InvalidOperationException();
 
         public override bool IsClosed => !HasRows;
 

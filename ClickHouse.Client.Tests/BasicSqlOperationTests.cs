@@ -9,9 +9,17 @@ using NUnit.Framework;
 namespace ClickHouse.Client.Tests
 {
     [Parallelizable]
-    public abstract class SqlBasicCommandTests
+    [TestFixture(ClickHouseConnectionDriver.Binary)]
+    [TestFixture(ClickHouseConnectionDriver.JSON)]
+    [TestFixture(ClickHouseConnectionDriver.TSV)]
+    public class BasicSqlOperationTests
     {
-        protected abstract ClickHouseConnectionDriver Driver { get; }
+        private readonly ClickHouseConnectionDriver driver;
+
+        public BasicSqlOperationTests(ClickHouseConnectionDriver driver)
+        {
+            this.driver = driver;
+        }
 
         public static IEnumerable<TestCaseData> GetSimpleQueryTestCases()
         {
@@ -34,10 +42,10 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        [TestCaseSource(typeof(SqlBasicCommandTests), nameof(GetSimpleQueryTestCases))]
+        [TestCaseSource(typeof(BasicSqlOperationTests), nameof(GetSimpleQueryTestCases))]
         public async Task<object> ShouldSelectSingleValue(string sql)
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
+            using var connection = TestUtilities.GetTestClickHouseConnection(driver);
             var command = connection.CreateCommand();
             command.CommandText = sql;
             using var reader = await command.ExecuteReaderAsync();
@@ -48,7 +56,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldSelectMultipleColumns()
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
+            using var connection = TestUtilities.GetTestClickHouseConnection(driver);
             var command = connection.CreateCommand();
             command.CommandText = "SELECT 1 as a, 2 as b, 3 as c";
             using var reader = await command.ExecuteReaderAsync();
@@ -57,6 +65,19 @@ namespace ClickHouse.Client.Tests
             reader.GetEnsureSingleRow();
             CollectionAssert.AreEqual(new[] { "a", "b", "c" }, reader.GetFieldNames());
             CollectionAssert.AreEqual(new[] { 1, 2, 3 }, reader.GetFieldValues());
+        }
+
+        [Test]
+        public async Task ShouldSelectEmptyDataset()
+        {
+            using var connection = TestUtilities.GetTestClickHouseConnection(driver);
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT 1 LIMIT 0";
+            using var reader = await command.ExecuteReaderAsync();
+
+            reader.EnsureFieldCount(1);
+            Assert.IsFalse(reader.HasRows);
+            Assert.IsFalse(reader.Read());
         }
 
         [Test]
@@ -70,7 +91,7 @@ namespace ClickHouse.Client.Tests
                 .ToArray();
             var sql = $"select {string.Join(',', types)}";
 
-            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
+            using var connection = TestUtilities.GetTestClickHouseConnection(driver);
             var command = connection.CreateCommand();
             command.CommandText = sql;
 
@@ -85,7 +106,7 @@ namespace ClickHouse.Client.Tests
         public async Task ShouldSelectSingleColumnRange()
         {
             const int count = 100;
-            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
+            using var connection = TestUtilities.GetTestClickHouseConnection(driver);
             var command = connection.CreateCommand();
             command.CommandText = $"SELECT number FROM system.numbers LIMIT {count}";
             using var reader = await command.ExecuteReaderAsync();
@@ -94,11 +115,7 @@ namespace ClickHouse.Client.Tests
 
             Assert.IsTrue(reader.HasRows);
             reader.EnsureFieldCount(1);
-
-            if (Driver != ClickHouseConnectionDriver.JSON)
-                Assert.AreEqual(typeof(ulong), reader.GetFieldType(0));
-            else
-                Assert.AreEqual(typeof(string), reader.GetFieldType(0));
+            Assert.AreEqual(typeof(ulong), reader.GetFieldType(0));
 
             while (reader.Read())
                 results.Add(reader.GetInt32(0)); // Intentional conversion to int32
@@ -110,11 +127,11 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldCancelRunningAsyncQuery()
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
+            using var connection = TestUtilities.GetTestClickHouseConnection(driver);
             var command = connection.CreateCommand();
             command.CommandText = "SELECT sleep(3)";
             var task = command.ExecuteScalarAsync();
-            await Task.Delay(50);
+            await Task.Delay(100);
             command.Cancel();
 
             try
@@ -127,18 +144,5 @@ namespace ClickHouse.Client.Tests
                 // Correct
             }
         }
-    }
-
-    public class JsonDriverSqlQueryTestSuite : SqlBasicCommandTests
-    {
-        protected override ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.JSON;
-    }
-    public class BinaryDriverSqlQueryTestSuite : SqlBasicCommandTests
-    {
-        protected override ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.Binary;
-    }
-    public class TsvDriverSqlQueryTestSuite : SqlBasicCommandTests
-    {
-        protected override ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.TSV;
     }
 }

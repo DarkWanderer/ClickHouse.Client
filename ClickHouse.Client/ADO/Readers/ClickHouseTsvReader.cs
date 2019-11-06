@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using ClickHouse.Client.Types;
 
-namespace ClickHouse.Client.Readers
+namespace ClickHouse.Client.ADO.Readers
 {
     internal class ClickHouseTsvReader : ClickHouseDataReader
     {

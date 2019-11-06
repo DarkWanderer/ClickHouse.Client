@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO.Parameters;
+using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Properties;
-using ClickHouse.Client.Readers;
 
 namespace ClickHouse.Client.ADO
 {
@@ -116,7 +116,7 @@ namespace ClickHouse.Client.ADO
                     sqlBuilder.Append(" FORMAT RowBinaryWithNamesAndTypes");
                     break;
                 case ClickHouseConnectionDriver.JSON:
-                    sqlBuilder.Append(" FORMAT JSONEachRow");
+                    sqlBuilder.Append(" FORMAT JSONCompact");
                     break;
                 case ClickHouseConnectionDriver.TSV:
                     sqlBuilder.Append(" FORMAT TSVWithNamesAndTypes");
@@ -127,7 +127,7 @@ namespace ClickHouse.Client.ADO
             return driver switch
             {
                 ClickHouseConnectionDriver.Binary => new ClickHouseBinaryReader(result),
-                ClickHouseConnectionDriver.JSON => new ClickHouseJsonReader(result),
+                ClickHouseConnectionDriver.JSON => new ClickHouseJsonCompactReader(result),
                 ClickHouseConnectionDriver.TSV => new ClickHouseTsvReader(result),
                 _ => throw new NotSupportedException("Unknown driver: " + driver.ToString()),
             };

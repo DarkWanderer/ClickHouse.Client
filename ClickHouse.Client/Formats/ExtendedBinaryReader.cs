@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace ClickHouse.Client
+namespace ClickHouse.Client.Formats
 {
     internal class ExtendedBinaryReader : BinaryReader
     {
