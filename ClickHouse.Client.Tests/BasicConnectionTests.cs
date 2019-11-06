@@ -8,9 +8,10 @@ namespace ClickHouse.Client.Tests
         [Test]
         public void ShouldConnectToServer()
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(ClickHouseConnectionDriver.JSON);
+            using var connection = TestUtilities.GetTestClickHouseConnection(default);
             connection.Open();
             Assert.Pass($"Server version: {connection.ServerVersion}");
+            connection.Close();
         }
     }
 }

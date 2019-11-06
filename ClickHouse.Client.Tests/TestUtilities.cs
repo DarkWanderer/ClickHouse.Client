@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Common;
 using System.Linq;
+using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using NUnit.Framework;
 
@@ -36,6 +37,20 @@ namespace ClickHouse.Client.Tests
             Assert.IsFalse(reader.Read());
 
             return data;
+        }
+
+        public static Task ExecuteStatementAsync(this ClickHouseConnection connection, string sql)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            return command.ExecuteNonQueryAsync();
+        }
+
+        public static Task<DbDataReader> ExecuteReaderAsync(this ClickHouseConnection connection, string sql)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            return command.ExecuteReaderAsync();
         }
 
         public static Type[] GetFieldTypes(this DbDataReader reader) => Enumerable.Range(0, reader.FieldCount).Select(reader.GetFieldType).ToArray();

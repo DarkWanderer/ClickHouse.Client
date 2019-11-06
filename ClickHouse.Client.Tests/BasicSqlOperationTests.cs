@@ -46,9 +46,7 @@ namespace ClickHouse.Client.Tests
         public async Task<object> ShouldSelectSingleValue(string sql)
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
-            var command = connection.CreateCommand();
-            command.CommandText = sql;
-            using var reader = await command.ExecuteReaderAsync();
+            using var reader = await connection.ExecuteReaderAsync(sql);
             reader.EnsureFieldCount(1);
             return reader.GetEnsureSingleRow().Single();
         }
@@ -57,9 +55,7 @@ namespace ClickHouse.Client.Tests
         public async Task ShouldSelectMultipleColumns()
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
-            var command = connection.CreateCommand();
-            command.CommandText = "SELECT 1 as a, 2 as b, 3 as c";
-            using var reader = await command.ExecuteReaderAsync();
+            using var reader = await connection.ExecuteReaderAsync("SELECT 1 as a, 2 as b, 3 as c");
 
             reader.EnsureFieldCount(3);
             reader.GetEnsureSingleRow();
@@ -71,9 +67,7 @@ namespace ClickHouse.Client.Tests
         public async Task ShouldSelectEmptyDataset()
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
-            var command = connection.CreateCommand();
-            command.CommandText = "SELECT 1 LIMIT 0";
-            using var reader = await command.ExecuteReaderAsync();
+            using var reader = await connection.ExecuteReaderAsync("SELECT 1 LIMIT 0");
 
             reader.EnsureFieldCount(1);
             Assert.IsFalse(reader.HasRows);
@@ -92,10 +86,7 @@ namespace ClickHouse.Client.Tests
             var sql = $"select {string.Join(',', types)}";
 
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
-            var command = connection.CreateCommand();
-            command.CommandText = sql;
-
-            using var reader = await command.ExecuteReaderAsync();
+            using var reader = await connection.ExecuteReaderAsync(sql);
             Assert.AreEqual(types.Length, reader.FieldCount);
 
             var data = reader.GetEnsureSingleRow();
@@ -107,9 +98,7 @@ namespace ClickHouse.Client.Tests
         {
             const int count = 100;
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
-            var command = connection.CreateCommand();
-            command.CommandText = $"SELECT number FROM system.numbers LIMIT {count}";
-            using var reader = await command.ExecuteReaderAsync();
+            using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers LIMIT {count}");
 
             var results = new List<int>();
 
@@ -122,6 +111,19 @@ namespace ClickHouse.Client.Tests
 
             Assert.IsFalse(reader.HasRows);
             CollectionAssert.AreEqual(Enumerable.Range(0, count), results);
+        }
+
+        [Test]
+        [NonParallelizable]
+        public async Task ShouldSelectNestedDataType()
+        {
+            using var connection = TestUtilities.GetTestClickHouseConnection(driver);
+            await connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS test");
+            await connection.ExecuteStatementAsync("DROP TABLE IF EXISTS test.nested");
+            await connection.ExecuteStatementAsync("CREATE TABLE test.nested(nested_v Nested (int16_v Int16, uint32_v UInt32, dtime_v DateTime, string_v String)) ENGINE = Memory");
+
+            using var reader = await connection.ExecuteReaderAsync("SELECT nested_v.int16_v, nested_v.uint32_v, nested_v.dtime_v, nested_v.string_v FROM test.nested");
+            Assert.IsFalse(reader.HasRows);
         }
 
         [Test]
