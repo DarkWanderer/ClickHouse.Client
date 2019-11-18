@@ -12,11 +12,11 @@ namespace ClickHouse.Client.Tests
     [TestFixture(ClickHouseConnectionDriver.Binary)]
     [TestFixture(ClickHouseConnectionDriver.JSON)]
     [TestFixture(ClickHouseConnectionDriver.TSV)]
-    public class BasicSqlOperationTests
+    public class SqlSelectTests
     {
         private readonly ClickHouseConnectionDriver driver;
 
-        public BasicSqlOperationTests(ClickHouseConnectionDriver driver)
+        public SqlSelectTests(ClickHouseConnectionDriver driver)
         {
             this.driver = driver;
         }
@@ -31,18 +31,19 @@ namespace ClickHouse.Client.Tests
             yield return new TestCaseData("SELECT toFixedString('ASD',3)") { ExpectedResult = "ASD" };
             yield return new TestCaseData("SELECT array(1, 2, 3)") { ExpectedResult = new[] { 1, 2, 3 } };
 
-            yield return new TestCaseData("SELECT toDecimal32(123.45, 3)") { ExpectedResult = new decimal(123.45) };
-            yield return new TestCaseData("SELECT toDecimal64(1.2345, 7)") { ExpectedResult = new decimal(1.2345) };
-            yield return new TestCaseData("SELECT toDecimal128(12.34, 9)") { ExpectedResult = new decimal(12.34) };
             yield return new TestCaseData("SELECT tuple(1, 'a', NULL)") { ExpectedResult = new object[] { 1, "a", DBNull.Value } };
 
             yield return new TestCaseData("SELECT toDateOrNull('1988-11-12')") { ExpectedResult = new DateTime(1988, 11, 12) };
             yield return new TestCaseData("SELECT toDateTimeOrNull('1988-11-12 11:22:33')") { ExpectedResult = new DateTime(1988, 11, 12, 11, 22, 33) };
             yield return new TestCaseData("SELECT toUUID('61f0c404-5cb3-11e7-907b-a6006ad3dba0')") { ExpectedResult = new Guid("61f0c404-5cb3-11e7-907b-a6006ad3dba0") };
+
+            yield return new TestCaseData("SELECT toDecimal32(123.45, 3)") { ExpectedResult = new decimal(123.45) };
+            yield return new TestCaseData("SELECT toDecimal64(1.2345, 7)") { ExpectedResult = new decimal(1.2345) };
+            yield return new TestCaseData("SELECT toDecimal128(12.34, 9)") { ExpectedResult = new decimal(12.34) };
         }
 
         [Test]
-        [TestCaseSource(typeof(BasicSqlOperationTests), nameof(GetSimpleQueryTestCases))]
+        [TestCaseSource(typeof(SqlSelectTests), nameof(GetSimpleQueryTestCases))]
         public async Task<object> ShouldSelectSingleValue(string sql)
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
@@ -90,7 +91,7 @@ namespace ClickHouse.Client.Tests
             Assert.AreEqual(types.Length, reader.FieldCount);
 
             var data = reader.GetEnsureSingleRow();
-            Assert.AreEqual(Enumerable.Repeat("55", data.Length), data.Select(x => x.ToString()));
+            Assert.AreEqual(Enumerable.Repeat(55.0d, data.Length), data.Select(Convert.ToDouble));
         }
 
         [Test]
@@ -120,10 +121,9 @@ namespace ClickHouse.Client.Tests
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
             await connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS test");
             await connection.ExecuteStatementAsync("DROP TABLE IF EXISTS test.nested");
-            await connection.ExecuteStatementAsync("CREATE TABLE test.nested(nested_v Nested (int16_v Int16, uint32_v UInt32, dtime_v DateTime, string_v String)) ENGINE = Memory");
+            await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.nested(nested_v Nested (int16_v Int16, uint32_v UInt32, dtime_v DateTime, string_v String)) ENGINE = Memory");
 
             using var reader = await connection.ExecuteReaderAsync("SELECT nested_v.int16_v, nested_v.uint32_v, nested_v.dtime_v, nested_v.string_v FROM test.nested");
-            Assert.IsFalse(reader.HasRows);
         }
 
         [Test]

@@ -18,7 +18,7 @@ namespace ClickHouse.Client.Tests
         {
             var stopwatch = new Stopwatch();
 
-            const int count = 1000000 * Multiplier;
+            const int count = 100000 * Multiplier;
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
             var command = connection.CreateCommand();
             command.CommandText = $"SELECT number FROM system.numbers LIMIT {count}";
@@ -39,7 +39,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task BulkCopyBenchmark()
         {
-            const int count = 200000 * Multiplier;
+            const int count = 20000 * Multiplier;
             const string targetDatabase = "default";
             const string targetTable = "discard";
 
