@@ -37,7 +37,7 @@ namespace ClickHouse.Client.ADO
             set => throw new NotSupportedException();
         }
 
-        protected override DbParameterCollection DbParameterCollection { get; }
+        protected override DbParameterCollection DbParameterCollection { get; } = new ClickHouseParameterCollection();
 
         protected override DbTransaction DbTransaction { get; set; }
 
