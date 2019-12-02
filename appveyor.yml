@@ -34,7 +34,7 @@ before_test:
 - sleep 3
 
 test_script:
-- dotnet test --no-build --framework netcoreapp3.0
+- dotnet test --no-build --framework netcoreapp3.0 --configuration Release
 
 artifacts:
 - path: '**/*.nupkg'
