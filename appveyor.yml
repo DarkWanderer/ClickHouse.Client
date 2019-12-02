@@ -1,10 +1,7 @@
-version: 0.2.0.{build}
+version: 0.3.0.{build}
 image:
   - Visual Studio 2019
   - Ubuntu
-
-configuration: Release
-platform: Any CPU
 
 environment:
   CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
@@ -25,13 +22,14 @@ dotnet_csproj:
   file_version: '{version}'
   informational_version: '{version}'
 
+install:
+- cmd: choco install resharper-clt
+
 before_build:
 - dotnet restore
 
-build:
-  parallel: true
-  publish_nuget: true
-  verbosity: minimal
+build_script:
+- dotnet build --no-restore --configuration Release
 
 before_test:
 - docker pull yandex/clickhouse-server
@@ -39,14 +37,23 @@ before_test:
 - sleep 3
 
 test_script:
-- dotnet test --framework netcoreapp3.0
+- dotnet test --no-build --framework netcoreapp3.0
+
+artifacts:
+- path: '**/*.nupkg'
+  name: NuGet
 
 for:
 - matrix:
     only:
+      - image: Ubuntu
+  build_script:
+  - dotnet restore
+  - msbuild /p:Configuration=Release -verbosity:minimal
+- matrix:
+    only:
       - image: Visual Studio 2019
   after_build:
-  - cmd: choco install resharper-clt
   - cmd: InspectCode.exe -o=resharper-clt-output.xml ClickHouse.Client.sln
   - ps: $result = [xml](Get-Content .\resharper-clt-output.xml)
   - ps: $result.Report.Issues.ChildNodes | ForEach-Object {$project = $_.Name; $_.ChildNodes | ForEach-Object {Add-AppveyorCompilationMessage -Message $_.Message -Line $_.Line -FileName $_.File -ProjectName $project}}
