@@ -51,5 +51,5 @@ for:
 - matrix:
     only:
       - image: Ubuntu
-    build_script:
-    - msbuild /p:Configuration=Release -verbosity:minimal
+  build_script:
+  - msbuild /p:Configuration=Release -verbosity:minimal
