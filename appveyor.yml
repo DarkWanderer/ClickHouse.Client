@@ -46,3 +46,10 @@ test_script:
 artifacts:
 - path: '**/*.nupkg'
   name: NuGet
+
+for:
+- matrix:
+    only:
+      - image: Ubuntu
+    build_script:
+    - msbuild /p:Configuration=Release -verbosity:minimal
