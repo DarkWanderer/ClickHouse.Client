@@ -54,3 +54,5 @@ for:
   build_script:
   - dotnet restore
   - msbuild /p:Configuration=Release -verbosity:minimal
+  test_script:
+  - dotnet test --framework netcoreapp3.0
