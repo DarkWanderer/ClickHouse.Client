@@ -1,7 +1,7 @@
 version: 0.2.0.{build}
-matrix:
-  - image: Visual Studio 2019
-  - image: Ubuntu
+image:
+  - Visual Studio 2019
+  - Ubuntu
 
 environment:
   CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
