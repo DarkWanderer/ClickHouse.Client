@@ -26,6 +26,7 @@ namespace ClickHouse.Client.ADO.Readers
             var count = reader.Read7BitEncodedInt();
             FieldNames = new string[count];
             RawTypes = new ClickHouseTypeInfo[count];
+            CurrentRow = new object[count];
 
             for (var i = 0; i < count; i++)
                 FieldNames[i] = ReadStringBinary(reader);
@@ -58,14 +59,13 @@ namespace ClickHouse.Client.ADO.Readers
                 return false;
 
             var initialPosition = stream.Position;
-            var count = FieldCount;
-            var data = new object[count];
+            var count = RawTypes.Length;
+            var data = CurrentRow;
             for (var i = 0; i < count; i++)
             {
                 var rawTypeInfo = RawTypes[i];
                 data[i] = ReadBinaryDataType(reader, rawTypeInfo);
             }
-            CurrentRow = data;
             // infinite cycle prevention: if stream position did not move, something went wrong
             if (initialPosition == stream.Position)
                 throw new InvalidOperationException(Resources.InternalErrorMessage);
