@@ -52,4 +52,5 @@ for:
     only:
       - image: Ubuntu
   build_script:
+  - dotnet restore
   - msbuild /p:Configuration=Release -verbosity:minimal
