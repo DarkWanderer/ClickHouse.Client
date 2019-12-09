@@ -10,7 +10,7 @@ namespace ClickHouse.Client.Types
     internal static class TypeConverter
     {
         private static readonly IDictionary<ClickHouseTypeCode, ClickHouseType> simpleTypes = new Dictionary<ClickHouseTypeCode, ClickHouseType>();
-        private static readonly IDictionary<string, ParameterizedTypeInfo> parameterizedTypes = new Dictionary<string, ParameterizedTypeInfo>();
+        private static readonly IDictionary<string, ParameterizedType> parameterizedTypes = new Dictionary<string, ParameterizedType>();
         private static readonly IDictionary<Type, ClickHouseType> reverseMapping = new Dictionary<Type, ClickHouseType>();
 
         static TypeConverter()
@@ -39,36 +39,36 @@ namespace ClickHouse.Client.Types
             RegisterPlainTypeInfo<DateTime>(ClickHouseTypeCode.Date);
 
             // Special 'nothing' type
-            var nti = new NothingTypeInfo();
+            var nti = new NothingType();
             simpleTypes.Add(ClickHouseTypeCode.Nothing, nti);
             reverseMapping.Add(typeof(DBNull), nti);
 
             // complex types like FixedString/Array/Nested etc.
-            RegisterParameterizedType<FixedStringTypeInfo>();
-            RegisterParameterizedType<ArrayTypeInfo>();
-            RegisterParameterizedType<NullableTypeInfo>();
-            RegisterParameterizedType<TupleTypeInfo>();
+            RegisterParameterizedType<FixedStringType>();
+            RegisterParameterizedType<ArrayType>();
+            RegisterParameterizedType<NullableType>();
+            RegisterParameterizedType<TupleType>();
             RegisterParameterizedType<NestedTypeInfo>();
-            RegisterParameterizedType<DateTypeInfo>();
-            RegisterParameterizedType<DateTimeTypeInfo>();
+            RegisterParameterizedType<DateType>();
+            RegisterParameterizedType<DateTimeType>();
 
-            RegisterParameterizedType<DecimalTypeInfo>();
-            RegisterParameterizedType<Decimal32TypeInfo>();
-            RegisterParameterizedType<Decimal64TypeInfo>();
-            RegisterParameterizedType<Decimal128TypeInfo>();
+            RegisterParameterizedType<DecimalType>();
+            RegisterParameterizedType<Decimal32Type>();
+            RegisterParameterizedType<Decimal64Type>();
+            RegisterParameterizedType<Decimal128Type>();
 
-            reverseMapping.Add(typeof(decimal), new Decimal128TypeInfo());
+            reverseMapping.Add(typeof(decimal), new Decimal128Type());
         }
 
         private static void RegisterPlainTypeInfo<T>(ClickHouseTypeCode type)
         {
-            var typeInfo = new PlainDataTypeInfo<T>(type);
+            var typeInfo = new PlainDataType<T>(type);
             simpleTypes.Add(type, typeInfo);
             if (!reverseMapping.ContainsKey(typeInfo.EquivalentType))
                 reverseMapping.Add(typeInfo.EquivalentType, typeInfo);
         }
 
-        private static void RegisterParameterizedType<T>() where T : ParameterizedTypeInfo, new()
+        private static void RegisterParameterizedType<T>() where T : ParameterizedType, new()
         {
             var t = new T();
             parameterizedTypes.Add(t.Name, t);
@@ -100,14 +100,14 @@ namespace ClickHouse.Client.Types
                 return reverseMapping[type];
 
             if (type.IsArray)
-                return new ArrayTypeInfo() { UnderlyingType = ToClickHouseType(type.GetElementType()) };
+                return new ArrayType() { UnderlyingType = ToClickHouseType(type.GetElementType()) };
             
             var underlyingType = Nullable.GetUnderlyingType(type);
             if (underlyingType != null)
-                return new NullableTypeInfo() { UnderlyingType = ToClickHouseType(underlyingType) };
+                return new NullableType() { UnderlyingType = ToClickHouseType(underlyingType) };
 
             if (type.IsGenericType && type.GetGenericTypeDefinition().FullName.StartsWith("System.Tuple"))
-                return new TupleTypeInfo { UnderlyingTypes = type.GetGenericArguments().Select(ToClickHouseType).ToArray() };
+                return new TupleType { UnderlyingTypes = type.GetGenericArguments().Select(ToClickHouseType).ToArray() };
 
             throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type.ToString());
         }

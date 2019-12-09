@@ -1,6 +1,6 @@
 ﻿namespace ClickHouse.Client.Types
 {
-    internal class DateTypeInfo : DateTimeTypeInfo
+    internal class DateType : DateTimeType
     {
         public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Date;
 

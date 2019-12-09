@@ -4,7 +4,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
 {
-    internal class TupleTypeInfo : ParameterizedTypeInfo
+    internal class TupleType : ParameterizedType
     {
         public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Tuple;
 
@@ -14,7 +14,7 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "Tuple";
 
-        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));
@@ -25,7 +25,7 @@ namespace ClickHouse.Client.Types
                 .Split(',')
                 .Select(t => t.Trim());
 
-            return new TupleTypeInfo
+            return new TupleType
             {
                 UnderlyingTypes = underlyingTypeNames.Select(typeResolverFunc).ToArray()
             };
@@ -34,11 +34,11 @@ namespace ClickHouse.Client.Types
         public override string ToString() => $"{Name}({string.Join(",", UnderlyingTypes.Select(t => t.ToString()))})";
     }
 
-    internal class NestedTypeInfo : TupleTypeInfo
+    internal class NestedTypeInfo : TupleType
     {
         public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Nested;
 
-        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));

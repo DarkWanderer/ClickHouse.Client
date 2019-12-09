@@ -3,7 +3,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
 {
-    internal class ArrayTypeInfo : ParameterizedTypeInfo
+    internal class ArrayType : ParameterizedType
     {
         public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Array;
 
@@ -13,12 +13,12 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "Array";
 
-        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));
 
-            return new ArrayTypeInfo
+            return new ArrayType
             {
                 UnderlyingType = typeResolverFunc(typeName.Substring(Name.Length).TrimRoundBrackets())
             };

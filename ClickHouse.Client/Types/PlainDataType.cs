@@ -2,11 +2,11 @@
 
 namespace ClickHouse.Client.Types
 {
-    internal class PlainDataTypeInfo<T> : ClickHouseType
+    internal class PlainDataType<T> : ClickHouseType
     {
         private readonly ClickHouseTypeCode dataType;
 
-        public PlainDataTypeInfo(ClickHouseTypeCode dataType)
+        public PlainDataType(ClickHouseTypeCode dataType)
         {
             this.dataType = dataType;
             EquivalentType = typeof(T);

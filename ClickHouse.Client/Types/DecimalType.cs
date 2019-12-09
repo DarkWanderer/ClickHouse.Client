@@ -3,7 +3,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
 {
-    internal class DecimalTypeInfo : ParameterizedTypeInfo
+    internal class DecimalType : ParameterizedType
     {
         public virtual int Precision { get; set; }
 
@@ -26,14 +26,14 @@ namespace ClickHouse.Client.Types
 
         public override Type EquivalentType => typeof(decimal);
 
-        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));
 
             var parameters = typeName.Substring(Name.Length).TrimRoundBrackets().Split(',');
 
-            return new DecimalTypeInfo
+            return new DecimalType
             {
                 Precision = int.Parse(parameters[0]),
                 Scale = int.Parse(parameters[1]),

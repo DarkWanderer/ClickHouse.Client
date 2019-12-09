@@ -3,7 +3,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
 {
-    internal class NullableTypeInfo : ParameterizedTypeInfo
+    internal class NullableType : ParameterizedType
     {
         public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Nullable;
 
@@ -12,12 +12,12 @@ namespace ClickHouse.Client.Types
         public override Type EquivalentType => typeof(Nullable<>).MakeGenericType(UnderlyingType.EquivalentType);
 
         public override string Name => "Nullable";
-        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));
 
-            return new NullableTypeInfo
+            return new NullableType
             {
                 UnderlyingType = typeResolverFunc(typeName.Substring(Name.Length).TrimRoundBrackets())
             };

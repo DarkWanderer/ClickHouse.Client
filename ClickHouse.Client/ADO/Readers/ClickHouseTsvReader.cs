@@ -52,17 +52,17 @@ namespace ClickHouse.Client.ADO.Readers
         {
             switch (typeInfo)
             {
-                case ArrayTypeInfo ati:
+                case ArrayType ati:
                     return item
                       .Trim('[', ']')
                       .Split(',')
                       .Select(v => ConvertString(v, ati.UnderlyingType))
                       .ToArray();
-                case TupleTypeInfo tti:
+                case TupleType tti:
                     return ParseTuple(item, tti);
-                case NothingTypeInfo ti:
+                case NothingType ti:
                     return item == "\\N" ? DBNull.Value : throw new InvalidOperationException();
-                case NullableTypeInfo nti:
+                case NullableType nti:
                     return item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType);
                 default:
                     return typeInfo.DataType == ClickHouseTypeCode.UUID
@@ -71,7 +71,7 @@ namespace ClickHouse.Client.ADO.Readers
             };
         }
 
-        private object[] ParseTuple(string item, TupleTypeInfo tti)
+        private object[] ParseTuple(string item, TupleType tti)
         {
             var trimmed = item.Substring(1).Remove(item.Length - 2);
             var types = tti.UnderlyingTypes;

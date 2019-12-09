@@ -5,7 +5,7 @@ using NodaTime;
 namespace ClickHouse.Client.Types
 {
 
-    internal class DateTimeTypeInfo : ParameterizedTypeInfo
+    internal class DateTimeType : ParameterizedType
     {
         public override ClickHouseTypeCode DataType => ClickHouseTypeCode.DateTime;
 
@@ -17,7 +17,7 @@ namespace ClickHouse.Client.Types
 
         public override string ToString() => $"DateTime({TimeZone.Id})";
 
-        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));
@@ -25,7 +25,7 @@ namespace ClickHouse.Client.Types
             var timeZoneName = typeName.Substring(Name.Length).TrimRoundBrackets();
             var timeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneName) ?? DateTimeZone.Utc;
 
-            return new DateTimeTypeInfo
+            return new DateTimeType
             {
                 TimeZone = timeZone
             };

@@ -101,18 +101,18 @@ namespace ClickHouse.Client.ADO.Readers
                 case ClickHouseTypeCode.String:
                     return reader.ReadString();
                 case ClickHouseTypeCode.FixedString:
-                    var stringInfo = (FixedStringTypeInfo)rawTypeInfo;
+                    var stringInfo = (FixedStringType)rawTypeInfo;
                     return ReadFixedStringBinary(reader, stringInfo.Length);
 
                 case ClickHouseTypeCode.Array:
-                    var arrayTypeInfo = (ArrayTypeInfo)rawTypeInfo;
+                    var arrayTypeInfo = (ArrayType)rawTypeInfo;
                     var length = reader.Read7BitEncodedInt();
                     var data = new object[length];
                     for (var i = 0; i < length; i++)
                         data[i] = ReadBinaryDataType(reader, arrayTypeInfo.UnderlyingType);
                     return data;
                 case ClickHouseTypeCode.Nullable:
-                    var nullableTypeInfo = (NullableTypeInfo)rawTypeInfo;
+                    var nullableTypeInfo = (NullableType)rawTypeInfo;
                     return reader.ReadByte() > 0 ? DBNull.Value : ReadBinaryDataType(reader, nullableTypeInfo.UnderlyingType);
 
                 case ClickHouseTypeCode.Date:
@@ -133,7 +133,7 @@ namespace ClickHouse.Client.ADO.Readers
                     return new Guid(bytes);
 
                 case ClickHouseTypeCode.Tuple:
-                    var tupleTypeInfo = (TupleTypeInfo)rawTypeInfo;
+                    var tupleTypeInfo = (TupleType)rawTypeInfo;
                     var count = tupleTypeInfo.UnderlyingTypes.Length;
                     var contents = new object[count];
                     for (var i = 0; i < count; i++)
@@ -141,7 +141,7 @@ namespace ClickHouse.Client.ADO.Readers
                     return contents;
 
                 case ClickHouseTypeCode.Decimal:
-                    var decimalTypeInfo = (DecimalTypeInfo)rawTypeInfo;
+                    var decimalTypeInfo = (DecimalType)rawTypeInfo;
                     var scale = decimalTypeInfo.Scale;
                     var factor = (int)Math.Pow(10, scale);
                     var value = new BigInteger(reader.ReadBytes(decimalTypeInfo.Size));

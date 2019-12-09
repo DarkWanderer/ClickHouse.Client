@@ -3,7 +3,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
 {
-    internal class FixedStringTypeInfo : ParameterizedTypeInfo
+    internal class FixedStringType : ParameterizedType
     {
         public override ClickHouseTypeCode DataType => ClickHouseTypeCode.FixedString;
 
@@ -12,12 +12,12 @@ namespace ClickHouse.Client.Types
         public override Type EquivalentType => typeof(string);
 
         public override string Name => "FixedString";
-        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));
 
-            return new FixedStringTypeInfo
+            return new FixedStringType
             {
                 Length = int.Parse(typeName.Substring(Name.Length).TrimRoundBrackets())
             };

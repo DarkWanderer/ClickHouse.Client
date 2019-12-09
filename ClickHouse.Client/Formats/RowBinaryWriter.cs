@@ -67,7 +67,7 @@ namespace ClickHouse.Client.Formats
                     writer.Write((string)data);
                     break;
                 case ClickHouseTypeCode.FixedString:
-                    var stringInfo = (FixedStringTypeInfo)rawTypeInfo;
+                    var stringInfo = (FixedStringType)rawTypeInfo;
                     var buffer = Encoding.UTF8.GetBytes((string)data);
                     if (buffer.Length > stringInfo.Length)
                         throw new InvalidOperationException(Resources.StringIsTooLargeForFixedStringMessage);
@@ -77,14 +77,14 @@ namespace ClickHouse.Client.Formats
                         writer.Write((byte)0); // Add padding to reach the size of FixedString
                     break;
                 case ClickHouseTypeCode.Array:
-                    var arrayTypeInfo = (ArrayTypeInfo)rawTypeInfo;
+                    var arrayTypeInfo = (ArrayType)rawTypeInfo;
                     var array = (object[])data;
                     writer.Write7BitEncodedInt(array.Length);
                     for (var i = 0; i < array.Length; i++)
                         WriteItem(array[i], arrayTypeInfo.UnderlyingType);
                     break;
                 case ClickHouseTypeCode.Nullable:
-                    var nullableTypeInfo = (NullableTypeInfo)rawTypeInfo;
+                    var nullableTypeInfo = (NullableType)rawTypeInfo;
                     if (data == null || data is DBNull)
                     {
                         writer.Write((byte)1);
