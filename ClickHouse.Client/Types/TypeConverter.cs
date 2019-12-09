@@ -9,38 +9,38 @@ namespace ClickHouse.Client.Types
 {
     internal static class TypeConverter
     {
-        private static readonly IDictionary<ClickHouseDataType, ClickHouseTypeInfo> simpleTypes = new Dictionary<ClickHouseDataType, ClickHouseTypeInfo>();
+        private static readonly IDictionary<ClickHouseTypeCode, ClickHouseTypeInfo> simpleTypes = new Dictionary<ClickHouseTypeCode, ClickHouseTypeInfo>();
         private static readonly IDictionary<string, ParameterizedTypeInfo> parameterizedTypes = new Dictionary<string, ParameterizedTypeInfo>();
         private static readonly IDictionary<Type, ClickHouseTypeInfo> reverseMapping = new Dictionary<Type, ClickHouseTypeInfo>();
 
         static TypeConverter()
         {
             // Unsigned integral types
-            RegisterPlainTypeInfo<byte>(ClickHouseDataType.UInt8);
-            RegisterPlainTypeInfo<ushort>(ClickHouseDataType.UInt16);
-            RegisterPlainTypeInfo<uint>(ClickHouseDataType.UInt32);
-            RegisterPlainTypeInfo<ulong>(ClickHouseDataType.UInt64);
+            RegisterPlainTypeInfo<byte>(ClickHouseTypeCode.UInt8);
+            RegisterPlainTypeInfo<ushort>(ClickHouseTypeCode.UInt16);
+            RegisterPlainTypeInfo<uint>(ClickHouseTypeCode.UInt32);
+            RegisterPlainTypeInfo<ulong>(ClickHouseTypeCode.UInt64);
 
             // Signed integral types
-            RegisterPlainTypeInfo<sbyte>(ClickHouseDataType.Int8);
-            RegisterPlainTypeInfo<short>(ClickHouseDataType.Int16);
-            RegisterPlainTypeInfo<int>(ClickHouseDataType.Int32);
-            RegisterPlainTypeInfo<long>(ClickHouseDataType.Int64);
+            RegisterPlainTypeInfo<sbyte>(ClickHouseTypeCode.Int8);
+            RegisterPlainTypeInfo<short>(ClickHouseTypeCode.Int16);
+            RegisterPlainTypeInfo<int>(ClickHouseTypeCode.Int32);
+            RegisterPlainTypeInfo<long>(ClickHouseTypeCode.Int64);
 
             // Float types
-            RegisterPlainTypeInfo<float>(ClickHouseDataType.Float32);
-            RegisterPlainTypeInfo<double>(ClickHouseDataType.Float64);
+            RegisterPlainTypeInfo<float>(ClickHouseTypeCode.Float32);
+            RegisterPlainTypeInfo<double>(ClickHouseTypeCode.Float64);
 
             // String types
-            RegisterPlainTypeInfo<string>(ClickHouseDataType.String);
+            RegisterPlainTypeInfo<string>(ClickHouseTypeCode.String);
 
-            RegisterPlainTypeInfo<Guid>(ClickHouseDataType.UUID);
-            RegisterPlainTypeInfo<DateTime>(ClickHouseDataType.DateTime);
-            RegisterPlainTypeInfo<DateTime>(ClickHouseDataType.Date);
+            RegisterPlainTypeInfo<Guid>(ClickHouseTypeCode.UUID);
+            RegisterPlainTypeInfo<DateTime>(ClickHouseTypeCode.DateTime);
+            RegisterPlainTypeInfo<DateTime>(ClickHouseTypeCode.Date);
 
             // Special 'nothing' type
             var nti = new NothingTypeInfo();
-            simpleTypes.Add(ClickHouseDataType.Nothing, nti);
+            simpleTypes.Add(ClickHouseTypeCode.Nothing, nti);
             reverseMapping.Add(typeof(DBNull), nti);
 
             // complex types like FixedString/Array/Nested etc.
@@ -60,7 +60,7 @@ namespace ClickHouse.Client.Types
             reverseMapping.Add(typeof(decimal), new Decimal128TypeInfo());
         }
 
-        private static void RegisterPlainTypeInfo<T>(ClickHouseDataType type)
+        private static void RegisterPlainTypeInfo<T>(ClickHouseTypeCode type)
         {
             var typeInfo = new PlainDataTypeInfo<T>(type);
             simpleTypes.Add(type, typeInfo);
@@ -76,7 +76,7 @@ namespace ClickHouse.Client.Types
 
         public static ClickHouseTypeInfo ParseClickHouseType(string type)
         {
-            if (Enum.TryParse<ClickHouseDataType>(type, out var chType) && simpleTypes.TryGetValue(chType, out var typeInfo))
+            if (Enum.TryParse<ClickHouseTypeCode>(type, out var chType) && simpleTypes.TryGetValue(chType, out var typeInfo))
                 return typeInfo;
             var index = type.IndexOf('(');
             if (index > 0)

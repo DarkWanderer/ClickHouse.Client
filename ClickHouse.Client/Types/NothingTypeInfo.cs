@@ -4,7 +4,7 @@ namespace ClickHouse.Client.Types
 {
     internal class NothingTypeInfo : ClickHouseTypeInfo
     {
-        public override ClickHouseDataType DataType => ClickHouseDataType.Nothing;
+        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Nothing;
 
         public override Type EquivalentType => typeof(DBNull);
 

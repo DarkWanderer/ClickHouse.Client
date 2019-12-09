@@ -1,7 +1,7 @@
 ﻿namespace ClickHouse.Client.Types
 {
 #pragma warning disable CA1720 // Identifier contains type name
-    public enum ClickHouseDataType
+    public enum ClickHouseTypeCode
     {
         Nothing,
 

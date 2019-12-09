@@ -4,9 +4,9 @@ namespace ClickHouse.Client.Types
 {
     internal class PlainDataTypeInfo<T> : ClickHouseTypeInfo
     {
-        private readonly ClickHouseDataType dataType;
+        private readonly ClickHouseTypeCode dataType;
 
-        public PlainDataTypeInfo(ClickHouseDataType dataType)
+        public PlainDataTypeInfo(ClickHouseTypeCode dataType)
         {
             this.dataType = dataType;
             EquivalentType = typeof(T);
@@ -14,7 +14,7 @@ namespace ClickHouse.Client.Types
 
         public override Type EquivalentType { get; }
 
-        public override ClickHouseDataType DataType => dataType;
+        public override ClickHouseTypeCode DataType => dataType;
 
         public override string ToString() => DataType.ToString();
     }

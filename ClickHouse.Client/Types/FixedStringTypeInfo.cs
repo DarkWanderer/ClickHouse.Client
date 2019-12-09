@@ -5,7 +5,7 @@ namespace ClickHouse.Client.Types
 {
     internal class FixedStringTypeInfo : ParameterizedTypeInfo
     {
-        public override ClickHouseDataType DataType => ClickHouseDataType.FixedString;
+        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.FixedString;
 
         public int Length { get; set; }
 

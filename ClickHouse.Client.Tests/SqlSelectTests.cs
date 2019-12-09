@@ -78,8 +78,8 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldSelectNumericTypes()
         {
-            var types = Enum.GetValues(typeof(ClickHouseDataType))
-                .Cast<ClickHouseDataType>()
+            var types = Enum.GetValues(typeof(ClickHouseTypeCode))
+                .Cast<ClickHouseTypeCode>()
                 .Select(dt => dt.ToString())
                 .Where(dt => dt.Contains("Int") || dt.Contains("Float"))
                 .Select(dt => $"to{dt.ToString()}(55)")

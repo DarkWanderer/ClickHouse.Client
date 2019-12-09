@@ -5,7 +5,7 @@ namespace ClickHouse.Client.Types
 {
     internal class NullableTypeInfo : ParameterizedTypeInfo
     {
-        public override ClickHouseDataType DataType => ClickHouseDataType.Nullable;
+        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Nullable;
 
         public ClickHouseTypeInfo UnderlyingType { get; set; }
 

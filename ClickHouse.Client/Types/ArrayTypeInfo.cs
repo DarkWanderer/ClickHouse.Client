@@ -5,7 +5,7 @@ namespace ClickHouse.Client.Types
 {
     internal class ArrayTypeInfo : ParameterizedTypeInfo
     {
-        public override ClickHouseDataType DataType => ClickHouseDataType.Array;
+        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Array;
 
         public ClickHouseTypeInfo UnderlyingType { get; set; }
 

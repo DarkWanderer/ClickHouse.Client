@@ -36,10 +36,6 @@ before_test:
 test_script:
 - dotnet test --no-build --framework netcoreapp3.0 --configuration Release
 
-artifacts:
-- path: '**/*.nupkg'
-  name: NuGet
-
 for:
 - matrix:
     only:
@@ -55,3 +51,6 @@ for:
   - cmd: InspectCode.exe -o=resharper-clt-output.xml ClickHouse.Client.sln
   - ps: $result = [xml](Get-Content .\resharper-clt-output.xml)
   - ps: $result.Report.Issues.ChildNodes | ForEach-Object {$project = $_.Name; $_.ChildNodes | ForEach-Object {Add-AppveyorCompilationMessage -Message $_.Message -Line $_.Line -FileName $_.File -ProjectName $project}}
+  artifacts:
+  - path: '**/*.nupkg'
+    name: NuGet

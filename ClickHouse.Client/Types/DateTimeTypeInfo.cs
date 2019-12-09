@@ -7,7 +7,7 @@ namespace ClickHouse.Client.Types
 
     internal class DateTimeTypeInfo : ParameterizedTypeInfo
     {
-        public override ClickHouseDataType DataType => ClickHouseDataType.DateTime;
+        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.DateTime;
 
         public override Type EquivalentType => typeof(DateTime);
 

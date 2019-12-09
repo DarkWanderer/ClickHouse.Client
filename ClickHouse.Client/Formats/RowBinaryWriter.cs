@@ -33,40 +33,40 @@ namespace ClickHouse.Client.Formats
         {
             switch (rawTypeInfo.DataType)
             {
-                case ClickHouseDataType.UInt8:
+                case ClickHouseTypeCode.UInt8:
                     writer.Write((byte)data);
                     break;
-                case ClickHouseDataType.UInt16:
+                case ClickHouseTypeCode.UInt16:
                     writer.Write((ushort)data);
                     break;
-                case ClickHouseDataType.UInt32:
+                case ClickHouseTypeCode.UInt32:
                     writer.Write((uint)data);
                     break;
-                case ClickHouseDataType.UInt64:
+                case ClickHouseTypeCode.UInt64:
                     writer.Write((ulong)data);
                     break;
-                case ClickHouseDataType.Int8:
+                case ClickHouseTypeCode.Int8:
                     writer.Write((sbyte)data);
                     break;
-                case ClickHouseDataType.Int16:
+                case ClickHouseTypeCode.Int16:
                     writer.Write((short)data);
                     break;
-                case ClickHouseDataType.Int32:
+                case ClickHouseTypeCode.Int32:
                     writer.Write((int)data);
                     break;
-                case ClickHouseDataType.Int64:
+                case ClickHouseTypeCode.Int64:
                     writer.Write((long)data);
                     break;
-                case ClickHouseDataType.Float32:
+                case ClickHouseTypeCode.Float32:
                     writer.Write((float)data);
                     break;
-                case ClickHouseDataType.Float64:
+                case ClickHouseTypeCode.Float64:
                     writer.Write((double)data);
                     break;
-                case ClickHouseDataType.String:
+                case ClickHouseTypeCode.String:
                     writer.Write((string)data);
                     break;
-                case ClickHouseDataType.FixedString:
+                case ClickHouseTypeCode.FixedString:
                     var stringInfo = (FixedStringTypeInfo)rawTypeInfo;
                     var buffer = Encoding.UTF8.GetBytes((string)data);
                     if (buffer.Length > stringInfo.Length)
@@ -76,14 +76,14 @@ namespace ClickHouse.Client.Formats
                     for (var i = 0; i < delta; i++)
                         writer.Write((byte)0); // Add padding to reach the size of FixedString
                     break;
-                case ClickHouseDataType.Array:
+                case ClickHouseTypeCode.Array:
                     var arrayTypeInfo = (ArrayTypeInfo)rawTypeInfo;
                     var array = (object[])data;
                     writer.Write7BitEncodedInt(array.Length);
                     for (var i = 0; i < array.Length; i++)
                         WriteItem(array[i], arrayTypeInfo.UnderlyingType);
                     break;
-                case ClickHouseDataType.Nullable:
+                case ClickHouseTypeCode.Nullable:
                     var nullableTypeInfo = (NullableTypeInfo)rawTypeInfo;
                     if (data == null || data is DBNull)
                     {

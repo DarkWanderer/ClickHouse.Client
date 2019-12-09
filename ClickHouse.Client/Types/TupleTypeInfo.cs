@@ -6,7 +6,7 @@ namespace ClickHouse.Client.Types
 {
     internal class TupleTypeInfo : ParameterizedTypeInfo
     {
-        public override ClickHouseDataType DataType => ClickHouseDataType.Tuple;
+        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Tuple;
 
         public ClickHouseTypeInfo[] UnderlyingTypes { get; set; }
 
@@ -36,7 +36,7 @@ namespace ClickHouse.Client.Types
 
     internal class NestedTypeInfo : TupleTypeInfo
     {
-        public override ClickHouseDataType DataType => ClickHouseDataType.Nested;
+        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Nested;
 
         public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseTypeInfo> typeResolverFunc)
         {
