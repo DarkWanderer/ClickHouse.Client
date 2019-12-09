@@ -8,13 +8,13 @@ namespace ClickHouse.Client.Types
     {
         public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Tuple;
 
-        public ClickHouseTypeInfo[] UnderlyingTypes { get; set; }
+        public ClickHouseType[] UnderlyingTypes { get; set; }
 
         public override Type EquivalentType => typeof(Tuple<>).MakeGenericType(UnderlyingTypes.Select(t => t.EquivalentType).ToArray());
 
         public override string Name => "Tuple";
 
-        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseTypeInfo> typeResolverFunc)
+        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));
@@ -38,7 +38,7 @@ namespace ClickHouse.Client.Types
     {
         public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Nested;
 
-        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseTypeInfo> typeResolverFunc)
+        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));

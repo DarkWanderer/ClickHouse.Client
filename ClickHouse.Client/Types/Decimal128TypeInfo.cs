@@ -13,7 +13,7 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "Decimal128";
 
-        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseTypeInfo> typeResolverFunc)
+        public override ParameterizedTypeInfo Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));

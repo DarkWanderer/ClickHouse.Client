@@ -37,7 +37,7 @@ namespace ClickHouse.Client.ADO.Readers
             var columns = serializer.Deserialize<JsonColumnRecord[]>(jsonReader);
 
             FieldNames = new string[columns.Length];
-            RawTypes = new ClickHouseTypeInfo[columns.Length];
+            RawTypes = new ClickHouseType[columns.Length];
             
             for (int i = 0; i < columns.Length; i++)
             {

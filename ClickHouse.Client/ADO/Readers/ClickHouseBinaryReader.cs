@@ -25,7 +25,7 @@ namespace ClickHouse.Client.ADO.Readers
         {
             var count = reader.Read7BitEncodedInt();
             FieldNames = new string[count];
-            RawTypes = new ClickHouseTypeInfo[count];
+            RawTypes = new ClickHouseType[count];
             CurrentRow = new object[count];
 
             for (var i = 0; i < count; i++)
@@ -72,7 +72,7 @@ namespace ClickHouse.Client.ADO.Readers
             return true;
         }
 
-        private static object ReadBinaryDataType(ExtendedBinaryReader reader, ClickHouseTypeInfo rawTypeInfo)
+        private static object ReadBinaryDataType(ExtendedBinaryReader reader, ClickHouseType rawTypeInfo)
         {
             switch (rawTypeInfo.DataType)
             {

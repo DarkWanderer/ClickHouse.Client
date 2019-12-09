@@ -9,9 +9,9 @@ namespace ClickHouse.Client.Types
 {
     internal static class TypeConverter
     {
-        private static readonly IDictionary<ClickHouseTypeCode, ClickHouseTypeInfo> simpleTypes = new Dictionary<ClickHouseTypeCode, ClickHouseTypeInfo>();
+        private static readonly IDictionary<ClickHouseTypeCode, ClickHouseType> simpleTypes = new Dictionary<ClickHouseTypeCode, ClickHouseType>();
         private static readonly IDictionary<string, ParameterizedTypeInfo> parameterizedTypes = new Dictionary<string, ParameterizedTypeInfo>();
-        private static readonly IDictionary<Type, ClickHouseTypeInfo> reverseMapping = new Dictionary<Type, ClickHouseTypeInfo>();
+        private static readonly IDictionary<Type, ClickHouseType> reverseMapping = new Dictionary<Type, ClickHouseType>();
 
         static TypeConverter()
         {
@@ -74,7 +74,7 @@ namespace ClickHouse.Client.Types
             parameterizedTypes.Add(t.Name, t);
         }
 
-        public static ClickHouseTypeInfo ParseClickHouseType(string type)
+        public static ClickHouseType ParseClickHouseType(string type)
         {
             if (Enum.TryParse<ClickHouseTypeCode>(type, out var chType) && simpleTypes.TryGetValue(chType, out var typeInfo))
                 return typeInfo;
@@ -94,7 +94,7 @@ namespace ClickHouse.Client.Types
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static ClickHouseTypeInfo ToClickHouseType(Type type)
+        public static ClickHouseType ToClickHouseType(Type type)
         {
             if (reverseMapping.ContainsKey(type))
                 return reverseMapping[type];

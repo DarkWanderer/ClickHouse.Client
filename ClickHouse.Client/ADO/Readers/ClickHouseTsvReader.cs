@@ -48,7 +48,7 @@ namespace ClickHouse.Client.ADO.Readers
             }
         }
 
-        private object ConvertString(string item, ClickHouseTypeInfo typeInfo)
+        private object ConvertString(string item, ClickHouseType typeInfo)
         {
             switch (typeInfo)
             {
@@ -90,7 +90,7 @@ namespace ClickHouse.Client.ADO.Readers
             if (names.Length != types.Length)
                 throw new InvalidOperationException($"Count mismatch between names ({names.Length}) and types ({types.Length})");
             var fieldCount = names.Length;
-            RawTypes = new ClickHouseTypeInfo[fieldCount];
+            RawTypes = new ClickHouseType[fieldCount];
             FieldNames = new string[fieldCount];
 
             names.CopyTo(FieldNames, 0);

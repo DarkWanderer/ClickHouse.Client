@@ -8,10 +8,10 @@ namespace ClickHouse.Client.Formats
 {
     internal class RowBinaryWriter : IRowDataWriter, IDisposable
     {
-        private readonly ClickHouseTypeInfo[] columnTypes;
+        private readonly ClickHouseType[] columnTypes;
         private readonly ExtendedBinaryWriter writer;
 
-        public RowBinaryWriter(Stream destination, params ClickHouseTypeInfo[] columnTypes)
+        public RowBinaryWriter(Stream destination, params ClickHouseType[] columnTypes)
         {
             this.columnTypes = columnTypes ?? throw new ArgumentNullException(nameof(columnTypes));
             writer = new ExtendedBinaryWriter(destination);
@@ -29,7 +29,7 @@ namespace ClickHouse.Client.Formats
             }
         }
 
-        private void WriteItem(object data, ClickHouseTypeInfo rawTypeInfo)
+        private void WriteItem(object data, ClickHouseType rawTypeInfo)
         {
             switch (rawTypeInfo.DataType)
             {

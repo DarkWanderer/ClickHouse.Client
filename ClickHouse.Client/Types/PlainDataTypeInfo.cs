@@ -2,7 +2,7 @@
 
 namespace ClickHouse.Client.Types
 {
-    internal class PlainDataTypeInfo<T> : ClickHouseTypeInfo
+    internal class PlainDataTypeInfo<T> : ClickHouseType
     {
         private readonly ClickHouseTypeCode dataType;
 

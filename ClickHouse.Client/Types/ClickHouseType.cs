@@ -2,7 +2,7 @@
 
 namespace ClickHouse.Client.Types
 {
-    internal abstract class ClickHouseTypeInfo
+    internal abstract class ClickHouseType
     {
         public abstract ClickHouseTypeCode DataType { get; }
 

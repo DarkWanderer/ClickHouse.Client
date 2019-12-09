@@ -38,7 +38,7 @@ namespace ClickHouse.Client.ADO.Readers
 
         protected string[] FieldNames { get; set; }
 
-        private protected ClickHouseTypeInfo[] RawTypes { get; set; }
+        private protected ClickHouseType[] RawTypes { get; set; }
 
         public override bool GetBoolean(int ordinal) => Convert.ToBoolean(GetValue(ordinal), CultureInfo.InvariantCulture);
 
