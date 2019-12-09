@@ -74,7 +74,7 @@ namespace ClickHouse.Client.ADO.Readers
 
         private static object ReadBinaryDataType(ExtendedBinaryReader reader, ClickHouseType rawTypeInfo)
         {
-            switch (rawTypeInfo.DataType)
+            switch (rawTypeInfo.TypeCode)
             {
                 case ClickHouseTypeCode.UInt8:
                     return reader.ReadByte();

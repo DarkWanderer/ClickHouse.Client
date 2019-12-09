@@ -11,7 +11,7 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "Decimal";
 
-        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Decimal;
+        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Decimal;
 
         /// <summary>
         /// Size of type in bytes
@@ -24,7 +24,7 @@ namespace ClickHouse.Client.Types
             _ => throw new ArgumentOutOfRangeException(nameof(Precision)),
         };
 
-        public override Type EquivalentType => typeof(decimal);
+        public override Type FrameworkType => typeof(decimal);
 
         public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {

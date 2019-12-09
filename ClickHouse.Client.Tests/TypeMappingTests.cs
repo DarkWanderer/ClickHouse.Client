@@ -33,7 +33,7 @@ namespace ClickHouse.Client.Tests
         [TestCase("Nullable(UInt32)", ExpectedResult = typeof(uint?))]
         [TestCase("Array(Array(String))", ExpectedResult = typeof(string[][]))]
         [TestCase("Array(Nullable(UInt32))", ExpectedResult = typeof(uint?[]))]
-        public Type ShouldConvertFromClickHouseType(string clickHouseType) => TypeConverter.ParseClickHouseType(clickHouseType).EquivalentType;
+        public Type ShouldConvertFromClickHouseType(string clickHouseType) => TypeConverter.ParseClickHouseType(clickHouseType).FrameworkType;
 
         [Test]
         [TestCase(typeof(sbyte), ExpectedResult = "Int8")]

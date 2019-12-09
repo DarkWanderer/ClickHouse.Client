@@ -6,11 +6,11 @@ namespace ClickHouse.Client.Types
 {
     internal class TupleType : ParameterizedType
     {
-        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Tuple;
+        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Tuple;
 
         public ClickHouseType[] UnderlyingTypes { get; set; }
 
-        public override Type EquivalentType => typeof(Tuple<>).MakeGenericType(UnderlyingTypes.Select(t => t.EquivalentType).ToArray());
+        public override Type FrameworkType => typeof(Tuple<>).MakeGenericType(UnderlyingTypes.Select(t => t.FrameworkType).ToArray());
 
         public override string Name => "Tuple";
 
@@ -36,7 +36,7 @@ namespace ClickHouse.Client.Types
 
     internal class NestedTypeInfo : TupleType
     {
-        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Nested;
+        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Nested;
 
         public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {

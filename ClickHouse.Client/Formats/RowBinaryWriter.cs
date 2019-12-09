@@ -31,7 +31,7 @@ namespace ClickHouse.Client.Formats
 
         private void WriteItem(object data, ClickHouseType rawTypeInfo)
         {
-            switch (rawTypeInfo.DataType)
+            switch (rawTypeInfo.TypeCode)
             {
                 case ClickHouseTypeCode.UInt8:
                     writer.Write((byte)data);

@@ -5,11 +5,11 @@ namespace ClickHouse.Client.Types
 {
     internal class NullableType : ParameterizedType
     {
-        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Nullable;
+        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Nullable;
 
         public ClickHouseType UnderlyingType { get; set; }
 
-        public override Type EquivalentType => typeof(Nullable<>).MakeGenericType(UnderlyingType.EquivalentType);
+        public override Type FrameworkType => typeof(Nullable<>).MakeGenericType(UnderlyingType.FrameworkType);
 
         public override string Name => "Nullable";
         public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)

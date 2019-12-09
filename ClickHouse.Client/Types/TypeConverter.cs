@@ -64,8 +64,8 @@ namespace ClickHouse.Client.Types
         {
             var typeInfo = new PlainDataType<T>(type);
             simpleTypes.Add(type, typeInfo);
-            if (!reverseMapping.ContainsKey(typeInfo.EquivalentType))
-                reverseMapping.Add(typeInfo.EquivalentType, typeInfo);
+            if (!reverseMapping.ContainsKey(typeInfo.FrameworkType))
+                reverseMapping.Add(typeInfo.FrameworkType, typeInfo);
         }
 
         private static void RegisterParameterizedType<T>() where T : ParameterizedType, new()

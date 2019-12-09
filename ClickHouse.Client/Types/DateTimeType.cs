@@ -7,9 +7,9 @@ namespace ClickHouse.Client.Types
 
     internal class DateTimeType : ParameterizedType
     {
-        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.DateTime;
+        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.DateTime;
 
-        public override Type EquivalentType => typeof(DateTime);
+        public override Type FrameworkType => typeof(DateTime);
 
         public DateTimeZone TimeZone { get; set; }
 

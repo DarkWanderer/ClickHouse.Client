@@ -9,13 +9,13 @@ namespace ClickHouse.Client.Types
         public PlainDataType(ClickHouseTypeCode dataType)
         {
             this.dataType = dataType;
-            EquivalentType = typeof(T);
+            FrameworkType = typeof(T);
         }
 
-        public override Type EquivalentType { get; }
+        public override Type FrameworkType { get; }
 
-        public override ClickHouseTypeCode DataType => dataType;
+        public override ClickHouseTypeCode TypeCode => dataType;
 
-        public override string ToString() => DataType.ToString();
+        public override string ToString() => TypeCode.ToString();
     }
 }

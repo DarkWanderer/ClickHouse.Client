@@ -31,7 +31,7 @@ namespace ClickHouse.Client.ADO.Readers
             for (var i = 0; i < FieldCount; i++)
             {
                 var typeInfo = RawTypes[i];
-                if (typeInfo.DataType == ClickHouseTypeCode.UUID)
+                if (typeInfo.TypeCode == ClickHouseTypeCode.UUID)
                     rowData[i] = new Guid(rowItems[i]);
                 else
                     rowData[i] = ConvertString(rowItems[i], typeInfo);
@@ -65,9 +65,9 @@ namespace ClickHouse.Client.ADO.Readers
                 case NullableType nti:
                     return item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType);
                 default:
-                    return typeInfo.DataType == ClickHouseTypeCode.UUID
+                    return typeInfo.TypeCode == ClickHouseTypeCode.UUID
                         ? new Guid(item)
-                        : Convert.ChangeType(item, typeInfo.EquivalentType, CultureInfo.InvariantCulture);
+                        : Convert.ChangeType(item, typeInfo.FrameworkType, CultureInfo.InvariantCulture);
             };
         }
 

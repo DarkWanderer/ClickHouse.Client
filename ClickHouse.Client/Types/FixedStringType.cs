@@ -5,11 +5,11 @@ namespace ClickHouse.Client.Types
 {
     internal class FixedStringType : ParameterizedType
     {
-        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.FixedString;
+        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.FixedString;
 
         public int Length { get; set; }
 
-        public override Type EquivalentType => typeof(string);
+        public override Type FrameworkType => typeof(string);
 
         public override string Name => "FixedString";
         public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)

@@ -2,7 +2,7 @@
 {
     internal class DateType : DateTimeType
     {
-        public override ClickHouseTypeCode DataType => ClickHouseTypeCode.Date;
+        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Date;
 
         public override string Name => "Date";
 
