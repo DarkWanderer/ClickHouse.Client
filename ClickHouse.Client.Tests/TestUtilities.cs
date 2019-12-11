@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
+using ClickHouse.Client.Types;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
@@ -26,24 +28,78 @@ namespace ClickHouse.Client.Tests
             return new ClickHouseConnection(builder.ConnectionString);
         }
 
+        public struct DataTypeSample
+        {
+            public readonly string ClickHouseType;
+            public readonly Type FrameworkType;
+            public readonly string ExampleExpression;
+            public readonly object ExampleValue;
+
+            public DataTypeSample(string clickHouseType, Type frameworkType, string exampleExpression, object exampleValue)
+            {
+                ClickHouseType = clickHouseType;
+                FrameworkType = frameworkType;
+                ExampleExpression = exampleExpression;
+                ExampleValue = exampleValue;
+            }
+        }
+
+        public static IEnumerable<DataTypeSample> GetDataTypeSamples()
+        {
+            yield return new DataTypeSample("Nothing", typeof(DBNull), "NULL", DBNull.Value);
+
+            yield return new DataTypeSample("Int16", typeof(short), "toInt16(-16)", -16);
+            yield return new DataTypeSample("UInt16", typeof(ushort), "toUInt16(16)", 16);
+
+            yield return new DataTypeSample("Int32", typeof(int), "toInt16(-32)", -32);
+            yield return new DataTypeSample("UInt32", typeof(uint), "toUInt16(32)", 32);
+
+            yield return new DataTypeSample("Int64", typeof(long), "toInt64(-64)", -64);
+            yield return new DataTypeSample("UInt64", typeof(ulong), "toUInt64(64)", 64);
+
+            yield return new DataTypeSample("Float32", typeof(float), "toFloat32(32e6)", 32e6);
+            yield return new DataTypeSample("Float64", typeof(double), "toFloat64(64e6)", 64e6);
+
+            yield return new DataTypeSample("FixedString(3)", typeof(string), "toFixedString('ASD',3)", "ASD");
+             
+            yield return new DataTypeSample("UUID", typeof(Guid), "toUUID('61f0c404-5cb3-11e7-907b-a6006ad3dba0')", new Guid("61f0c404-5cb3-11e7-907b-a6006ad3dba0"));
+
+            yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(123.45, 3)", new decimal(123.45));
+            yield return new DataTypeSample("Decimal64(7)", typeof(decimal), "toDecimal64(1.2345, 7)", new decimal(1.2345));
+            yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(12.34, 9)", new decimal(12.34));
+
+            yield return new DataTypeSample("Array(Int32)", typeof(int[]), "array(1, 2, 3)", new[] { 1, 2, 3 });
+
+            yield return new DataTypeSample("Tuple(Int32, String, Nothing)", typeof(Tuple<int, string, DBNull>), "tuple(1, 'a', NULL)", new object[] { 1, "a", DBNull.Value });
+
+            yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1988-11-12')", new DateTime(1988, 11, 12));
+            yield return new DataTypeSample("DateTime", typeof(DateTime), "toDateTimeOrNull('1988-11-12 11:22:33')", new DateTime(1988, 11, 12, 11, 22, 33));
+        }
+
         public static object[] GetEnsureSingleRow(this DbDataReader reader)
         {
-            Assert.IsTrue(reader.HasRows);
-            Assert.IsTrue(reader.Read());
+            Assert.IsTrue(reader.HasRows, "Reader expected to have rows");
+            Assert.IsTrue(reader.Read(), "Reader Read() returned false");
 
             var data = reader.GetFieldValues();
 
-            Assert.IsFalse(reader.HasRows);
-            Assert.IsFalse(reader.Read());
+            Assert.IsFalse(reader.HasRows, "Reader expected to not have rows");
+            Assert.IsFalse(reader.Read(), "Reader Read() returned true");
 
             return data;
         }
 
-        public static Task ExecuteStatementAsync(this ClickHouseConnection connection, string sql)
+        public static Task<int> ExecuteStatementAsync(this ClickHouseConnection connection, string sql)
         {
             using var command = connection.CreateCommand();
             command.CommandText = sql;
             return command.ExecuteNonQueryAsync();
+        }
+        public static Task<object> ExecuteScalarAsync(this ClickHouseConnection connection, string sql)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            return command.ExecuteScalarAsync();
         }
 
         public static Task<DbDataReader> ExecuteReaderAsync(this ClickHouseConnection connection, string sql)

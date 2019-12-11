@@ -64,90 +64,12 @@ namespace ClickHouse.Client.ADO.Readers
             for (var i = 0; i < count; i++)
             {
                 var rawTypeInfo = RawTypes[i];
-                data[i] = ReadBinaryDataType(reader, rawTypeInfo);
+                data[i] = BinaryFormat.ReadValue(reader, rawTypeInfo);
             }
             // infinite cycle prevention: if stream position did not move, something went wrong
             if (initialPosition == stream.Position)
                 throw new InvalidOperationException(Resources.InternalErrorMessage);
             return true;
-        }
-
-        private static object ReadBinaryDataType(ExtendedBinaryReader reader, ClickHouseType rawTypeInfo)
-        {
-            switch (rawTypeInfo.TypeCode)
-            {
-                case ClickHouseTypeCode.UInt8:
-                    return reader.ReadByte();
-                case ClickHouseTypeCode.UInt16:
-                    return reader.ReadUInt16();
-                case ClickHouseTypeCode.UInt32:
-                    return reader.ReadUInt32();
-                case ClickHouseTypeCode.UInt64:
-                    return reader.ReadUInt64();
-
-                case ClickHouseTypeCode.Int8:
-                    return reader.ReadSByte();
-                case ClickHouseTypeCode.Int16:
-                    return reader.ReadInt16();
-                case ClickHouseTypeCode.Int32:
-                    return reader.ReadInt32();
-                case ClickHouseTypeCode.Int64:
-                    return reader.ReadInt64();
-
-                case ClickHouseTypeCode.Float32:
-                    return reader.ReadSingle();
-                case ClickHouseTypeCode.Float64:
-                    return reader.ReadDouble();
-                case ClickHouseTypeCode.String:
-                    return reader.ReadString();
-                case ClickHouseTypeCode.FixedString:
-                    var stringInfo = (FixedStringType)rawTypeInfo;
-                    return ReadFixedStringBinary(reader, stringInfo.Length);
-
-                case ClickHouseTypeCode.Array:
-                    var arrayTypeInfo = (ArrayType)rawTypeInfo;
-                    var length = reader.Read7BitEncodedInt();
-                    var data = new object[length];
-                    for (var i = 0; i < length; i++)
-                        data[i] = ReadBinaryDataType(reader, arrayTypeInfo.UnderlyingType);
-                    return data;
-                case ClickHouseTypeCode.Nullable:
-                    var nullableTypeInfo = (NullableType)rawTypeInfo;
-                    return reader.ReadByte() > 0 ? DBNull.Value : ReadBinaryDataType(reader, nullableTypeInfo.UnderlyingType);
-
-                case ClickHouseTypeCode.Date:
-                    var days = reader.ReadUInt16();
-                    return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddDays(days);
-                case ClickHouseTypeCode.DateTime:
-                    var milliseconds = reader.ReadUInt32();
-                    return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(milliseconds);
-
-                case ClickHouseTypeCode.UUID:
-                    // Weird byte manipulation because of C#'s strange Guid implementation
-                    var bytes = new byte[16];
-                    reader.Read(bytes, 6, 2);
-                    reader.Read(bytes, 4, 2);
-                    reader.Read(bytes, 0, 4);
-                    reader.Read(bytes, 8, 8);
-                    Array.Reverse(bytes, 8, 8);
-                    return new Guid(bytes);
-
-                case ClickHouseTypeCode.Tuple:
-                    var tupleTypeInfo = (TupleType)rawTypeInfo;
-                    var count = tupleTypeInfo.UnderlyingTypes.Length;
-                    var contents = new object[count];
-                    for (var i = 0; i < count; i++)
-                        contents[i] = ReadBinaryDataType(reader, tupleTypeInfo.UnderlyingTypes[i]);
-                    return contents;
-
-                case ClickHouseTypeCode.Decimal:
-                    var decimalTypeInfo = (DecimalType)rawTypeInfo;
-                    var scale = decimalTypeInfo.Scale;
-                    var factor = (int)Math.Pow(10, scale);
-                    var value = new BigInteger(reader.ReadBytes(decimalTypeInfo.Size));
-                    return (decimal)value / factor;
-            }
-            throw new NotImplementedException();
         }
 
         protected override void Dispose(bool disposing)

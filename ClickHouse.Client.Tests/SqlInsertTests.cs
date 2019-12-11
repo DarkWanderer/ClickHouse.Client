@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
+using ClickHouse.Client.Copy;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
+    //[Ignore("WIP")]
     [Parallelizable]
     [TestFixture(ClickHouseConnectionDriver.Binary)]
     [TestFixture(ClickHouseConnectionDriver.JSON)]
@@ -24,37 +25,40 @@ namespace ClickHouse.Client.Tests
         public async Task FixtureSetup()
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
-            await connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS test");
-            
-            await connection.ExecuteStatementAsync("DROP TABLE IF EXISTS test.t_nested");
-            await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.t_nested(nested_v Nested (int16_v Int16, uint32_v UInt32, dtime_v DateTime, string_v String)) ENGINE = Memory");
-
-            await connection.ExecuteStatementAsync("DROP TABLE IF EXISTS test.t_string");
-            await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.t_string(string_v String, fixedstring3_v FixedString(3)) ENGINE = Memory");
+            await connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS temp");
         }
 
-        public static IEnumerable<TestCaseData> GetInsertQueryTestCases()
+        public static IEnumerable<TestCaseData> GetInsertSingleValueTestCases()
         {
-            yield return new TestCaseData("INSERT INTO test.t_string", new Dictionary<string, object>() {
-                { "string_v", "Part1\tPart2\nPart3" },
-                { "fixedstring3_v", "ASDF"}
-            }).SetName("DifferentTypeParametersInsert");
+            foreach (var sample in TestUtilities.GetDataTypeSamples().Where(s => s.ClickHouseType != "Nothing"))
+            {
+                yield return new TestCaseData(sample.ClickHouseType, sample.ExampleValue);
+            }
+            yield return new TestCaseData("String", "1\t2\n3");
         }
 
         [Test]
-        [TestCaseSource(typeof(SqlInsertTests), nameof(GetInsertQueryTestCases))]
-        public async Task ShouldExecuteParameterizedInsertQuery(string sql, IReadOnlyDictionary<string, object> parameters)
+        [TestCaseSource(typeof(SqlInsertTests), nameof(GetInsertSingleValueTestCases))]
+        public async Task ShouldExecuteSingleValueInsertViaBulkCopy(string clickHouseType, object insertedValue)
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-            foreach (var keyValuePair in parameters)
+
+            var targetTable = $"temp.b_{clickHouseType.Replace("(", null).Replace(")", null).Replace(",", null).Replace(" ", null) }";
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
+
+            using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
-                var parameter = command.CreateParameter();
-                parameter.ParameterName = keyValuePair.Key;
-                parameter.Value = keyValuePair.Value;
-            }
-            await command.ExecuteNonQueryAsync();
+                DestinationTableName = targetTable,
+                BatchSize = 100000
+            };
+
+            await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { insertedValue }, 1));
+
+            using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+            Assert.IsTrue(reader.Read());
+            reader.EnsureFieldCount(1);
+            var data = reader.GetValue(0);
+            Assert.AreEqual(insertedValue, data);
         }
     }
 }

@@ -35,6 +35,11 @@ namespace ClickHouse.Client.ADO
         public ClickHouseConnection(string connectionString)
         {
             ConnectionString = connectionString;
+            //httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            //httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/csv"));
+            //httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
+            //httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+            //httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeader;
         }
 
         public sealed override string ConnectionString
@@ -72,16 +77,35 @@ namespace ClickHouse.Client.ADO
 
         public override string ServerVersion => serverVersion;
 
+        internal async Task<HttpResponseMessage> GetSqlQueryAsync(string sql, CancellationToken token)
+        {
+            var response = await httpClient.GetAsync(MakeUri(sql), token).ConfigureAwait(false);
+            return await HandleError(response).ConfigureAwait(false);
+        }
+
         internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token)
         {
-            var uriBuilder = new UriBuilder(serverUri);
-            var queryParameters = new HttpQueryParameters() { Database = database, Compress = useCompression };
-            uriBuilder.Query = queryParameters.ToString();
+            using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri())
+            {
+                Content = new StringContent(sqlQuery)
+            };
+            var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
+            //var response = await httpClient.PostAsync(MakeUri(), new StringContent(sqlQuery), token);
+            return await HandleError(response).ConfigureAwait(false);
+        }
 
-            using var httpContent = new StringContent(sqlQuery);
-            using var postMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
+        internal async Task<HttpResponseMessage> PostDataAsync(string sql, Stream data, CancellationToken token)
+        {
+            using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri(sql));
             postMessage.Headers.Authorization = AuthenticationHeader;
-            var response = await httpClient.PostAsync(serverUri, httpContent, token).ConfigureAwait(false);
+            postMessage.Content = new StreamContent(data);
+
+            var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
+            return await HandleError(response).ConfigureAwait(false);
+        }
+
+        private static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response)
+        {
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -90,28 +114,20 @@ namespace ClickHouse.Client.ADO
             return response;
         }
 
-        internal async Task<HttpResponseMessage> PostBulkDataAsync(string sql, Stream data, CancellationToken token)
+        private string MakeUri(string sql = null)
         {
             var uriBuilder = new UriBuilder(serverUri);
             var queryParameters = new HttpQueryParameters()
             {
-                SqlQuery = sql,
                 Database = database,
-                Compress = useCompression
+                // TODO - fix this. Bug in ClickHouse
+                // Compress = useCompression
             };
+            if (!string.IsNullOrWhiteSpace(sql))
+                queryParameters.SqlQuery = sql;
+
             uriBuilder.Query = queryParameters.ToString();
-
-            using var httpContent = new StreamContent(data);
-            using var postMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
-            postMessage.Headers.Authorization = AuthenticationHeader;
-
-            var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                throw new ClickHouseServerException(error);
-            }
-            return response;
+            return uriBuilder.ToString();
         }
 
         internal ClickHouseConnectionDriver Driver { get; private set; }

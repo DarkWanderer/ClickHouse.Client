@@ -20,9 +20,7 @@ namespace ClickHouse.Client.Tests
 
             const int count = 100000 * Multiplier;
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
-            var command = connection.CreateCommand();
-            command.CommandText = $"SELECT number FROM system.numbers LIMIT {count}";
-            using var reader = await command.ExecuteReaderAsync();
+            using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers LIMIT {count}");
 
             int counter = 0;
             Assert.IsTrue(reader.HasRows);
@@ -40,22 +38,18 @@ namespace ClickHouse.Client.Tests
         public async Task BulkCopyBenchmark()
         {
             const int count = 20000 * Multiplier;
-            const string targetDatabase = "default";
-            const string targetTable = "discard";
+            string targetDatabase = "temp";
+            string targetTable = $"{targetDatabase}.bulk_insert_test";
 
             var stopwatch = new Stopwatch();
             using var sourceConnection = TestUtilities.GetTestClickHouseConnection(Driver, true);
             using var targetConnection = TestUtilities.GetTestClickHouseConnection(Driver, true);
             targetConnection.ChangeDatabase(targetDatabase);
 
-            using var tcommand = targetConnection.CreateCommand();
-            tcommand.CommandText = $"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE Null";
-            tcommand.ExecuteNonQuery(); // Create target table
+            await targetConnection.ExecuteStatementAsync($"CREATE DATABASE IF NOT EXISTS {targetDatabase}");
+            await targetConnection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE Log");
 
-            using var scommand = sourceConnection.CreateCommand();
-
-            scommand.CommandText = $"SELECT number FROM system.numbers LIMIT {count}";
-            using var reader = await scommand.ExecuteReaderAsync();
+            using var reader = await sourceConnection.ExecuteReaderAsync($"SELECT number FROM system.numbers LIMIT {count}");
 
             using var bulkCopyInterface = new ClickHouseBulkCopy(targetConnection)
             {

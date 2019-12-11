@@ -54,6 +54,8 @@ namespace ClickHouse.Client.Copy
             await Flush().ConfigureAwait(false);
         }
 
+        public Task WriteToServerAsync(IEnumerable<object[]> rows) => WriteToServerAsync(rows, CancellationToken.None);
+
         public async Task WriteToServerAsync(IEnumerable<object[]> rows, CancellationToken token)
         {
             if (rows is null)
@@ -83,11 +85,14 @@ namespace ClickHouse.Client.Copy
         {
             var sb = new StringBuilder();
             foreach (var row in values)
-                sb.AppendLine(string.Join("\t", row.Select(TabEscape)));
+            {
+                sb.Append(string.Join("\t", row.Select(TabEscape)));
+                sb.Append("\n");
+            }
 
             var query = $"INSERT INTO {DestinationTableName} FORMAT TabSeparated";
             using var reader = new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
-            await connection.PostBulkDataAsync(query, reader, token).ConfigureAwait(false);
+            var result = await connection.PostDataAsync(query, reader, token).ConfigureAwait(false);
         }
 
         private string TabEscape(object arg) 
