@@ -62,6 +62,7 @@ namespace ClickHouse.Client.Tests
             stopwatch.Stop();
 
             var rps = (double)count / stopwatch.ElapsedMilliseconds * 1000;
+            Assert.AreEqual(count, bulkCopyInterface.RowsWritten);
             Assert.Pass($"{rps:#0.} rows/s");
         }
     }

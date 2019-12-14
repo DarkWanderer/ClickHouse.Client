@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Properties;
@@ -17,6 +18,7 @@ namespace ClickHouse.Client.Copy
     public class ClickHouseBulkCopy : IDisposable
     {
         private readonly ClickHouseConnection connection;
+        private long rowsWritten = 0;
 
         public ClickHouseBulkCopy(ClickHouseConnection connection)
         {
@@ -25,37 +27,20 @@ namespace ClickHouse.Client.Copy
 
         public int BatchSize { get; set; } = 50000;
 
+        public int MaxDegreeOfParallelism { get; set; } = 4;
+
         public string DestinationTableName { get; set; }
+
+        public long RowsWritten => rowsWritten;
 
         public Task WriteToServerAsync(IDataReader reader) => WriteToServerAsync(reader, CancellationToken.None);
 
-        public async Task WriteToServerAsync(IDataReader reader, CancellationToken token)
+        public Task WriteToServerAsync(IDataReader reader, CancellationToken token)
         {
             if (reader is null)
                 throw new ArgumentNullException(nameof(reader));
-            if (string.IsNullOrWhiteSpace(DestinationTableName))
-                throw new InvalidOperationException(Resources.DestinationTableNotSetMessage);
 
-            var tableColumns = await GetTargetTableSchemaAsync(token);
-
-            var batch = new List<object[]>();
-
-            async Task Flush()
-            {
-                await PushBatch(batch, token).ConfigureAwait(false);
-                batch.Clear();
-            }
-
-            while (reader.Read())
-            {
-                token.ThrowIfCancellationRequested();
-                var values = new object[reader.FieldCount];
-                reader.GetValues(values);
-                batch.Add(values);
-                if (batch.Count >= BatchSize)
-                    await Flush().ConfigureAwait(false);
-            }
-            await Flush().ConfigureAwait(false);
+            return WriteToServerAsync(AsEnumerable(reader), token);
         }
 
         public Task WriteToServerAsync(IEnumerable<object[]> rows) => WriteToServerAsync(rows, CancellationToken.None);
@@ -67,27 +52,33 @@ namespace ClickHouse.Client.Copy
             if (string.IsNullOrWhiteSpace(DestinationTableName))
                 throw new InvalidOperationException(Resources.DestinationTableNotSetMessage);
 
-            var tableColumns = await GetTargetTableSchemaAsync(token);
+            //var tableColumns = await GetTargetTableSchemaAsync(token);
 
-            var batch = new List<object[]>();
-
-            async Task Flush()
-            {
-                await PushBatch(batch, token).ConfigureAwait(false);
-                batch.Clear();
-            }
+            var batchBlock = new BatchBlock<object[]>(BatchSize, new GroupingDataflowBlockOptions { CancellationToken = token });
+            var actionBlock = new ActionBlock<object[][]>(block => PushBatch(block, token), new ExecutionDataflowBlockOptions { CancellationToken = token, MaxDegreeOfParallelism = MaxDegreeOfParallelism });
+            batchBlock.LinkTo(actionBlock);
+            _ = batchBlock.Completion.ContinueWith(task => actionBlock.Complete());
 
             foreach (var row in rows)
             {
                 token.ThrowIfCancellationRequested();
-                batch.Add(row);
-                if (batch.Count >= BatchSize)
-                    await Flush().ConfigureAwait(false);
+                batchBlock.Post(row);
             }
-            await Flush().ConfigureAwait(false);
+            batchBlock.Complete();
+            await actionBlock.Completion;
         }
 
-        private async Task PushBatch(List<object[]> values, CancellationToken token)
+        private static IEnumerable<object[]> AsEnumerable(IDataReader reader)
+        {
+            while (reader.Read())
+            {
+                var values = new object[reader.FieldCount];
+                reader.GetValues(values);
+                yield return values;
+            }
+        }
+
+        private async Task PushBatch(object[][] values, CancellationToken token)
         {
             var sb = new StringBuilder();
             foreach (var row in values)
@@ -99,6 +90,7 @@ namespace ClickHouse.Client.Copy
             var query = $"INSERT INTO {DestinationTableName} FORMAT TabSeparated";
             using var reader = new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
             var result = await connection.PostDataAsync(query, reader, token).ConfigureAwait(false);
+            Interlocked.Add(ref rowsWritten, values.Length);
         }
 
         private async Task<ClickHouseType[]> GetTargetTableSchemaAsync(CancellationToken token)

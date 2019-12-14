@@ -13,4 +13,4 @@
 * Supports recursive types (array of nullable of Int, etc.)
 * High-throughput
   * 20 million values/second read (binary protocol)
-  * 2.5 million values/second insert (bulk copy)
+  * 2 million values/second insert (bulk copy)
