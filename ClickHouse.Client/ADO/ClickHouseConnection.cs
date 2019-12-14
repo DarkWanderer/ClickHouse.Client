@@ -39,6 +39,7 @@ namespace ClickHouse.Client.ADO
             //httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/csv"));
             //httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
             //httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+            //httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
             //httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeader;
         }
 
@@ -140,9 +141,9 @@ namespace ClickHouse.Client.ADO
 
         public object Clone() => throw new NotImplementedException();
 
-        public override void Close() { }
+        public override void Close() => state = ConnectionState.Closed;
 
-        public override void Open() => OpenAsync().GetAwaiter().GetResult();
+        public override void Open() => OpenAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
         public override async Task OpenAsync(CancellationToken token)
         {

@@ -13,11 +13,13 @@ namespace ClickHouse.Client.ADO.Readers
     {
         private readonly Stream stream;
         private readonly ExtendedBinaryReader reader;
+        private readonly BinaryStreamReader streamReader;
 
         public ClickHouseBinaryReader(HttpResponseMessage httpResponse) : base(httpResponse)
         {
             stream = httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
             reader = new ExtendedBinaryReader(stream);
+            streamReader = new BinaryStreamReader(reader);
             ReadHeaders();
         }
 
@@ -64,7 +66,7 @@ namespace ClickHouse.Client.ADO.Readers
             for (var i = 0; i < count; i++)
             {
                 var rawTypeInfo = RawTypes[i];
-                data[i] = BinaryFormat.ReadValue(reader, rawTypeInfo);
+                data[i] = streamReader.ReadValue(rawTypeInfo);
             }
             // infinite cycle prevention: if stream position did not move, something went wrong
             if (initialPosition == stream.Position)
@@ -78,6 +80,7 @@ namespace ClickHouse.Client.ADO.Readers
             {
                 reader.Dispose();
                 stream.Dispose();
+                streamReader.Dispose();
             }
             base.Dispose(disposing);
         }

@@ -8,7 +8,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
+using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Properties;
+using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.Copy
 {
@@ -33,6 +35,8 @@ namespace ClickHouse.Client.Copy
                 throw new ArgumentNullException(nameof(reader));
             if (string.IsNullOrWhiteSpace(DestinationTableName))
                 throw new InvalidOperationException(Resources.DestinationTableNotSetMessage);
+
+            var tableColumns = await GetTargetTableSchemaAsync(token);
 
             var batch = new List<object[]>();
 
@@ -62,6 +66,8 @@ namespace ClickHouse.Client.Copy
                 throw new ArgumentNullException(nameof(rows));
             if (string.IsNullOrWhiteSpace(DestinationTableName))
                 throw new InvalidOperationException(Resources.DestinationTableNotSetMessage);
+
+            var tableColumns = await GetTargetTableSchemaAsync(token);
 
             var batch = new List<object[]>();
 
@@ -95,17 +101,40 @@ namespace ClickHouse.Client.Copy
             var result = await connection.PostDataAsync(query, reader, token).ConfigureAwait(false);
         }
 
-        private string TabEscape(object arg) 
+        private async Task<ClickHouseType[]> GetTargetTableSchemaAsync(CancellationToken token)
         {
-            if (arg is int || arg is float || arg is double || arg is long)
-                return Convert.ToString(arg, CultureInfo.InvariantCulture);
-            if (arg is string s)
-                return s.Replace("\t", "\\\t").Replace("\n", "\\\n").Replace("\\", "\\\\");
-            if (arg is DateTime dt)
-                return dt.ToString("yyyy-MM-dd hh:mm:ss");
+            using var command = connection.CreateCommand();
+            command.CommandText = $"SELECT * FROM {DestinationTableName}";
+            using var reader = (ClickHouseDataReader)await command.ExecuteReaderAsync(CommandBehavior.SchemaOnly, token).ConfigureAwait(false);
+            return Enumerable.Range(0, reader.FieldCount).Select(reader.GetClickHouseType).ToArray();
+        }
+
+        private string TabEscape(object arg)
+        {
             if (arg is null)
                 return "\\N";
-            return arg.ToString();
+
+            switch (Type.GetTypeCode(arg.GetType()))
+            {
+                case TypeCode.Byte:
+                case TypeCode.SByte:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.UInt64:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Int64:
+                case TypeCode.Decimal:
+                case TypeCode.Double:
+                case TypeCode.Single:
+                    return Convert.ToString(arg, CultureInfo.InvariantCulture);
+                case TypeCode.String:
+                    return (arg as string).Replace("\t", "\\\t").Replace("\n", "\\\n").Replace("\\", "\\\\");
+                case TypeCode.DateTime:
+                    return ((DateTime)arg).ToString("yyyy-MM-dd hh:mm:ss");
+                default:
+                    return arg.ToString();
+            }
         }
 
         private bool disposed = false; // To detect redundant calls

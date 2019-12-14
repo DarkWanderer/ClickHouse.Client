@@ -7,19 +7,10 @@ using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
-    //[Ignore("WIP")]
-    [Parallelizable]
-    [TestFixture(ClickHouseConnectionDriver.Binary)]
-    [TestFixture(ClickHouseConnectionDriver.JSON)]
-    [TestFixture(ClickHouseConnectionDriver.TSV)]
-    public class SqlInsertTests
+    //[Ignore("INSERT support is WIP")]
+    public class BulkCopyTests
     {
-        private readonly ClickHouseConnectionDriver driver;
-
-        public SqlInsertTests(ClickHouseConnectionDriver driver)
-        {
-            this.driver = driver;
-        }
+        private readonly ClickHouseConnectionDriver driver = ClickHouseConnectionDriver.TSV;
 
         [SetUp]
         public async Task FixtureSetup()
@@ -38,7 +29,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        [TestCaseSource(typeof(SqlInsertTests), nameof(GetInsertSingleValueTestCases))]
+        [TestCaseSource(typeof(BulkCopyTests), nameof(GetInsertSingleValueTestCases))]
         public async Task ShouldExecuteSingleValueInsertViaBulkCopy(string clickHouseType, object insertedValue)
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);

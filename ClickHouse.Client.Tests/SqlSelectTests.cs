@@ -73,7 +73,7 @@ namespace ClickHouse.Client.Tests
             Assert.AreEqual(types.Length, reader.FieldCount);
 
             var data = reader.GetEnsureSingleRow();
-            Assert.AreEqual(Enumerable.Repeat(55.0d, data.Length), data.Select(Convert.ToDouble));
+            Assert.AreEqual(Enumerable.Repeat(55.0d, data.Length), data);
         }
 
         [Test]

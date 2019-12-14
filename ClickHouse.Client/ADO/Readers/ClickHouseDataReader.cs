@@ -20,6 +20,8 @@ namespace ClickHouse.Client.ADO.Readers
             this.httpResponse = httpResponse ?? throw new ArgumentNullException(nameof(httpResponse));
         }
 
+        internal ClickHouseType GetClickHouseType(int ordinal) => RawTypes[ordinal];
+
         public override object this[int ordinal] => GetValue(ordinal);
 
         public override object this[string name] => this[GetOrdinal(name)];
