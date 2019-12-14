@@ -173,6 +173,8 @@ namespace ClickHouse.Client.ADO
             public HttpQueryParameters(string query)
             {
                 parameterCollection = HttpUtility.ParseQueryString(query);
+                // Do not put quotes around 64-bit integers
+                parameterCollection.Set("output_format_json_quote_64bit_integers", false.ToString());
             }
 
             public string Database
