@@ -86,10 +86,12 @@ namespace ClickHouse.Client.ADO
 
         internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token)
         {
-            using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri())
-            {
-                Content = new StringContent(sqlQuery)
-            };
+            using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri());
+
+            postMessage.Headers.Authorization = AuthenticationHeader;
+            postMessage.Content = new StringContent(sqlQuery);
+            postMessage.Content.Headers.ContentType.MediaType = "text/cmd";
+
             var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
             //var response = await httpClient.PostAsync(MakeUri(), new StringContent(sqlQuery), token);
             return await HandleError(response).ConfigureAwait(false);
@@ -98,8 +100,10 @@ namespace ClickHouse.Client.ADO
         internal async Task<HttpResponseMessage> PostDataAsync(string sql, Stream data, CancellationToken token)
         {
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri(sql));
+
             postMessage.Headers.Authorization = AuthenticationHeader;
             postMessage.Content = new StreamContent(data);
+            postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
             var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
             return await HandleError(response).ConfigureAwait(false);
