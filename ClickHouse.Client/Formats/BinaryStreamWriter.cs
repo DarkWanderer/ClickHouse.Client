@@ -68,15 +68,18 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseTypeCode.String:
                     writer.Write(Convert.ToString(data));
                     break;
+
                 case ClickHouseTypeCode.FixedString:
                     var stringInfo = (FixedStringType)databaseType;
-                    var buffer = Encoding.UTF8.GetBytes((string)data);
-                    if (buffer.Length > stringInfo.Length)
+                    var stringBytes = Encoding.UTF8.GetBytes((string)data);
+                    if (stringBytes.Length > stringInfo.Length)
                         throw new InvalidOperationException(Resources.StringIsTooLargeForFixedStringMessage);
-                    writer.Write(buffer);
-                    var delta = stringInfo.Length - buffer.Length;
+                    
+                    writer.Write(stringBytes);
+                    var delta = stringInfo.Length - stringBytes.Length;
                     for (var i = 0; i < delta; i++)
                         writer.Write((byte)0); // Add padding to reach the size of FixedString
+
                     break;
 
                 case ClickHouseTypeCode.Array:

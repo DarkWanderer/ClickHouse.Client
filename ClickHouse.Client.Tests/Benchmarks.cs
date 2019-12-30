@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Copy;
@@ -11,7 +12,7 @@ namespace ClickHouse.Client.Tests
     {
         private ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.Binary;
 
-        private const int Multiplier = 10; // Increase this number to run actual benchmark or profiling
+        private const int Multiplier = 1000; // Increase this number to run actual benchmark or profiling
 
         [Test(Description = "Select single integer column")]
         public async Task SelectSingleColumnBenchmark()
@@ -42,14 +43,14 @@ namespace ClickHouse.Client.Tests
             string targetTable = $"{targetDatabase}.bulk_insert_test";
 
             var stopwatch = new Stopwatch();
-            using var sourceConnection = TestUtilities.GetTestClickHouseConnection(Driver, true);
+
+            // Create database and table for benchmark
             using var targetConnection = TestUtilities.GetTestClickHouseConnection(Driver, true);
-            targetConnection.ChangeDatabase(targetDatabase);
-
             await targetConnection.ExecuteStatementAsync($"CREATE DATABASE IF NOT EXISTS {targetDatabase}");
-            await targetConnection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE Log");
+            await targetConnection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+            await targetConnection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE Memory");
 
-            using var reader = await sourceConnection.ExecuteReaderAsync($"SELECT number FROM system.numbers LIMIT {count}");
+            targetConnection.ChangeDatabase(targetDatabase);
 
             using var bulkCopyInterface = new ClickHouseBulkCopy(targetConnection)
             {
@@ -57,11 +58,16 @@ namespace ClickHouse.Client.Tests
                 BatchSize = 100000
             };
 
+            var values = Enumerable.Range(0, count).Select(i => new object[] { (long)i });
             stopwatch.Start();
-            await bulkCopyInterface.WriteToServerAsync(reader);
+            await bulkCopyInterface.WriteToServerAsync(values);
             stopwatch.Stop();
 
+            // Clear table after benchmark
+            await targetConnection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+
             var rps = (double)count / stopwatch.ElapsedMilliseconds * 1000;
+            
             Assert.AreEqual(count, bulkCopyInterface.RowsWritten);
             Assert.Pass($"{rps:#0.} rows/s");
         }

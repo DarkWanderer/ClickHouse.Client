@@ -10,7 +10,7 @@ namespace ClickHouse.Client.Tests
     //[Ignore("INSERT support is WIP")]
     public class BulkCopyTests
     {
-        private readonly ClickHouseConnectionDriver driver = ClickHouseConnectionDriver.TSV;
+        private readonly ClickHouseConnectionDriver driver = ClickHouseConnectionDriver.Binary;
 
         [SetUp]
         public async Task FixtureSetup()
