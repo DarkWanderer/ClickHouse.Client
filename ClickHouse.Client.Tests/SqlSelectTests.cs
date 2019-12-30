@@ -45,9 +45,8 @@ namespace ClickHouse.Client.Tests
             using var reader = await connection.ExecuteReaderAsync("SELECT 1 as a, 2 as b, 3 as c");
 
             reader.AssertHasFieldCount(3);
-            reader.GetEnsureSingleRow();
             CollectionAssert.AreEqual(new[] { "a", "b", "c" }, reader.GetFieldNames());
-            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, reader.GetFieldValues());
+            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, reader.GetEnsureSingleRow());
         }
 
         [Test]

@@ -35,12 +35,6 @@ namespace ClickHouse.Client.ADO
         public ClickHouseConnection(string connectionString)
         {
             ConnectionString = connectionString;
-            //httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            //httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/csv"));
-            //httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
-            //httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-            //httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
-            //httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeader;
         }
 
         public sealed override string ConnectionString
@@ -80,7 +74,9 @@ namespace ClickHouse.Client.ADO
 
         internal async Task<HttpResponseMessage> GetSqlQueryAsync(string sql, CancellationToken token)
         {
-            var response = await httpClient.GetAsync(MakeUri(sql), token).ConfigureAwait(false);
+            using var getMessage = new HttpRequestMessage(HttpMethod.Get, MakeUri(sql));
+            AddDefaultHttpHeaders(getMessage.Headers);
+            var response = await httpClient.SendAsync(getMessage, token).ConfigureAwait(false);
             return await HandleError(response).ConfigureAwait(false);
         }
 
@@ -88,7 +84,7 @@ namespace ClickHouse.Client.ADO
         {
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri());
 
-            postMessage.Headers.Authorization = AuthenticationHeader;
+            AddDefaultHttpHeaders(postMessage.Headers);
             postMessage.Content = new StringContent(sqlQuery);
             postMessage.Content.Headers.ContentType.MediaType = "text/cmd";
 
@@ -101,7 +97,7 @@ namespace ClickHouse.Client.ADO
         {
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri(sql));
 
-            postMessage.Headers.Authorization = AuthenticationHeader;
+            AddDefaultHttpHeaders(postMessage.Headers);
             postMessage.Content = new StreamContent(data);
             postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
@@ -168,6 +164,16 @@ namespace ClickHouse.Client.ADO
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
 
         protected override DbCommand CreateDbCommand() => new ClickHouseCommand(this);
+
+        private void AddDefaultHttpHeaders(HttpRequestHeaders headers)
+        {
+            headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/csv"));
+            headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
+            headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+            headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+            headers.Authorization = AuthenticationHeader;
+        }
 
         private class HttpQueryParameters
         {
