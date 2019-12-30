@@ -22,7 +22,7 @@ namespace ClickHouse.Client.Copy
 
         public ClickHouseBulkCopy(ClickHouseConnection connection)
         {
-            this.connection = connection;
+            this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
 
         public int BatchSize { get; set; } = 50000;
@@ -110,34 +110,6 @@ namespace ClickHouse.Client.Copy
             command.CommandText = $"SELECT * FROM {DestinationTableName}";
             using var reader = (ClickHouseDataReader)await command.ExecuteReaderAsync(CommandBehavior.SchemaOnly, token).ConfigureAwait(false);
             return Enumerable.Range(0, reader.FieldCount).Select(reader.GetClickHouseType).ToArray();
-        }
-
-        private string TabEscape(object arg)
-        {
-            if (arg is null)
-                return "\\N";
-
-            switch (Type.GetTypeCode(arg.GetType()))
-            {
-                case TypeCode.Byte:
-                case TypeCode.SByte:
-                case TypeCode.UInt16:
-                case TypeCode.UInt32:
-                case TypeCode.UInt64:
-                case TypeCode.Int16:
-                case TypeCode.Int32:
-                case TypeCode.Int64:
-                case TypeCode.Decimal:
-                case TypeCode.Double:
-                case TypeCode.Single:
-                    return Convert.ToString(arg, CultureInfo.InvariantCulture);
-                case TypeCode.String:
-                    return (arg as string).Replace("\t", "\\\t").Replace("\n", "\\\n").Replace("\\", "\\\\");
-                case TypeCode.DateTime:
-                    return ((DateTime)arg).ToString("yyyy-MM-dd hh:mm:ss");
-                default:
-                    return arg.ToString();
-            }
         }
 
         private bool disposed = false; // To detect redundant calls
