@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
@@ -31,11 +32,11 @@ namespace ClickHouse.Client.Tests
             stopwatch.Stop();
             Assert.AreEqual(count, counter);
 
-            var rps = (double)count / stopwatch.ElapsedMilliseconds * 1000;
+            var rps = (long)count * 1000 / stopwatch.ElapsedMilliseconds;
             Assert.Pass($"{rps:#0.} rows/s");
         }
 
-        [Test]
+        [Test(Description = "Write single column with large number of values")]
         public async Task BulkCopyBenchmark()
         {
             const int count = 20000 * Multiplier;
@@ -55,7 +56,8 @@ namespace ClickHouse.Client.Tests
             using var bulkCopyInterface = new ClickHouseBulkCopy(targetConnection)
             {
                 DestinationTableName = targetTable,
-                BatchSize = 100000
+                BatchSize = 100000,
+                MaxDegreeOfParallelism = 4
             };
 
             var values = Enumerable.Range(0, count).Select(i => new object[] { (long)i });
@@ -63,12 +65,14 @@ namespace ClickHouse.Client.Tests
             await bulkCopyInterface.WriteToServerAsync(values);
             stopwatch.Stop();
 
+            // Verify we've written expected number of rows
+            Assert.AreEqual(count, bulkCopyInterface.RowsWritten);
+            Assert.AreEqual(count, Convert.ToInt32(await targetConnection.ExecuteScalarAsync($"SELECT COUNT(*) FROM {targetTable}")));
+
             // Clear table after benchmark
             await targetConnection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
 
-            var rps = (double)count / stopwatch.ElapsedMilliseconds * 1000;
-            
-            Assert.AreEqual(count, bulkCopyInterface.RowsWritten);
+            var rps = (long)count * 1000 / stopwatch.ElapsedMilliseconds;
             Assert.Pass($"{rps:#0.} rows/s");
         }
     }

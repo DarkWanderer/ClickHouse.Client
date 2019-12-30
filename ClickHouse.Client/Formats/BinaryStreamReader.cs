@@ -83,8 +83,12 @@ namespace ClickHouse.Client.Formats
                     var count = tupleTypeInfo.UnderlyingTypes.Length;
                     var contents = new object[count];
                     for (var i = 0; i < count; i++)
+                    {
                         contents[i] = ReadValue(tupleTypeInfo.UnderlyingTypes[i]);
-                    return TypeConverter.MakeTuple(tupleTypeInfo, contents);
+                        if (contents[i] is DBNull)
+                            contents[i] = null;
+                    }
+                    return tupleTypeInfo.MakeTuple(contents);
 
                 case ClickHouseTypeCode.Decimal:
                     var decimalTypeInfo = (DecimalType)databaseType;

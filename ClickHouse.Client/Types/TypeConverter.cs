@@ -112,28 +112,6 @@ namespace ClickHouse.Client.Types
             throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type.ToString());
         }
 
-        public static ITuple MakeTuple(TupleType clickHouseType, params object[] elements)
-        {
-            int count = elements.Length;
-            if (clickHouseType.UnderlyingTypes.Length != elements.Length)
-                throw new ArgumentException($"Count of tuple type elements (${clickHouseType.UnderlyingTypes.Length}) does not match number of elements (${elements.Length})");
-
-            var typeArgs = new Type[count];
-            for (int i = 0; i < count; i++)
-                typeArgs[i] = clickHouseType.UnderlyingTypes[i].FrameworkType;
-
-            var valueArgs = new object[count];
-            elements.CopyTo(valueArgs, 0);
-
-            for (int i = 0; i < count; i++)
-                if (valueArgs[i] is DBNull)
-                    valueArgs[i] = null;
-
-            var genericType = Type.GetType("System.Tuple`" + typeArgs.Length);
-            var tupleType = genericType.MakeGenericType(typeArgs);
-            return (ITuple)Activator.CreateInstance(tupleType, valueArgs);
-        }
-
         public static readonly DateTime DateTimeEpochStart = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
     }
 }

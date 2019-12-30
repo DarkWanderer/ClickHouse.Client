@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -56,11 +55,11 @@ namespace ClickHouse.Client.Copy
 
             var batchBlock = new BatchBlock<object[]>(BatchSize, new GroupingDataflowBlockOptions { CancellationToken = token });
             var actionBlock = new ActionBlock<object[][]>(
-                block => PushBatch(block, tableColumns, token),
-                new ExecutionDataflowBlockOptions
+                block => PushBatch(block, tableColumns, token), new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = token,
-                    MaxDegreeOfParallelism = MaxDegreeOfParallelism
+                    MaxDegreeOfParallelism = MaxDegreeOfParallelism,
+                    SingleProducerConstrained = true
                 });
 
             batchBlock.LinkTo(actionBlock);
@@ -85,14 +84,14 @@ namespace ClickHouse.Client.Copy
             }
         }
 
-        private async Task PushBatch(object[][] values, ClickHouseType[] columnTypes, CancellationToken token)
+        private async Task PushBatch(ICollection<object[]> rows, ClickHouseType[] columnTypes, CancellationToken token)
         {
             using var stream = new MemoryStream();
             using var writer = new ExtendedBinaryWriter(stream);
             using var streamer = new BinaryStreamWriter(writer);
-            foreach (object[] row in values)
+            foreach (var row in rows)
             {
-                for (int i = 0; i < row.Length; i++)
+                for (var i = 0; i < row.Length; i++)
                 {
                     streamer.WriteValue(row[i], columnTypes[i]);
                 }
@@ -101,7 +100,7 @@ namespace ClickHouse.Client.Copy
 
             var query = $"INSERT INTO {DestinationTableName} FORMAT RowBinary";
             var result = await connection.PostDataAsync(query, stream, token).ConfigureAwait(false);
-            Interlocked.Add(ref rowsWritten, values.Length);
+            Interlocked.Add(ref rowsWritten, rows.Count);
         }
 
         private async Task<ClickHouseType[]> GetTargetTableSchemaAsync(CancellationToken token)

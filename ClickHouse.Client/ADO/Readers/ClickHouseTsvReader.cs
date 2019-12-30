@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using ClickHouse.Client.Types;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO.Readers
 {
@@ -72,13 +73,17 @@ namespace ClickHouse.Client.ADO.Readers
 
         private ITuple ParseTuple(string item, TupleType tti)
         {
-            var trimmed = item.Substring(1).Remove(item.Length - 2);
+            var trimmed = item.TrimBrackets('(', ')');
             var types = tti.UnderlyingTypes;
             var items = trimmed.Split(',');
             var contents = new object[types.Length];
             for (var i = 0; i < types.Length; i++)
+            {
                 contents[i] = ConvertString(items[i].Trim('\''), types[i]);
-            return TypeConverter.MakeTuple(tti, contents);
+                if (contents[i] is DBNull)
+                    contents[i] = null;
+            }
+            return tti.MakeTuple(contents);
         }
 
         private void ReadHeaders()
