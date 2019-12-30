@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.ADO.Readers
@@ -32,10 +33,7 @@ namespace ClickHouse.Client.ADO.Readers
             for (var i = 0; i < FieldCount; i++)
             {
                 var typeInfo = RawTypes[i];
-                if (typeInfo.TypeCode == ClickHouseTypeCode.UUID)
-                    rowData[i] = new Guid(rowItems[i]);
-                else
-                    rowData[i] = ConvertString(rowItems[i], typeInfo);
+                rowData[i] = ConvertString(rowItems[i], typeInfo);
             }
             CurrentRow = rowData;
             return true;
@@ -68,7 +66,7 @@ namespace ClickHouse.Client.ADO.Readers
                 case PlainDataType<Guid> _:
                     return new Guid(item);
                 default:
-                    return Convert.ChangeType(item, typeInfo.FrameworkType, CultureInfo.InvariantCulture);
+                    return Convert.ChangeType(Regex.Unescape(item), typeInfo.FrameworkType, CultureInfo.InvariantCulture);
             };
         }
 
