@@ -48,7 +48,7 @@ namespace ClickHouse.Client.Tests
 
             using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
             Assert.IsTrue(reader.Read());
-            reader.EnsureFieldCount(1);
+            reader.AssertHasFieldCount(1);
             var data = reader.GetValue(0);
             Assert.AreEqual(insertedValue, data);
         }

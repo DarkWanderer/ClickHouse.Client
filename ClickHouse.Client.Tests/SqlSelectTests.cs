@@ -33,7 +33,7 @@ namespace ClickHouse.Client.Tests
 
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
             using var reader = await connection.ExecuteReaderAsync(sql);
-            reader.EnsureFieldCount(1);
+            reader.AssertHasFieldCount(1);
             var result = reader.GetEnsureSingleRow().Single();
             return result;
         }
@@ -44,7 +44,7 @@ namespace ClickHouse.Client.Tests
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
             using var reader = await connection.ExecuteReaderAsync("SELECT 1 as a, 2 as b, 3 as c");
 
-            reader.EnsureFieldCount(3);
+            reader.AssertHasFieldCount(3);
             reader.GetEnsureSingleRow();
             CollectionAssert.AreEqual(new[] { "a", "b", "c" }, reader.GetFieldNames());
             CollectionAssert.AreEqual(new[] { 1, 2, 3 }, reader.GetFieldValues());
@@ -56,7 +56,7 @@ namespace ClickHouse.Client.Tests
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
             using var reader = await connection.ExecuteReaderAsync("SELECT 1 LIMIT 0");
 
-            reader.EnsureFieldCount(1);
+            reader.AssertHasFieldCount(1);
             Assert.IsFalse(reader.HasRows);
             Assert.IsFalse(reader.Read());
         }
@@ -90,7 +90,7 @@ namespace ClickHouse.Client.Tests
             var results = new List<int>();
 
             Assert.IsTrue(reader.HasRows);
-            reader.EnsureFieldCount(1);
+            reader.AssertHasFieldCount(1);
             Assert.AreEqual(typeof(ulong), reader.GetFieldType(0));
 
             while (reader.Read())
