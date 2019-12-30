@@ -31,7 +31,8 @@ namespace ClickHouse.Client.Tests
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
             using var reader = await connection.ExecuteReaderAsync(sql);
             reader.EnsureFieldCount(1);
-            return reader.GetEnsureSingleRow().Single();
+            var result = reader.GetEnsureSingleRow().Single();
+            return result;
         }
 
         [Test]

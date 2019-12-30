@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.ADO.Readers
@@ -64,22 +65,22 @@ namespace ClickHouse.Client.ADO.Readers
                     return item == "\\N" ? DBNull.Value : throw new InvalidOperationException();
                 case NullableType nti:
                     return item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType);
+                case PlainDataType<Guid> _:
+                    return new Guid(item);
                 default:
-                    return typeInfo.TypeCode == ClickHouseTypeCode.UUID
-                        ? new Guid(item)
-                        : Convert.ChangeType(item, typeInfo.FrameworkType, CultureInfo.InvariantCulture);
+                    return Convert.ChangeType(item, typeInfo.FrameworkType, CultureInfo.InvariantCulture);
             };
         }
 
-        private object[] ParseTuple(string item, TupleType tti)
+        private ITuple ParseTuple(string item, TupleType tti)
         {
             var trimmed = item.Substring(1).Remove(item.Length - 2);
             var types = tti.UnderlyingTypes;
             var items = trimmed.Split(',');
-            var result = new object[types.Length];
+            var contents = new object[types.Length];
             for (var i = 0; i < types.Length; i++)
-                result[i] = ConvertString(items[i].Trim('\''), types[i]);
-            return result;
+                contents[i] = ConvertString(items[i].Trim('\''), types[i]);
+            return TypeConverter.MakeTuple(tti, contents);
         }
 
         private void ReadHeaders()

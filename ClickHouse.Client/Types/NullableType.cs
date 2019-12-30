@@ -9,7 +9,14 @@ namespace ClickHouse.Client.Types
 
         public ClickHouseType UnderlyingType { get; set; }
 
-        public override Type FrameworkType => typeof(Nullable<>).MakeGenericType(UnderlyingType.FrameworkType);
+        public override Type FrameworkType
+        {
+            get
+            {
+                var underlyingFrameworkType = UnderlyingType.FrameworkType;
+                return underlyingFrameworkType.IsValueType ? typeof(Nullable<>).MakeGenericType(underlyingFrameworkType) : underlyingFrameworkType;
+            }
+        }
 
         public override string Name => "Nullable";
         public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)

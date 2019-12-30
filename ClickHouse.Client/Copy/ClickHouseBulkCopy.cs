@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Readers;
+using ClickHouse.Client.Formats;
 using ClickHouse.Client.Properties;
 using ClickHouse.Client.Types;
 
@@ -52,10 +53,17 @@ namespace ClickHouse.Client.Copy
             if (string.IsNullOrWhiteSpace(DestinationTableName))
                 throw new InvalidOperationException(Resources.DestinationTableNotSetMessage);
 
-            //var tableColumns = await GetTargetTableSchemaAsync(token);
+            var tableColumns = await GetTargetTableSchemaAsync(token);
 
             var batchBlock = new BatchBlock<object[]>(BatchSize, new GroupingDataflowBlockOptions { CancellationToken = token });
-            var actionBlock = new ActionBlock<object[][]>(block => PushBatch(block, token), new ExecutionDataflowBlockOptions { CancellationToken = token, MaxDegreeOfParallelism = MaxDegreeOfParallelism });
+            var actionBlock = new ActionBlock<object[][]>(
+                block => PushBatch(block, tableColumns, token),
+                new ExecutionDataflowBlockOptions
+                {
+                    CancellationToken = token,
+                    MaxDegreeOfParallelism = MaxDegreeOfParallelism
+                });
+
             batchBlock.LinkTo(actionBlock);
             _ = batchBlock.Completion.ContinueWith(task => actionBlock.Complete());
 
@@ -78,18 +86,22 @@ namespace ClickHouse.Client.Copy
             }
         }
 
-        private async Task PushBatch(object[][] values, CancellationToken token)
+        private async Task PushBatch(object[][] values, ClickHouseType[] columnTypes, CancellationToken token)
         {
-            var sb = new StringBuilder();
-            foreach (var row in values)
+            using var stream = new MemoryStream();
+            using var writer = new ExtendedBinaryWriter(stream);
+            using var streamer = new BinaryStreamWriter(writer);
+            foreach (object[] row in values)
             {
-                sb.Append(string.Join("\t", row.Select(TabEscape)));
-                sb.Append("\n");
+                for (int i = 0; i < row.Length; i++)
+                {
+                    streamer.WriteValue(row[i], columnTypes[i]);
+                }
             }
+            stream.Seek(0, SeekOrigin.Begin);
 
-            var query = $"INSERT INTO {DestinationTableName} FORMAT TabSeparated";
-            using var reader = new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
-            var result = await connection.PostDataAsync(query, reader, token).ConfigureAwait(false);
+            var query = $"INSERT INTO {DestinationTableName} FORMAT RowBinary";
+            var result = await connection.PostDataAsync(query, stream, token).ConfigureAwait(false);
             Interlocked.Add(ref rowsWritten, values.Length);
         }
 

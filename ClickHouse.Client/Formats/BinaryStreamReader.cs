@@ -42,6 +42,7 @@ namespace ClickHouse.Client.Formats
                     return reader.ReadSingle();
                 case ClickHouseTypeCode.Float64:
                     return reader.ReadDouble();
+
                 case ClickHouseTypeCode.String:
                     return reader.ReadString();
                 case ClickHouseTypeCode.FixedString:
@@ -55,16 +56,17 @@ namespace ClickHouse.Client.Formats
                     for (var i = 0; i < length; i++)
                         data[i] = ReadValue(arrayTypeInfo.UnderlyingType);
                     return data;
+
                 case ClickHouseTypeCode.Nullable:
                     var nullableTypeInfo = (NullableType)databaseType;
                     return reader.ReadByte() > 0 ? DBNull.Value : ReadValue(nullableTypeInfo.UnderlyingType);
 
                 case ClickHouseTypeCode.Date:
                     var days = reader.ReadUInt16();
-                    return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddDays(days);
+                    return TypeConverter.DateTimeEpochStart.AddDays(days);
                 case ClickHouseTypeCode.DateTime:
-                    var milliseconds = reader.ReadUInt32();
-                    return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(milliseconds);
+                    var seconds = reader.ReadUInt32();
+                    return TypeConverter.DateTimeEpochStart.AddSeconds(seconds);
 
                 case ClickHouseTypeCode.UUID:
                     // Weird byte manipulation because of C#'s strange Guid implementation
@@ -82,12 +84,11 @@ namespace ClickHouse.Client.Formats
                     var contents = new object[count];
                     for (var i = 0; i < count; i++)
                         contents[i] = ReadValue(tupleTypeInfo.UnderlyingTypes[i]);
-                    return contents;
+                    return TypeConverter.MakeTuple(tupleTypeInfo, contents);
 
                 case ClickHouseTypeCode.Decimal:
                     var decimalTypeInfo = (DecimalType)databaseType;
-                    var scale = decimalTypeInfo.Scale;
-                    var factor = (int)Math.Pow(10, scale);
+                    var factor = (int)Math.Pow(10, decimalTypeInfo.Scale);
                     var value = new BigInteger(reader.ReadBytes(decimalTypeInfo.Size));
                     return (decimal)value / factor;
             }

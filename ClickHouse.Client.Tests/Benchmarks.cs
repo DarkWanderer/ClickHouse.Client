@@ -11,7 +11,7 @@ namespace ClickHouse.Client.Tests
     {
         private ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.Binary;
 
-        private const int Multiplier = 100; // Increase this number to run actual benchmark or profiling
+        private const int Multiplier = 10; // Increase this number to run actual benchmark or profiling
 
         [Test(Description = "Select single integer column")]
         public async Task SelectSingleColumnBenchmark()
