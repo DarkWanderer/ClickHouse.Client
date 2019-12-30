@@ -100,8 +100,6 @@ namespace ClickHouse.Client.ADO
                     sqlBuilder.Append(" LIMIT 1");
                     break;
                 case CommandBehavior.SchemaOnly:
-                    if (driver == ClickHouseConnectionDriver.JSON)
-                        throw new NotSupportedException(Resources.JsonDoesNotSupportSchemaMessage);
                     sqlBuilder.Append(" LIMIT 0");
                     break;
                 case CommandBehavior.CloseConnection:
