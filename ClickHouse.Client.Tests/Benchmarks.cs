@@ -15,7 +15,7 @@ namespace ClickHouse.Client.Tests
     {
         private ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.Binary;
 
-        private const int Multiplier = 2; // Increase this number to run actual benchmark or profiling
+        private const int Multiplier = 2000; // Increase this number to run actual benchmark or profiling
         private readonly bool useCompression;
 
         public Benchmarks(bool useCompression)
@@ -28,7 +28,7 @@ namespace ClickHouse.Client.Tests
         {
             var stopwatch = new Stopwatch();
 
-            const int count = 100000 * Multiplier;
+            const int count = 50000 * Multiplier;
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver, useCompression);
             using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers LIMIT {count}");
 
@@ -66,7 +66,7 @@ namespace ClickHouse.Client.Tests
             {
                 DestinationTableName = targetTable,
                 BatchSize = 100000,
-                MaxDegreeOfParallelism = 8
+                MaxDegreeOfParallelism = 4
             };
 
             var values = Enumerable.Range(0, count).Select(i => new object[] { (long)i });

@@ -11,6 +11,7 @@ using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Properties;
 using ClickHouse.Client.Types;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Copy
 {
@@ -53,24 +54,20 @@ namespace ClickHouse.Client.Copy
 
             var tableColumns = await GetTargetTableSchemaAsync(token);
 
-            var batchBlock = new BatchBlock<object[]>(BatchSize, new GroupingDataflowBlockOptions { CancellationToken = token });
-            var actionBlock = new ActionBlock<object[][]>(
-                block => PushBatch(block, tableColumns, token), new ExecutionDataflowBlockOptions
+            var actionBlock = new ActionBlock<IList<object[]>>(
+                batch => PushBatch(batch, tableColumns, token), new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = token,
+                    MaxMessagesPerTask = 1,
                     MaxDegreeOfParallelism = MaxDegreeOfParallelism,
                     SingleProducerConstrained = true
                 });
 
-            batchBlock.LinkTo(actionBlock);
-            _ = batchBlock.Completion.ContinueWith(task => actionBlock.Complete());
-
-            foreach (var row in rows)
+            foreach (var batch in rows.Batch(BatchSize))
             {
-                token.ThrowIfCancellationRequested();
-                batchBlock.Post(row);
+                actionBlock.Post(batch);
             }
-            batchBlock.Complete();
+            actionBlock.Complete();
             await actionBlock.Completion;
         }
 

@@ -11,6 +11,6 @@
 * Uses HTTP, so is compatible with any server version
 * Supports Binary, JSON, TSV protocols (selectable via Driver connection string parameter)
 * Supports recursive types (array of nullable of Int, etc.)
-* High-throughput
-  * 35 million values/second read (binary protocol)
-  * 4 million values/second insert (bulk copy)
+* High-throughput: 
+  * 33 million values/second read (binary protocol)
+  * 5 million values/second insert (bulk copy)
