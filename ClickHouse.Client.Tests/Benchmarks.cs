@@ -9,11 +9,19 @@ using NUnit.Framework;
 namespace ClickHouse.Client.Tests
 {
     [NonParallelizable]
+    [TestFixture(true, TestName = "BenchmarkWithCompression")]
+    [TestFixture(false, TestName = "BenchmarkWithoutCompression")]
     public class Benchmarks
     {
         private ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.Binary;
 
-        private const int Multiplier = 10; // Increase this number to run actual benchmark or profiling
+        private const int Multiplier = 2; // Increase this number to run actual benchmark or profiling
+        private readonly bool useCompression;
+
+        public Benchmarks(bool useCompression)
+        {
+            this.useCompression = useCompression;
+        }
 
         [Test(Description = "Select single integer column")]
         public async Task SelectSingleColumnBenchmark()
@@ -21,7 +29,7 @@ namespace ClickHouse.Client.Tests
             var stopwatch = new Stopwatch();
 
             const int count = 100000 * Multiplier;
-            using var connection = TestUtilities.GetTestClickHouseConnection(Driver);
+            using var connection = TestUtilities.GetTestClickHouseConnection(Driver, useCompression);
             using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers LIMIT {count}");
 
             int counter = 0;
@@ -30,6 +38,7 @@ namespace ClickHouse.Client.Tests
             while (reader.Read())
                 counter++;
             stopwatch.Stop();
+            Assert.IsFalse(reader.HasRows);
             Assert.AreEqual(count, counter);
 
             var rps = (long)count * 1000 / stopwatch.ElapsedMilliseconds;
@@ -46,7 +55,7 @@ namespace ClickHouse.Client.Tests
             var stopwatch = new Stopwatch();
 
             // Create database and table for benchmark
-            using var targetConnection = TestUtilities.GetTestClickHouseConnection(Driver, true);
+            using var targetConnection = TestUtilities.GetTestClickHouseConnection(Driver, useCompression);
             await targetConnection.ExecuteStatementAsync($"CREATE DATABASE IF NOT EXISTS {targetDatabase}");
             await targetConnection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
             await targetConnection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE Memory");
@@ -57,7 +66,7 @@ namespace ClickHouse.Client.Tests
             {
                 DestinationTableName = targetTable,
                 BatchSize = 100000,
-                MaxDegreeOfParallelism = 4
+                MaxDegreeOfParallelism = 8
             };
 
             var values = Enumerable.Range(0, count).Select(i => new object[] { (long)i });

@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -96,13 +97,26 @@ namespace ClickHouse.Client.ADO
         internal async Task<HttpResponseMessage> PostDataAsync(string sql, Stream data, CancellationToken token)
         {
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri(sql));
-
+            Stream intermediateStream = null;
             AddDefaultHttpHeaders(postMessage.Headers);
-            postMessage.Content = new StreamContent(data);
-            postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
-            var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
-            return await HandleError(response).ConfigureAwait(false);
+            if (useCompression)
+            {
+                intermediateStream = new GZipStream(data, CompressionLevel.Fastest);
+                postMessage.Content = new StreamContent(intermediateStream);
+                postMessage.Content.Headers.Add("Content-Encoding", "gzip");
+            }
+            else
+            {
+                postMessage.Content = new StreamContent(data);
+                postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            }
+
+            using (intermediateStream) // must be disposed after we've sent it
+            {
+                var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
+                return await HandleError(response).ConfigureAwait(false);
+            }
         }
 
         private static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response)
@@ -167,12 +181,15 @@ namespace ClickHouse.Client.ADO
 
         private void AddDefaultHttpHeaders(HttpRequestHeaders headers)
         {
+            headers.Authorization = AuthenticationHeader;
             headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/csv"));
             headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
-            headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-            headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
-            headers.Authorization = AuthenticationHeader;
+            if (useCompression)
+            {
+                headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+                headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+            }
         }
 
         private class HttpQueryParameters
