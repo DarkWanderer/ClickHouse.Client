@@ -59,11 +59,13 @@ namespace ClickHouse.Client.Copy
            
             foreach (var batch in rows.Batch(BatchSize))
             {
+                token.ThrowIfCancellationRequested();
                 while (true)
                 {
-                    var completedTaskIndex = Array.FindIndex(tasks, t => t == null || t.Status == TaskStatus.RanToCompletion);
+                    var completedTaskIndex = Array.FindIndex(tasks, t => t.Status == TaskStatus.RanToCompletion || t.Status == TaskStatus.Faulted || t.Status == TaskStatus.Canceled);
                     if (completedTaskIndex >= 0)
                     {
+                        await tasks[completedTaskIndex]; // to receive exception if one happens
                         var task = PushBatch(batch, tableColumns, token);
                         tasks[completedTaskIndex] = task;
                         break;

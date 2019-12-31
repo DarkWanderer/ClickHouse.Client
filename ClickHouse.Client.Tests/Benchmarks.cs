@@ -42,7 +42,7 @@ namespace ClickHouse.Client.Tests
             Assert.AreEqual(count, counter);
 
             var rps = (long)count * 1000 / stopwatch.ElapsedMilliseconds;
-            Assert.Pass($"{rps:#0.} rows/s");
+            Console.WriteLine($"{rps:#0.} rows/s");
         }
 
         [Test(Description = "Write single column with large number of values")]
@@ -82,7 +82,7 @@ namespace ClickHouse.Client.Tests
             await targetConnection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
 
             var rps = (long)count * 1000 / stopwatch.ElapsedMilliseconds;
-            Assert.Pass($"{rps:#0.} rows/s");
+            Console.WriteLine($"{rps:#0.} rows/s");
         }
     }
 }
