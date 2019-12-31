@@ -15,7 +15,7 @@ namespace ClickHouse.Client.Tests
     {
         private ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.Binary;
 
-        private const int Multiplier = 2000; // Increase this number to run actual benchmark or profiling
+        private const int Multiplier = 1; // Increase this number to run actual benchmark or profiling
         private readonly bool useCompression;
 
         public Benchmarks(bool useCompression)

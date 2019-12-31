@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Formats;
@@ -54,21 +53,28 @@ namespace ClickHouse.Client.Copy
 
             var tableColumns = await GetTargetTableSchemaAsync(token);
 
-            var actionBlock = new ActionBlock<IList<object[]>>(
-                batch => PushBatch(batch, tableColumns, token), new ExecutionDataflowBlockOptions
-                {
-                    CancellationToken = token,
-                    MaxMessagesPerTask = 1,
-                    MaxDegreeOfParallelism = MaxDegreeOfParallelism,
-                    SingleProducerConstrained = true
-                });
-
+            var tasks = new Task[MaxDegreeOfParallelism];
+            for (int i = 0; i < tasks.Length; i++)
+                tasks[i] = Task.CompletedTask;
+           
             foreach (var batch in rows.Batch(BatchSize))
             {
-                actionBlock.Post(batch);
+                while (true)
+                {
+                    var completedTaskIndex = Array.FindIndex(tasks, t => t == null || t.Status == TaskStatus.RanToCompletion);
+                    if (completedTaskIndex >= 0)
+                    {
+                        var task = PushBatch(batch, tableColumns, token);
+                        tasks[completedTaskIndex] = task;
+                        break;
+                    }
+                    else
+                    {
+                        await Task.WhenAny(tasks);
+                    }
+                }
             }
-            actionBlock.Complete();
-            await actionBlock.Completion;
+            await Task.WhenAll(tasks);
         }
 
         private static IEnumerable<object[]> AsEnumerable(IDataReader reader)
@@ -83,7 +89,7 @@ namespace ClickHouse.Client.Copy
 
         private async Task PushBatch(ICollection<object[]> rows, ClickHouseType[] columnTypes, CancellationToken token)
         {
-            using var stream = new MemoryStream();
+            using var stream = new MemoryStream() { Capacity = 256 * 1024 };
             using var writer = new ExtendedBinaryWriter(stream);
             using var streamer = new BinaryStreamWriter(writer);
             foreach (var row in rows)
