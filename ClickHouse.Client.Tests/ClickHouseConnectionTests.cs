@@ -12,7 +12,7 @@ namespace ClickHouse.Client.Tests
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(default);
             connection.Open();
-            Assert.Pass($"Server version: {connection.ServerVersion}");
+            Assert.IsNotEmpty(connection.ServerVersion);
             connection.Close();
         }
 
