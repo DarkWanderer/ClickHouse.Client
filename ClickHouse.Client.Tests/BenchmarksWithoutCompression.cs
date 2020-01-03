@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Copy;
@@ -9,19 +10,14 @@ using NUnit.Framework;
 namespace ClickHouse.Client.Tests
 {
     [NonParallelizable]
-    [TestFixture(true, TestName = "BenchmarkWithCompression")]
-    [TestFixture(false, TestName = "BenchmarkWithoutCompression")]
-    public class Benchmarks
+    [Explicit]
+    [Category("Benchmark")]
+    public class BenchmarksWithoutCompression
     {
         private ClickHouseConnectionDriver Driver => ClickHouseConnectionDriver.Binary;
 
         private const int Multiplier = 1; // Increase this number to run actual benchmark or profiling
-        private readonly bool useCompression;
-
-        public Benchmarks(bool useCompression)
-        {
-            this.useCompression = useCompression;
-        }
+        protected virtual bool UseCompression => false;
 
         [Test(Description = "Select single integer column")]
         public async Task SelectSingleColumnBenchmark()
@@ -29,7 +25,7 @@ namespace ClickHouse.Client.Tests
             var stopwatch = new Stopwatch();
 
             const int count = 50000 * Multiplier;
-            using var connection = TestUtilities.GetTestClickHouseConnection(Driver, useCompression);
+            using var connection = TestUtilities.GetTestClickHouseConnection(Driver, UseCompression);
             using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers LIMIT {count}");
 
             int counter = 0;
@@ -42,7 +38,7 @@ namespace ClickHouse.Client.Tests
             Assert.AreEqual(count, counter);
 
             var rps = (long)count * 1000 / stopwatch.ElapsedMilliseconds;
-            Console.WriteLine($"{rps:#0.} rows/s");
+            Console.WriteLine($"{count} rows read at {rps:#0.} rows/s");
         }
 
         [Test(Description = "Write single column with large number of values")]
@@ -55,7 +51,7 @@ namespace ClickHouse.Client.Tests
             var stopwatch = new Stopwatch();
 
             // Create database and table for benchmark
-            using var targetConnection = TestUtilities.GetTestClickHouseConnection(Driver, useCompression);
+            using var targetConnection = TestUtilities.GetTestClickHouseConnection(Driver, UseCompression);
             await targetConnection.ExecuteStatementAsync($"CREATE DATABASE IF NOT EXISTS {targetDatabase}");
             await targetConnection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
             await targetConnection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE Memory");
@@ -82,7 +78,7 @@ namespace ClickHouse.Client.Tests
             await targetConnection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
 
             var rps = (long)count * 1000 / stopwatch.ElapsedMilliseconds;
-            Console.WriteLine($"{rps:#0.} rows/s");
+            Console.WriteLine($"{count} rows written at {rps:#0.} rows/s");
         }
     }
 }

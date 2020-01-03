@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO
 {
@@ -86,9 +87,26 @@ namespace ClickHouse.Client.ADO
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri());
 
             AddDefaultHttpHeaders(postMessage.Headers);
-            postMessage.Content = new StringContent(sqlQuery);
-            postMessage.Content.Headers.ContentType.MediaType = "text/cmd";
+            if (useCompression)
+            {
+                var data = new MemoryStream(Encoding.UTF8.GetBytes(sqlQuery));
+                
+                using var compressedStream = new MemoryStream();
 
+                using (var gzipStream = new GZipStream(compressedStream, CompressionLevel.Fastest, true))
+                    await data.CopyToAsync(gzipStream).ConfigureAwait(false);
+
+                string compressed = compressedStream.ToArray().ToHexString();
+
+                postMessage.Content = new ByteArrayContent(compressedStream.ToArray());
+                postMessage.Content.Headers.Add("Content-Encoding", "gzip");
+            }
+            else
+            {
+                postMessage.Content = new StringContent(sqlQuery);
+            }
+
+            postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("text/sql");
             var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
             //var response = await httpClient.PostAsync(MakeUri(), new StringContent(sqlQuery), token);
             return await HandleError(response).ConfigureAwait(false);
@@ -97,26 +115,25 @@ namespace ClickHouse.Client.ADO
         internal async Task<HttpResponseMessage> PostDataAsync(string sql, Stream data, CancellationToken token)
         {
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri(sql));
-            Stream intermediateStream = null;
             AddDefaultHttpHeaders(postMessage.Headers);
 
             if (useCompression)
             {
-                intermediateStream = new GZipStream(data, CompressionLevel.Fastest);
-                postMessage.Content = new StreamContent(intermediateStream);
+                using var compressedStream = new MemoryStream();
+                using (var gzipStream = new GZipStream(compressedStream, CompressionMode.Compress, true))
+                    await data.CopyToAsync(gzipStream).ConfigureAwait(false);
+
+                postMessage.Content = new ByteArrayContent(compressedStream.ToArray());
                 postMessage.Content.Headers.Add("Content-Encoding", "gzip");
             }
             else
             {
                 postMessage.Content = new StreamContent(data);
-                postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             }
 
-            using (intermediateStream) // must be disposed after we've sent it
-            {
-                var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
-                return await HandleError(response).ConfigureAwait(false);
-            }
+            postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
+            return await HandleError(response).ConfigureAwait(false);
         }
 
         private static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response)
@@ -135,8 +152,7 @@ namespace ClickHouse.Client.ADO
             var queryParameters = new HttpQueryParameters()
             {
                 Database = database,
-                // TODO - fix this. Bug in ClickHouse
-                // Compress = useCompression
+                UseHttpCompression = useCompression
             };
             if (!string.IsNullOrWhiteSpace(sql))
                 queryParameters.SqlQuery = sql;
@@ -211,16 +227,10 @@ namespace ClickHouse.Client.ADO
                 set => parameterCollection.Set("database", value);
             }
 
-            public bool Compress
+            public bool UseHttpCompression
             {
-                get => parameterCollection.Get("compress") == "true";
-                set => parameterCollection.Set("compress", value.ToString(CultureInfo.InvariantCulture));
-            }
-
-            public bool Decompress
-            {
-                get => parameterCollection.Get("decompress") == "true";
-                set => parameterCollection.Set("decompress", value.ToString(CultureInfo.InvariantCulture));
+                get => parameterCollection.Get("enable_http_compression").Equals("true", StringComparison.OrdinalIgnoreCase);
+                set => parameterCollection.Set("enable_http_compression", value.ToString(CultureInfo.InvariantCulture));
             }
 
             public string SqlQuery
