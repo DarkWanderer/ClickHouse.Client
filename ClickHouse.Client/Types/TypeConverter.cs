@@ -57,6 +57,10 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<Decimal64Type>();
             RegisterParameterizedType<Decimal128Type>();
 
+            RegisterParameterizedType<EnumType>();
+            RegisterParameterizedType<Enum8Type>();
+            RegisterParameterizedType<Enum16Type>();
+
             reverseMapping.Add(typeof(decimal), new Decimal128Type());
         }
 

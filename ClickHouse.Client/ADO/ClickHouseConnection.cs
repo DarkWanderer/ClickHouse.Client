@@ -79,7 +79,7 @@ namespace ClickHouse.Client.ADO
             using var getMessage = new HttpRequestMessage(HttpMethod.Get, MakeUri(sql));
             AddDefaultHttpHeaders(getMessage.Headers);
             var response = await httpClient.SendAsync(getMessage, token).ConfigureAwait(false);
-            return await HandleError(response).ConfigureAwait(false);
+            return await HandleError(response, sql).ConfigureAwait(false);
         }
 
         internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token)
@@ -109,7 +109,7 @@ namespace ClickHouse.Client.ADO
             postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("text/sql");
             var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
             //var response = await httpClient.PostAsync(MakeUri(), new StringContent(sqlQuery), token);
-            return await HandleError(response).ConfigureAwait(false);
+            return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }
 
         internal async Task<HttpResponseMessage> PostDataAsync(string sql, Stream data, CancellationToken token)
@@ -120,7 +120,7 @@ namespace ClickHouse.Client.ADO
             if (useCompression)
             {
                 using var compressedStream = new MemoryStream();
-                using (var gzipStream = new GZipStream(compressedStream, CompressionMode.Compress, true))
+                using (var gzipStream = new GZipStream(compressedStream, CompressionLevel.Fastest, true))
                     await data.CopyToAsync(gzipStream).ConfigureAwait(false);
 
                 postMessage.Content = new ByteArrayContent(compressedStream.ToArray());
@@ -133,14 +133,15 @@ namespace ClickHouse.Client.ADO
 
             postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
-            return await HandleError(response).ConfigureAwait(false);
+            return await HandleError(response, sql).ConfigureAwait(false);
         }
 
-        private static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response)
+        private static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query)
         {
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                error = error + "\nQuery:\n" + query;
                 throw new ClickHouseServerException(error);
             }
             return response;

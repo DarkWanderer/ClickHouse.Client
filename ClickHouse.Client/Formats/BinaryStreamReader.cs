@@ -95,6 +95,18 @@ namespace ClickHouse.Client.Formats
                     var factor = (int)Math.Pow(10, decimalTypeInfo.Scale);
                     var value = new BigInteger(reader.ReadBytes(decimalTypeInfo.Size));
                     return (decimal)value / factor;
+                case ClickHouseTypeCode.Nothing:
+                    break;
+                case ClickHouseTypeCode.Nested:
+                    throw new NotSupportedException("Nested types cannot be read directly");
+
+                case ClickHouseTypeCode.Enum8:
+                    var enum8TypeInfo = (EnumType)databaseType;
+                    return enum8TypeInfo.Lookup(reader.ReadSByte());
+
+                case ClickHouseTypeCode.Enum16:
+                    var enum16TypeInfo = (EnumType)databaseType;
+                    return enum16TypeInfo.Lookup(reader.ReadInt16());
             }
             throw new NotImplementedException();
         }

@@ -22,6 +22,9 @@
         DateTime,
         Date,
 
+        Enum8,
+        Enum16,
+
         String,
         FixedString,
 

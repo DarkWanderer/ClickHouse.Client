@@ -34,7 +34,10 @@ namespace ClickHouse.Client.Tests
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
 
-            var targetTable = $"temp.b_{clickHouseType.Replace("(", null).Replace(")", null).Replace(",", null).Replace(" ", null) }";
+            var targetTable = $"temp.b_{clickHouseType.Replace("(", null).Replace(")", null).Replace(",", null).Replace(" ", null).Replace("'", null) }";
+
+            clickHouseType = clickHouseType.Replace("Enum", "Enum('a' = 1, 'b' = 2)");
+
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
 

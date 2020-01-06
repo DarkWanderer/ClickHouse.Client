@@ -111,7 +111,7 @@ namespace ClickHouse.Client.Formats
                     else if (data is string s)
                         guid = new Guid(s);
                     else
-                        throw new ArgumentException("Cannot convert item to GUID", nameof(data));
+                        throw new NotSupportedException($"Cannot convert {data?.GetType()?.Name ?? "null"} to GUID");
 
                     var bytes = guid.ToByteArray();
                     Array.Reverse(bytes, 8, 8);
@@ -132,8 +132,19 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseTypeCode.Nothing:
                     break;
 
+                case ClickHouseTypeCode.Enum8:
+                    var enum8TypeInfo = (EnumType)databaseType;
+                    sbyte enum8Index = data is string enum8Str ? (sbyte)enum8TypeInfo.Lookup(enum8Str) : Convert.ToSByte(data);
+                    writer.Write(enum8Index);
+                    break;
+                case ClickHouseTypeCode.Enum16:
+                    var enum16TypeInfo = (EnumType)databaseType;
+                    short enum16Index = data is string enum16Str ? (sbyte)enum16TypeInfo.Lookup(enum16Str) : Convert.ToInt16(data);
+                    writer.Write(enum16Index);
+                    break;
+
                 default:
-                    throw new NotImplementedException();
+                    throw new NotImplementedException($"Saving of {databaseType.TypeCode} is not implemented");
             }
         }
     }
