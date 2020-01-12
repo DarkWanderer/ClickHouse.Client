@@ -96,26 +96,6 @@ namespace ClickHouse.Client.Tests
             return data;
         }
 
-        public static Task<int> ExecuteStatementAsync(this ClickHouseConnection connection, string sql)
-        {
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-            return command.ExecuteNonQueryAsync();
-        }
-        public static Task<object> ExecuteScalarAsync(this ClickHouseConnection connection, string sql)
-        {
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-            return command.ExecuteScalarAsync();
-        }
-
-        public static Task<DbDataReader> ExecuteReaderAsync(this ClickHouseConnection connection, string sql)
-        {
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-            return command.ExecuteReaderAsync();
-        }
-
         public static Type[] GetFieldTypes(this DbDataReader reader) => Enumerable.Range(0, reader.FieldCount).Select(reader.GetFieldType).ToArray();
 
         public static string[] GetFieldNames(this DbDataReader reader) => Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToArray();
