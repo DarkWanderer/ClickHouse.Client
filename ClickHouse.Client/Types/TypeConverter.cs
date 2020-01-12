@@ -49,6 +49,8 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<NullableType>();
             RegisterParameterizedType<TupleType>();
             RegisterParameterizedType<NestedTypeInfo>();
+            RegisterParameterizedType<LowCardinalityType>();
+
             RegisterParameterizedType<DateType>();
             RegisterParameterizedType<DateTimeType>();
 

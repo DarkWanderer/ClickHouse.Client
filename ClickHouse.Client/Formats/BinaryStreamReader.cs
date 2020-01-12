@@ -107,6 +107,11 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseTypeCode.Enum16:
                     var enum16TypeInfo = (EnumType)databaseType;
                     return enum16TypeInfo.Lookup(reader.ReadInt16());
+
+                case ClickHouseTypeCode.LowCardinality:
+                    var lcCardinality = (LowCardinalityType)databaseType;
+                    return ReadValue(lcCardinality.UnderlyingType);
+
             }
             throw new NotImplementedException();
         }

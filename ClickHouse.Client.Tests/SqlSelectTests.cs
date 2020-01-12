@@ -110,7 +110,7 @@ namespace ClickHouse.Client.Tests
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(driver, useCompression);
             await connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS test");
-            await connection.ExecuteStatementAsync("DROP TABLE IF EXISTS test.nested");
+            await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.nested");
             await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.nested(nested_v Nested (int16_v Int16, uint32_v UInt32, dtime_v DateTime, string_v String)) ENGINE = Memory");
 
             using var reader = await connection.ExecuteReaderAsync("SELECT nested_v.int16_v, nested_v.uint32_v, nested_v.dtime_v, nested_v.string_v FROM test.nested");
@@ -123,7 +123,7 @@ namespace ClickHouse.Client.Tests
             var command = connection.CreateCommand();
             command.CommandText = "SELECT sleep(3)";
             var task = command.ExecuteScalarAsync();
-            await Task.Delay(100);
+            await Task.Delay(50);
             command.Cancel();
 
             try

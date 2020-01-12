@@ -73,6 +73,10 @@ namespace ClickHouse.Client.Tests
 
             yield return new DataTypeSample("Array(Int32)", typeof(int[]), "array(1, 2, 3)", new[] { 1, 2, 3 });
 
+            yield return new DataTypeSample("Nullable(Int32)", typeof(int?), "toInt32OrNull('123')", 123);
+
+            yield return new DataTypeSample("LowCardinality(String)", typeof(string), "toLowCardinality('lowcardinality')", "lowcardinality");
+
             yield return new DataTypeSample("Tuple(Int32, String, Nullable(Int32))", typeof(Tuple<int, string, int?>), "tuple(1, 'a', NULL)", Tuple.Create<int, string, int?>(1, "a", null));
 
             yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1988-11-12')", new DateTime(1988, 11, 12));

@@ -34,6 +34,7 @@
         Nested,
         Tuple,
         Nullable,
+        LowCardinality,
     }
 #pragma warning restore CA1720 // Identifier contains type name
 }

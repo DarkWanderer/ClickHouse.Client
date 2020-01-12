@@ -143,6 +143,11 @@ namespace ClickHouse.Client.Formats
                     writer.Write(enum16Index);
                     break;
 
+                case ClickHouseTypeCode.LowCardinality:
+                    var lcCardinality = (LowCardinalityType)databaseType;
+                    WriteValue(data, lcCardinality.UnderlyingType);
+                    break;
+
                 default:
                     throw new NotImplementedException($"Saving of {databaseType.TypeCode} is not implemented");
             }
