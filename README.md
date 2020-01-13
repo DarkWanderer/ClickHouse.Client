@@ -12,3 +12,4 @@
 * Supports Binary, JSON, TSV protocols (selectable via Driver connection string parameter)
 * Supports all recursive types (`Array(Nullable(Int32))` etc.)
 * High-throughput
+* Available for .NET Core/Framework/Standard
