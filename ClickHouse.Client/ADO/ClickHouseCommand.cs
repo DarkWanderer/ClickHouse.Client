@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO.Parameters;
 using ClickHouse.Client.ADO.Readers;
-using ClickHouse.Client.Properties;
 
 namespace ClickHouse.Client.ADO
 {

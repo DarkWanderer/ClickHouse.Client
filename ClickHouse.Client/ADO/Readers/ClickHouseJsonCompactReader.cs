@@ -38,8 +38,8 @@ namespace ClickHouse.Client.ADO.Readers
 
             FieldNames = new string[columns.Length];
             RawTypes = new ClickHouseType[columns.Length];
-            
-            for (int i = 0; i < columns.Length; i++)
+
+            for (var i = 0; i < columns.Length; i++)
             {
                 FieldNames[i] = columns[i].Name;
                 RawTypes[i] = TypeConverter.ParseClickHouseType(columns[i].Type);
@@ -49,7 +49,7 @@ namespace ClickHouse.Client.ADO.Readers
             AssertEquals(true, jsonReader.Read());
             AssertEquals(JsonToken.PropertyName, jsonReader.TokenType);
             AssertEquals("data", jsonReader.Value);
-            
+
             // Read start of data array tag
             AssertEquals(true, jsonReader.Read());
             AssertEquals(JsonToken.StartArray, jsonReader.TokenType);

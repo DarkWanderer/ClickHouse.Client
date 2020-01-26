@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Copy;
@@ -29,7 +28,7 @@ namespace ClickHouse.Client.Tests
             using var connection = TestUtilities.GetTestClickHouseConnection(Driver, UseCompression);
             using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers LIMIT {count}");
 
-            int counter = 0;
+            var counter = 0;
             Assert.IsTrue(reader.HasRows);
             stopwatch.Start();
             while (reader.Read())
@@ -46,8 +45,8 @@ namespace ClickHouse.Client.Tests
         public async Task BulkCopyBenchmark()
         {
             const int count = 20000 * Multiplier;
-            string targetDatabase = "temp";
-            string targetTable = $"{targetDatabase}.bulk_insert_test";
+            var targetDatabase = "temp";
+            var targetTable = $"{targetDatabase}.bulk_insert_test";
 
             var stopwatch = new Stopwatch();
 

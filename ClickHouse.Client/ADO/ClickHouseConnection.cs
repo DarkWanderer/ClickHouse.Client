@@ -90,13 +90,13 @@ namespace ClickHouse.Client.ADO
             if (useCompression)
             {
                 var data = new MemoryStream(Encoding.UTF8.GetBytes(sqlQuery));
-                
+
                 using var compressedStream = new MemoryStream();
 
                 using (var gzipStream = new GZipStream(compressedStream, CompressionLevel.Fastest, true))
                     await data.CopyToAsync(gzipStream).ConfigureAwait(false);
 
-                string compressed = compressedStream.ToArray().ToHexString();
+                var compressed = compressedStream.ToArray().ToHexString();
 
                 postMessage.Content = new ByteArrayContent(compressedStream.ToArray());
                 postMessage.Content.Headers.Add("Content-Encoding", "gzip");

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
-using System.Numerics;
 using System.Text;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Properties;

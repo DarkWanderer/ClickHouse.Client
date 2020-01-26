@@ -2,7 +2,7 @@
 
 namespace ClickHouse.Client.Formats
 {
-    interface IStreamDataWriter
+    internal interface IStreamDataWriter
     {
         void WriteValue(object value, ClickHouseType type);
     }

@@ -14,7 +14,7 @@ namespace ClickHouse.Client.Types
 
         public ClickHouseType[] UnderlyingTypes
         {
-            get => underlyingTypes; 
+            get => underlyingTypes;
             set
             {
                 underlyingTypes = value;
@@ -26,7 +26,7 @@ namespace ClickHouse.Client.Types
         {
             var count = underlyingTypes.Length;
             var typeArgs = new Type[count];
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
                 typeArgs[i] = underlyingTypes[i].FrameworkType;
 
             var genericType = Type.GetType("System.Tuple`" + typeArgs.Length);
@@ -35,7 +35,7 @@ namespace ClickHouse.Client.Types
 
         public ITuple MakeTuple(params object[] values)
         {
-            int count = values.Length;
+            var count = values.Length;
             if (underlyingTypes.Length != count)
                 throw new ArgumentException($"Count of tuple type elements ({underlyingTypes.Length}) does not match number of elements ({count})");
             var valuesCopy = new object[count];

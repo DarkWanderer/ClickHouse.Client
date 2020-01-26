@@ -107,7 +107,7 @@ namespace ClickHouse.Client.Types
 
             if (type.IsArray)
                 return new ArrayType() { UnderlyingType = ToClickHouseType(type.GetElementType()) };
-            
+
             var underlyingType = Nullable.GetUnderlyingType(type);
             if (underlyingType != null)
                 return new NullableType() { UnderlyingType = ToClickHouseType(underlyingType) };

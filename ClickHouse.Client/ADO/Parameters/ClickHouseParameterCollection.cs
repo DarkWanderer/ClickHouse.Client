@@ -8,7 +8,7 @@ namespace ClickHouse.Client.ADO.Parameters
 {
     internal class ClickHouseParameterCollection : DbParameterCollection
     {
-        private List<ClickHouseDbParameter> parameters = new List<ClickHouseDbParameter>();
+        private readonly List<ClickHouseDbParameter> parameters = new List<ClickHouseDbParameter>();
 
         public override int Count => parameters.Count;
 

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
-using ClickHouse.Client.Properties;
 using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.Formats
@@ -134,12 +133,12 @@ namespace ClickHouse.Client.Formats
 
                 case ClickHouseTypeCode.Enum8:
                     var enum8TypeInfo = (EnumType)databaseType;
-                    sbyte enum8Index = data is string enum8Str ? (sbyte)enum8TypeInfo.Lookup(enum8Str) : Convert.ToSByte(data);
+                    var enum8Index = data is string enum8Str ? (sbyte)enum8TypeInfo.Lookup(enum8Str) : Convert.ToSByte(data);
                     writer.Write(enum8Index);
                     break;
                 case ClickHouseTypeCode.Enum16:
                     var enum16TypeInfo = (EnumType)databaseType;
-                    short enum16Index = data is string enum16Str ? (sbyte)enum16TypeInfo.Lookup(enum16Str) : Convert.ToInt16(data);
+                    var enum16Index = data is string enum16Str ? (sbyte)enum16TypeInfo.Lookup(enum16Str) : Convert.ToInt16(data);
                     writer.Write(enum16Index);
                     break;
 

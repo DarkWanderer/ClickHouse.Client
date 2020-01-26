@@ -54,9 +54,9 @@ namespace ClickHouse.Client.Copy
             var tableColumns = await GetTargetTableSchemaAsync(token);
 
             var tasks = new Task[MaxDegreeOfParallelism];
-            for (int i = 0; i < tasks.Length; i++)
+            for (var i = 0; i < tasks.Length; i++)
                 tasks[i] = Task.CompletedTask;
-           
+
             foreach (var batch in rows.Batch(BatchSize))
             {
                 token.ThrowIfCancellationRequested();
