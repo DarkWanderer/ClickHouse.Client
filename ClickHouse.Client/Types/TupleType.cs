@@ -38,7 +38,7 @@ namespace ClickHouse.Client.Types
             int count = values.Length;
             if (underlyingTypes.Length != count)
                 throw new ArgumentException($"Count of tuple type elements ({underlyingTypes.Length}) does not match number of elements ({count})");
-
+            var valuesCopy = new object[count];
             return (ITuple)Activator.CreateInstance(frameworkType, values);
         }
 

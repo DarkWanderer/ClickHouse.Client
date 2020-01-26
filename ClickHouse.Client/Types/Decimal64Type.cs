@@ -18,7 +18,7 @@ namespace ClickHouse.Client.Types
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));
 
-            return new DecimalType
+            return new Decimal64Type
             {
                 Scale = int.Parse(typeName.Substring(Name.Length).TrimRoundBrackets())
             };
