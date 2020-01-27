@@ -26,6 +26,8 @@ namespace ClickHouse.Client.Copy
 
         public int BatchSize { get; set; } = 50000;
 
+        public IReadOnlyCollection<string> Columns { get; set; }
+
         public int MaxDegreeOfParallelism { get; set; } = 4;
 
         public string DestinationTableName { get; set; }
@@ -51,7 +53,13 @@ namespace ClickHouse.Client.Copy
             if (string.IsNullOrWhiteSpace(DestinationTableName))
                 throw new InvalidOperationException(Resources.DestinationTableNotSetMessage);
 
-            var tableColumns = await GetTargetTableSchemaAsync(token);
+            ClickHouseType[] columnTypes = null;
+
+            using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {ColumnsExpression} FROM {DestinationTableName} LIMIT 0"))
+            {
+                columnTypes = Enumerable.Range(0, reader.FieldCount).Select(reader.GetClickHouseType).ToArray();
+                Columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToArray();
+            }
 
             var tasks = new Task[MaxDegreeOfParallelism];
             for (var i = 0; i < tasks.Length; i++)
@@ -66,7 +74,7 @@ namespace ClickHouse.Client.Copy
                     if (completedTaskIndex >= 0)
                     {
                         await tasks[completedTaskIndex]; // to receive exception if one happens
-                        var task = PushBatch(batch, tableColumns, token);
+                        var task = PushBatch(batch, columnTypes, token);
                         tasks[completedTaskIndex] = task;
                         break;
                     }
@@ -78,6 +86,8 @@ namespace ClickHouse.Client.Copy
             }
             await Task.WhenAll(tasks);
         }
+
+        private string ColumnsExpression => Columns == null || Columns.Count == 0 ? "*" : string.Join(",", Columns);
 
         private static IEnumerable<object[]> AsEnumerable(IDataReader reader)
         {
@@ -106,14 +116,6 @@ namespace ClickHouse.Client.Copy
             var query = $"INSERT INTO {DestinationTableName} FORMAT RowBinary";
             await connection.PostDataAsync(query, stream, token).ConfigureAwait(false);
             Interlocked.Add(ref rowsWritten, rows.Count);
-        }
-
-        private async Task<ClickHouseType[]> GetTargetTableSchemaAsync(CancellationToken token)
-        {
-            using var command = connection.CreateCommand();
-            command.CommandText = $"SELECT * FROM {DestinationTableName}";
-            using var reader = (ClickHouseDataReader)await command.ExecuteReaderAsync(CommandBehavior.SchemaOnly, token).ConfigureAwait(false);
-            return Enumerable.Range(0, reader.FieldCount).Select(reader.GetClickHouseType).ToArray();
         }
 
         private bool disposed = false; // To detect redundant calls
