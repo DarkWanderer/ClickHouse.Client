@@ -29,7 +29,7 @@ build_script:
 - dotnet build --no-restore --configuration Release
 
 after_build:
-- dotnet pack --include-symbols --include-source ClickHouse.Client.sln
+- dotnet pack --no-build --include-symbols --include-source ClickHouse.Client.sln
 
 before_test:
 - docker pull yandex/clickhouse-server
