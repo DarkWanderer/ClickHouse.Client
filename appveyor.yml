@@ -28,9 +28,6 @@ before_build:
 build_script:
 - dotnet build --no-restore --configuration Release
 
-after_build:
-- dotnet pack --no-build --configuration Release --include-symbols --include-source ClickHouse.Client.sln
-
 before_test:
 - docker pull yandex/clickhouse-server
 - docker run -p 8123:8123 -d --name clickhouse-server yandex/clickhouse-server
@@ -49,6 +46,8 @@ for:
 - matrix:
     only:
       - image: Visual Studio 2019
+  after_build:
+  - dotnet pack --no-build --configuration Release --include-symbols --include-source ClickHouse.Client.sln
   artifacts:
   - path: '**/*.nupkg'
     name: NuGet
