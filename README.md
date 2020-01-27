@@ -14,3 +14,4 @@
 * Supports all recursive types (`Array(Nullable(Int32))` etc.)
 * High-throughput
 * Available for .NET Core/Framework/Standard
+* [Bulk insert](https://github.com/DarkWanderer/ClickHouse.Client/wiki/Bulk-insertion) support
