@@ -12,7 +12,6 @@ namespace ClickHouse.Client.ADO
         public string Database
         {
             get => base.TryGetValue("Database", out var value) ? value as string : "default";
-
             set => this["Database"] = value;
         }
 

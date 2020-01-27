@@ -39,6 +39,10 @@ namespace ClickHouse.Client.ADO
             ConnectionString = connectionString;
         }
 
+        /// <summary>
+        /// String defining connection settings for ClickHouse server
+        /// Example: Host=localhost;Port=8123;Username=default;Password=123;Compression=true
+        /// </summary>
         public sealed override string ConnectionString
         {
             get
