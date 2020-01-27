@@ -28,13 +28,16 @@ before_build:
 build_script:
 - dotnet build --no-restore --configuration Release
 
+after_build:
+- dotnet pack --include-symbols --include-source ClickHouse.Client.sln
+
 before_test:
 - docker pull yandex/clickhouse-server
 - docker run -p 8123:8123 -d --name clickhouse-server yandex/clickhouse-server
 - sleep 3
 
 test_script:
-- dotnet test --no-build --framework netcoreapp3.0 --configuration Release
+- dotnet test --no-build --framework netcoreapp3.0 --configuration Release --test-adapter-path:. --logger:Appveyor
 
 for:
 - matrix:
