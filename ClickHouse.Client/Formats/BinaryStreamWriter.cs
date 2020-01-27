@@ -72,7 +72,7 @@ namespace ClickHouse.Client.Formats
                     var @string = (string)data;
                     var stringInfo = (FixedStringType)databaseType;
                     var stringBytes = new byte[stringInfo.Length];
-                    var length = Encoding.UTF8.GetBytes(@string, 0, @string.Length, stringBytes, 0);
+                    Encoding.UTF8.GetBytes(@string, 0, @string.Length, stringBytes, 0);
 
                     writer.Write(stringBytes);
                     break;

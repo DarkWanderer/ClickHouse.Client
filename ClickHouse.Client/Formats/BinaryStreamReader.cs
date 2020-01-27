@@ -113,7 +113,7 @@ namespace ClickHouse.Client.Formats
                     return ReadValue(lcCardinality.UnderlyingType);
 
             }
-            throw new NotImplementedException();
+            throw new NotImplementedException($"Reading of {databaseType.TypeCode} is not implemented");
         }
     }
 }

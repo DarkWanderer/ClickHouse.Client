@@ -28,7 +28,13 @@ namespace ClickHouse.Client.ADO.Parameters
 
         public override bool Contains(string value) => parameters.Any(p => p.ParameterName == value);
 
-        public override void CopyTo(Array array, int index) => throw new NotImplementedException();
+        public override void CopyTo(Array array, int index)
+        {
+            for (int i = 0; i < parameters.Count; i++)
+            {
+                array.SetValue(parameters[i].Value, index + i);
+            }
+        }
 
         public override IEnumerator GetEnumerator() => parameters.GetEnumerator();
 

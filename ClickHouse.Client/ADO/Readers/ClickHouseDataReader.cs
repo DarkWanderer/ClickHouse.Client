@@ -66,7 +66,16 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override float GetFloat(int ordinal) => Convert.ToSingle(GetValue(ordinal), CultureInfo.InvariantCulture);
 
-        public override Guid GetGuid(int ordinal) => throw new NotImplementedException();
+        public override Guid GetGuid(int ordinal)
+        {
+            var value = GetValue(ordinal);
+            if (value is Guid guid)
+                return guid;
+            else if (value is string s)
+                return new Guid(s);
+            else
+                throw new InvalidOperationException($"Cannot convert value of type {value?.GetType()?.Name ?? "null"} to Guid");
+        }
 
         public override short GetInt16(int ordinal) => Convert.ToInt16(GetValue(ordinal), CultureInfo.InvariantCulture);
 
@@ -98,7 +107,7 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override bool IsDBNull(int ordinal) => GetValue(ordinal) is DBNull;
 
-        public override bool NextResult() => throw new NotSupportedException();
+        public override bool NextResult() => false;
 
         public override void Close() => Dispose();
 

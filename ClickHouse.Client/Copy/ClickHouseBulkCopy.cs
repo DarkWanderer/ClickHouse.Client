@@ -104,7 +104,7 @@ namespace ClickHouse.Client.Copy
             stream.Seek(0, SeekOrigin.Begin);
 
             var query = $"INSERT INTO {DestinationTableName} FORMAT RowBinary";
-            var result = await connection.PostDataAsync(query, stream, token).ConfigureAwait(false);
+            await connection.PostDataAsync(query, stream, token).ConfigureAwait(false);
             Interlocked.Add(ref rowsWritten, rows.Count);
         }
 

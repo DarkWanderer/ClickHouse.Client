@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -48,6 +49,7 @@ namespace ClickHouse.Client.ADO.Readers
             }
         }
 
+        [SuppressMessage("Style", "IDE0066:Convert switch statement to expression", Justification = "Switch statement is easier to debug")]
         private object ConvertString(string item, ClickHouseType typeInfo)
         {
             switch (typeInfo)

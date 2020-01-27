@@ -174,7 +174,7 @@ namespace ClickHouse.Client.ADO
 
         public override void ChangeDatabase(string databaseName) => database = databaseName;
 
-        public object Clone() => throw new NotImplementedException();
+        public object Clone() => new ClickHouseConnection(ConnectionString);
 
         public override void Close() => state = ConnectionState.Closed;
 
