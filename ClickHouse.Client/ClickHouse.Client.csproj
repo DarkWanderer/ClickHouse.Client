@@ -8,7 +8,7 @@
     <RepositoryUrl>https://github.com/DarkWanderer/ClickHouse.Client</RepositoryUrl>
     <PackageTags>clickhouse, ado.net, client</PackageTags>
     <Authors>Oleg Kozlyuk</Authors>
-    <Description>.NET data provider for ClickHouse, implementing Binary, TSV and JSON protocols</Description>
+    <Description>Fast binary-over-HTTP ADO.NET provider for ClickHouse</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <FileVersion>1.0.0</FileVersion>
