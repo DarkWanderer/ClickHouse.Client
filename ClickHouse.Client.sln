@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickHouse.Client.Benchmark", "ClickHouse.Client.Benchmark\ClickHouse.Client.Benchmark.csproj", "{6AD028BB-E6AA-454E-B130-67697ED1CE4B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{0FAA543E-0480-490A-90DA-A6C6AC9ACC50}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0FAA543E-0480-490A-90DA-A6C6AC9ACC50}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0FAA543E-0480-490A-90DA-A6C6AC9ACC50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AD028BB-E6AA-454E-B130-67697ED1CE4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AD028BB-E6AA-454E-B130-67697ED1CE4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AD028BB-E6AA-454E-B130-67697ED1CE4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AD028BB-E6AA-454E-B130-67697ED1CE4B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,7 +2,7 @@
 using System.Data;
 using System.Data.Common;
 
-namespace ClickHouse.Client.ADO
+namespace ClickHouse.Client.ADO.Adapters
 {
     public class ClickHouseDataAdapter : DbDataAdapter
     {

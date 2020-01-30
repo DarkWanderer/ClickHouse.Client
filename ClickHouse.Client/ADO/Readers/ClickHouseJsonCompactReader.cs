@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using ClickHouse.Client.JSON;
 using ClickHouse.Client.Types;
 using Newtonsoft.Json;
 
@@ -12,7 +13,7 @@ namespace ClickHouse.Client.ADO.Readers
         private readonly StreamReader textReader;
         private readonly JsonTextReader jsonReader;
         private readonly JsonSerializer serializer = new JsonSerializer();
-        private bool hasRows = false;
+        private bool hasMore = false;
 
         public ClickHouseJsonCompactReader(HttpResponseMessage httpResponse) : base(httpResponse)
         {
@@ -54,7 +55,7 @@ namespace ClickHouse.Client.ADO.Readers
             AssertEquals(true, jsonReader.Read());
             AssertEquals(JsonToken.StartArray, jsonReader.TokenType);
             AssertEquals(true, jsonReader.Read());
-            hasRows = jsonReader.TokenType == JsonToken.StartArray;
+            hasMore = jsonReader.TokenType == JsonToken.StartArray;
         }
 
         [JsonObject]
@@ -74,8 +75,6 @@ namespace ClickHouse.Client.ADO.Readers
             }
         }
 
-        public override bool HasRows => hasRows;
-
         private void AssertEquals<T>(T expected, T actual)
         {
             Debug.Assert(Equals(expected, actual));
@@ -89,15 +88,15 @@ namespace ClickHouse.Client.ADO.Readers
         /// <returns>Whether read was successful</returns>
         public override bool Read()
         {
-            if (!hasRows)
+            if (!hasMore)
                 return false;
             if (jsonReader.TokenType == JsonToken.EndArray)
-                return (hasRows = false);
+                return (hasMore = false);
             AssertEquals(jsonReader.TokenType, JsonToken.StartArray);
             CurrentRow = serializer.Deserialize<object[]>(jsonReader);
             AssertEquals(JsonToken.EndArray, jsonReader.TokenType);
             AssertEquals(true, jsonReader.Read());
-            hasRows = jsonReader.TokenType != JsonToken.EndArray;
+            hasMore = jsonReader.TokenType != JsonToken.EndArray;
 
             // Convert arrays to tuples
             //for (int i = 0; i < FieldCount; i++)

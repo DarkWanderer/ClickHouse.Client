@@ -58,15 +58,7 @@ namespace ClickHouse.Client.ADO
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
             using var reader = await ExecuteDbDataReaderAsync(CommandBehavior.Default, cancellationToken).ConfigureAwait(false);
-            if (reader.HasRows)
-            {
-                reader.Read();
-                return reader[0];
-            }
-            else
-            {
-                return null;
-            }
+            return reader.Read() ? reader[0] : null;
         }
 
         public override void Prepare() { /* ClickHouse has no notion of prepared statements */ }
