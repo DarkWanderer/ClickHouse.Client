@@ -13,14 +13,13 @@ namespace ClickHouse.Client.ADO.Readers
     {
         private const int bufferSize = 512 * 1024;
 
-        private readonly Stream stream;
         private readonly ExtendedBinaryReader reader;
         private readonly BinaryStreamReader streamReader;
 
         public ClickHouseBinaryReader(HttpResponseMessage httpResponse) : base(httpResponse)
         {
-            stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), bufferSize);
-            reader = new ExtendedBinaryReader(stream);
+            var stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), bufferSize);
+            reader = new ExtendedBinaryReader(stream); // will dispose of stream
             streamReader = new BinaryStreamReader(reader);
             ReadHeaders();
         }
@@ -65,7 +64,6 @@ namespace ClickHouse.Client.ADO.Readers
             if (disposing)
             {
                 reader?.Dispose();
-                stream?.Dispose();
                 streamReader?.Dispose();
             }
             base.Dispose(disposing);

@@ -19,17 +19,25 @@ namespace ClickHouse.Client.Benchmark
 
             var benchmarks = new List<IBenchmark>()
             {
-                //new SelectSingleColumnWithoutCompression(connectionString),
-                //new SelectSingleColumnWithCompression(connectionString),
-                new BulkWriteSingleColumnWithoutCompression(connectionString)
+                new SelectSingleColumnWithoutCompression(connectionString),
+                new SelectSingleColumnWithCompression(connectionString),
+                new BulkWriteSingleColumnWithoutCompression(connectionString),
+                new BulkWriteSingleColumnWithCompression(connectionString),
             };
             foreach (var benchmark in benchmarks)
             {
-                Console.WriteLine($"Running benchmark '{benchmark.Name}'");
+                Console.WriteLine($"Running benchmark '{benchmark.GetType().Name}'");
                 var result = await benchmark.Run();
-                Console.WriteLine($"{result.DataThroughput:#,##} bytes/s");
-                Console.WriteLine($"{result.RowsThroughput:#,##} rows/s");
+                Print(result);
             }
+        }
+
+        private static void Print(BenchmarkResult result)
+        {
+            Console.WriteLine($"{result.Duration.TotalSeconds:#,#} seconds");
+            Console.WriteLine($"{result.DataThroughput:#,#} bytes/s");
+            Console.WriteLine($"{result.RowsThroughput:#,#} rows/s");
+
         }
     }
 }

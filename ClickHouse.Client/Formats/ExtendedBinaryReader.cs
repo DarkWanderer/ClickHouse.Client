@@ -1,11 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace ClickHouse.Client.Formats
 {
     internal class ExtendedBinaryReader : BinaryReader
     {
-        public ExtendedBinaryReader(Stream stream) : base(stream) { }
+        public ExtendedBinaryReader(Stream stream) : base(stream, Encoding.UTF8, false) { }
 
         public new int Read7BitEncodedInt() => base.Read7BitEncodedInt();
 

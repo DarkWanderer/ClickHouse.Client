@@ -1,41 +1,29 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Benchmark.Benchmarks
 {
-    internal class SelectSingleColumnWithoutCompression : IBenchmark
+    internal class SelectSingleColumnWithoutCompression : AbstractParameterizedBenchmark, IBenchmark
     {
-        private readonly string connectionString;
-
-        public virtual string Name => "Select single column without compression";
-
-        public SelectSingleColumnWithoutCompression(string connectionString)
+        public SelectSingleColumnWithoutCompression(string connectionString) : base(connectionString)
         {
-            this.connectionString = connectionString;
+            Compression = false;
         }
 
-        protected virtual bool Compression => false;
-
-        private string GetCustomConnectionString()
-        {
-            var builder = new ClickHouseConnectionStringBuilder() { ConnectionString = connectionString };
-            builder.Compression = Compression;
-            return builder.ToString();
-        }
-
-        public async Task<BenchmarkResult> Run()
+        public override async Task<BenchmarkResult> Run()
         {
             var stopwatch = new Stopwatch();
 
-            const ulong count = 50000000;
-            using var connection = new ClickHouseConnection(GetCustomConnectionString());
-            using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers LIMIT {count}");
+            using var connection = GetConnection();
+            using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers");
 
+            var totalMilliseconds = Convert.ToInt64(Duration.TotalMilliseconds);
             ulong counter = 0;
             stopwatch.Start();
-            while (reader.Read())
+            while (reader.Read() && stopwatch.ElapsedMilliseconds < totalMilliseconds)
                 counter++;
             stopwatch.Stop();
 
