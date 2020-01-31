@@ -82,7 +82,7 @@ namespace ClickHouse.Client.ADO
         {
             using var getMessage = new HttpRequestMessage(HttpMethod.Get, MakeUri(sql));
             AddDefaultHttpHeaders(getMessage.Headers);
-            var response = await httpClient.SendAsync(getMessage, token).ConfigureAwait(false);
+            var response = await httpClient.SendAsync(getMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sql).ConfigureAwait(false);
         }
 
@@ -111,8 +111,7 @@ namespace ClickHouse.Client.ADO
             }
 
             postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("text/sql");
-            var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
-            //var response = await httpClient.PostAsync(MakeUri(), new StringContent(sqlQuery), token);
+            var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }
 
@@ -136,7 +135,7 @@ namespace ClickHouse.Client.ADO
             }
 
             postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-            var response = await httpClient.SendAsync(postMessage, token).ConfigureAwait(false);
+            var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sql).ConfigureAwait(false);
         }
 

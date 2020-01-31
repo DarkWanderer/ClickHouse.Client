@@ -62,7 +62,7 @@ namespace ClickHouse.Client.Tests
             using var reader = await connection.ExecuteReaderAsync("SELECT 1 LIMIT 0");
 
             reader.AssertHasFieldCount(1);
-            Assert.IsFalse(reader.HasRows);
+            //Assert.IsFalse(reader.HasRows);
             Assert.IsFalse(reader.Read());
         }
 
@@ -101,7 +101,6 @@ namespace ClickHouse.Client.Tests
             while (reader.Read())
                 results.Add(reader.GetInt32(0)); // Intentional conversion to int32
 
-            Assert.IsFalse(reader.HasRows);
             CollectionAssert.AreEqual(Enumerable.Range(0, count), results);
         }
 

@@ -21,11 +21,11 @@ namespace ClickHouse.Client.ADO.Readers
             ReadHeaders();
         }
 
-        public override bool HasRows => inputReader.Peek() != -1;
+        private bool MoreRows => inputReader.Peek() != -1;
 
         public override bool Read()
         {
-            if (!HasRows)
+            if (!MoreRows)
                 return false;
             var rowItems = inputReader.ReadLine().Split('\t');
             if (rowItems.Length != FieldCount)

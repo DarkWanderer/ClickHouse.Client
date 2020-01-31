@@ -88,8 +88,7 @@ namespace ClickHouse.Client.Tests
 
             var data = reader.GetFieldValues();
 
-            Assert.IsFalse(reader.HasRows, "Reader expected to not have rows");
-            Assert.IsFalse(reader.Read(), "Reader Read() returned true");
+            Assert.IsFalse(reader.Read(), "Extra row: " + string.Join(",", reader.GetFieldValues()));
 
             return data;
         }

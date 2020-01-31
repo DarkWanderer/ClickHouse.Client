@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
 using ClickHouse.Client.Formats;
@@ -10,14 +11,15 @@ namespace ClickHouse.Client.ADO.Readers
 {
     internal class ClickHouseBinaryReader : ClickHouseDataReader
     {
-        private readonly Stream stream;
+        private const int bufferSize = 512 * 1024;
+
         private readonly ExtendedBinaryReader reader;
         private readonly BinaryStreamReader streamReader;
 
         public ClickHouseBinaryReader(HttpResponseMessage httpResponse) : base(httpResponse)
         {
-            stream = httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
-            reader = new ExtendedBinaryReader(stream);
+            var stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), bufferSize);
+            reader = new ExtendedBinaryReader(stream); // will dispose of stream
             streamReader = new BinaryStreamReader(reader);
             ReadHeaders();
         }
@@ -30,56 +32,39 @@ namespace ClickHouse.Client.ADO.Readers
             CurrentRow = new object[count];
 
             for (var i = 0; i < count; i++)
-                FieldNames[i] = ReadStringBinary(reader);
+                FieldNames[i] = reader.ReadString();
             for (var i = 0; i < count; i++)
             {
-                var chType = ReadStringBinary(reader);
+                var chType = reader.ReadString();
                 RawTypes[i] = TypeConverter.ParseClickHouseType(chType);
             }
         }
 
-        private static string ReadStringBinary(ExtendedBinaryReader reader)
-        {
-            var length = reader.Read7BitEncodedInt();
-            return ReadFixedStringBinary(reader, length);
-        }
-
-        private static string ReadFixedStringBinary(BinaryReader reader, int length)
-        {
-            var bytes = reader.ReadBytes(length);
-            return Encoding.UTF8.GetString(bytes);
-        }
-
-        private bool StreamHasMoreData => stream.Position < stream.Length;
-
-        public override bool HasRows => StreamHasMoreData;
-
         public override bool Read()
         {
-            if (!StreamHasMoreData)
-                return false;
-
-            var initialPosition = stream.Position;
-            var count = RawTypes.Length;
-            var data = CurrentRow;
-            for (var i = 0; i < count; i++)
+            try
             {
-                var rawTypeInfo = RawTypes[i];
-                data[i] = streamReader.ReadValue(rawTypeInfo);
+                var count = RawTypes.Length;
+                var data = CurrentRow;
+                for (var i = 0; i < count; i++)
+                {
+                    var rawTypeInfo = RawTypes[i];
+                    data[i] = streamReader.ReadValue(rawTypeInfo);
+                }
+                return true;
+            } 
+            catch (EndOfStreamException)
+            {
+                return false;
             }
-            // infinite cycle prevention: if stream position did not move, something went wrong
-            if (initialPosition == stream.Position)
-                throw new InvalidOperationException(Resources.InternalErrorMessage);
-            return true;
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                reader.Dispose();
-                stream.Dispose();
-                streamReader.Dispose();
+                reader?.Dispose();
+                streamReader?.Dispose();
             }
             base.Dispose(disposing);
         }

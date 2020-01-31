@@ -30,7 +30,9 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override int FieldCount => RawTypes?.Length ?? throw new InvalidOperationException();
 
-        public override bool IsClosed => !HasRows;
+        public override bool IsClosed => false;
+
+        public override sealed bool HasRows => true;
 
         public override int RecordsAffected { get; }
 

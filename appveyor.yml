@@ -46,7 +46,7 @@ for:
     only:
       - image: Visual Studio 2019
   after_build:
-  - dotnet pack --no-build --configuration Release --include-symbols --include-source ClickHouse.Client.sln
+  - dotnet pack ClickHouse.Client/ClickHouse.Client.csproj --no-build --configuration Release --include-symbols --include-source
   artifacts:
   - path: '**/*.nupkg'
     name: NuGet

@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 
-namespace ClickHouse.Client.ADO.Readers
+namespace ClickHouse.Client.JSON
 {
     internal class DatabaseValueConverter : CustomCreationConverter<IDictionary<string, object>>
     {
