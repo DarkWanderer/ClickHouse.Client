@@ -26,7 +26,7 @@ before_build:
 - dotnet restore
 
 build_script:
-- dotnet build --no-restore --configuration Release
+- dotnet build --no-restore --configuration $CONFIGURATION
 
 before_test:
 - docker pull yandex/clickhouse-server
@@ -34,7 +34,7 @@ before_test:
 - sleep 3
 
 test_script:
-- dotnet test --no-build --framework netcoreapp3.0 --configuration Release --test-adapter-path:. --logger:Appveyor
+- dotnet test --no-build --framework netcoreapp3.0 --configuration $CONFIGURATION --test-adapter-path:. --logger:Appveyor
 
 for:
 - matrix:
@@ -46,7 +46,7 @@ for:
     only:
       - image: Visual Studio 2019
   after_build:
-  - dotnet pack ClickHouse.Client/ClickHouse.Client.csproj --no-build --configuration Release --include-symbols --include-source -p:SymbolPackageFormat=snupkg
+  - dotnet pack ClickHouse.Client/ClickHouse.Client.csproj --no-build --configuration $CONFIGURATION --include-symbols --include-source -p:SymbolPackageFormat=snupkg
   artifacts:
-  - path: '**/*.nupkg'
+  - path: '**/*nupkg'
     name: NuGet
