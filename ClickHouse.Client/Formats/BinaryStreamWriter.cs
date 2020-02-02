@@ -7,7 +7,7 @@ using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.Formats
 {
-    internal class BinaryStreamWriter : IStreamDataWriter, IDisposable
+    internal class BinaryStreamWriter : IDisposable
     {
         private readonly ExtendedBinaryWriter writer;
 

@@ -8,12 +8,7 @@ namespace ClickHouse.Client.Benchmark
 {
     class Program
     {
-        static void Main(string[] args)
-        {
-            MainAsync(args).GetAwaiter().GetResult();
-        }
-
-        private static async Task MainAsync(string[] args)
+        public static async Task Main(string[] args)
         {
             var connectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION");
 

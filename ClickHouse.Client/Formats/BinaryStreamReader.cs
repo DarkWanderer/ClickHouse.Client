@@ -5,7 +5,7 @@ using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.Formats
 {
-    internal class BinaryStreamReader : IStreamDataReader, IDisposable
+    internal class BinaryStreamReader : IDisposable
     {
         private readonly ExtendedBinaryReader reader;
 
@@ -16,7 +16,7 @@ namespace ClickHouse.Client.Formats
 
         public void Dispose() => reader.Dispose();
 
-        public object ReadValue(ClickHouseType databaseType)
+        public object ReadValue(ClickHouseType databaseType, bool nullAsDbNull)
         {
             switch (databaseType.TypeCode)
             {
@@ -54,12 +54,19 @@ namespace ClickHouse.Client.Formats
                     var length = reader.Read7BitEncodedInt();
                     var data = new object[length];
                     for (var i = 0; i < length; i++)
-                        data[i] = ReadValue(arrayTypeInfo.UnderlyingType);
+                        data[i] = ReadValue(arrayTypeInfo.UnderlyingType, nullAsDbNull);
                     return data;
 
                 case ClickHouseTypeCode.Nullable:
                     var nullableTypeInfo = (NullableType)databaseType;
-                    return reader.ReadByte() > 0 ? DBNull.Value : ReadValue(nullableTypeInfo.UnderlyingType);
+                    if (reader.ReadByte() > 0)
+                    {
+                        return nullAsDbNull ? DBNull.Value : null;
+                    }
+                    else
+                    {
+                        return ReadValue(nullableTypeInfo.UnderlyingType, nullAsDbNull);
+                    }
 
                 case ClickHouseTypeCode.Date:
                     var days = reader.ReadUInt16();
@@ -84,7 +91,8 @@ namespace ClickHouse.Client.Formats
                     var contents = new object[count];
                     for (var i = 0; i < count; i++)
                     {
-                        contents[i] = ReadValue(tupleTypeInfo.UnderlyingTypes[i]);
+                        // Underlying data in Tuple should always be null, not DBNull
+                        contents[i] = ReadValue(tupleTypeInfo.UnderlyingTypes[i], false);
                         if (contents[i] is DBNull)
                             contents[i] = null;
                     }
@@ -110,7 +118,7 @@ namespace ClickHouse.Client.Formats
 
                 case ClickHouseTypeCode.LowCardinality:
                     var lcCardinality = (LowCardinalityType)databaseType;
-                    return ReadValue(lcCardinality.UnderlyingType);
+                    return ReadValue(lcCardinality.UnderlyingType, nullAsDbNull);
 
             }
             throw new NotImplementedException($"Reading of {databaseType.TypeCode} is not implemented");

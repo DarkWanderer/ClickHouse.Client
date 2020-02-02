@@ -38,7 +38,14 @@ namespace ClickHouse.Client.Types
             var count = values.Length;
             if (underlyingTypes.Length != count)
                 throw new ArgumentException($"Count of tuple type elements ({underlyingTypes.Length}) does not match number of elements ({count})");
-            return (ITuple)Activator.CreateInstance(frameworkType, values);
+
+            var valuesCopy = new object[count];
+
+            // Coerce the values into types which can be stored in the tuple
+            for (int i = 0; i < count; i++)
+                valuesCopy[i] = values[i] == null ? null : Convert.ChangeType(values[i], UnderlyingTypes[i].FrameworkType);
+
+            return (ITuple)Activator.CreateInstance(frameworkType, valuesCopy);
         }
 
         public override Type FrameworkType => frameworkType;

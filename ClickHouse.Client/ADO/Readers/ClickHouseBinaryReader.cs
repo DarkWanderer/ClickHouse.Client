@@ -49,7 +49,7 @@ namespace ClickHouse.Client.ADO.Readers
                 for (var i = 0; i < count; i++)
                 {
                     var rawTypeInfo = RawTypes[i];
-                    data[i] = streamReader.ReadValue(rawTypeInfo);
+                    data[i] = streamReader.ReadValue(rawTypeInfo, true);
                 }
                 return true;
             } 
