@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -68,6 +69,8 @@ namespace ClickHouse.Client.ADO.Readers
                     return item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType);
                 case PlainDataType<Guid> _:
                     return new Guid(item);
+                case PlainDataType<IPAddress> _:
+                    return IPAddress.Parse(item);
                 default:
                     return Convert.ChangeType(Regex.Unescape(item), typeInfo.FrameworkType, CultureInfo.InvariantCulture);
             };

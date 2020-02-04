@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Net;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -104,14 +105,7 @@ namespace ClickHouse.Client.Formats
                     break;
 
                 case ClickHouseTypeCode.UUID:
-                    Guid guid;
-                    if (data is Guid g)
-                        guid = g;
-                    else if (data is string s)
-                        guid = new Guid(s);
-                    else
-                        throw new NotSupportedException($"Cannot convert {data?.GetType()?.Name ?? "null"} to GUID");
-
+                    var guid = ExtractGuid(data);
                     var bytes = guid.ToByteArray();
                     Array.Reverse(bytes, 8, 8);
                     writer.Write(bytes, 6, 2);
@@ -119,6 +113,24 @@ namespace ClickHouse.Client.Formats
                     writer.Write(bytes, 0, 4);
                     writer.Write(bytes, 8, 8);
                     break;
+
+                case ClickHouseTypeCode.IPv4:
+                    var address4 = ExtractIPAddress(data);
+                    if (address4.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
+                        throw new ArgumentException($"Expected IPv4, got {address4.ToString()}");
+                    var ipv4bytes = address4.GetAddressBytes();
+                    Array.Reverse(ipv4bytes);
+                    writer.Write(ipv4bytes, 0, ipv4bytes.Length);
+                    break;
+
+                case ClickHouseTypeCode.IPv6:
+                    var address6 = ExtractIPAddress(data);
+                    if (address6.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6)
+                        throw new ArgumentException($"Expected IPv4, got {address6.ToString()}");
+                    var ipv6bytes = address6.GetAddressBytes();
+                    writer.Write(ipv6bytes, 0, ipv6bytes.Length);
+                    break;
+
                 case ClickHouseTypeCode.DateTime:
                     var seconds = (uint)((DateTime)data - TypeConverter.DateTimeEpochStart).TotalSeconds;
                     writer.Write(seconds);
@@ -150,6 +162,30 @@ namespace ClickHouse.Client.Formats
                 default:
                     throw new NotImplementedException($"Saving of {databaseType.TypeCode} is not implemented");
             }
+        }
+
+        private static Guid ExtractGuid(object data)
+        {
+            Guid guid;
+            if (data is Guid g)
+                guid = g;
+            else if (data is string s)
+                guid = new Guid(s);
+            else
+                throw new NotSupportedException($"Cannot convert {data?.GetType()?.Name ?? "null"} to GUID");
+            return guid;
+        }
+
+        private static IPAddress ExtractIPAddress(object data)
+        {
+            IPAddress address;
+            if (data is IPAddress a)
+                address = a;
+            else if (data is string s)
+                address = IPAddress.Parse(s);
+            else
+                throw new NotSupportedException($"Cannot convert {data?.GetType()?.Name ?? "null"} to IPv4");
+            return address;
         }
     }
 }

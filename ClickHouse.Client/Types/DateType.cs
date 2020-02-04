@@ -1,4 +1,6 @@
-﻿namespace ClickHouse.Client.Types
+﻿using System;
+
+namespace ClickHouse.Client.Types
 {
     internal class DateType : DateTimeType
     {

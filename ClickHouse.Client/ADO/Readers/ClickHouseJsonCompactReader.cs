@@ -98,15 +98,14 @@ namespace ClickHouse.Client.ADO.Readers
             AssertEquals(true, jsonReader.Read());
             hasMore = jsonReader.TokenType != JsonToken.EndArray;
 
-            // Convert arrays to tuples
-            //for (int i = 0; i < FieldCount; i++)
-            //{
-            //    if (RawTypes[i].TypeCode == ClickHouseTypeCode.Tuple)
-            //    {
-            //        var tt = (TupleType)RawTypes[i];
-            //        CurrentRow[i] = tt.MakeTuple((object[])CurrentRow[i]);
-            //    }
-            //}
+            for (int i = 0; i < FieldCount; i++)
+            {
+                if (RawTypes[i].TypeCode == ClickHouseTypeCode.Tuple)
+                {
+                    var tt = (TupleType)RawTypes[i];
+                    CurrentRow[i] = tt.MakeTuple((object[])CurrentRow[i]);
+                }
+            }
 
             return true;
         }

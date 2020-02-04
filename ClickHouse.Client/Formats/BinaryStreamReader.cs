@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Numerics;
 using System.Text;
 using ClickHouse.Client.Types;
@@ -84,6 +85,15 @@ namespace ClickHouse.Client.Formats
                     reader.Read(bytes, 8, 8);
                     Array.Reverse(bytes, 8, 8);
                     return new Guid(bytes);
+
+                case ClickHouseTypeCode.IPv4:
+                    var ipv4bytes = reader.ReadBytes(4);
+                    Array.Reverse(ipv4bytes);
+                    return new IPAddress(ipv4bytes);
+
+                case ClickHouseTypeCode.IPv6:
+                    var ipv6bytes = reader.ReadBytes(16);
+                    return new IPAddress(ipv6bytes);
 
                 case ClickHouseTypeCode.Tuple:
                     var tupleTypeInfo = (TupleType)databaseType;

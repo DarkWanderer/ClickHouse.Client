@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("ClickHouse.Client.Tests")] // assembly-level tag to expose below classes to tests
@@ -35,6 +36,9 @@ namespace ClickHouse.Client.Types
             RegisterPlainTypeInfo<string>(ClickHouseTypeCode.String);
 
             RegisterPlainTypeInfo<Guid>(ClickHouseTypeCode.UUID);
+            RegisterPlainTypeInfo<IPAddress>(ClickHouseTypeCode.IPv4);
+            RegisterPlainTypeInfo<IPAddress>(ClickHouseTypeCode.IPv6);
+
             RegisterPlainTypeInfo<DateTime>(ClickHouseTypeCode.DateTime);
             RegisterPlainTypeInfo<DateTime>(ClickHouseTypeCode.Date);
 

@@ -100,8 +100,6 @@ namespace ClickHouse.Client.ADO
                 using (var gzipStream = new GZipStream(compressedStream, CompressionLevel.Fastest, true))
                     await data.CopyToAsync(gzipStream).ConfigureAwait(false);
 
-                var compressed = compressedStream.ToArray().ToHexString();
-
                 postMessage.Content = new ByteArrayContent(compressedStream.ToArray());
                 postMessage.Content.Headers.Add("Content-Encoding", "gzip");
             }
@@ -144,8 +142,7 @@ namespace ClickHouse.Client.ADO
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                error = error + "\nQuery:\n" + query;
-                throw new ClickHouseServerException(error);
+                throw ClickHouseServerException.FromServerResponse(error, query);
             }
             return response;
         }

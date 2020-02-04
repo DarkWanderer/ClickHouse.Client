@@ -29,6 +29,8 @@
         FixedString,
 
         UUID,
+        IPv4,
+        IPv6,
 
         Array,
         Nested,
