@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Common;
 using System.Runtime.Serialization;
 
 namespace ClickHouse.Client
@@ -7,22 +8,27 @@ namespace ClickHouse.Client
     /// Exception class representing error which happened on ClickHouse server
     /// </summary>
     [Serializable]
-    public class ClickHouseServerException : Exception
+    public class ClickHouseServerException : DbException
     {
         public ClickHouseServerException()
         {
         }
 
-        public ClickHouseServerException(string error, string query, int? errorCode) : base(error)
+        public ClickHouseServerException(string error, string query, int errorCode) : base(error, errorCode)
         {
             Query = query;
-            ErrorCode = errorCode;
         }
 
         public static ClickHouseServerException FromServerResponse(string error, string query)
         {
-            var errorCode = ParseErrorCode(error);
+            var errorCode = ParseErrorCode(error) ?? -1;
             return new ClickHouseServerException(error, query, errorCode);
+        }
+
+        public string Query { get; } = null;
+
+        protected ClickHouseServerException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
         }
 
         private static int? ParseErrorCode(string error)
@@ -53,14 +59,5 @@ namespace ClickHouse.Client
 
             return int.TryParse(error.Substring(start, end - start), out int result) ? result : (int?)null;
         }
-
-        protected ClickHouseServerException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
-
-
-        public int? ErrorCode { get; } = null;
-
-        public string Query { get; } = null;
     }
 }
