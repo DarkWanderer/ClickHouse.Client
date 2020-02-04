@@ -8,7 +8,7 @@
 
 ## What is it?
 
-ClickHouse is a blazing-fast 'big data' database, allowing for true 'online' OLAP. This library provides a .NET interface for it
+[ClickHouse](https://github.com/ClickHouse/ClickHouse) is a blazing-fast 'big data' database, allowing for true 'Online' OLAP. This library provides a .NET interface for it
 
 ## Key features
 
