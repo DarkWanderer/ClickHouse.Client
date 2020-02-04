@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using ClickHouse.Client.ADO;
 using ClickHouse.Client.Copy;
 using ClickHouse.Client.Utility;
 

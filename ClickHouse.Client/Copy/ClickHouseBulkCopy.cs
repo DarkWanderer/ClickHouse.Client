@@ -26,8 +26,6 @@ namespace ClickHouse.Client.Copy
 
         public int BatchSize { get; set; } = 50000;
 
-        public IReadOnlyCollection<string> Columns { get; set; }
-
         public int MaxDegreeOfParallelism { get; set; } = 4;
 
         public string DestinationTableName { get; set; }
@@ -41,12 +39,16 @@ namespace ClickHouse.Client.Copy
             if (reader is null)
                 throw new ArgumentNullException(nameof(reader));
 
-            return WriteToServerAsync(AsEnumerable(reader), token);
+            return WriteToServerAsync(AsEnumerable(reader), reader.GetColumnNames(), token);
         }
 
-        public Task WriteToServerAsync(IEnumerable<object[]> rows) => WriteToServerAsync(rows, CancellationToken.None);
+        public Task WriteToServerAsync(IEnumerable<object[]> rows) => WriteToServerAsync(rows, null, CancellationToken.None);
 
-        public async Task WriteToServerAsync(IEnumerable<object[]> rows, CancellationToken token)
+        public Task WriteToServerAsync(IEnumerable<object[]> rows, IReadOnlyCollection<string> columns) => WriteToServerAsync(rows, columns, CancellationToken.None);
+
+        public Task WriteToServerAsync(IEnumerable<object[]> rows, CancellationToken token) => WriteToServerAsync(rows, null, token);
+
+        public async Task WriteToServerAsync(IEnumerable<object[]> rows, IReadOnlyCollection<string> columns, CancellationToken token)
         {
             if (rows is null)
                 throw new ArgumentNullException(nameof(rows));
@@ -55,10 +57,10 @@ namespace ClickHouse.Client.Copy
 
             ClickHouseType[] columnTypes = null;
 
-            using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {ColumnsExpression} FROM {DestinationTableName} LIMIT 0"))
+            using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} LIMIT 0"))
             {
                 columnTypes = Enumerable.Range(0, reader.FieldCount).Select(reader.GetClickHouseType).ToArray();
-                Columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToArray();
+                columns = reader.GetColumnNames();
             }
 
             var tasks = new Task[MaxDegreeOfParallelism];
@@ -87,7 +89,7 @@ namespace ClickHouse.Client.Copy
             await Task.WhenAll(tasks);
         }
 
-        private string ColumnsExpression => Columns == null || Columns.Count == 0 ? "*" : string.Join(",", Columns);
+        private string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
 
         private static IEnumerable<object[]> AsEnumerable(IDataReader reader)
         {

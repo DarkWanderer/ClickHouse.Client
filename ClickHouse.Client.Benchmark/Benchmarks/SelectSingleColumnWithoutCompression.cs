@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Benchmark.Benchmarks

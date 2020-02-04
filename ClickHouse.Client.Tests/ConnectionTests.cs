@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
-    public class ClickHouseConnectionTests
+    public class ConnectionTests
     {
         [Test]
         public void ShouldConnectToServer()

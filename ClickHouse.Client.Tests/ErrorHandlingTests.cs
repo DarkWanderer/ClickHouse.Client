@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
@@ -12,7 +9,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public static async Task ExceptionHandlerShouldParseErrorCode()
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(ADO.ClickHouseConnectionDriver.Binary, true);
+            using var connection = TestUtilities.GetTestClickHouseConnection(ClickHouseConnectionDriver.Binary, true);
             try
             {
                 var result = await connection.ExecuteScalarAsync("SELECT A");

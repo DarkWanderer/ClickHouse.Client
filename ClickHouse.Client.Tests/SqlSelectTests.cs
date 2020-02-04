@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ClickHouse.Client.ADO;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
@@ -40,7 +39,7 @@ namespace ClickHouse.Client.Tests
             var result = reader.GetEnsureSingleRow().Single();
 
             if (driver == ClickHouseConnectionDriver.JSON)
-                Assert.Inconclusive();
+                Assert.Inconclusive("TODO: fix types matching for JSON");
 
             return result;
         }

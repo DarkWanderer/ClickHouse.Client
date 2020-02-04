@@ -1,4 +1,4 @@
-﻿namespace ClickHouse.Client.ADO
+﻿namespace ClickHouse.Client
 {
     public enum ClickHouseConnectionDriver
     {

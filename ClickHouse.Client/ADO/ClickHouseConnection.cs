@@ -12,7 +12,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO
 {

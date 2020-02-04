@@ -1,10 +1,6 @@
-﻿using System;
-using System.IO;
-using System.IO.Compression;
+﻿using System.IO;
 using System.Net.Http;
-using System.Text;
 using ClickHouse.Client.Formats;
-using ClickHouse.Client.Properties;
 using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.ADO.Readers
