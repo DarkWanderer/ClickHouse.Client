@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.Types;
@@ -18,12 +19,12 @@ namespace ClickHouse.Client.Tests
     public class SqlSelectTests
     {
         private readonly ClickHouseConnectionDriver driver;
-        private readonly bool useCompression;
+        private readonly DbConnection connection;
 
         public SqlSelectTests(ClickHouseConnectionDriver driver, bool useCompression)
         {
             this.driver = driver;
-            this.useCompression = useCompression;
+            connection = TestUtilities.GetTestClickHouseConnection(driver, useCompression);
         }
 
         public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()
@@ -33,7 +34,6 @@ namespace ClickHouse.Client.Tests
         [TestCaseSource(typeof(SqlSelectTests), nameof(SimpleSelectQueries))]
         public async Task<object> ShouldExecuteSimpleSelectQuery(string sql)
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(driver, useCompression);
             using var reader = await connection.ExecuteReaderAsync(sql);
             reader.AssertHasFieldCount(1);
             var result = reader.GetEnsureSingleRow().Single();
@@ -47,7 +47,6 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldSelectMultipleColumns()
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(driver, useCompression);
             using var reader = await connection.ExecuteReaderAsync("SELECT 1 as a, 2 as b, 3 as c");
 
             reader.AssertHasFieldCount(3);
@@ -58,7 +57,6 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldSelectEmptyDataset()
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(driver, useCompression);
             using var reader = await connection.ExecuteReaderAsync("SELECT 1 LIMIT 0");
 
             reader.AssertHasFieldCount(1);
@@ -77,7 +75,6 @@ namespace ClickHouse.Client.Tests
                 .ToArray();
             var sql = $"select {string.Join(',', types)}";
 
-            using var connection = TestUtilities.GetTestClickHouseConnection(driver, useCompression);
             using var reader = await connection.ExecuteReaderAsync(sql);
             Assert.AreEqual(types.Length, reader.FieldCount);
 
@@ -89,7 +86,6 @@ namespace ClickHouse.Client.Tests
         public async Task ShouldSelectSingleColumnRange()
         {
             const int count = 100;
-            using var connection = TestUtilities.GetTestClickHouseConnection(driver, useCompression);
             using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers LIMIT {count}");
 
             var results = new List<int>();
@@ -108,7 +104,6 @@ namespace ClickHouse.Client.Tests
         [NonParallelizable]
         public async Task ShouldSelectNestedDataType()
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(driver, useCompression);
             await connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS test");
             await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.nested");
             await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.nested(nested_v Nested (int16_v Int16, uint32_v UInt32, dtime_v DateTime, string_v String)) ENGINE = Memory");
@@ -119,7 +114,6 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldCancelRunningAsyncQuery()
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(driver, useCompression);
             var command = connection.CreateCommand();
             command.CommandText = "SELECT sleep(3)";
             var task = command.ExecuteScalarAsync();

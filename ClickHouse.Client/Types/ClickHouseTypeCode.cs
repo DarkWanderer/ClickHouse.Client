@@ -19,8 +19,9 @@
         Float64,
         Decimal,
 
-        DateTime,
         Date,
+        DateTime,
+        DateTime64,
 
         Enum8,
         Enum16,

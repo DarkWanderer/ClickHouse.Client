@@ -1,4 +1,6 @@
 ﻿using System.Data;
+using System.Data.Common;
+using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Adapters;
 using NUnit.Framework;
 
@@ -6,10 +8,12 @@ namespace ClickHouse.Client.Tests
 {
     public class DataAdapterTests
     {
+        private readonly DbConnection connection = TestUtilities.GetTestClickHouseConnection(ClickHouseConnectionDriver.Binary);
+
         [Test]
         public void DataAdapterShouldFillDataSet()
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(ClickHouseConnectionDriver.Binary);
+            
             using var adapter = new ClickHouseDataAdapter();
             using var command = connection.CreateCommand();
             

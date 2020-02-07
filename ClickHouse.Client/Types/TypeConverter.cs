@@ -57,6 +57,7 @@ namespace ClickHouse.Client.Types
 
             RegisterParameterizedType<DateType>();
             RegisterParameterizedType<DateTimeType>();
+            RegisterParameterizedType<DateTime64Type>();
 
             RegisterParameterizedType<DecimalType>();
             RegisterParameterizedType<Decimal32Type>();

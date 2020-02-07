@@ -17,14 +17,19 @@ namespace ClickHouse.Client.Tests
         /// <returns></returns>
         public static ClickHouseConnection GetTestClickHouseConnection(ClickHouseConnectionDriver driver, bool compression = true)
         {
-            // Developer override for Windows machine
-            var devConnectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION") ??
-                throw new InvalidOperationException("Must set CLICKHOUSE_CONNECTION environment variable pointing at ClickHouse server");
-
-            var builder = new ClickHouseConnectionStringBuilder() { ConnectionString = devConnectionString };
+            var builder = GetConnectionStringBuilder();
             builder.Driver = driver; // Override driver with requested one
             builder.Compression = compression;
             return new ClickHouseConnection(builder.ConnectionString);
+        }
+
+        public static ClickHouseConnectionStringBuilder GetConnectionStringBuilder()
+        {
+            // Connection string must be provided pointing to a test ClickHouse server
+            var devConnectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION") ??
+                throw new InvalidOperationException("Must set CLICKHOUSE_CONNECTION environment variable pointing at ClickHouse server");
+
+            return new ClickHouseConnectionStringBuilder() { ConnectionString = devConnectionString };
         }
 
         public struct DataTypeSample
@@ -83,6 +88,7 @@ namespace ClickHouse.Client.Tests
 
             yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1988-11-12')", new DateTime(1988, 11, 12));
             yield return new DataTypeSample("DateTime", typeof(DateTime), "toDateTimeOrNull('1988-11-12 11:22:33')", new DateTime(1988, 11, 12, 11, 22, 33));
+            //yield return new DataTypeSample("DateTime64", typeof(DateTime), "toDateTime64OrNull('2020-02-20 11:22:33')", new DateTime(2020, 02, 20, 11, 22, 33));
         }
 
         public static object[] GetEnsureSingleRow(this DbDataReader reader)

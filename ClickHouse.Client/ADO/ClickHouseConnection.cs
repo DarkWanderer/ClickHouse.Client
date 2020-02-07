@@ -26,6 +26,7 @@ namespace ClickHouse.Client.ADO
         private string username;
         private string password;
         private bool useCompression;
+        private string session;
         private Uri serverUri;
 
         public ClickHouseConnection()
@@ -54,7 +55,8 @@ namespace ClickHouse.Client.ADO
                     Host = serverUri?.Host,
                     Port = (ushort)serverUri?.Port,
                     Driver = Driver,
-                    Compression = useCompression
+                    Compression = useCompression,
+                    UseSession = session != null
                 };
                 return builder.ToString();
             }
@@ -67,6 +69,7 @@ namespace ClickHouse.Client.ADO
                 password = builder.Password;
                 serverUri = new UriBuilder("http", builder.Host, builder.Port).Uri;
                 useCompression = builder.Compression;
+                session = builder.UseSession ? Guid.NewGuid().ToString() : null;
                 Driver = builder.Driver;
             }
         }
@@ -152,10 +155,10 @@ namespace ClickHouse.Client.ADO
             var queryParameters = new HttpQueryParameters()
             {
                 Database = database,
-                UseHttpCompression = useCompression
+                UseHttpCompression = useCompression,
+                SqlQuery = sql,
+                SessionId = session
             };
-            if (!string.IsNullOrWhiteSpace(sql))
-                queryParameters.SqlQuery = sql;
 
             uriBuilder.Query = queryParameters.ToString();
             return uriBuilder.ToString();
@@ -236,7 +239,21 @@ namespace ClickHouse.Client.ADO
             public string SqlQuery
             {
                 get => parameterCollection.Get("query");
-                set => parameterCollection.Set("query", value);
+                set => SetOrRemove("query", value);
+            }
+
+            public string SessionId
+            {
+                get => parameterCollection.Get("session_id");
+                set => SetOrRemove("session_id", value);
+            }
+
+            private void SetOrRemove(string name, string value)
+            {
+                if (!string.IsNullOrEmpty(value))
+                    parameterCollection.Set(name, value);
+                else
+                    parameterCollection.Remove(name);
             }
 
             public override string ToString() => Uri.EscapeUriString(HttpUtility.UrlDecode(parameterCollection.ToString()));
