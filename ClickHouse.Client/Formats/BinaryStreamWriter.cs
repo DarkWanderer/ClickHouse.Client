@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using ClickHouse.Client.Types;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Formats
 {
@@ -131,13 +132,19 @@ namespace ClickHouse.Client.Formats
                     writer.Write(ipv6bytes, 0, ipv6bytes.Length);
                     break;
 
+                case ClickHouseTypeCode.Date:
+                    var days = (ushort)((DateTime)data - TypeConverter.DateTimeEpochStart).TotalDays;
+                    writer.Write(days);
+                    break;
                 case ClickHouseTypeCode.DateTime:
                     var seconds = (uint)((DateTime)data - TypeConverter.DateTimeEpochStart).TotalSeconds;
                     writer.Write(seconds);
                     break;
-                case ClickHouseTypeCode.Date:
-                    var days = (ushort)((DateTime)data - TypeConverter.DateTimeEpochStart).TotalDays;
-                    writer.Write(days);
+                case ClickHouseTypeCode.DateTime64:
+                    var ticks = (ulong)((DateTime)data - TypeConverter.DateTimeEpochStart).TotalSeconds;
+                    var dt64t = (DateTime64Type)databaseType;
+                    var dfactor = MathUtils.IntPow(10, dt64t.Scale);
+                    writer.Write(ticks * dfactor);
                     break;
 
                 case ClickHouseTypeCode.Nothing:
@@ -160,7 +167,7 @@ namespace ClickHouse.Client.Formats
                     break;
 
                 default:
-                    throw new NotImplementedException($"Saving of {databaseType.TypeCode} is not implemented");
+                    throw new NotImplementedException($"{databaseType.TypeCode} not supported yet");
             }
         }
 

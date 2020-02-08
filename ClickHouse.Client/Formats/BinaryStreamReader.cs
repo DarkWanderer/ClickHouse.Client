@@ -75,6 +75,11 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseTypeCode.DateTime:
                     var seconds = reader.ReadUInt32();
                     return TypeConverter.DateTimeEpochStart.AddSeconds(seconds);
+                case ClickHouseTypeCode.DateTime64:
+                    var ticks = reader.ReadUInt64();
+                    var dt64t = (DateTime64Type)databaseType;
+                    var dfactor = (ulong)Math.Pow(10, dt64t.Scale);
+                    return TypeConverter.DateTimeEpochStart.AddSeconds(ticks / dfactor);
 
                 case ClickHouseTypeCode.UUID:
                     // Weird byte manipulation because of C#'s strange Guid implementation

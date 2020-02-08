@@ -4,16 +4,17 @@ using NodaTime;
 
 namespace ClickHouse.Client.Types
 {
-
-    internal class DateTimeType : ParameterizedType
+    internal class DateTime64Type : ParameterizedType
     {
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.DateTime;
+        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.DateTime64;
 
         public override Type FrameworkType => typeof(DateTime);
 
         public DateTimeZone TimeZone { get; set; }
 
-        public override string Name => "DateTime";
+        public override string Name => "DateTime64";
+
+        public int Scale { get; set; }
 
         public override string ToString() => $"DateTime({TimeZone.Id})";
 
@@ -22,12 +23,12 @@ namespace ClickHouse.Client.Types
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));
 
-            var timeZoneName = typeName.Substring(Name.Length).TrimRoundBrackets();
-            var timeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneName) ?? DateTimeZone.Utc;
+            var scale = Int32.Parse(typeName.Substring(Name.Length).TrimRoundBrackets());
 
-            return new DateTimeType
+            return new DateTime64Type
             {
-                TimeZone = timeZone
+                TimeZone = DateTimeZone.Utc,
+                Scale = scale
             };
         }
     }
