@@ -59,8 +59,7 @@ namespace ClickHouse.Client.Formats
 
                 case ClickHouseTypeCode.Decimal:
                     var dti = (DecimalType)databaseType;
-                    var factor = (int)Math.Pow(10, dti.Scale);
-                    var value = new BigInteger(Convert.ToDecimal(data) * factor);
+                    var value = new BigInteger(Convert.ToDecimal(data) * MathUtils.ToPower(10, dti.Scale));
                     var dbytes = new byte[dti.Size];
                     value.ToByteArray().CopyTo(dbytes, 0);
                     writer.Write(dbytes);
@@ -142,11 +141,8 @@ namespace ClickHouse.Client.Formats
                     break;
                 case ClickHouseTypeCode.DateTime64:
                     var dt64t = (DateTime64Type)databaseType;
-                    if (dt64t.Scale > 7)
-                        throw new ArgumentOutOfRangeException($"Cannot convert DateTime64 with scale {dt64t.Scale}, .NET DateTime only supports 100ns precision");
                     var ticks = (ulong)((DateTime)data - TypeConverter.DateTimeEpochStart).Ticks;
-                    var dfactor = MathUtils.IntPow(10, 7 - dt64t.Scale);
-                    writer.Write(ticks / dfactor);
+                    writer.Write(MathUtils.ShiftDecimalPlaces(ticks, dt64t.Scale - 7));
                     break;
 
                 case ClickHouseTypeCode.Nothing:

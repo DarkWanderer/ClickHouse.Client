@@ -17,7 +17,7 @@ namespace ClickHouse.Client.Tests
             for (int i = 1; i <= powersMax; i++)
             {
                 value *= (ulong)integer;
-                Assert.AreEqual(value, MathUtils.IntPow((uint)integer, i));
+                Assert.AreEqual(value, MathUtils.ToPower((uint)integer, i));
             }
         }
     }

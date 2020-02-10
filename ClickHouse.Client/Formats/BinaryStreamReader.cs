@@ -78,11 +78,9 @@ namespace ClickHouse.Client.Formats
                     return TypeConverter.DateTimeEpochStart.AddSeconds(seconds);
                 case ClickHouseTypeCode.DateTime64:
                     var dt64t = (DateTime64Type)databaseType;
-                    if (dt64t.Scale > 7)
-                        throw new ArgumentOutOfRangeException($"Cannot convert DateTime64 with scale {dt64t.Scale}, .NET DateTime only supports 100ns precision");
                     var chTicks = reader.ReadUInt64();
-                    var dfactor = MathUtils.IntPow(10, 7 - dt64t.Scale);
-                    return TypeConverter.DateTimeEpochStart.AddTicks((long)(chTicks * dfactor));
+                    // 7 is a 'magic constant' - number of zeroes in 10'000'000 ticks/second in DateTime
+                    return TypeConverter.DateTimeEpochStart.AddTicks((long)MathUtils.ShiftDecimalPlaces(chTicks, 7 - dt64t.Scale));
 
                 case ClickHouseTypeCode.UUID:
                     // Weird byte manipulation because of C#'s strange Guid implementation
@@ -118,9 +116,8 @@ namespace ClickHouse.Client.Formats
 
                 case ClickHouseTypeCode.Decimal:
                     var decimalTypeInfo = (DecimalType)databaseType;
-                    var factor = (int)Math.Pow(10, decimalTypeInfo.Scale);
                     var value = new BigInteger(reader.ReadBytes(decimalTypeInfo.Size));
-                    return (decimal)value / factor;
+                    return MathUtils.ShiftDecimalPlaces((decimal)value, -decimalTypeInfo.Scale);
                 case ClickHouseTypeCode.Nothing:
                     break;
                 case ClickHouseTypeCode.Nested:
