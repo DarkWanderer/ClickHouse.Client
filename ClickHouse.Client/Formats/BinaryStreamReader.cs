@@ -3,6 +3,7 @@ using System.Net;
 using System.Numerics;
 using System.Text;
 using ClickHouse.Client.Types;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Formats
 {
@@ -76,10 +77,12 @@ namespace ClickHouse.Client.Formats
                     var seconds = reader.ReadUInt32();
                     return TypeConverter.DateTimeEpochStart.AddSeconds(seconds);
                 case ClickHouseTypeCode.DateTime64:
-                    var ticks = reader.ReadUInt64();
                     var dt64t = (DateTime64Type)databaseType;
-                    var dfactor = (ulong)Math.Pow(10, dt64t.Scale);
-                    return TypeConverter.DateTimeEpochStart.AddSeconds(ticks / dfactor);
+                    if (dt64t.Scale > 7)
+                        throw new ArgumentOutOfRangeException($"Cannot convert DateTime64 with scale {dt64t.Scale}, .NET DateTime only supports 100ns precision");
+                    var chTicks = reader.ReadUInt64();
+                    var dfactor = MathUtils.IntPow(10, 7 - dt64t.Scale);
+                    return TypeConverter.DateTimeEpochStart.AddTicks((long)(chTicks * dfactor));
 
                 case ClickHouseTypeCode.UUID:
                     // Weird byte manipulation because of C#'s strange Guid implementation

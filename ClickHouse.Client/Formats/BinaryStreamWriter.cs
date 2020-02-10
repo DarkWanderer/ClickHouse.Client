@@ -141,10 +141,12 @@ namespace ClickHouse.Client.Formats
                     writer.Write(seconds);
                     break;
                 case ClickHouseTypeCode.DateTime64:
-                    var ticks = (ulong)((DateTime)data - TypeConverter.DateTimeEpochStart).TotalSeconds;
                     var dt64t = (DateTime64Type)databaseType;
-                    var dfactor = MathUtils.IntPow(10, dt64t.Scale);
-                    writer.Write(ticks * dfactor);
+                    if (dt64t.Scale > 7)
+                        throw new ArgumentOutOfRangeException($"Cannot convert DateTime64 with scale {dt64t.Scale}, .NET DateTime only supports 100ns precision");
+                    var ticks = (ulong)((DateTime)data - TypeConverter.DateTimeEpochStart).Ticks;
+                    var dfactor = MathUtils.IntPow(10, 7 - dt64t.Scale);
+                    writer.Write(ticks / dfactor);
                     break;
 
                 case ClickHouseTypeCode.Nothing:
