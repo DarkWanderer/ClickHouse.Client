@@ -38,8 +38,8 @@ namespace ClickHouse.Client.Tests
             reader.AssertHasFieldCount(1);
             var result = reader.GetEnsureSingleRow().Single();
 
-            if (driver == ClickHouseConnectionDriver.JSON)
-                Assert.Inconclusive("TODO: fix types matching for JSON");
+            //if (driver == ClickHouseConnectionDriver.JSON)
+            //    Assert.Inconclusive("TODO: fix types matching for JSON");
 
             return result;
         }
