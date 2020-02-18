@@ -22,8 +22,8 @@ Row-based binary format used in this client does not have these problems. Also, 
 ## Key features
 
 * Uses HTTP, so is compatible with any server version
-* Supports Binary, JSON, TSV protocols (selectable via Driver connection string parameter)
-* Supports parameterized types, including mut (`Array(Nullable(Int32))` etc.)
+* Uses binary protocol for communication. Optionaly supports JSON/TSV protocols see [connection string](https://github.com/DarkWanderer/ClickHouse.Client/wiki/Connection-string) 
+* Supports parameterized types, including recursive packing (`Array(Nullable(Int32))` etc.)
 * High-throughput
 * Available for .NET Core/Framework/Standard
 * [Bulk insert](https://github.com/DarkWanderer/ClickHouse.Client/wiki/Bulk-insertion) support
