@@ -50,8 +50,6 @@ namespace ClickHouse.Client.Types
 
         public override Type FrameworkType => frameworkType;
 
-        public override string Name => "Tuple";
-
         public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))

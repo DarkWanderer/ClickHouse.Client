@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using System.Net;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -98,10 +99,21 @@ namespace ClickHouse.Client.Formats
                     }
                     break;
                 case ClickHouseTypeCode.Tuple:
-                    var tupleTypeInfo = (TupleType)databaseType;
+                    var tupleType = (TupleType)databaseType;
                     var tuple = (ITuple)data;
                     for (var i = 0; i < tuple.Length; i++)
-                        WriteValue(tuple[i], tupleTypeInfo.UnderlyingTypes[i]);
+                        WriteValue(tuple[i], tupleType.UnderlyingTypes[i]);
+                    break;
+                case ClickHouseTypeCode.Nested:
+                    var nestedType = (NestedType)databaseType;
+                    var tuples = ((IEnumerable)data).Cast<ITuple>().ToList();
+                    writer.Write7BitEncodedInt(tuples.Count);
+                    foreach (var ntuple in tuples)
+                    {
+                        for (int i = 0; i < ntuple.Length; i++)
+                            WriteValue(ntuple[i], nestedType.UnderlyingTypes[i]);
+                    }
+
                     break;
 
                 case ClickHouseTypeCode.UUID:

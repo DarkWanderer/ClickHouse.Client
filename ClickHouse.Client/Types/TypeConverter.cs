@@ -52,7 +52,7 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<ArrayType>();
             RegisterParameterizedType<NullableType>();
             RegisterParameterizedType<TupleType>();
-            RegisterParameterizedType<NestedTypeInfo>();
+            RegisterParameterizedType<NestedType>();
             RegisterParameterizedType<LowCardinalityType>();
 
             RegisterParameterizedType<DateType>();

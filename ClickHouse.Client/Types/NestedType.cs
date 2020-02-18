@@ -4,7 +4,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
 {
-    internal class NestedTypeInfo : TupleType
+    internal class NestedType : TupleType
     {
         public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Nested;
 
@@ -15,12 +15,12 @@ namespace ClickHouse.Client.Types
 
             var underlyingTypeNames = typeName.Substring(Name.Length).TrimRoundBrackets().Split(',');
 
-            return new NestedTypeInfo
+            return new NestedType
             {
                 UnderlyingTypes = underlyingTypeNames.Select(typeResolverFunc).ToArray()
             };
         }
 
-        public override string Name => "Nested";
+        public override Type FrameworkType => base.FrameworkType.MakeArrayType();
     }
 }

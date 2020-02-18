@@ -62,13 +62,9 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseTypeCode.Nullable:
                     var nullableTypeInfo = (NullableType)databaseType;
                     if (reader.ReadByte() > 0)
-                    {
                         return nullAsDbNull ? DBNull.Value : null;
-                    }
                     else
-                    {
                         return ReadValue(nullableTypeInfo.UnderlyingType, nullAsDbNull);
-                    }
 
                 case ClickHouseTypeCode.Date:
                     var days = reader.ReadUInt16();
@@ -83,7 +79,7 @@ namespace ClickHouse.Client.Formats
                     return TypeConverter.DateTimeEpochStart.AddTicks((long)MathUtils.ShiftDecimalPlaces(chTicks, 7 - dt64t.Scale));
 
                 case ClickHouseTypeCode.UUID:
-                    // Weird byte manipulation because of C#'s strange Guid implementation
+                    // Byte manipulation because of ClickHouse's weird GUID implementation
                     var bytes = new byte[16];
                     reader.Read(bytes, 6, 2);
                     reader.Read(bytes, 4, 2);
@@ -109,8 +105,6 @@ namespace ClickHouse.Client.Formats
                     {
                         // Underlying data in Tuple should always be null, not DBNull
                         contents[i] = ReadValue(tupleTypeInfo.UnderlyingTypes[i], false);
-                        if (contents[i] is DBNull)
-                            contents[i] = null;
                     }
                     return tupleTypeInfo.MakeTuple(contents);
 

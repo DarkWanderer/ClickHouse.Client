@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.Copy;
@@ -26,6 +27,7 @@ namespace ClickHouse.Client.Tests
                 yield return new TestCaseData(sample.ClickHouseType, sample.ExampleValue);
             }
             yield return new TestCaseData("String", "1\t2\n3");
+            // yield return new TestCaseData("Nested(A UInt8, B String)", new[] { Tuple.Create(1, "AAA"), Tuple.Create(2, "BBB") });
         }
 
         [Test]
@@ -44,7 +46,6 @@ namespace ClickHouse.Client.Tests
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
                 DestinationTableName = targetTable,
-                BatchSize = 100000
             };
 
             await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { insertedValue }, 1));
