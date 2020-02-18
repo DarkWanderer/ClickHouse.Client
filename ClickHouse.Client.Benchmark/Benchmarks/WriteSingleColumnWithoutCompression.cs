@@ -7,15 +7,20 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Benchmark.Benchmarks
 {
-    internal class BulkWriteSingleColumnWithoutCompression : AbstractParameterizedBenchmark, IBenchmark
+    internal class BulkWriteSingleColumnWithCompression : AbstractParameterizedBenchmark, IBenchmark
     {
-        public BulkWriteSingleColumnWithoutCompression(string connectionString) : base (connectionString)
+        public BulkWriteSingleColumnWithCompression(string connectionString) : base (connectionString)
         {
-            Compression = false;
+            Compression = true;
         }
 
         public override async Task<BenchmarkResult> Run()
         {
+            var count = Convert.ToInt32(Duration.TotalSeconds * 5000000.0);
+            Console.WriteLine("Preparing data");
+            var values = Enumerable.Range(0, count).Select(i => new object[] { (long)i }).ToList();
+            Console.WriteLine("Running benchmark");
+
             var targetDatabase = "temp";
             var targetTable = $"{targetDatabase}.bulk_insert_test";
 
@@ -32,12 +37,10 @@ namespace ClickHouse.Client.Benchmark.Benchmarks
             using var bulkCopyInterface = new ClickHouseBulkCopy(targetConnection)
             {
                 DestinationTableName = targetTable,
-                BatchSize = 100000,
-                MaxDegreeOfParallelism = 4
+                BatchSize = 1000000,
+                MaxDegreeOfParallelism = 16
             };
 
-            var count = Convert.ToInt32(Duration.TotalSeconds * 5000000.0);
-            var values = Enumerable.Range(0, count).Select(i => new object[] { (long)i }).ToList();
             stopwatch.Start();
             await bulkCopyInterface.WriteToServerAsync(values);
             stopwatch.Stop();

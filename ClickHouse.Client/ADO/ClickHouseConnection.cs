@@ -80,14 +80,6 @@ namespace ClickHouse.Client.ADO
 
         public override string ServerVersion => serverVersion;
 
-        internal async Task<HttpResponseMessage> GetSqlQueryAsync(string sql, CancellationToken token)
-        {
-            using var getMessage = new HttpRequestMessage(HttpMethod.Get, MakeUri(sql));
-            AddDefaultHttpHeaders(getMessage.Headers);
-            var response = await httpClient.SendAsync(getMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
-            return await HandleError(response, sql).ConfigureAwait(false);
-        }
-
         internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token)
         {
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri());
@@ -115,26 +107,17 @@ namespace ClickHouse.Client.ADO
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }
 
-        internal async Task<HttpResponseMessage> PostDataAsync(string sql, Stream data, CancellationToken token)
+        internal async Task<HttpResponseMessage> PostBulkDataAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
         {
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri(sql));
             AddDefaultHttpHeaders(postMessage.Headers);
 
-            if (useCompression)
-            {
-                using var compressedStream = new MemoryStream();
-                using (var gzipStream = new GZipStream(compressedStream, CompressionLevel.Fastest, true))
-                    await data.CopyToAsync(gzipStream).ConfigureAwait(false);
 
-                postMessage.Content = new ByteArrayContent(compressedStream.ToArray());
-                postMessage.Content.Headers.Add("Content-Encoding", "gzip");
-            }
-            else
-            {
-                postMessage.Content = new StreamContent(data);
-            }
-
+            postMessage.Content = new StreamContent(data);
             postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            if (isCompressed)
+                postMessage.Content.Headers.Add("Content-Encoding", "gzip");
+
             var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sql).ConfigureAwait(false);
         }

@@ -15,7 +15,6 @@ namespace ClickHouse.Client.Benchmark
             {
                 new SelectSingleColumnWithoutCompression(connectionString),
                 new SelectSingleColumnWithCompression(connectionString),
-                new BulkWriteSingleColumnWithoutCompression(connectionString),
                 new BulkWriteSingleColumnWithCompression(connectionString),
             };
             foreach (var benchmark in benchmarks)
