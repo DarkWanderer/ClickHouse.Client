@@ -8,7 +8,7 @@
 
 ## What is it?
 
-[ClickHouse](https://github.com/ClickHouse/ClickHouse) is a fast 'big data' relational database, useful for storing large amounts of metrics/logs. This library provides a .NET interface for it
+ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra-fast 'big data' relational database
 
 ## Why another client?
 
@@ -23,7 +23,7 @@ Row-based binary format used in this client does not have these problems. Also, 
 
 * Uses HTTP, so is compatible with any server version
 * Supports Binary, JSON, TSV protocols (selectable via Driver connection string parameter)
-* Supports all recursive types (`Array(Nullable(Int32))` etc.)
+* Supports parameterized types, including mut (`Array(Nullable(Int32))` etc.)
 * High-throughput
 * Available for .NET Core/Framework/Standard
 * [Bulk insert](https://github.com/DarkWanderer/ClickHouse.Client/wiki/Bulk-insertion) support
