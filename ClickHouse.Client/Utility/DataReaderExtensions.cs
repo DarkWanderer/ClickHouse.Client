@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Types;
 

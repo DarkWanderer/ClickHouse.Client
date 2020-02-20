@@ -1,6 +1,7 @@
 ﻿using System;
 using ClickHouse.Client.Utility;
 using NodaTime;
+using NodaTime.TimeZones;
 
 namespace ClickHouse.Client.Types
 {
@@ -13,7 +14,21 @@ namespace ClickHouse.Client.Types
 
         public DateTimeZone TimeZone { get; set; }
 
-        public override string Name => "DateTime";
+        public DateTimeOffset ToDateTimeOffset(DateTime dateTime)
+        {
+            switch (dateTime.Kind)
+            {
+                case DateTimeKind.Local:
+                case DateTimeKind.Utc:
+                    var instant = Instant.FromDateTimeUtc(dateTime.ToUniversalTime());
+                    var offset = TimeZone.GetUtcOffset(instant);
+                    return instant.WithOffset(offset).ToDateTimeOffset();
+                case DateTimeKind.Unspecified:
+                    var zonedDateTime = TimeZone.ResolveLocal(LocalDateTime.FromDateTime(dateTime), Resolvers.LenientResolver);
+                    return zonedDateTime.ToDateTimeOffset();
+            }
+            throw new ArgumentOutOfRangeException("Unknown DateTime kind: " + dateTime.Kind.ToString());
+        }
 
         public override string ToString() => $"DateTime({TimeZone.Id})";
 
@@ -22,7 +37,7 @@ namespace ClickHouse.Client.Types
             if (!typeName.StartsWith(Name))
                 throw new ArgumentException(nameof(typeName));
 
-            var timeZoneName = typeName.Substring(Name.Length).TrimRoundBrackets();
+            var timeZoneName = typeName.Substring(Name.Length).TrimRoundBrackets().Trim().Trim('\'');
             var timeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneName) ?? DateTimeZone.Utc;
 
             return new DateTimeType

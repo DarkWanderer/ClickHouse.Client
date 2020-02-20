@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using ClickHouse.Client.JSON;
 using ClickHouse.Client.Types;
@@ -99,15 +101,36 @@ namespace ClickHouse.Client.ADO.Readers
             hasMore = jsonReader.TokenType != JsonToken.EndArray;
 
             for (int i = 0; i < FieldCount; i++)
-            {
-                if (RawTypes[i].TypeCode == ClickHouseTypeCode.Tuple)
-                {
-                    var tt = (TupleType)RawTypes[i];
-                    CurrentRow[i] = tt.MakeTuple((object[])CurrentRow[i]);
-                }
-            }
+                CurrentRow[i] = TryConvertTo(CurrentRow[i], RawTypes[i]);
 
             return true;
+        }
+
+        private object TryConvertTo(object data, ClickHouseType type)
+        {
+            switch (type.TypeCode)
+            {
+                case ClickHouseTypeCode.Nullable:
+                    return data == null ? null : TryConvertTo(data, ((NullableType)type).UnderlyingType);
+                case ClickHouseTypeCode.UUID:
+                    return Guid.TryParse((string)data, out var guid) ? guid : data;
+                case ClickHouseTypeCode.IPv4:
+                case ClickHouseTypeCode.IPv6:
+                    return IPAddress.TryParse((string)data, out var address) ? address : data;
+                case ClickHouseTypeCode.Date:
+                    return DateTime.TryParseExact((string)data, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+                        ? date
+                        : data;
+                case ClickHouseTypeCode.DateTime:
+                case ClickHouseTypeCode.DateTime64:
+                    return DateTime.TryParse((string)data, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime) ? dateTime : data;
+                case ClickHouseTypeCode.Tuple:
+                    var tt = (TupleType)type;
+                    return tt.MakeTuple((object[])data);
+                default:
+                    break;
+            }
+            return data;
         }
     }
 }

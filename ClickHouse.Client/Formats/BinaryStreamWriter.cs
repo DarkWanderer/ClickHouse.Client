@@ -144,16 +144,17 @@ namespace ClickHouse.Client.Formats
                     break;
 
                 case ClickHouseTypeCode.Date:
-                    var days = (ushort)((DateTime)data - TypeConverter.DateTimeEpochStart).TotalDays;
+                    var days = (ushort)GetDiffWithEpoch((DateTime)data).TotalDays;
                     writer.Write(days);
                     break;
                 case ClickHouseTypeCode.DateTime:
-                    var seconds = (uint)((DateTime)data - TypeConverter.DateTimeEpochStart).TotalSeconds;
+                    var seconds = (uint)GetDiffWithEpoch((DateTime)data).TotalSeconds;
                     writer.Write(seconds);
                     break;
                 case ClickHouseTypeCode.DateTime64:
                     var dt64t = (DateTime64Type)databaseType;
-                    var ticks = (ulong)((DateTime)data - TypeConverter.DateTimeEpochStart).Ticks;
+                    var ticks = (ulong)GetDiffWithEpoch((DateTime)data).Ticks;
+                    // 7 is a 'magic constant' - Log10 of TimeSpan.TicksInSecond
                     writer.Write(MathUtils.ShiftDecimalPlaces(ticks, dt64t.Scale - 7));
                     break;
 
@@ -180,6 +181,8 @@ namespace ClickHouse.Client.Formats
                     throw new NotImplementedException($"{databaseType.TypeCode} not supported yet");
             }
         }
+
+        private TimeSpan GetDiffWithEpoch(DateTime datetime) => datetime.ToUniversalTime() - TypeConverter.DateTimeEpochStart;
 
         private static Guid ExtractGuid(object data)
         {

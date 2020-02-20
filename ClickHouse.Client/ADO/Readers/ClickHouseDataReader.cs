@@ -58,6 +58,12 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override DateTime GetDateTime(int ordinal) => (DateTime)GetValue(ordinal);
 
+        public virtual DateTimeOffset GetDateTimeOffset(int ordinal)
+        {
+            var dt = GetDateTime(ordinal);
+            return ((DateTimeType)RawTypes[ordinal]).ToDateTimeOffset(dt);
+        }
+
         public override decimal GetDecimal(int ordinal) => Convert.ToDecimal(GetValue(ordinal), CultureInfo.InvariantCulture);
 
         public override double GetDouble(int ordinal) => Convert.ToDouble(GetValue(ordinal), CultureInfo.InvariantCulture);

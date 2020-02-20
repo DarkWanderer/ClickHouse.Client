@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
+using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
@@ -37,9 +38,6 @@ namespace ClickHouse.Client.Tests
             using var reader = await connection.ExecuteReaderAsync(sql);
             reader.AssertHasFieldCount(1);
             var result = reader.GetEnsureSingleRow().Single();
-
-            //if (driver == ClickHouseConnectionDriver.JSON)
-            //    Assert.Inconclusive("TODO: fix types matching for JSON");
 
             return result;
         }
@@ -77,6 +75,54 @@ namespace ClickHouse.Client.Tests
             reader.AssertHasFieldCount(1);
             //Assert.IsFalse(reader.HasRows);
             Assert.IsFalse(reader.Read());
+        }
+
+        [Test]
+        public async Task DateTimeSelectShouldHaveCorrectTimezone()
+        {
+            using var reader = await connection.ExecuteReaderAsync("SELECT toDateTime(1577836800, 'Asia/Sakhalin')");
+
+            reader.AssertHasFieldCount(1);
+            var datetime = (DateTime)reader.GetEnsureSingleRow().Single();
+            if (datetime.Kind == DateTimeKind.Utc)
+            {
+                Assert.AreEqual(new DateTime(2020, 01, 01, 0, 0, 0, DateTimeKind.Utc), datetime.ToUniversalTime());
+                Assert.AreEqual(ClickHouseConnectionDriver.Binary, driver);
+            }
+            else
+            {
+                Assert.AreEqual(new DateTime(2020, 01, 01, 11, 0, 0, DateTimeKind.Unspecified), datetime);
+                Assert.AreEqual(DateTimeKind.Unspecified, datetime.Kind);
+            }
+        }
+
+        [Test]
+        public async Task DateTime64SelectShouldHaveCorrectTimezone()
+        {
+            using var reader = await connection.ExecuteReaderAsync("SELECT toDateTime64(1577836800, 3, 'Asia/Sakhalin')");
+
+            reader.AssertHasFieldCount(1);
+            var datetime = (DateTime)reader.GetEnsureSingleRow().Single();
+            if (datetime.Kind == DateTimeKind.Utc)
+            {
+                Assert.AreEqual(new DateTime(2020, 01, 01, 0, 0, 0, DateTimeKind.Utc), datetime.ToUniversalTime());
+            }
+            else
+            {
+                Assert.AreEqual(new DateTime(2020, 01, 01, 11, 0, 0, DateTimeKind.Unspecified), datetime);
+                Assert.AreEqual(DateTimeKind.Unspecified, datetime.Kind);
+            }
+        }
+
+        [Test]
+        public async Task DateTimeOffsetShouldProduceCorrectOffset()
+        {
+            using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync("SELECT toDateTime(1577836800, 'Asia/Sakhalin')");
+            reader.AssertHasFieldCount(1);
+            Assert.IsTrue(reader.Read());
+            var dto = reader.GetDateTimeOffset(0);
+            Assert.AreEqual(TimeSpan.FromHours(11), dto.Offset);
+            Assert.AreEqual(new DateTime(2020, 01, 01, 0, 0, 0, DateTimeKind.Utc), dto.UtcDateTime);
         }
 
         [Test]

@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using System.Data.Common;
-using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Adapters;
 using NUnit.Framework;
 

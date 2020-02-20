@@ -75,7 +75,7 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseTypeCode.DateTime64:
                     var dt64t = (DateTime64Type)databaseType;
                     var chTicks = reader.ReadUInt64();
-                    // 7 is a 'magic constant' - number of zeroes in 10'000'000 ticks/second in DateTime
+                    // 7 is a 'magic constant' - Log10 of TimeSpan.TicksInSecond
                     return TypeConverter.DateTimeEpochStart.AddTicks((long)MathUtils.ShiftDecimalPlaces(chTicks, 7 - dt64t.Scale));
 
                 case ClickHouseTypeCode.UUID:

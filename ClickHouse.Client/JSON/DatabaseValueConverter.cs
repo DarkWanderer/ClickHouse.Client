@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -31,16 +29,7 @@ namespace ClickHouse.Client.JSON
                 case JsonToken.StartArray:
                     return JToken.ReadFrom(reader).ToObject<object[]>();
                 case JsonToken.String:
-                    var token = JToken.ReadFrom(reader).ToString();
-                    if (Guid.TryParse(token, out var guid))
-                        return guid;
-                    if (IPAddress.TryParse(token, out var address))
-                        return address;
-                    if (DateTime.TryParse(token, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime))
-                        return dateTime;
-                    if (DateTime.TryParseExact(token, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
-                        return date;
-                    return token;
+                    return JToken.ReadFrom(reader).ToString();
             }
 
             // if the next token is not an object

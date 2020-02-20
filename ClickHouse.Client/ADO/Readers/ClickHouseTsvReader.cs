@@ -104,7 +104,7 @@ namespace ClickHouse.Client.ADO.Readers
 
             names.CopyTo(FieldNames, 0);
             for (var i = 0; i < fieldCount; i++)
-                RawTypes[i] = TypeConverter.ParseClickHouseType(types[i]);
+                RawTypes[i] = TypeConverter.ParseClickHouseType(Regex.Unescape(types[i]));
         }
     }
 }
