@@ -79,7 +79,8 @@ namespace ClickHouse.Client.Types
                 reverseMapping.Add(typeInfo.FrameworkType, typeInfo);
         }
 
-        private static void RegisterParameterizedType<T>() where T : ParameterizedType, new()
+        private static void RegisterParameterizedType<T>()
+            where T : ParameterizedType, new()
         {
             var t = new T();
             parameterizedTypes.Add(t.Name, t);
@@ -101,10 +102,10 @@ namespace ClickHouse.Client.Types
 
         /// <summary>
         /// Recursively build ClickHouse type from .NET complex type
-        /// Supports nullable and arrays
+        /// Supports nullable and arrays.
         /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
+        /// <param name="type">framework type to map</param>
+        /// <returns>Corresponding ClickHouse type</returns>
         public static ClickHouseType ToClickHouseType(Type type)
         {
             if (reverseMapping.ContainsKey(type))

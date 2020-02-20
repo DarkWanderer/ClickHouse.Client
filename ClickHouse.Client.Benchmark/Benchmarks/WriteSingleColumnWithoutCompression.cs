@@ -9,7 +9,7 @@ namespace ClickHouse.Client.Benchmark.Benchmarks
 {
     internal class BulkWriteSingleColumnWithCompression : AbstractParameterizedBenchmark, IBenchmark
     {
-        public BulkWriteSingleColumnWithCompression(string connectionString) : base (connectionString)
+        public BulkWriteSingleColumnWithCompression(string connectionString) : base(connectionString)
         {
             Compression = true;
         }

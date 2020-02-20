@@ -6,7 +6,7 @@ namespace ClickHouse.Client.Tests
     public class MathUtilsTests
     {
         [Test]
-        [TestCase(10,10)]
+        [TestCase(10, 10)]
         [TestCase(2, 29)]
         public void ShouldRaiseIntegerToPowersCorrectly(int integer, int powersMax)
         {

@@ -33,7 +33,7 @@ namespace ClickHouse.Client.Tests
             {
                 await connection.ExecuteStatementAsync("CREATE TEMPORARY TABLE test_temp_table (value UInt8)");
                 Assert.Fail("ClickHouse should not be able to create temp table if session is disabled");
-            } 
+            }
             catch (ClickHouseServerException e) when (e.ErrorCode == 113)
             {
             }

@@ -50,7 +50,7 @@ namespace ClickHouse.Client.ADO.Readers
                     data[i] = streamReader.ReadValue(rawTypeInfo, true);
                 }
                 return true;
-            } 
+            }
             catch (EndOfStreamException)
             {
                 return false;

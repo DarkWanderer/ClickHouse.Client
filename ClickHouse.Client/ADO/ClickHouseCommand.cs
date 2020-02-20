@@ -112,7 +112,7 @@ namespace ClickHouse.Client.ADO
                     break;
             }
 
-            //var result = await dbConnection.GetSqlQueryAsync(sqlBuilder.ToString(), cts.Token).ConfigureAwait(false);
+            // var result = await dbConnection.GetSqlQueryAsync(sqlBuilder.ToString(), cts.Token).ConfigureAwait(false);
             var result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token).ConfigureAwait(false);
             return driver switch
             {

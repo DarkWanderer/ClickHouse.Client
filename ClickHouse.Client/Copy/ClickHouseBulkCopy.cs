@@ -26,22 +26,22 @@ namespace ClickHouse.Client.Copy
         }
 
         /// <summary>
-        /// Size of batch in rows
+        /// Gets or sets size of batch in rows.
         /// </summary>
         public int BatchSize { get; set; } = 100000;
 
         /// <summary>
-        /// Maximum number of parallel processing tasks
+        /// Gets or sets maximum number of parallel processing tasks.
         /// </summary>
         public int MaxDegreeOfParallelism { get; set; } = 4;
 
         /// <summary>
-        /// Name of destination table to insert to. "SELECT ..columns.. LIMIT 0" query is performed before insertion
+        /// Gets or sets name of destination table to insert to. "SELECT ..columns.. LIMIT 0" query is performed before insertion.
         /// </summary>
         public string DestinationTableName { get; set; }
 
         /// <summary>
-        /// Total number of rows written by this instance
+        /// Gets total number of rows written by this instance.
         /// </summary>
         public long RowsWritten => rowsWritten;
 
@@ -59,7 +59,7 @@ namespace ClickHouse.Client.Copy
         {
             if (table is null)
                 throw new ArgumentNullException(nameof(table));
-            
+
             var rows = table.Rows.Cast<DataRow>().Select(r => r.ItemArray); // enumerable
             var columns = table.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToArray();
             return WriteToServerAsync(rows, columns, token);

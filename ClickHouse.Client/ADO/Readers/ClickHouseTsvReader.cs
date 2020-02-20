@@ -74,7 +74,7 @@ namespace ClickHouse.Client.ADO.Readers
                     return IPAddress.Parse(item);
                 default:
                     return Convert.ChangeType(Regex.Unescape(item), typeInfo.FrameworkType, CultureInfo.InvariantCulture);
-            };
+            }
         }
 
         private ITuple ParseTuple(string item, TupleType tti)

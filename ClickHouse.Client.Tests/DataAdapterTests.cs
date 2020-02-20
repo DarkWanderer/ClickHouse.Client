@@ -12,10 +12,10 @@ namespace ClickHouse.Client.Tests
         [Test]
         public void DataAdapterShouldFillDataSet()
         {
-            
+
             using var adapter = new ClickHouseDataAdapter();
             using var command = connection.CreateCommand();
-            
+
             command.CommandText = "SELECT number, 'a' as string FROM system.numbers LIMIT 100";
             adapter.SelectCommand = command;
 
