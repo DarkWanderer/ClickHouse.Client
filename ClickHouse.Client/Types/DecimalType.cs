@@ -18,9 +18,9 @@ namespace ClickHouse.Client.Types
         /// </summary>
         public virtual int Size => Precision switch
         {
-            int p when (p >= 1 && p < 10) => 4,
-            int p when (p >= 10 && p < 19) => 8,
-            int p when (p >= 19 && p < 39) => 16,
+            int p when p >= 1 && p < 10 => 4,
+            int p when p >= 10 && p < 19 => 8,
+            int p when p >= 19 && p < 39 => 16,
             _ => throw new ArgumentOutOfRangeException(nameof(Precision)),
         };
 

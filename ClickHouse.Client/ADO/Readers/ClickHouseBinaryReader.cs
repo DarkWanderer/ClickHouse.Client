@@ -13,7 +13,8 @@ namespace ClickHouse.Client.ADO.Readers
         private readonly ExtendedBinaryReader reader;
         private readonly BinaryStreamReader streamReader;
 
-        public ClickHouseBinaryReader(HttpResponseMessage httpResponse) : base(httpResponse)
+        public ClickHouseBinaryReader(HttpResponseMessage httpResponse)
+            : base(httpResponse)
         {
             var stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), bufferSize);
             reader = new ExtendedBinaryReader(stream); // will dispose of stream

@@ -9,6 +9,7 @@ namespace ClickHouse.Client.Types
         {
             Precision = 18;
         }
+
         public override int Size => 8;
 
         public override string Name => "Decimal64";
@@ -23,6 +24,7 @@ namespace ClickHouse.Client.Types
                 Scale = int.Parse(typeName.Substring(Name.Length).TrimRoundBrackets())
             };
         }
+
         public override string ToString() => $"{Name}({Scale})";
     }
 }

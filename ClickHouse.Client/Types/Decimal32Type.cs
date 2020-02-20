@@ -24,6 +24,7 @@ namespace ClickHouse.Client.Types
                 Scale = int.Parse(typeName.Substring(Name.Length).TrimRoundBrackets())
             };
         }
+
         public override string ToString() => $"{Name}({Scale})";
     }
 }

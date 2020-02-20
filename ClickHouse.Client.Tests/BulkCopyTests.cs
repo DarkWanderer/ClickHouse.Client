@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.Copy;
@@ -26,6 +27,7 @@ namespace ClickHouse.Client.Tests
                 yield return new TestCaseData(sample.ClickHouseType, sample.ExampleValue);
             }
             yield return new TestCaseData("String", "1\t2\n3");
+            yield return new TestCaseData("DateTime('Asia/Ashkhabad')", new DateTime(2020, 2, 20, 20, 20, 20, DateTimeKind.Utc));
             // yield return new TestCaseData("Nested(A UInt8, B String)", new[] { Tuple.Create(1, "AAA"), Tuple.Create(2, "BBB") });
         }
 
@@ -35,7 +37,14 @@ namespace ClickHouse.Client.Tests
         {
             using var connection = TestUtilities.GetTestClickHouseConnection(driver);
 
-            var targetTable = $"temp.b_{clickHouseType.Replace("(", null).Replace(")", null).Replace(",", null).Replace(" ", null).Replace("'", null) }";
+            var targetTable = $"temp.b_{clickHouseType}";
+            targetTable = targetTable
+                .Replace("(", null)
+                .Replace(")", null)
+                .Replace(",", null)
+                .Replace(" ", null)
+                .Replace("'", null)
+                .Replace("/", null);
 
             clickHouseType = clickHouseType.Replace("Enum", "Enum('a' = 1, 'b' = 2)");
 

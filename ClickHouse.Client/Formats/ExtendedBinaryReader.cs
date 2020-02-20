@@ -5,7 +5,8 @@ namespace ClickHouse.Client.Formats
 {
     internal class ExtendedBinaryReader : BinaryReader
     {
-        public ExtendedBinaryReader(Stream stream) : base(stream, Encoding.UTF8, false) { }
+        public ExtendedBinaryReader(Stream stream)
+            : base(stream, Encoding.UTF8, false) { }
 
         public new int Read7BitEncodedInt() => base.Read7BitEncodedInt();
 

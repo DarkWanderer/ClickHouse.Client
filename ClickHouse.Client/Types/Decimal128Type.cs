@@ -9,6 +9,7 @@ namespace ClickHouse.Client.Types
         {
             Precision = 38;
         }
+
         public override int Size => 16;
 
         public override string Name => "Decimal128";

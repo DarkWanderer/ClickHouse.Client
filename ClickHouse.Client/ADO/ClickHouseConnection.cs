@@ -31,7 +31,7 @@ namespace ClickHouse.Client.ADO
 
         public ClickHouseConnection()
         {
-            ConnectionString = "";  // Initialize with default values
+            ConnectionString = string.Empty;  // Initialize with default values
         }
 
         public ClickHouseConnection(string connectionString)
@@ -111,7 +111,6 @@ namespace ClickHouse.Client.ADO
         {
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri(sql));
             AddDefaultHttpHeaders(postMessage.Headers);
-
 
             postMessage.Content = new StreamContent(data);
             postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
@@ -198,7 +197,8 @@ namespace ClickHouse.Client.ADO
         {
             private readonly NameValueCollection parameterCollection;
 
-            public HttpQueryParameters() : this("") { }
+            public HttpQueryParameters()
+                : this(string.Empty) { }
 
             public HttpQueryParameters(string query)
             {

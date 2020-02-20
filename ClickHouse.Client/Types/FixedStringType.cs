@@ -12,6 +12,7 @@ namespace ClickHouse.Client.Types
         public override Type FrameworkType => typeof(string);
 
         public override string Name => "FixedString";
+
         public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))

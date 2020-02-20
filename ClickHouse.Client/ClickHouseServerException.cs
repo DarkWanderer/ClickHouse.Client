@@ -14,10 +14,13 @@ namespace ClickHouse.Client
         {
         }
 
-        public ClickHouseServerException(string error, string query, int errorCode) : base(error, errorCode)
+        public ClickHouseServerException(string error, string query, int errorCode)
+            : base(error, errorCode)
         {
             Query = query;
         }
+
+        public string Query { get; } = null;
 
         public static ClickHouseServerException FromServerResponse(string error, string query)
         {
@@ -25,9 +28,8 @@ namespace ClickHouse.Client
             return new ClickHouseServerException(error, query, errorCode);
         }
 
-        public string Query { get; } = null;
-
-        protected ClickHouseServerException(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected ClickHouseServerException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
 

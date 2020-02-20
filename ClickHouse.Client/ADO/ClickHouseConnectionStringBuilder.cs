@@ -50,7 +50,10 @@ namespace ClickHouse.Client.ADO
             get
             {
                 if (base.TryGetValue("Port", out var value) && value is string @string && ushort.TryParse(@string, out var @ushort))
+                {
                     return @ushort;
+                }
+
                 return 8123;
             }
             set => this["Port"] = value;

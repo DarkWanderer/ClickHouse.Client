@@ -17,12 +17,13 @@ namespace ClickHouse.Client.ADO.Readers
         private readonly JsonSerializer serializer = new JsonSerializer();
         private bool hasMore = false;
 
-        public ClickHouseJsonCompactReader(HttpResponseMessage httpResponse) : base(httpResponse)
+        public ClickHouseJsonCompactReader(HttpResponseMessage httpResponse)
+            : base(httpResponse)
         {
             textReader = new StreamReader(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult());
             jsonReader = new JsonTextReader(textReader) { SupportMultipleContent = true, CloseInput = false };
             serializer.Converters.Add(new DatabaseValueConverter());
-            serializer.DateFormatString = "";
+            serializer.DateFormatString = string.Empty;
             ReadHeaders();
         }
 
@@ -93,7 +94,7 @@ namespace ClickHouse.Client.ADO.Readers
             if (!hasMore)
                 return false;
             if (jsonReader.TokenType == JsonToken.EndArray)
-                return (hasMore = false);
+                return hasMore = false;
             AssertEquals(jsonReader.TokenType, JsonToken.StartArray);
             CurrentRow = serializer.Deserialize<object[]>(jsonReader);
             AssertEquals(JsonToken.EndArray, jsonReader.TokenType);

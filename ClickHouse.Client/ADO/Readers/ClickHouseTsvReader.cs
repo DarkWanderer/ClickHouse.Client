@@ -16,7 +16,8 @@ namespace ClickHouse.Client.ADO.Readers
     {
         private readonly TextReader inputReader;
 
-        public ClickHouseTsvReader(HttpResponseMessage httpResponse) : base(httpResponse)
+        public ClickHouseTsvReader(HttpResponseMessage httpResponse)
+            : base(httpResponse)
         {
             inputReader = new StreamReader(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult());
             ReadHeaders();
