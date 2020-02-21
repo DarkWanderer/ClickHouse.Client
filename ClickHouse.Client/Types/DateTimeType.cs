@@ -24,6 +24,8 @@ namespace ClickHouse.Client.Types
                     var offset = TimeZone.GetUtcOffset(instant);
                     return instant.WithOffset(offset).ToDateTimeOffset();
                 case DateTimeKind.Unspecified:
+                    if (TimeZone == null)
+                        return dateTime;
                     var zonedDateTime = TimeZone.ResolveLocal(LocalDateTime.FromDateTime(dateTime), Resolvers.LenientResolver);
                     return zonedDateTime.ToDateTimeOffset();
             }
@@ -38,13 +40,15 @@ namespace ClickHouse.Client.Types
                 case DateTimeKind.Utc:
                     return dateTime.ToUniversalTime();
                 case DateTimeKind.Unspecified:
+                    if (TimeZone == null)
+                        return dateTime;
                     var zonedDateTime = TimeZone.ResolveLocal(LocalDateTime.FromDateTime(dateTime), Resolvers.LenientResolver);
                     return zonedDateTime.ToDateTimeUtc();
             }
             throw new ArgumentOutOfRangeException("Unknown DateTime kind: " + dateTime.Kind.ToString());
         }
 
-        public override string ToString() => $"DateTime({TimeZone.Id})";
+        public override string ToString() => TimeZone == null ? $"{Name}" : $"{Name}({TimeZone.Id})";
 
         public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {

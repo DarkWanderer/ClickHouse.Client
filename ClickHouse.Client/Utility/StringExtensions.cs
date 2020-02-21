@@ -6,6 +6,9 @@ namespace ClickHouse.Client.Utility
     {
         public static string TrimBrackets(this string input, char leftBracket, char rightBracket)
         {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
             if (input[0] != leftBracket || input[input.Length - 1] != rightBracket)
                 return input;
 

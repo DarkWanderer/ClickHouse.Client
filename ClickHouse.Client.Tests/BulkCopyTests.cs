@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ClickHouse.Client.ADO;
 using ClickHouse.Client.Copy;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
@@ -11,14 +12,10 @@ namespace ClickHouse.Client.Tests
     //[Ignore("INSERT support is WIP")]
     public class BulkCopyTests
     {
-        private readonly ClickHouseConnectionDriver driver = ClickHouseConnectionDriver.Binary;
+        private readonly ClickHouseConnection connection = TestUtilities.GetTestClickHouseConnection(ClickHouseConnectionDriver.Binary);
 
         [SetUp]
-        public async Task FixtureSetup()
-        {
-            using var connection = TestUtilities.GetTestClickHouseConnection(driver);
-            await connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS temp");
-        }
+        public Task FixtureSetup() => connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS temp");
 
         public static IEnumerable<TestCaseData> GetInsertSingleValueTestCases()
         {
@@ -28,6 +25,8 @@ namespace ClickHouse.Client.Tests
             }
             yield return new TestCaseData("String", "1\t2\n3");
             yield return new TestCaseData("DateTime('Asia/Ashkhabad')", new DateTime(2020, 2, 20, 20, 20, 20, DateTimeKind.Utc));
+            //yield return new TestCaseData("DateTime('Asia/Almaty')", new DateTime(2020, 2, 20, 20, 20, 20, DateTimeKind.Local));
+            //yield return new TestCaseData("DateTime('Asia/Anadyr')", new DateTime(2020, 2, 20, 20, 20, 20, DateTimeKind.Unspecified));
             // yield return new TestCaseData("Nested(A UInt8, B String)", new[] { Tuple.Create(1, "AAA"), Tuple.Create(2, "BBB") });
         }
 
@@ -35,8 +34,6 @@ namespace ClickHouse.Client.Tests
         [TestCaseSource(typeof(BulkCopyTests), nameof(GetInsertSingleValueTestCases))]
         public async Task ShouldExecuteSingleValueInsertViaBulkCopy(string clickHouseType, object insertedValue)
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(driver);
-
             var targetTable = $"temp.b_{clickHouseType}";
             targetTable = targetTable
                 .Replace("(", null)

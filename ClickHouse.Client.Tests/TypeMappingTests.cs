@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using ClickHouse.Client.Types;
 using NUnit.Framework;
 namespace ClickHouse.Client.Tests
@@ -6,6 +7,8 @@ namespace ClickHouse.Client.Tests
     public class TypeMappingTests
     {
         [Test]
+        [TestCase("Nothing", ExpectedResult = typeof(DBNull))]
+
         [TestCase("Int8", ExpectedResult = typeof(sbyte))]
         [TestCase("Int16", ExpectedResult = typeof(short))]
         [TestCase("Int32", ExpectedResult = typeof(int))]
@@ -24,11 +27,21 @@ namespace ClickHouse.Client.Tests
         [TestCase("Decimal64(3)", ExpectedResult = typeof(decimal))]
         [TestCase("Decimal128(3)", ExpectedResult = typeof(decimal))]
 
+        [TestCase("String", ExpectedResult = typeof(string))]
         [TestCase("FixedString(5)", ExpectedResult = typeof(string))]
+
+        [TestCase("UUID", ExpectedResult = typeof(Guid))]
+
+        [TestCase("IPv4", ExpectedResult = typeof(IPAddress))]
+        [TestCase("IPv6", ExpectedResult = typeof(IPAddress))]
+
+        [TestCase("LowCardinality(String)", ExpectedResult = typeof(string))]
 
         [TestCase("Date", ExpectedResult = typeof(DateTime))]
         [TestCase("DateTime", ExpectedResult = typeof(DateTime))]
         [TestCase("DateTime('Etc/UTC')", ExpectedResult = typeof(DateTime))]
+        [TestCase("DateTime64(3)", ExpectedResult = typeof(DateTime))]
+        [TestCase("DateTime64(3, 'Etc/UTC')", ExpectedResult = typeof(DateTime))]
 
         [TestCase("Nullable(UInt32)", ExpectedResult = typeof(uint?))]
         [TestCase("Array(Array(String))", ExpectedResult = typeof(string[][]))]
@@ -36,6 +49,8 @@ namespace ClickHouse.Client.Tests
         public Type ShouldConvertFromClickHouseType(string clickHouseType) => TypeConverter.ParseClickHouseType(clickHouseType).FrameworkType;
 
         [Test]
+        [TestCase(typeof(DBNull), ExpectedResult = "Nothing")]
+
         [TestCase(typeof(sbyte), ExpectedResult = "Int8")]
         [TestCase(typeof(short), ExpectedResult = "Int16")]
         [TestCase(typeof(int), ExpectedResult = "Int32")]
@@ -54,9 +69,12 @@ namespace ClickHouse.Client.Tests
 
         [TestCase(typeof(DateTime), ExpectedResult = "DateTime")]
 
+        [TestCase(typeof(IPAddress), ExpectedResult = "IPv4")]
+        [TestCase(typeof(Guid), ExpectedResult = "UUID")]
+
         [TestCase(typeof(uint?), ExpectedResult = "Nullable(UInt32)")]
-        [TestCase(typeof(string[][]), ExpectedResult = "Array(Array(String))")]
         [TestCase(typeof(uint?[]), ExpectedResult = "Array(Nullable(UInt32))")]
+        [TestCase(typeof(string[][]), ExpectedResult = "Array(Array(String))")]
         [TestCase(typeof(Tuple<int, byte, float?, string[]>), ExpectedResult = "Tuple(Int32,UInt8,Nullable(Float32),Array(String))")]
         public string ShouldConvertToClickHouseType(Type type) => TypeConverter.ToClickHouseType(type).ToString();
     }

@@ -39,8 +39,6 @@ namespace ClickHouse.Client.Types
             RegisterPlainTypeInfo<IPAddress>(ClickHouseTypeCode.IPv4);
             RegisterPlainTypeInfo<IPAddress>(ClickHouseTypeCode.IPv6);
 
-            RegisterPlainTypeInfo<DateTime>(ClickHouseTypeCode.DateTime);
-            RegisterPlainTypeInfo<DateTime>(ClickHouseTypeCode.Date);
 
             // Special 'nothing' type
             var nti = new NothingType();
@@ -69,6 +67,9 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<Enum16Type>();
 
             reverseMapping.Add(typeof(decimal), new Decimal128Type());
+            reverseMapping.Add(typeof(DateTime), new DateTimeType());
+
+            RegisterPlainTypeInfo<DateTime>(ClickHouseTypeCode.Date);
         }
 
         private static void RegisterPlainTypeInfo<T>(ClickHouseTypeCode type)
@@ -90,13 +91,12 @@ namespace ClickHouse.Client.Types
         {
             if (Enum.TryParse<ClickHouseTypeCode>(type, out var chType) && simpleTypes.TryGetValue(chType, out var typeInfo))
                 return typeInfo;
+
             var index = type.IndexOf('(');
-            if (index > 0)
-            {
-                var parameterizedTypeName = type.Substring(0, index);
-                if (parameterizedTypes.ContainsKey(parameterizedTypeName))
-                    return parameterizedTypes[parameterizedTypeName].Parse(type, ParseClickHouseType);
-            }
+            var parameterizedTypeName = index > 0 ? type.Substring(0, index) : type;
+
+            if (parameterizedTypes.ContainsKey(parameterizedTypeName))
+                return parameterizedTypes[parameterizedTypeName].Parse(type, ParseClickHouseType);
             throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type);
         }
 
