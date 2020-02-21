@@ -32,7 +32,7 @@ namespace ClickHouse.Client.Types
             return new DateTime64Type
             {
                 TimeZone = timeZone,
-                Scale = scale
+                Scale = scale,
             };
         }
     }

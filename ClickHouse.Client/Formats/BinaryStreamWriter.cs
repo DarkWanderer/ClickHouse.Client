@@ -193,7 +193,7 @@ namespace ClickHouse.Client.Formats
             else if (data is string s)
                 guid = new Guid(s);
             else
-                throw new NotSupportedException($"Cannot convert {data?.GetType()?.Name ?? "null"} to GUID");
+                throw new ArgumentException($"Cannot convert {data?.GetType()?.Name ?? "null"} to GUID");
             return guid;
         }
 
@@ -205,7 +205,7 @@ namespace ClickHouse.Client.Formats
             else if (data is string s)
                 address = IPAddress.Parse(s);
             else
-                throw new NotSupportedException($"Cannot convert {data?.GetType()?.Name ?? "null"} to IPv4");
+                throw new ArgumentException($"Cannot convert {data?.GetType()?.Name ?? "null"} to IPv4");
             return address;
         }
     }

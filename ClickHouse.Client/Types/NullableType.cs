@@ -27,7 +27,7 @@ namespace ClickHouse.Client.Types
 
             return new NullableType
             {
-                UnderlyingType = typeResolverFunc(typeName.Substring(Name.Length).TrimRoundBrackets())
+                UnderlyingType = typeResolverFunc(typeName.Substring(Name.Length).TrimRoundBrackets()),
             };
         }
 

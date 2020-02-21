@@ -65,10 +65,10 @@ namespace ClickHouse.Client.ADO.Readers
         private class JsonColumnRecord
         {
             [JsonProperty("name")]
-            public readonly string Name;
+            public string Name { get; }
 
             [JsonProperty("type")]
-            public readonly string Type;
+            public string Type { get; }
 
             [JsonConstructor]
             public JsonColumnRecord(string name, string type)
@@ -80,13 +80,13 @@ namespace ClickHouse.Client.ADO.Readers
 
         private void AssertEquals<T>(T expected, T actual)
         {
-            Debug.Assert(Equals(expected, actual));
+            Debug.Assert(Equals(expected, actual), "Comparison failed");
             if (!Equals(expected, actual))
                 throw new InvalidOperationException($"Error: expected {expected}, got {actual}");
         }
 
         /// <summary>
-        /// Streams 
+        /// Reads next row of JSON from input stream
         /// </summary>
         /// <returns>Whether read was successful</returns>
         public override bool Read()

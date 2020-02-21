@@ -20,7 +20,7 @@ namespace ClickHouse.Client.Types
 
             return new FixedStringType
             {
-                Length = int.Parse(typeName.Substring(Name.Length).TrimRoundBrackets())
+                Length = int.Parse(typeName.Substring(Name.Length).TrimRoundBrackets()),
             };
         }
 

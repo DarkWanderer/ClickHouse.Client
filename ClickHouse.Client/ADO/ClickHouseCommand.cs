@@ -9,7 +9,6 @@ using ClickHouse.Client.ADO.Readers;
 
 namespace ClickHouse.Client.ADO
 {
-
     internal class ClickHouseCommand : DbCommand
     {
         private readonly ClickHouseConnection dbConnection;

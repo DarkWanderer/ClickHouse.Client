@@ -14,7 +14,7 @@ namespace ClickHouse.Client.Types
         public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Decimal;
 
         /// <summary>
-        /// Size of type in bytes
+        /// Gets size of type in bytes
         /// </summary>
         public virtual int Size => Precision switch
         {

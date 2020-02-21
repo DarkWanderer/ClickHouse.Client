@@ -17,8 +17,8 @@ namespace ClickHouse.Client.ADO
 {
     public class ClickHouseConnection : DbConnection, ICloneable
     {
-        private static readonly HttpClientHandler handler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
-        private static readonly HttpClient httpClient = new HttpClient(handler);
+        private static readonly HttpClientHandler HttpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+        private static readonly HttpClient HttpClient = new HttpClient(HttpClientHandler);
 
         private ConnectionState state = ConnectionState.Closed;
         private string serverVersion;
@@ -40,7 +40,7 @@ namespace ClickHouse.Client.ADO
         }
 
         /// <summary>
-        /// String defining connection settings for ClickHouse server
+        /// Gets or sets string defining connection settings for ClickHouse server
         /// Example: Host=localhost;Port=8123;Username=default;Password=123;Compression=true
         /// </summary>
         public sealed override string ConnectionString
@@ -56,7 +56,7 @@ namespace ClickHouse.Client.ADO
                     Port = (ushort)serverUri?.Port,
                     Driver = Driver,
                     Compression = useCompression,
-                    UseSession = session != null
+                    UseSession = session != null,
                 };
                 return builder.ToString();
             }
@@ -103,7 +103,7 @@ namespace ClickHouse.Client.ADO
             }
 
             postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("text/sql");
-            var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+            var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }
 
@@ -117,7 +117,7 @@ namespace ClickHouse.Client.ADO
             if (isCompressed)
                 postMessage.Content.Headers.Add("Content-Encoding", "gzip");
 
-            var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+            var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sql).ConfigureAwait(false);
         }
 
@@ -139,7 +139,7 @@ namespace ClickHouse.Client.ADO
                 Database = database,
                 UseHttpCompression = useCompression,
                 SqlQuery = sql,
-                SessionId = session
+                SessionId = session,
             };
 
             uriBuilder.Query = queryParameters.ToString();

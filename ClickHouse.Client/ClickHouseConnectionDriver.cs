@@ -4,6 +4,6 @@
     {
         Binary,
         JSON,
-        TSV
+        TSV,
     }
 }

@@ -128,7 +128,6 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseTypeCode.LowCardinality:
                     var lcCardinality = (LowCardinalityType)databaseType;
                     return ReadValue(lcCardinality.UnderlyingType, nullAsDbNull);
-
             }
             throw new NotImplementedException($"Reading of {databaseType.TypeCode} is not implemented");
         }

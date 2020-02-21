@@ -10,9 +10,9 @@ namespace ClickHouse.Client.Types
 {
     internal static class TypeConverter
     {
-        private static readonly IDictionary<ClickHouseTypeCode, ClickHouseType> simpleTypes = new Dictionary<ClickHouseTypeCode, ClickHouseType>();
-        private static readonly IDictionary<string, ParameterizedType> parameterizedTypes = new Dictionary<string, ParameterizedType>();
-        private static readonly IDictionary<Type, ClickHouseType> reverseMapping = new Dictionary<Type, ClickHouseType>();
+        private static readonly IDictionary<ClickHouseTypeCode, ClickHouseType> SimpleTypes = new Dictionary<ClickHouseTypeCode, ClickHouseType>();
+        private static readonly IDictionary<string, ParameterizedType> ParameterizedTypes = new Dictionary<string, ParameterizedType>();
+        private static readonly IDictionary<Type, ClickHouseType> ReverseMapping = new Dictionary<Type, ClickHouseType>();
 
         static TypeConverter()
         {
@@ -39,11 +39,10 @@ namespace ClickHouse.Client.Types
             RegisterPlainTypeInfo<IPAddress>(ClickHouseTypeCode.IPv4);
             RegisterPlainTypeInfo<IPAddress>(ClickHouseTypeCode.IPv6);
 
-
             // Special 'nothing' type
             var nti = new NothingType();
-            simpleTypes.Add(ClickHouseTypeCode.Nothing, nti);
-            reverseMapping.Add(typeof(DBNull), nti);
+            SimpleTypes.Add(ClickHouseTypeCode.Nothing, nti);
+            ReverseMapping.Add(typeof(DBNull), nti);
 
             // complex types like FixedString/Array/Nested etc.
             RegisterParameterizedType<FixedStringType>();
@@ -66,8 +65,8 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<Enum8Type>();
             RegisterParameterizedType<Enum16Type>();
 
-            reverseMapping.Add(typeof(decimal), new Decimal128Type());
-            reverseMapping.Add(typeof(DateTime), new DateTimeType());
+            ReverseMapping.Add(typeof(decimal), new Decimal128Type());
+            ReverseMapping.Add(typeof(DateTime), new DateTimeType());
 
             RegisterPlainTypeInfo<DateTime>(ClickHouseTypeCode.Date);
         }
@@ -75,28 +74,28 @@ namespace ClickHouse.Client.Types
         private static void RegisterPlainTypeInfo<T>(ClickHouseTypeCode type)
         {
             var typeInfo = new PlainDataType<T>(type);
-            simpleTypes.Add(type, typeInfo);
-            if (!reverseMapping.ContainsKey(typeInfo.FrameworkType))
-                reverseMapping.Add(typeInfo.FrameworkType, typeInfo);
+            SimpleTypes.Add(type, typeInfo);
+            if (!ReverseMapping.ContainsKey(typeInfo.FrameworkType))
+                ReverseMapping.Add(typeInfo.FrameworkType, typeInfo);
         }
 
         private static void RegisterParameterizedType<T>()
             where T : ParameterizedType, new()
         {
             var t = new T();
-            parameterizedTypes.Add(t.Name, t);
+            ParameterizedTypes.Add(t.Name, t);
         }
 
         public static ClickHouseType ParseClickHouseType(string type)
         {
-            if (Enum.TryParse<ClickHouseTypeCode>(type, out var chType) && simpleTypes.TryGetValue(chType, out var typeInfo))
+            if (Enum.TryParse<ClickHouseTypeCode>(type, out var chType) && SimpleTypes.TryGetValue(chType, out var typeInfo))
                 return typeInfo;
 
             var index = type.IndexOf('(');
             var parameterizedTypeName = index > 0 ? type.Substring(0, index) : type;
 
-            if (parameterizedTypes.ContainsKey(parameterizedTypeName))
-                return parameterizedTypes[parameterizedTypeName].Parse(type, ParseClickHouseType);
+            if (ParameterizedTypes.ContainsKey(parameterizedTypeName))
+                return ParameterizedTypes[parameterizedTypeName].Parse(type, ParseClickHouseType);
             throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type);
         }
 
@@ -108,8 +107,8 @@ namespace ClickHouse.Client.Types
         /// <returns>Corresponding ClickHouse type</returns>
         public static ClickHouseType ToClickHouseType(Type type)
         {
-            if (reverseMapping.ContainsKey(type))
-                return reverseMapping[type];
+            if (ReverseMapping.ContainsKey(type))
+                return ReverseMapping[type];
 
             if (type.IsArray)
                 return new ArrayType() { UnderlyingType = ToClickHouseType(type.GetElementType()) };

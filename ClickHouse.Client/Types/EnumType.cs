@@ -29,7 +29,7 @@ namespace ClickHouse.Client.Types
 
             return new EnumType
             {
-                values = parameters
+                values = parameters,
             };
         }
 

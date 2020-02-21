@@ -5,7 +5,6 @@ using NodaTime.TimeZones;
 
 namespace ClickHouse.Client.Types
 {
-
     internal class DateTimeType : ParameterizedType
     {
         public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.DateTime;
@@ -60,7 +59,7 @@ namespace ClickHouse.Client.Types
 
             return new DateTimeType
             {
-                TimeZone = timeZone
+                TimeZone = timeZone,
             };
         }
     }

@@ -17,7 +17,7 @@ namespace ClickHouse.Client.Types
 
             return new NestedType
             {
-                UnderlyingTypes = underlyingTypeNames.Select(typeResolverFunc).ToArray()
+                UnderlyingTypes = underlyingTypeNames.Select(typeResolverFunc).ToArray(),
             };
         }
 

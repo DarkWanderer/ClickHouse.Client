@@ -20,7 +20,7 @@ namespace ClickHouse.Client.Types
 
             return new LowCardinalityType
             {
-                UnderlyingType = typeResolverFunc(typeName.Substring(Name.Length).TrimRoundBrackets())
+                UnderlyingType = typeResolverFunc(typeName.Substring(Name.Length).TrimRoundBrackets()),
             };
         }
 

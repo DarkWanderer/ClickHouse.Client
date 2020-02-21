@@ -20,7 +20,7 @@ namespace ClickHouse.Client.Types
 
             return new ArrayType
             {
-                UnderlyingType = typeResolverFunc(typeName.Substring(Name.Length).TrimRoundBrackets())
+                UnderlyingType = typeResolverFunc(typeName.Substring(Name.Length).TrimRoundBrackets()),
             };
         }
 

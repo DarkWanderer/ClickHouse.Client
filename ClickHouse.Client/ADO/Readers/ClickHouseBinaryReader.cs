@@ -8,7 +8,7 @@ namespace ClickHouse.Client.ADO.Readers
 {
     internal class ClickHouseBinaryReader : ClickHouseDataReader
     {
-        private const int bufferSize = 512 * 1024;
+        private const int BufferSize = 512 * 1024;
 
         private readonly ExtendedBinaryReader reader;
         private readonly BinaryStreamReader streamReader;
@@ -16,7 +16,7 @@ namespace ClickHouse.Client.ADO.Readers
         public ClickHouseBinaryReader(HttpResponseMessage httpResponse)
             : base(httpResponse)
         {
-            var stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), bufferSize);
+            var stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), BufferSize);
             reader = new ExtendedBinaryReader(stream); // will dispose of stream
             streamReader = new BinaryStreamReader(reader);
             ReadHeaders();

@@ -21,7 +21,7 @@ namespace ClickHouse.Client.Types
 
             return new Decimal32Type
             {
-                Scale = int.Parse(typeName.Substring(Name.Length).TrimRoundBrackets())
+                Scale = int.Parse(typeName.Substring(Name.Length).TrimRoundBrackets()),
             };
         }
 
