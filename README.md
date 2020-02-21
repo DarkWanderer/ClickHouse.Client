@@ -15,15 +15,15 @@ ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra
 Other existing clients for .NET utilize ClickHouse 'native' protocol. It has following disadvantages:
 * Has to buffer response (due to native format being columnar)
 * May break with ClickHouse version upgrade
-* May return multiple table results for one SELECT statement
+* May return multiple table results for one SELECT statement, forcing client to use `NextResult`
 
-Row-based binary format used in this client does not have these problems. Also, this client is ADO-compliant and does not require users to call `NextResult`
+Row-based binary format used in `ClickHouse.Client` does not have these problems. Also, this client is ADO-compliant and does not require users to call `NextResult`
 
 ## Key features
 
 * Uses HTTP, so is compatible with any server version
-* Uses binary protocol for communication. Optionaly supports JSON/TSV protocols see [connection string](https://github.com/DarkWanderer/ClickHouse.Client/wiki/Connection-string) 
-* Supports parameterized types, including recursive packing (`Array(Nullable(Int32))` etc.)
+* Uses row-based binary protocol for communication
+* Fully supports parameterized types, including recursive packing (`Array(Nullable(Int32))` etc.)
 * High-throughput
 * Available for .NET Core/Framework/Standard
-* [Bulk insert](https://github.com/DarkWanderer/ClickHouse.Client/wiki/Bulk-insertion) support
+* [Bulk insertion](https://github.com/DarkWanderer/ClickHouse.Client/wiki/Bulk-insertion) support
