@@ -147,7 +147,7 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken) => base.IsDBNullAsync(ordinal, cancellationToken);
 
-        public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
+        public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => Task.FromResult(false);
 
         public abstract override bool Read();
 
