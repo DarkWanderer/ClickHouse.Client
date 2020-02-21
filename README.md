@@ -12,17 +12,15 @@ ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra
 
 ## Why another client?
 
-Other existing clients for .NET utilize ClickHouse 'native' protocol. It has following disadvantages:
-* Has to buffer response (due to native format being columnar)
-* May break with ClickHouse version upgrade
-* May return multiple table results for one SELECT statement, forcing client to use `NextResult`
-
-Row-based binary format used in `ClickHouse.Client` does not have these problems. Also, this client is ADO-compliant and does not require users to call `NextResult`
+Compared to other existing .NET clients (which use 'native' protocol), `ClickHouse.Client` has following advantages 
+* Does not have to buffer response, reducing memory usage
+* Is version-agnostic
+* Does not require calling 'NextResult' on plain `SELECT` queries
 
 ## Key features
 
 * Uses HTTP, so is compatible with any server version
-* Uses row-based binary protocol for communication
+* Uses fast binary row protocol for communication
 * Fully supports parameterized types, including recursive packing (`Array(Nullable(Int32))` etc.)
 * High-throughput
 * Available for .NET Core/Framework/Standard
