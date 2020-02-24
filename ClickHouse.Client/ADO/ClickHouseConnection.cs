@@ -4,7 +4,6 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -12,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO
 {
@@ -85,24 +85,12 @@ namespace ClickHouse.Client.ADO
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri());
 
             AddDefaultHttpHeaders(postMessage.Headers);
+            HttpContent content = new StringContent(sqlQuery);
+            content.Headers.ContentType = new MediaTypeHeaderValue("text/sql");
             if (useCompression)
-            {
-                var data = new MemoryStream(Encoding.UTF8.GetBytes(sqlQuery));
+                content = new CompressedContent(content, "gzip");
+            postMessage.Content = content;
 
-                using var compressedStream = new MemoryStream();
-
-                using (var gzipStream = new GZipStream(compressedStream, CompressionLevel.Fastest, true))
-                    await data.CopyToAsync(gzipStream).ConfigureAwait(false);
-
-                postMessage.Content = new ByteArrayContent(compressedStream.ToArray());
-                postMessage.Content.Headers.Add("Content-Encoding", "gzip");
-            }
-            else
-            {
-                postMessage.Content = new StringContent(sqlQuery);
-            }
-
-            postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("text/sql");
             var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }

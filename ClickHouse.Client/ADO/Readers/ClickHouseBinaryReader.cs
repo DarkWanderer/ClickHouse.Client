@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net.Http;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types;
