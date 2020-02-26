@@ -64,7 +64,10 @@ namespace ClickHouse.Client.ADO
             get
             {
                 if (TryGetValue("Driver", out var value) && value is string @string && Enum.TryParse<ClickHouseConnectionDriver>(@string, out var @enum))
+                {
                     return @enum;
+                }
+
                 return ClickHouseConnectionDriver.Binary;
             }
             set => this["Driver"] = value.ToString();

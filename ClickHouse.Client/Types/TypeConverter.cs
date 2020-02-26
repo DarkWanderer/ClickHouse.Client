@@ -76,7 +76,9 @@ namespace ClickHouse.Client.Types
             var typeInfo = new PlainDataType<T>(type);
             SimpleTypes.Add(type, typeInfo);
             if (!ReverseMapping.ContainsKey(typeInfo.FrameworkType))
+            {
                 ReverseMapping.Add(typeInfo.FrameworkType, typeInfo);
+            }
         }
 
         private static void RegisterParameterizedType<T>()
@@ -89,13 +91,18 @@ namespace ClickHouse.Client.Types
         public static ClickHouseType ParseClickHouseType(string type)
         {
             if (Enum.TryParse<ClickHouseTypeCode>(type, out var chType) && SimpleTypes.TryGetValue(chType, out var typeInfo))
+            {
                 return typeInfo;
+            }
 
             var index = type.IndexOf('(');
             var parameterizedTypeName = index > 0 ? type.Substring(0, index) : type;
 
             if (ParameterizedTypes.ContainsKey(parameterizedTypeName))
+            {
                 return ParameterizedTypes[parameterizedTypeName].Parse(type, ParseClickHouseType);
+            }
+
             throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type);
         }
 
@@ -108,17 +115,25 @@ namespace ClickHouse.Client.Types
         public static ClickHouseType ToClickHouseType(Type type)
         {
             if (ReverseMapping.ContainsKey(type))
+            {
                 return ReverseMapping[type];
+            }
 
             if (type.IsArray)
+            {
                 return new ArrayType() { UnderlyingType = ToClickHouseType(type.GetElementType()) };
+            }
 
             var underlyingType = Nullable.GetUnderlyingType(type);
             if (underlyingType != null)
+            {
                 return new NullableType() { UnderlyingType = ToClickHouseType(underlyingType) };
+            }
 
             if (type.IsGenericType && type.GetGenericTypeDefinition().FullName.StartsWith("System.Tuple"))
+            {
                 return new TupleType { UnderlyingTypes = type.GetGenericArguments().Select(ToClickHouseType).ToArray() };
+            }
 
             throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type.ToString());
         }

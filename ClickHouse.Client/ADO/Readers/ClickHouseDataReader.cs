@@ -78,11 +78,17 @@ namespace ClickHouse.Client.ADO.Readers
         {
             var value = GetValue(ordinal);
             if (value is Guid guid)
+            {
                 return guid;
+            }
             else if (value is string s)
+            {
                 return new Guid(s);
+            }
             else
+            {
                 throw new InvalidOperationException($"Cannot convert value of type {value?.GetType()?.Name ?? "null"} to Guid");
+            }
         }
 
         public override short GetInt16(int ordinal) => Convert.ToInt16(GetValue(ordinal), CultureInfo.InvariantCulture);
@@ -97,7 +103,10 @@ namespace ClickHouse.Client.ADO.Readers
         {
             var index = Array.FindIndex(FieldNames, (fn) => fn == name);
             if (index == -1)
+            {
                 throw new IndexOutOfRangeException();
+            }
+
             return index;
         }
 
@@ -108,7 +117,10 @@ namespace ClickHouse.Client.ADO.Readers
         public override int GetValues(object[] values)
         {
             if (CurrentRow == null)
+            {
                 throw new InvalidOperationException();
+            }
+
             CurrentRow.CopyTo(values, 0);
             return CurrentRow.Length;
         }

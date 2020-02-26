@@ -13,12 +13,16 @@ namespace ClickHouse.Client.Utility
             foreach (var item in source)
             {
                 if (bucket == null)
+                {
                     bucket = new T[size];
+                }
 
                 bucket[count++] = item;
 
                 if (count != size)
+                {
                     continue;
+                }
 
                 yield return bucket;
 

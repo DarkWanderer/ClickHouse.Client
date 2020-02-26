@@ -11,7 +11,10 @@ namespace ClickHouse.Client.Utility
             var count = reader.FieldCount;
             var names = new string[count];
             for (int i = 0; i < count; i++)
+            {
                 names[i] = reader.GetName(i);
+            }
+
             return names;
         }
 
@@ -20,7 +23,10 @@ namespace ClickHouse.Client.Utility
             var count = reader.FieldCount;
             var names = new ClickHouseType[count];
             for (int i = 0; i < count; i++)
+            {
                 names[i] = reader.GetClickHouseType(i);
+            }
+
             return names;
         }
     }

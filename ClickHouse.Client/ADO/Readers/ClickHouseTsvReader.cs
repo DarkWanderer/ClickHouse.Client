@@ -28,10 +28,15 @@ namespace ClickHouse.Client.ADO.Readers
         public override bool Read()
         {
             if (!MoreRows)
+            {
                 return false;
+            }
+
             var rowItems = inputReader.ReadLine().Split('\t');
             if (rowItems.Length != FieldCount)
+            {
                 throw new InvalidOperationException($"Wrong number of items in row ({rowItems.Length}), expected {FieldCount}");
+            }
 
             var rowData = new object[FieldCount];
             for (var i = 0; i < FieldCount; i++)
@@ -87,7 +92,9 @@ namespace ClickHouse.Client.ADO.Readers
             {
                 contents[i] = ConvertString(items[i].Trim('\''), types[i]);
                 if (contents[i] is DBNull)
+                {
                     contents[i] = null;
+                }
             }
             return tti.MakeTuple(contents);
         }
@@ -98,14 +105,19 @@ namespace ClickHouse.Client.ADO.Readers
             var types = inputReader.ReadLine().Split('\t');
 
             if (names.Length != types.Length)
+            {
                 throw new InvalidOperationException($"Count mismatch between names ({names.Length}) and types ({types.Length})");
+            }
+
             var fieldCount = names.Length;
             RawTypes = new ClickHouseType[fieldCount];
             FieldNames = new string[fieldCount];
 
             names.CopyTo(FieldNames, 0);
             for (var i = 0; i < fieldCount; i++)
+            {
                 RawTypes[i] = TypeConverter.ParseClickHouseType(Regex.Unescape(types[i]));
+            }
         }
     }
 }

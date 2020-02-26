@@ -29,7 +29,10 @@ namespace ClickHouse.Client.ADO.Readers
             CurrentRow = new object[count];
 
             for (var i = 0; i < count; i++)
+            {
                 FieldNames[i] = reader.ReadString();
+            }
+
             for (var i = 0; i < count; i++)
             {
                 var chType = reader.ReadString();

@@ -56,15 +56,22 @@ namespace ClickHouse.Client.Formats
                     var length = reader.Read7BitEncodedInt();
                     var data = new object[length];
                     for (var i = 0; i < length; i++)
+                    {
                         data[i] = ReadValue(arrayTypeInfo.UnderlyingType, nullAsDbNull);
+                    }
+
                     return data;
 
                 case ClickHouseTypeCode.Nullable:
                     var nullableTypeInfo = (NullableType)databaseType;
                     if (reader.ReadByte() > 0)
+                    {
                         return nullAsDbNull ? DBNull.Value : null;
+                    }
                     else
+                    {
                         return ReadValue(nullableTypeInfo.UnderlyingType, nullAsDbNull);
+                    }
 
                 case ClickHouseTypeCode.Date:
                     var days = reader.ReadUInt16();

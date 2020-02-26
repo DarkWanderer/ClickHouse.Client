@@ -84,7 +84,10 @@ namespace ClickHouse.Client.Formats
                     var collection = (IList)data;
                     writer.Write7BitEncodedInt(collection.Count);
                     for (var i = 0; i < collection.Count; i++)
+                    {
                         WriteValue(collection[i], arrayTypeInfo.UnderlyingType);
+                    }
+
                     break;
                 case ClickHouseTypeCode.Nullable:
                     var nullableTypeInfo = (NullableType)databaseType;
@@ -102,7 +105,10 @@ namespace ClickHouse.Client.Formats
                     var tupleType = (TupleType)databaseType;
                     var tuple = (ITuple)data;
                     for (var i = 0; i < tuple.Length; i++)
+                    {
                         WriteValue(tuple[i], tupleType.UnderlyingTypes[i]);
+                    }
+
                     break;
                 case ClickHouseTypeCode.Nested:
                     var nestedType = (NestedType)databaseType;
@@ -111,7 +117,9 @@ namespace ClickHouse.Client.Formats
                     foreach (var ntuple in tuples)
                     {
                         for (int i = 0; i < ntuple.Length; i++)
+                        {
                             WriteValue(ntuple[i], nestedType.UnderlyingTypes[i]);
+                        }
                     }
 
                     break;
@@ -129,7 +137,10 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseTypeCode.IPv4:
                     var address4 = ExtractIPAddress(data);
                     if (address4.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
+                    {
                         throw new ArgumentException($"Expected IPv4, got {address4.ToString()}");
+                    }
+
                     var ipv4bytes = address4.GetAddressBytes();
                     Array.Reverse(ipv4bytes);
                     writer.Write(ipv4bytes, 0, ipv4bytes.Length);
@@ -138,7 +149,10 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseTypeCode.IPv6:
                     var address6 = ExtractIPAddress(data);
                     if (address6.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6)
+                    {
                         throw new ArgumentException($"Expected IPv4, got {address6.ToString()}");
+                    }
+
                     var ipv6bytes = address6.GetAddressBytes();
                     writer.Write(ipv6bytes, 0, ipv6bytes.Length);
                     break;
@@ -189,11 +203,18 @@ namespace ClickHouse.Client.Formats
         {
             Guid guid;
             if (data is Guid g)
+            {
                 guid = g;
+            }
             else if (data is string s)
+            {
                 guid = new Guid(s);
+            }
             else
+            {
                 throw new ArgumentException($"Cannot convert {data?.GetType()?.Name ?? "null"} to GUID");
+            }
+
             return guid;
         }
 
@@ -201,11 +222,18 @@ namespace ClickHouse.Client.Formats
         {
             IPAddress address;
             if (data is IPAddress a)
+            {
                 address = a;
+            }
             else if (data is string s)
+            {
                 address = IPAddress.Parse(s);
+            }
             else
+            {
                 throw new ArgumentException($"Cannot convert {data?.GetType()?.Name ?? "null"} to IPv4");
+            }
+
             return address;
         }
     }

@@ -178,7 +178,7 @@ namespace ClickHouse.Client.Tests
             var command = connection.CreateCommand();
             command.CommandText = "SELECT sleep(3)";
             var task = command.ExecuteScalarAsync();
-            await Task.Delay(50);
+            await Task.Delay(50).ConfigureAwait(false);
             command.Cancel();
 
             try

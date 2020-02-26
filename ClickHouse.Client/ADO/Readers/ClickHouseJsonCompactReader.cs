@@ -78,11 +78,13 @@ namespace ClickHouse.Client.ADO.Readers
             }
         }
 
-        private void AssertEquals<T>(T expected, T actual)
+        private static void AssertEquals<T>(T expected, T actual)
         {
             Debug.Assert(Equals(expected, actual), "Comparison failed");
             if (!Equals(expected, actual))
+            {
                 throw new InvalidOperationException($"Error: expected {expected}, got {actual}");
+            }
         }
 
         /// <summary>
@@ -92,9 +94,15 @@ namespace ClickHouse.Client.ADO.Readers
         public override bool Read()
         {
             if (!hasMore)
+            {
                 return false;
+            }
+
             if (jsonReader.TokenType == JsonToken.EndArray)
+            {
                 return hasMore = false;
+            }
+
             AssertEquals(jsonReader.TokenType, JsonToken.StartArray);
             CurrentRow = serializer.Deserialize<object[]>(jsonReader);
             AssertEquals(JsonToken.EndArray, jsonReader.TokenType);
@@ -102,7 +110,9 @@ namespace ClickHouse.Client.ADO.Readers
             hasMore = jsonReader.TokenType != JsonToken.EndArray;
 
             for (int i = 0; i < FieldCount; i++)
+            {
                 CurrentRow[i] = TryConvertTo(CurrentRow[i], RawTypes[i]);
+            }
 
             return true;
         }

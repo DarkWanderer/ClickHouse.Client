@@ -15,7 +15,10 @@ namespace ClickHouse.Client.Formats
             var buffer = new byte[count];
             var bytesRead = base.Read(buffer, 0, count);
             if (bytesRead < count)
+            {
                 throw new EndOfStreamException();
+            }
+
             return buffer;
         }
 
@@ -23,7 +26,10 @@ namespace ClickHouse.Client.Formats
         {
             var bytesRead = base.Read(buffer, index, count);
             if (bytesRead < count)
+            {
                 throw new EndOfStreamException();
+            }
+
             return bytesRead;
         }
     }

@@ -27,7 +27,9 @@ namespace ClickHouse.Client.Types
             var count = underlyingTypes.Length;
             var typeArgs = new Type[count];
             for (var i = 0; i < count; i++)
+            {
                 typeArgs[i] = underlyingTypes[i].FrameworkType;
+            }
 
             var genericType = Type.GetType("System.Tuple`" + typeArgs.Length);
             return genericType.MakeGenericType(typeArgs);
@@ -37,13 +39,17 @@ namespace ClickHouse.Client.Types
         {
             var count = values.Length;
             if (underlyingTypes.Length != count)
+            {
                 throw new ArgumentException($"Count of tuple type elements ({underlyingTypes.Length}) does not match number of elements ({count})");
+            }
 
             var valuesCopy = new object[count];
 
             // Coerce the values into types which can be stored in the tuple
             for (int i = 0; i < count; i++)
+            {
                 valuesCopy[i] = values[i] == null ? null : Convert.ChangeType(values[i], UnderlyingTypes[i].FrameworkType);
+            }
 
             return (ITuple)Activator.CreateInstance(frameworkType, valuesCopy);
         }
@@ -53,7 +59,9 @@ namespace ClickHouse.Client.Types
         public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))
+            {
                 throw new ArgumentException(nameof(typeName));
+            }
 
             var underlyingTypeNames = typeName
                 .Substring(Name.Length)

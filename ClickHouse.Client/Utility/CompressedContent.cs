@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 /// </summary>
 namespace ClickHouse.Client.Utility
 {
-
     public class CompressedContent : HttpContent
     {
         private readonly HttpContent originalContent;

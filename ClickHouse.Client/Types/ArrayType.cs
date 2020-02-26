@@ -16,7 +16,9 @@ namespace ClickHouse.Client.Types
         public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
         {
             if (!typeName.StartsWith(Name))
+            {
                 throw new ArgumentException(nameof(typeName));
+            }
 
             return new ArrayType
             {

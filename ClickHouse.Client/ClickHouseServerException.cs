@@ -48,7 +48,9 @@ namespace ClickHouse.Client
             }
 
             if (start == -1)
+            {
                 return null;
+            }
 
             for (int i = start; i < error.Length; i++)
             {

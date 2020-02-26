@@ -88,7 +88,10 @@ namespace ClickHouse.Client.ADO
             HttpContent content = new StringContent(sqlQuery);
             content.Headers.ContentType = new MediaTypeHeaderValue("text/sql");
             if (useCompression)
+            {
                 content = new CompressedContent(content, "gzip");
+            }
+
             postMessage.Content = content;
 
             var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
@@ -103,7 +106,9 @@ namespace ClickHouse.Client.ADO
             postMessage.Content = new StreamContent(data);
             postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             if (isCompressed)
+            {
                 postMessage.Content.Headers.Add("Content-Encoding", "gzip");
+            }
 
             var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sql).ConfigureAwait(false);
@@ -222,9 +227,13 @@ namespace ClickHouse.Client.ADO
             private void SetOrRemove(string name, string value)
             {
                 if (!string.IsNullOrEmpty(value))
+                {
                     parameterCollection.Set(name, value);
+                }
                 else
+                {
                     parameterCollection.Remove(name);
+                }
             }
 
             public override string ToString() => Uri.EscapeUriString(HttpUtility.UrlDecode(parameterCollection.ToString()));
