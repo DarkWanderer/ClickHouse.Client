@@ -17,8 +17,7 @@ namespace ClickHouse.Client.ADO
 {
     public class ClickHouseConnection : DbConnection, ICloneable
     {
-        private static readonly HttpClientHandler HttpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
-        private static readonly HttpClient HttpClient = new HttpClient(HttpClientHandler);
+        private readonly HttpClient httpClient;
 
         private ConnectionState state = ConnectionState.Closed;
         private string serverVersion;
@@ -26,17 +25,31 @@ namespace ClickHouse.Client.ADO
         private string username;
         private string password;
         private bool useCompression;
+        private TimeSpan timeout;
         private string session;
         private Uri serverUri;
 
         public ClickHouseConnection()
+            : this(string.Empty)
         {
-            ConnectionString = string.Empty;  // Initialize with default values
         }
 
         public ClickHouseConnection(string connectionString)
         {
             ConnectionString = connectionString;
+
+            var httpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+            httpClient = new HttpClient(httpClientHandler, true)
+            {
+                Timeout = timeout,
+            };
+        }
+
+        public ClickHouseConnection(string connectionString, HttpClient httpClient)
+        {
+            ConnectionString = connectionString;
+
+            this.httpClient = httpClient;
         }
 
         /// <summary>
@@ -57,6 +70,7 @@ namespace ClickHouse.Client.ADO
                     Driver = Driver,
                     Compression = useCompression,
                     UseSession = session != null,
+                    Timeout = timeout,
                 };
                 return builder.ToString();
             }
@@ -71,6 +85,7 @@ namespace ClickHouse.Client.ADO
                 useCompression = builder.Compression;
                 session = builder.UseSession ? Guid.NewGuid().ToString() : null;
                 Driver = builder.Driver;
+                timeout = builder.Timeout;
             }
         }
 
@@ -94,7 +109,7 @@ namespace ClickHouse.Client.ADO
 
             postMessage.Content = content;
 
-            var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+            var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }
 
@@ -110,7 +125,7 @@ namespace ClickHouse.Client.ADO
                 postMessage.Content.Headers.Add("Content-Encoding", "gzip");
             }
 
-            var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+            var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sql).ConfigureAwait(false);
         }
 

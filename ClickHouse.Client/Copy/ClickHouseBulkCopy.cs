@@ -92,7 +92,6 @@ namespace ClickHouse.Client.Copy
             using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} LIMIT 0"))
             {
                 columnTypes = reader.GetClickHouseColumnTypes();
-                columns = reader.GetColumnNames();
             }
 
             var tasks = new Task[MaxDegreeOfParallelism];

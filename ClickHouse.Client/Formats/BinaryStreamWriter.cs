@@ -185,7 +185,7 @@ namespace ClickHouse.Client.Formats
                     break;
                 case ClickHouseTypeCode.Enum16:
                     var enum16TypeInfo = (EnumType)databaseType;
-                    var enum16Index = data is string enum16Str ? (sbyte)enum16TypeInfo.Lookup(enum16Str) : Convert.ToInt16(data);
+                    var enum16Index = data is string enum16Str ? (short)enum16TypeInfo.Lookup(enum16Str) : Convert.ToInt16(data);
                     writer.Write(enum16Index);
                     break;
 
@@ -201,40 +201,34 @@ namespace ClickHouse.Client.Formats
 
         private static Guid ExtractGuid(object data)
         {
-            Guid guid;
             if (data is Guid g)
             {
-                guid = g;
+                return g;
             }
             else if (data is string s)
             {
-                guid = new Guid(s);
+                return new Guid(s);
             }
             else
             {
                 throw new ArgumentException($"Cannot convert {data?.GetType()?.Name ?? "null"} to GUID");
             }
-
-            return guid;
         }
 
         private static IPAddress ExtractIPAddress(object data)
         {
-            IPAddress address;
             if (data is IPAddress a)
             {
-                address = a;
+                return a;
             }
             else if (data is string s)
             {
-                address = IPAddress.Parse(s);
+                return IPAddress.Parse(s);
             }
             else
             {
                 throw new ArgumentException($"Cannot convert {data?.GetType()?.Name ?? "null"} to IPv4");
             }
-
-            return address;
         }
     }
 }

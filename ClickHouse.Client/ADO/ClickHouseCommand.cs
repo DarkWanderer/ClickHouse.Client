@@ -9,7 +9,7 @@ using ClickHouse.Client.ADO.Readers;
 
 namespace ClickHouse.Client.ADO
 {
-    internal class ClickHouseCommand : DbCommand
+    internal class ClickHouseCommand : DbCommand, IDisposable
     {
         private readonly ClickHouseConnection dbConnection;
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
@@ -40,6 +40,12 @@ namespace ClickHouse.Client.ADO
         protected override DbTransaction DbTransaction { get; set; }
 
         protected override bool CanRaiseEvents => base.CanRaiseEvents;
+
+        public new void Dispose()
+        {
+            cts?.Dispose();
+            base.Dispose();
+        }
 
         public override void Cancel() => cts.Cancel();
 

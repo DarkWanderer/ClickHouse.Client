@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Common;
+using System.Globalization;
 
 namespace ClickHouse.Client.ADO
 {
@@ -71,6 +72,20 @@ namespace ClickHouse.Client.ADO
                 return ClickHouseConnectionDriver.Binary;
             }
             set => this["Driver"] = value.ToString();
+        }
+
+        public TimeSpan Timeout
+        {
+            get
+            {
+                if (TryGetValue("Timeout", out var value) && value is string @string && double.TryParse(@string, NumberStyles.Any, CultureInfo.InvariantCulture, out var timeout))
+                {
+                    return TimeSpan.FromSeconds(timeout);
+                }
+
+                return TimeSpan.FromMinutes(2);
+            }
+            set => this["Timeout"] = value.TotalSeconds;
         }
     }
 }
