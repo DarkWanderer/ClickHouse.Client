@@ -70,6 +70,7 @@ namespace ClickHouse.Client.ADO
                     Driver = Driver,
                     Compression = useCompression,
                     UseSession = session != null,
+                    SessionId=session,
                     Timeout = timeout,
                 };
                 return builder.ToString();
@@ -83,7 +84,7 @@ namespace ClickHouse.Client.ADO
                 password = builder.Password;
                 serverUri = new UriBuilder("http", builder.Host, builder.Port).Uri;
                 useCompression = builder.Compression;
-                session = builder.UseSession ? Guid.NewGuid().ToString() : null;
+                session = builder.UseSession ? builder.SessionId : null;
                 Driver = builder.Driver;
                 timeout = builder.Timeout;
             }

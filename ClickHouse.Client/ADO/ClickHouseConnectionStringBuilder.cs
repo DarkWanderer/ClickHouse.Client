@@ -43,7 +43,24 @@ namespace ClickHouse.Client.ADO
         public bool UseSession
         {
             get => TryGetValue("UseSession", out var value) ? "true".Equals(value as string, StringComparison.OrdinalIgnoreCase) : false;
-            set => this["UseSession"] = value;
+            set {
+                this["UseSession"] = value;
+
+                if(value && SessionId==null)
+                    SessionId=Guid.NewGuid().ToString();
+
+
+            }
+        }
+
+        public string SessionId
+        {
+            get => this["SessionId"].ToString() ;
+            set 
+            {
+                this["SessionId"] = value;
+                UseSession=value == null ?false:true;
+            }
         }
 
         public ushort Port
