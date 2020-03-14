@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
 
 namespace ClickHouse.Client.ADO.Parameters
@@ -22,6 +21,6 @@ namespace ClickHouse.Client.ADO.Parameters
 
         public override object Value { get; set; }
 
-        public override void ResetDbType() => throw new NotImplementedException();
+        public override void ResetDbType() { }
     }
 }

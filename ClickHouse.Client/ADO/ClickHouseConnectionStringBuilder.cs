@@ -46,6 +46,12 @@ namespace ClickHouse.Client.ADO
             set => this["UseSession"] = value;
         }
 
+        public string SessionId
+        {
+            get => TryGetValue("SessionId", out var value) ? value as string : null;
+            set => this["SessionId"] = value;
+        }
+
         public ushort Port
         {
             get

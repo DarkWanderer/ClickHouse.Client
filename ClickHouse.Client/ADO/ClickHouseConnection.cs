@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -10,7 +9,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO
@@ -25,7 +23,6 @@ namespace ClickHouse.Client.ADO
         private string username;
         private string password;
         private bool useCompression;
-        private TimeSpan timeout;
         private string session;
         private Uri serverUri;
 
@@ -36,13 +33,9 @@ namespace ClickHouse.Client.ADO
 
         public ClickHouseConnection(string connectionString)
         {
-            ConnectionString = connectionString;
-
             var httpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
-            httpClient = new HttpClient(httpClientHandler, true)
-            {
-                Timeout = timeout,
-            };
+            httpClient = new HttpClient(httpClientHandler, true);
+            ConnectionString = connectionString;
         }
 
         public ClickHouseConnection(string connectionString, HttpClient httpClient)
@@ -70,7 +63,7 @@ namespace ClickHouse.Client.ADO
                     Driver = Driver,
                     Compression = useCompression,
                     UseSession = session != null,
-                    Timeout = timeout,
+                    Timeout = httpClient.Timeout,
                 };
                 return builder.ToString();
             }
@@ -83,9 +76,9 @@ namespace ClickHouse.Client.ADO
                 password = builder.Password;
                 serverUri = new UriBuilder("http", builder.Host, builder.Port).Uri;
                 useCompression = builder.Compression;
-                session = builder.UseSession ? Guid.NewGuid().ToString() : null;
+                session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
                 Driver = builder.Driver;
-                timeout = builder.Timeout;
+                httpClient.Timeout = builder.Timeout;
             }
         }
 
@@ -139,16 +132,23 @@ namespace ClickHouse.Client.ADO
             return response;
         }
 
-        private string MakeUri(string sql = null)
+        private string MakeUri(string sql = null, IDictionary<string, object> parameters = null)
         {
             var uriBuilder = new UriBuilder(serverUri);
-            var queryParameters = new HttpQueryParameters()
+            var queryParameters = new ClickHouseHttpQueryParameters()
             {
                 Database = database,
                 UseHttpCompression = useCompression,
                 SqlQuery = sql,
                 SessionId = session,
             };
+            if (parameters != null)
+            {
+                foreach (var parameter in parameters)
+                {
+                    queryParameters.SetParameter(parameter.Key, parameter.Value?.ToString());
+                }
+            }
 
             uriBuilder.Query = queryParameters.ToString();
             return uriBuilder.ToString();
@@ -199,59 +199,6 @@ namespace ClickHouse.Client.ADO
                 headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
                 headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
             }
-        }
-
-        private class HttpQueryParameters
-        {
-            private readonly NameValueCollection parameterCollection;
-
-            public HttpQueryParameters()
-                : this(string.Empty) { }
-
-            public HttpQueryParameters(string query)
-            {
-                parameterCollection = HttpUtility.ParseQueryString(query);
-                // Do not put quotes around 64-bit integers
-                parameterCollection.Set("output_format_json_quote_64bit_integers", false.ToString());
-            }
-
-            public string Database
-            {
-                get => parameterCollection.Get("database");
-                set => parameterCollection.Set("database", value);
-            }
-
-            public bool UseHttpCompression
-            {
-                get => parameterCollection.Get("enable_http_compression").Equals("true", StringComparison.OrdinalIgnoreCase);
-                set => parameterCollection.Set("enable_http_compression", value.ToString(CultureInfo.InvariantCulture));
-            }
-
-            public string SqlQuery
-            {
-                get => parameterCollection.Get("query");
-                set => SetOrRemove("query", value);
-            }
-
-            public string SessionId
-            {
-                get => parameterCollection.Get("session_id");
-                set => SetOrRemove("session_id", value);
-            }
-
-            private void SetOrRemove(string name, string value)
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    parameterCollection.Set(name, value);
-                }
-                else
-                {
-                    parameterCollection.Remove(name);
-                }
-            }
-
-            public override string ToString() => Uri.EscapeUriString(HttpUtility.UrlDecode(parameterCollection.ToString()));
         }
     }
 }
