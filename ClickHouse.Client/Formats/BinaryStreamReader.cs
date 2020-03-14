@@ -13,7 +13,7 @@ namespace ClickHouse.Client.Formats
 
         public BinaryStreamReader(ExtendedBinaryReader reader)
         {
-            this.reader = reader;
+            this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
         }
 
         public void Dispose() => reader.Dispose();
@@ -81,7 +81,7 @@ namespace ClickHouse.Client.Formats
                     return TypeConverter.DateTimeEpochStart.AddSeconds(seconds);
                 case ClickHouseTypeCode.DateTime64:
                     var dt64t = (DateTime64Type)databaseType;
-                    var chTicks = reader.ReadUInt64();
+                    var chTicks = reader.ReadInt64();
                     // 7 is a 'magic constant' - Log10 of TimeSpan.TicksInSecond
                     return TypeConverter.DateTimeEpochStart.AddTicks((long)MathUtils.ShiftDecimalPlaces(chTicks, 7 - dt64t.Scale));
 

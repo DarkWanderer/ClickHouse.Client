@@ -4,9 +4,9 @@ namespace ClickHouse.Client.Utility
 {
     public static class MathUtils
     {
-        public static ulong ToPower(uint value, int power)
+        public static long ToPower(int value, int power)
         {
-            ulong result = 1;
+            long result = 1;
             while (power > 0)
             {
                 if ((power & 1) == 1)
@@ -25,7 +25,7 @@ namespace ClickHouse.Client.Utility
             return result;
         }
 
-        public static ulong ShiftDecimalPlaces(ulong value, int places)
+        public static long ShiftDecimalPlaces(long value, int places)
         {
             if (places == 0)
             {

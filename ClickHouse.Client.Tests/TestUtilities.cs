@@ -88,7 +88,7 @@ namespace ClickHouse.Client.Tests
 
             yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1988-11-12')", new DateTime(1988, 11, 12, 0, 0, 0, DateTimeKind.Utc));
             yield return new DataTypeSample("DateTime", typeof(DateTime), "toDateTime('1988-11-12 11:22:33')", new DateTime(1988, 11, 12, 11, 22, 33, DateTimeKind.Utc));
-            yield return new DataTypeSample("DateTime64", typeof(DateTime), "toDateTime64('2020-02-20 11:22:33.444', 9)", new DateTime(2020, 02, 20, 11, 22, 33, 444, DateTimeKind.Utc));
+            yield return new DataTypeSample("DateTime64", typeof(DateTime), "toDateTime64('1820-02-20 11:22:33.444', 9)", new DateTime(1820, 02, 20, 11, 22, 33, 444, DateTimeKind.Utc));
         }
 
         public static object[] GetEnsureSingleRow(this DbDataReader reader)

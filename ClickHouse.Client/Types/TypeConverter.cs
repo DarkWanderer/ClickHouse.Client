@@ -10,6 +10,8 @@ namespace ClickHouse.Client.Types
 {
     internal static class TypeConverter
     {
+        public static readonly DateTime DateTimeEpochStart = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
         private static readonly IDictionary<ClickHouseTypeCode, ClickHouseType> SimpleTypes = new Dictionary<ClickHouseTypeCode, ClickHouseType>();
         private static readonly IDictionary<string, ParameterizedType> ParameterizedTypes = new Dictionary<string, ParameterizedType>();
         private static readonly IDictionary<Type, ClickHouseType> ReverseMapping = new Dictionary<Type, ClickHouseType>();
@@ -137,7 +139,5 @@ namespace ClickHouse.Client.Types
 
             throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type.ToString());
         }
-
-        public static readonly DateTime DateTimeEpochStart = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
     }
 }

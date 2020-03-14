@@ -16,7 +16,7 @@ namespace ClickHouse.Client.Formats
 
         public BinaryStreamWriter(ExtendedBinaryWriter writer)
         {
-            this.writer = writer;
+            this.writer = writer ?? throw new ArgumentNullException(nameof(writer));
         }
 
         public void Dispose() => writer.Dispose();
@@ -60,7 +60,7 @@ namespace ClickHouse.Client.Formats
 
                 case ClickHouseTypeCode.Decimal:
                     var dti = (DecimalType)databaseType;
-                    var value = new BigInteger(Convert.ToDecimal(data) * MathUtils.ToPower(10, dti.Scale));
+                    var value = new BigInteger(MathUtils.ShiftDecimalPlaces(Convert.ToDecimal(data), dti.Scale));
                     var dbytes = new byte[dti.Size];
                     value.ToByteArray().CopyTo(dbytes, 0);
                     writer.Write(dbytes);
@@ -170,7 +170,7 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseTypeCode.DateTime64:
                     var dt64type = (DateTime64Type)databaseType;
                     var dto64 = dt64type.ToDateTimeOffset((DateTime)data);
-                    var ticks = (ulong)(dto64.UtcDateTime - TypeConverter.DateTimeEpochStart).Ticks;
+                    var ticks = (dto64.UtcDateTime - TypeConverter.DateTimeEpochStart).Ticks;
                     // 7 is a 'magic constant' - Log10 of TimeSpan.TicksInSecond
                     writer.Write(MathUtils.ShiftDecimalPlaces(ticks, dt64type.Scale - 7));
                     break;
