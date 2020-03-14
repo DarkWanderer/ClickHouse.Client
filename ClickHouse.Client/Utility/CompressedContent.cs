@@ -13,16 +13,16 @@ namespace ClickHouse.Client.Utility
     public class CompressedContent : HttpContent
     {
         private readonly HttpContent originalContent;
-        private readonly string encodingType;
+        private readonly DecompressionMethods compressionMethod;
 
-        public CompressedContent(HttpContent content, string encodingType)
+        public CompressedContent(HttpContent content, DecompressionMethods compressionMethod)
         {
             originalContent = content ?? throw new ArgumentNullException("content");
-            this.encodingType = encodingType?.ToLowerInvariant() ?? throw new ArgumentNullException("encodingType");
+            this.compressionMethod = compressionMethod;
 
-            if (this.encodingType != "gzip" && this.encodingType != "deflate")
+            if (this.compressionMethod != DecompressionMethods.GZip && this.compressionMethod != DecompressionMethods.Deflate)
             {
-                throw new InvalidOperationException(string.Format("Encoding '{0}' is not supported. Only supports gzip or deflate encoding.", this.encodingType));
+                throw new ArgumentException(string.Format($"Compression '{compressionMethod}' is not supported. Valid types: GZip, Deflate"), nameof(compressionMethod));
             }
 
             foreach (var header in originalContent.Headers)
@@ -30,7 +30,7 @@ namespace ClickHouse.Client.Utility
                 Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
 
-            Headers.ContentEncoding.Add(encodingType);
+            Headers.ContentEncoding.Add(this.compressionMethod.ToString().ToLowerInvariant());
         }
 
         protected override bool TryComputeLength(out long length)
@@ -41,17 +41,14 @@ namespace ClickHouse.Client.Utility
 
         protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
         {
-            Stream compressedStream = encodingType switch
+            Stream compressedStream = compressionMethod switch
             {
-                "gzip" => new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true),
-                "deflate" => new DeflateStream(stream, CompressionMode.Compress, leaveOpen: true),
-                _ => throw new ArgumentOutOfRangeException(nameof(encodingType))
+                DecompressionMethods.GZip => new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true),
+                DecompressionMethods.Deflate => new DeflateStream(stream, CompressionMode.Compress, leaveOpen: true),
+                _ => throw new ArgumentOutOfRangeException(nameof(compressionMethod))
             };
 
-            return originalContent.CopyToAsync(compressedStream).ContinueWith(tsk =>
-            {
-                compressedStream.Dispose();
-            });
+            return originalContent.CopyToAsync(compressedStream).ContinueWith(task => { compressedStream.Dispose(); });
         }
     }
 }

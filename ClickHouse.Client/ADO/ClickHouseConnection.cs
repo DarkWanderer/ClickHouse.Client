@@ -97,7 +97,7 @@ namespace ClickHouse.Client.ADO
             content.Headers.ContentType = new MediaTypeHeaderValue("text/sql");
             if (useCompression)
             {
-                content = new CompressedContent(content, "gzip");
+                content = new CompressedContent(content, DecompressionMethods.GZip);
             }
 
             postMessage.Content = content;
