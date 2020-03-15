@@ -1,18 +1,14 @@
 # ClickHouse.Client
 
-.NET ADO.NET driver for ClickHouse
+ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra-fast 'big data' relational database
 
 [![License](https://img.shields.io/github/license/DarkWanderer/ClickHouse.Client?style=plastic)](https://github.com/DarkWanderer/ClickHouse.Client/blob/master/LICENSE)
 [![NuGet status](https://img.shields.io/nuget/dt/ClickHouse.Client?style=plastic)](https://www.nuget.org/packages/ClickHouse.Client/)
 [![Build status](https://ci.appveyor.com/api/projects/status/2tex8lslgd93ha9l/branch/master?svg=true)](https://ci.appveyor.com/project/DarkWanderer/clickhouse-client/branch/master)
 
-## What is it?
-
-ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra-fast 'big data' relational database
-
 ## Why another client?
 
-Compared to other existing .NET clients (which use 'native' protocol), `ClickHouse.Client` has following advantages 
+Compared to other existing .NET clients, which use 'native' protocol, `ClickHouse.Client` has following advantages 
 * Does not have to buffer response, reducing memory usage
 * Is version-agnostic
 * Does not require calling 'NextResult' on plain `SELECT` queries
