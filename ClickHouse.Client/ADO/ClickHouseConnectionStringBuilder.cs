@@ -42,12 +42,21 @@ namespace ClickHouse.Client.ADO
 
         public bool UseSession
         {
-            get => TryGetValue("UseSession", out var value) ? "true".Equals(value as string, StringComparison.OrdinalIgnoreCase) : false;
-            set {
+            get
+            {
+                bool useSession = TryGetValue("UseSession", out var value) ? "true".Equals(value as string, StringComparison.OrdinalIgnoreCase) : false;
+                if (useSession && SessionId == null)
+                    SessionId = Guid.NewGuid().ToString();
+
+                return useSession;
+
+            }
+            set
+            {
                 this["UseSession"] = value;
 
-                if(value && SessionId==null)
-                    SessionId=Guid.NewGuid().ToString();
+                if (value && SessionId == null)
+                    SessionId = Guid.NewGuid().ToString();
 
 
             }
@@ -55,11 +64,19 @@ namespace ClickHouse.Client.ADO
 
         public string SessionId
         {
-            get => this["SessionId"].ToString() ;
-            set 
+            get
+            {
+                object sfff = "";
+                bool isSet = TryGetValue("SessionId", out sfff);
+                if (!isSet)
+                    return null;
+
+                return this["SessionId"].ToString();
+            }
+            set
             {
                 this["SessionId"] = value;
-                UseSession=value == null ?false:true;
+                UseSession = value == null ? false : true;
             }
         }
 
