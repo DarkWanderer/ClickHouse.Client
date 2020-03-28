@@ -88,10 +88,12 @@ namespace ClickHouse.Client.Copy
             }
 
             ClickHouseType[] columnTypes = null;
+            string[] columnNames = null;
 
             using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} LIMIT 0"))
             {
                 columnTypes = reader.GetClickHouseColumnTypes();
+                columnNames = reader.GetColumnNames();
             }
 
             var tasks = new Task[MaxDegreeOfParallelism];
@@ -109,7 +111,7 @@ namespace ClickHouse.Client.Copy
                     if (completedTaskIndex >= 0)
                     {
                         await tasks[completedTaskIndex].ConfigureAwait(false); // to receive exception if one happens
-                        var task = PushBatch(batch, columnTypes, token);
+                        var task = PushBatch(batch, columnTypes, columnNames, token);
                         tasks[completedTaskIndex] = task;
                         break;
                     }
@@ -134,7 +136,7 @@ namespace ClickHouse.Client.Copy
             }
         }
 
-        private async Task PushBatch(ICollection<object[]> rows, ClickHouseType[] columnTypes, CancellationToken token)
+        private async Task PushBatch(ICollection<object[]> rows, ClickHouseType[] columnTypes, string[] columnNames, CancellationToken token)
         {
             using var stream = new MemoryStream() { Capacity = 512 * 1024 };
             using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))
@@ -151,7 +153,7 @@ namespace ClickHouse.Client.Copy
             }
             stream.Seek(0, SeekOrigin.Begin);
 
-            var query = $"INSERT INTO {DestinationTableName} FORMAT RowBinary";
+            var query = $"INSERT INTO {DestinationTableName} ({string.Join(", ", columnNames)}) FORMAT RowBinary";
             await connection.PostBulkDataAsync(query, stream, true, token).ConfigureAwait(false);
             Interlocked.Add(ref rowsWritten, rows.Count);
         }
