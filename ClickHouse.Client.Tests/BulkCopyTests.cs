@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Copy;
@@ -56,10 +57,28 @@ namespace ClickHouse.Client.Tests
             await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { insertedValue }, 1));
 
             using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
-            Assert.IsTrue(reader.Read());
+            Assert.IsTrue(reader.Read(), "Cannot read inserted data");
             reader.AssertHasFieldCount(1);
             var data = reader.GetValue(0);
             Assert.AreEqual(insertedValue, data);
+        }
+
+        [Test]
+        public async Task ShouldExecuteInsertWithLessColumns()
+        {
+            var targetTable = $"temp.multiple_columns";
+
+            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Memory");
+
+            using var bulkCopy = new ClickHouseBulkCopy(connection)
+            {
+                DestinationTableName = targetTable,
+            };
+
+            await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5 }, 5), new[] { "value2" }, CancellationToken.None);
+
+            using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
         }
     }
 }
