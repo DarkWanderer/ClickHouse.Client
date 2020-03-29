@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using ClickHouse.Client.ADO.Readers;
+using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.ADO.Adapters
 {
@@ -40,7 +42,54 @@ namespace ClickHouse.Client.ADO.Adapters
 
         protected override int Fill(DataTable dataTable, IDataReader dataReader) => base.Fill(dataTable, dataReader);
 
-        protected override int Fill(DataTable[] dataTables, IDataReader dataReader, int startRecord, int maxRecords) => base.Fill(dataTables, dataReader, startRecord, maxRecords);
+        protected override int Fill(DataTable[] dataTables, IDataReader dataReader, int startRecord, int maxRecords)
+        {
+            if (dataTables is null)
+                throw new ArgumentNullException(nameof(dataTables));
+            if (dataTables.Length != 1)
+                throw new ArgumentOutOfRangeException("Only single table fill is supported");
+            if (maxRecords <= 0)
+                maxRecords = int.MaxValue;
+
+            var chReader = (ClickHouseDataReader)dataReader;
+            var dataTable = dataTables[0];
+
+            // Ensure columns are available in DataTable
+            var columns = dataTable.Columns;
+            for (int i = 0; i < dataReader.FieldCount; i++)
+            {
+                var name = dataReader.GetName(i);
+                var existingColumn = columns[name];
+                if (existingColumn == null)
+                {
+                    var chType = chReader.GetClickHouseType(i);
+                    if (chType is NullableType nt)
+                        chType = nt.UnderlyingType;
+                    columns.Add(name, chType.FrameworkType);
+                }
+            }
+
+            // Fill the datatable
+            int rowNumber = 0;
+
+            while (chReader.Read())
+            {
+                if (rowNumber < startRecord)
+                    continue;
+                if (rowNumber - startRecord > maxRecords)
+                    break;
+
+                var row = dataTable.NewRow();
+                for (int i = 0; i < chReader.FieldCount; i++)
+                {
+                    row[chReader.GetName(i)] = chReader.GetValue(i);
+                }
+                dataTable.Rows.Add(row);
+                rowNumber++;
+            }
+
+            return rowNumber;
+        }
 
         protected override int Fill(DataSet dataSet, int startRecord, int maxRecords, string srcTable, IDbCommand command, CommandBehavior behavior) => base.Fill(dataSet, startRecord, maxRecords, srcTable, command, behavior);
 

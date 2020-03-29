@@ -1,5 +1,7 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
+using System.Linq;
 using ClickHouse.Client.ADO.Adapters;
 using NUnit.Framework;
 
@@ -42,6 +44,28 @@ namespace ClickHouse.Client.Tests
 
             Assert.AreEqual(100, dataTable.Rows.Count);
             Assert.AreEqual(2, dataTable.Columns.Count);
+        }
+
+        public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()
+            .Where(sample => sample.ClickHouseType != "Nothing")
+            .Select(sample => new TestCaseData($"SELECT {sample.ExampleExpression} AS col"));
+
+        [Test]
+        [TestCaseSource(typeof(DataAdapterTests), nameof(SimpleSelectQueries))]
+        public void DataAdapterShouldFillDataTableWithNullableColumn(string sql)
+        {
+            using var adapter = new ClickHouseDataAdapter();
+            using var command = connection.CreateCommand();
+
+            command.CommandText = sql;
+            adapter.SelectCommand = command;
+
+            var dataTable = new DataTable();
+            adapter.Fill(dataTable);
+
+            Assert.AreEqual(1, dataTable.Rows.Count);
+            Assert.AreEqual(1, dataTable.Columns.Count);
+            Assert.AreEqual("col", dataTable.Columns[0].ColumnName);
         }
     }
 }

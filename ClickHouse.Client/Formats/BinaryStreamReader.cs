@@ -54,12 +54,11 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseTypeCode.Array:
                     var arrayTypeInfo = (ArrayType)databaseType;
                     var length = reader.Read7BitEncodedInt();
-                    var data = new object[length];
+                    var data = arrayTypeInfo.MakeArray(length);
                     for (var i = 0; i < length; i++)
                     {
-                        data[i] = ReadValue(arrayTypeInfo.UnderlyingType, nullAsDbNull);
+                        data.SetValue(ReadValue(arrayTypeInfo.UnderlyingType, nullAsDbNull), i);
                     }
-
                     return data;
 
                 case ClickHouseTypeCode.Nullable:

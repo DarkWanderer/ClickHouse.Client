@@ -26,6 +26,8 @@ namespace ClickHouse.Client.Types
             };
         }
 
+        public Array MakeArray(int length) => Array.CreateInstance(UnderlyingType.FrameworkType, length);
+
         public override string ToString() => $"Array({UnderlyingType.ToString()})";
     }
 }

@@ -3,4 +3,4 @@
 // Project-level suppressions either have no target or are given
 // a specific target and scoped to a namespace, type, member, etc.
 
-[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1503:Braces should not be omitted", Justification = "<Pending>", Scope = "member", Target = "~M:ClickHouse.Client.Utility.SchemaDescriber.DescribeSchema(ClickHouse.Client.ADO.Readers.ClickHouseDataReader)~System.Data.DataTable")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1503:Braces should not be omitted", Justification = "This is a valid code style")]
