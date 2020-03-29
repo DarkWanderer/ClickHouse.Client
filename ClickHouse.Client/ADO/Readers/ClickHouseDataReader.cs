@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.Types;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO.Readers
 {
@@ -151,7 +152,7 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override int GetProviderSpecificValues(object[] values) => base.GetProviderSpecificValues(values);
 
-        public override DataTable GetSchemaTable() => base.GetSchemaTable();
+        public override DataTable GetSchemaTable() => SchemaDescriber.DescribeSchema(this);
 
         public override Stream GetStream(int ordinal) => base.GetStream(ordinal);
 

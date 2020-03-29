@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
@@ -50,5 +51,39 @@ namespace ClickHouse.Client.Tests
                 /* Expected: task cancelled */
             }
         }
+
+        [Test]
+        [Ignore("TODO")]
+        public void ShouldFetchSchema()
+        {
+            var schema = connection.GetSchema();
+            Assert.IsNotNull(schema);
+        }
+
+        [Test]
+        [Ignore("TODO")]
+        public void ShouldFetchSchemaTables()
+        {
+            var schema = connection.GetSchema("Tables");
+            Assert.IsNotNull(schema);
+        }
+
+        [Test]
+        public void ShouldFetchSchemaDatabaseColumns()
+        {
+            var schema = connection.GetSchema("Columns", new[] { "system" });
+            Assert.IsNotNull(schema);
+            CollectionAssert.IsSubsetOf(new[] { "Database", "Table", "DataType", "ProviderType" }, GetColumnNames(schema));
+        }
+
+        [Test]
+        public void ShouldFetchSchemaTableColumns ()
+        {
+            var schema = connection.GetSchema("Columns", new[] { "system", "functions" });
+            Assert.IsNotNull(schema);
+            CollectionAssert.IsSubsetOf(new[] { "Database", "Table", "DataType", "ProviderType" }, GetColumnNames(schema));
+        }
+
+        private static string[] GetColumnNames(DataTable table) => table.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
     }
 }

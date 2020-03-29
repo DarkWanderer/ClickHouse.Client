@@ -10,7 +10,6 @@ using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
-    //[Ignore("INSERT support is WIP")]
     public class BulkCopyTests
     {
         private readonly ClickHouseConnection connection = TestUtilities.GetTestClickHouseConnection(ClickHouseConnectionDriver.Binary);

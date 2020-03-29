@@ -52,6 +52,9 @@ namespace ClickHouse.Client.Tests
         {
             yield return new DataTypeSample("Nothing", typeof(DBNull), "NULL", DBNull.Value);
 
+            yield return new DataTypeSample("Int8", typeof(sbyte), "toInt8(-8)", -8);
+            yield return new DataTypeSample("UInt8", typeof(byte), "toUInt8(8)", 8);
+
             yield return new DataTypeSample("Int16", typeof(short), "toInt16(-16)", -16);
             yield return new DataTypeSample("UInt16", typeof(ushort), "toUInt16(16)", 16);
 

@@ -88,6 +88,12 @@ namespace ClickHouse.Client.ADO
 
         public override string ServerVersion => serverVersion;
 
+        public override DataTable GetSchema() => GetSchema(null, null);
+
+        public override DataTable GetSchema(string type) => GetSchema(type, null);
+
+        public override DataTable GetSchema(string type, string[] restrictions) => SchemaDescriber.DescribeSchema(this, type, restrictions);
+
         internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token)
         {
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri());
