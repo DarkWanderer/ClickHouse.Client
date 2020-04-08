@@ -123,8 +123,9 @@ namespace ClickHouse.Client.Utility
             var result = connection.ExecuteDataTable(query.ToString());
             foreach (var row in result.Rows.Cast<DataRow>())
             {
-                var dataType = TypeConverter.ParseClickHouseType((string)row["ProviderType"]).FrameworkType;
-                row["DataType"] = dataType;
+                var clickHouseType = TypeConverter.ParseClickHouseType((string)row["ProviderType"]);
+                row["ProviderType"] = clickHouseType.ToString();
+                row["DataType"] = clickHouseType.FrameworkType.ToString().Replace("System.", string.Empty);
             }
 
             return result;

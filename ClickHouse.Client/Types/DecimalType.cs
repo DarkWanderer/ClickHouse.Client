@@ -46,9 +46,9 @@ namespace ClickHouse.Client.Types
                 case 4:
                     return new Decimal32Type { Precision = precision, Scale = scale };
                 case 8:
-                    return new Decimal32Type { Precision = precision, Scale = scale };
+                    return new Decimal64Type { Precision = precision, Scale = scale };
                 case 16:
-                    return new Decimal32Type { Precision = precision, Scale = scale };
+                    return new Decimal128Type { Precision = precision, Scale = scale };
                 default:
                     return new DecimalType { Precision = precision, Scale = scale };
             }
