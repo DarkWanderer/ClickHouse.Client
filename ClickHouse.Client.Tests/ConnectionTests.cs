@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
@@ -12,6 +13,13 @@ namespace ClickHouse.Client.Tests
     public class ConnectionTests
     {
         private readonly ClickHouseConnection connection = TestUtilities.GetTestClickHouseConnection(default);
+
+        [Test]
+        public void ShouldCreateConnectionWithProvidedHttpClient()
+        {
+            using var httpClient = new HttpClient();
+            using var connection = new ClickHouseConnection(TestUtilities.GetConnectionStringBuilder().ToString(), httpClient);
+        }
 
         [Test]
         public void ShouldConnectToServer()

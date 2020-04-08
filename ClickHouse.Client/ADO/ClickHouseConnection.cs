@@ -40,9 +40,8 @@ namespace ClickHouse.Client.ADO
 
         public ClickHouseConnection(string connectionString, HttpClient httpClient)
         {
-            ConnectionString = connectionString;
-
             this.httpClient = httpClient;
+            ConnectionString = connectionString;
         }
 
         /// <summary>
