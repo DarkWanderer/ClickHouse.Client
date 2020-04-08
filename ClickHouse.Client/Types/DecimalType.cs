@@ -16,7 +16,9 @@ namespace ClickHouse.Client.Types
         /// <summary>
         /// Gets size of type in bytes
         /// </summary>
-        public virtual int Size => Precision switch
+        public virtual int Size => GetSizeFromPrecision(Precision);
+
+        private int GetSizeFromPrecision(int precision) => precision switch
         {
             int p when p >= 1 && p < 10 => 4,
             int p when p >= 10 && p < 19 => 8,
@@ -34,12 +36,22 @@ namespace ClickHouse.Client.Types
             }
 
             var parameters = typeName.Substring(Name.Length).TrimRoundBrackets().Split(',');
+            var precision = int.Parse(parameters[0]);
+            var scale = int.Parse(parameters[1]);
 
-            return new DecimalType
+            var size = GetSizeFromPrecision(precision);
+
+            switch (size)
             {
-                Precision = int.Parse(parameters[0]),
-                Scale = int.Parse(parameters[1]),
-            };
+                case 4:
+                    return new Decimal32Type { Precision = precision, Scale = scale };
+                case 8:
+                    return new Decimal32Type { Precision = precision, Scale = scale };
+                case 16:
+                    return new Decimal32Type { Precision = precision, Scale = scale };
+                default:
+                    return new DecimalType { Precision = precision, Scale = scale };
+            }
         }
 
         public override string ToString() => $"{Name}({Precision}, {Scale})";

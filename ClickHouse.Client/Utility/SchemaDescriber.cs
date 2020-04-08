@@ -62,7 +62,7 @@ namespace ClickHouse.Client.Utility
             result[2] = null; // ColumnSize
             result[3] = null; // NumericPrecision
             result[4] = null; // NumericScale
-            result[5] = chType.FrameworkType.ToString(); // DataType
+            result[5] = chType.FrameworkType; // DataType
             result[6] = chType.ToString(); // ProviderType
             result[7] = chType.TypeCode == ClickHouseTypeCode.String; // IsLong
             result[8] = chType.TypeCode == ClickHouseTypeCode.Nullable; // AllowDBNull
@@ -123,7 +123,7 @@ namespace ClickHouse.Client.Utility
             var result = connection.ExecuteDataTable(query.ToString());
             foreach (var row in result.Rows.Cast<DataRow>())
             {
-                var dataType = TypeConverter.ParseClickHouseType((string)row["ProviderType"]).FrameworkType.ToString().Replace("System.", string.Empty);
+                var dataType = TypeConverter.ParseClickHouseType((string)row["ProviderType"]).FrameworkType;
                 row["DataType"] = dataType;
             }
 
