@@ -122,7 +122,7 @@ namespace ClickHouse.Client.ADO.Readers
             switch (type.TypeCode)
             {
                 case ClickHouseTypeCode.Nullable:
-                    return data == null ? null : TryConvertTo(data, ((NullableType)type).UnderlyingType);
+                    return data is null || data is DBNull ? data : TryConvertTo(data, ((NullableType)type).UnderlyingType);
                 case ClickHouseTypeCode.UUID:
                     return Guid.TryParse((string)data, out var guid) ? guid : data;
                 case ClickHouseTypeCode.IPv4:

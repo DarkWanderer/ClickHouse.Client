@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
@@ -48,6 +49,7 @@ namespace ClickHouse.Client.Tests
 
         public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()
             .Where(sample => sample.ClickHouseType != "Nothing")
+            .Where(sample => sample.ExampleValue != DBNull.Value)
             .Select(sample => new TestCaseData($"SELECT {sample.ExampleExpression} AS col"));
 
         [Test]

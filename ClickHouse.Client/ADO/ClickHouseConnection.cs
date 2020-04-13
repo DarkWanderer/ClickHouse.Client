@@ -24,6 +24,7 @@ namespace ClickHouse.Client.ADO
         private string password;
         private bool useCompression;
         private string session;
+        private TimeSpan timeout;
         private Uri serverUri;
 
         public ClickHouseConnection()
@@ -33,15 +34,19 @@ namespace ClickHouse.Client.ADO
 
         public ClickHouseConnection(string connectionString)
         {
-            var httpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
-            httpClient = new HttpClient(httpClientHandler, true);
             ConnectionString = connectionString;
+            var httpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+            httpClient = new HttpClient(httpClientHandler, true)
+            {
+                Timeout = timeout,
+            };
+            // Connection string has to be initialized after HttpClient, as it may set HttpClient.Timeout
         }
 
         public ClickHouseConnection(string connectionString, HttpClient httpClient)
         {
-            this.httpClient = httpClient;
             ConnectionString = connectionString;
+            this.httpClient = httpClient;
         }
 
         /// <summary>
@@ -62,7 +67,7 @@ namespace ClickHouse.Client.ADO
                     Driver = Driver,
                     Compression = useCompression,
                     UseSession = session != null,
-                    Timeout = httpClient.Timeout,
+                    Timeout = timeout,
                 };
                 return builder.ToString();
             }
@@ -77,7 +82,7 @@ namespace ClickHouse.Client.ADO
                 useCompression = builder.Compression;
                 session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
                 Driver = builder.Driver;
-                httpClient.Timeout = builder.Timeout;
+                timeout = builder.Timeout;
             }
         }
 

@@ -72,7 +72,7 @@ namespace ClickHouse.Client.ADO.Readers
                 case NothingType ti:
                     return item == "\\N" ? DBNull.Value : throw new InvalidOperationException();
                 case NullableType nti:
-                    return item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType);
+                    return item == "\\N" || item == "NULL" ? DBNull.Value : ConvertString(item, nti.UnderlyingType);
                 case PlainDataType<Guid> _:
                     return new Guid(item);
                 case PlainDataType<IPAddress> _:
