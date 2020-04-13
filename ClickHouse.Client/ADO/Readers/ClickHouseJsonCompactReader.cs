@@ -134,7 +134,7 @@ namespace ClickHouse.Client.ADO.Readers
                         : data;
                 case ClickHouseTypeCode.DateTime:
                 case ClickHouseTypeCode.DateTime64:
-                    return DateTime.TryParse((string)data, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime) ? dateTime : data;
+                    return DateTime.Parse((string)data, CultureInfo.InvariantCulture, DateTimeStyles.None);
                 case ClickHouseTypeCode.Tuple:
                     var tt = (TupleType)type;
                     return tt.MakeTuple((object[])data);
