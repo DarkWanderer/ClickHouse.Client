@@ -9,10 +9,11 @@ using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
-    public class SqlUpdateTests
+    public class SqlAlterTests
     {
         private readonly DbConnection connection;
-        public SqlUpdateTests()
+
+        public SqlAlterTests()
         {
             var builder = TestUtilities.GetConnectionStringBuilder();
             builder.UseSession = true;
@@ -20,6 +21,9 @@ namespace ClickHouse.Client.Tests
             builder.Compression = true;
             connection = new ClickHouseConnection(builder.ToString());
         }
+
+        [SetUp]
+        public Task FixtureSetup() => connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS temp");
 
         [Test]
         public async Task ShouldExecuteAlterTable()
