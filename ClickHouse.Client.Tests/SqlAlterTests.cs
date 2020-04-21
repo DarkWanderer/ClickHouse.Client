@@ -22,12 +22,10 @@ namespace ClickHouse.Client.Tests
             connection = new ClickHouseConnection(builder.ToString());
         }
 
-        [SetUp]
-        public Task FixtureSetup() => connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS temp");
-
         [Test]
         public async Task ShouldExecuteAlterTable()
         {
+            await connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS test");
             await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.table_delete_from (value Int32) ENGINE=MergeTree ORDER BY value");
             await connection.ExecuteStatementAsync("ALTER TABLE test.table_delete_from DELETE WHERE 1=1");
         }
