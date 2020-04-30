@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,7 +54,8 @@ namespace ClickHouse.Client.ADO
 
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
-            var response = await dbConnection.PostSqlQueryAsync(CommandText, cts.Token).ConfigureAwait(false);
+            var parameters = Parameters.Cast<DbParameter>().ToDictionary(p => p.ParameterName, p => p.Value);
+            var response = await dbConnection.PostSqlQueryAsync(CommandText, cts.Token, parameters).ConfigureAwait(false);
             var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return int.TryParse(result, out var r) ? r : 0;
         }
@@ -63,7 +65,7 @@ namespace ClickHouse.Client.ADO
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
             using var reader = await ExecuteDbDataReaderAsync(CommandBehavior.Default, cancellationToken).ConfigureAwait(false);
-            return reader.Read() ? reader[0] : null;
+            return reader.Read() ? reader.GetValue(0) : null;
         }
 
         public override void Prepare() { /* ClickHouse has no notion of prepared statements */ }
@@ -117,8 +119,8 @@ namespace ClickHouse.Client.ADO
                     break;
             }
 
-            // var result = await dbConnection.GetSqlQueryAsync(sqlBuilder.ToString(), cts.Token).ConfigureAwait(false);
-            var result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token).ConfigureAwait(false);
+            var parameters = Parameters.Cast<DbParameter>().ToDictionary(p => p.ParameterName, p => p.Value);
+            var result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token, parameters).ConfigureAwait(false);
             return driver switch
             {
                 ClickHouseConnectionDriver.Binary => new ClickHouseBinaryReader(result),

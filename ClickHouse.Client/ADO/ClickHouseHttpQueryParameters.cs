@@ -5,7 +5,7 @@ using System.Web;
 
 namespace ClickHouse.Client.ADO
 {
-    internal class ClickHouseHttpQueryParameters
+    internal class ClickHouseHttpQueryParameters : ICloneable
     {
         private readonly NameValueCollection parameterCollection;
 
@@ -45,6 +45,10 @@ namespace ClickHouse.Client.ADO
 
         public void SetParameter(string name, string value) => SetOrRemove("param_" + name, value);
 
+        public object Clone() => new ClickHouseHttpQueryParameters(ToString());
+
+        public override string ToString() => parameterCollection.ToString();
+
         private void SetOrRemove(string name, string value)
         {
             if (!string.IsNullOrEmpty(value))
@@ -56,7 +60,5 @@ namespace ClickHouse.Client.ADO
                 parameterCollection.Remove(name);
             }
         }
-
-        public override string ToString() => Uri.EscapeUriString(HttpUtility.UrlDecode(parameterCollection.ToString()));
     }
 }

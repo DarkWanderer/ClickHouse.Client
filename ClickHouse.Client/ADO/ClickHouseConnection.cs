@@ -98,9 +98,9 @@ namespace ClickHouse.Client.ADO
 
         public override DataTable GetSchema(string type, string[] restrictions) => SchemaDescriber.DescribeSchema(this, type, restrictions);
 
-        internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token)
+        internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token, IDictionary<string, object> parameters = null)
         {
-            using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri());
+            using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri(null, parameters));
 
             AddDefaultHttpHeaders(postMessage.Headers);
             HttpContent content = new StringContent(sqlQuery);
@@ -142,6 +142,7 @@ namespace ClickHouse.Client.ADO
             return response;
         }
 
+        // TODO: move this method out of ClickHouseConnection
         private string MakeUri(string sql = null, IDictionary<string, object> parameters = null)
         {
             var uriBuilder = new UriBuilder(serverUri);

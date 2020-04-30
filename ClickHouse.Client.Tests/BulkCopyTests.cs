@@ -79,5 +79,23 @@ namespace ClickHouse.Client.Tests
 
             using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
         }
+
+        [Test]
+        public async Task ShouldExecuteInsertWithColumnsExpression()
+        {
+            var targetTable = $"temp.multiple_columns";
+
+            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Memory");
+
+            using var bulkCopy = new ClickHouseBulkCopy(connection)
+            {
+                DestinationTableName = targetTable,
+            };
+
+            await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5 }, 5), new[] { "COLUMNS('e2')" }, CancellationToken.None);
+
+            using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+        }
     }
 }
