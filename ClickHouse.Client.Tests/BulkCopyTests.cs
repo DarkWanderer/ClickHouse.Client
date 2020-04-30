@@ -12,15 +12,17 @@ namespace ClickHouse.Client.Tests
 {
     public class BulkCopyTests
     {
-        private readonly ClickHouseConnection connection = TestUtilities.GetTestClickHouseConnection(ClickHouseConnectionDriver.Binary);
+        private readonly ClickHouseConnection connection = TestUtilities.GetTestClickHouseConnection();
 
         [SetUp]
         public Task FixtureSetup() => connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS temp");
 
         public static IEnumerable<TestCaseData> GetInsertSingleValueTestCases()
         {
-            foreach (var sample in TestUtilities.GetDataTypeSamples().Where(s => s.ClickHouseType != "Nothing"))
+            foreach (var sample in TestUtilities.GetDataTypeSamples())
             {
+                if (sample.ClickHouseType == "Nothing" || sample.ClickHouseType == "Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))")
+                    continue;
                 yield return new TestCaseData(sample.ClickHouseType, sample.ExampleValue);
             }
             yield return new TestCaseData("String", "1\t2\n3");

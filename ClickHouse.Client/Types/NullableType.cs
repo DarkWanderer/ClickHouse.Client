@@ -1,4 +1,5 @@
 ﻿using System;
+using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
@@ -20,16 +21,11 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "Nullable";
 
-        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
         {
-            if (!typeName.StartsWith(Name))
-            {
-                throw new ArgumentException(nameof(typeName));
-            }
-
             return new NullableType
             {
-                UnderlyingType = typeResolverFunc(typeName.Substring(Name.Length).TrimRoundBrackets()),
+                UnderlyingType = typeResolverFunc(node.SingleChild),
             };
         }
 

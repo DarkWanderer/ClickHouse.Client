@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
@@ -15,17 +16,10 @@ namespace ClickHouse.Client.Types
 
         public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Enum8;
 
-        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
         {
-            if (!typeName.StartsWith(Name))
-            {
-                throw new ArgumentException(nameof(typeName));
-            }
-
-            var parameters = typeName
-                .Substring(Name.Length)
-                .TrimRoundBrackets()
-                .Split(',')
+            var parameters = node.ChildNodes
+                .Select(cn => cn.Value)
                 .Select(p => p.Split('='))
                 .ToDictionary(kvp => kvp[0].Trim().Trim('\''), kvp => Convert.ToInt32(kvp[1].Trim()));
 

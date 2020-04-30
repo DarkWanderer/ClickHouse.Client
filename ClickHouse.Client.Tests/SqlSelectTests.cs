@@ -11,21 +11,16 @@ using NUnit.Framework;
 namespace ClickHouse.Client.Tests
 {
     [Parallelizable]
-    [TestFixture(ClickHouseConnectionDriver.Binary, true)]
-    [TestFixture(ClickHouseConnectionDriver.JSON, true)]
-    [TestFixture(ClickHouseConnectionDriver.TSV, true)]
-    [TestFixture(ClickHouseConnectionDriver.Binary, false)]
-    [TestFixture(ClickHouseConnectionDriver.JSON, false)]
-    [TestFixture(ClickHouseConnectionDriver.TSV, false)]
+    [TestFixture(true)]
+    [TestFixture(false)]
     public class SqlSelectTests
     {
         private readonly ClickHouseConnectionDriver driver;
         private readonly DbConnection connection;
 
-        public SqlSelectTests(ClickHouseConnectionDriver driver, bool useCompression)
+        public SqlSelectTests(bool useCompression)
         {
-            this.driver = driver;
-            connection = TestUtilities.GetTestClickHouseConnection(driver, useCompression);
+            connection = TestUtilities.GetTestClickHouseConnection(useCompression);
         }
 
         public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()

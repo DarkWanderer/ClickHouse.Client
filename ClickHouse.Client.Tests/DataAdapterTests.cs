@@ -10,7 +10,7 @@ namespace ClickHouse.Client.Tests
 {
     public class DataAdapterTests
     {
-        private readonly DbConnection connection = TestUtilities.GetTestClickHouseConnection(ClickHouseConnectionDriver.Binary);
+        private readonly DbConnection connection = TestUtilities.GetTestClickHouseConnection();
 
         [Test]
         public void DataAdapterShouldFillDataSet()
@@ -33,7 +33,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public void DataAdapterShouldFillDataTable()
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(ClickHouseConnectionDriver.Binary);
+            using var connection = TestUtilities.GetTestClickHouseConnection();
             using var adapter = new ClickHouseDataAdapter();
             using var command = connection.CreateCommand();
 

@@ -13,12 +13,10 @@ namespace ClickHouse.Client.Tests
         /// <summary>
         /// Utility method to allow to redirect ClickHouse connections to different machine, in case of Windows development environment
         /// </summary>
-        /// <param name="driver">Type of ClickHouse driver to use</param>
         /// <returns></returns>
-        public static ClickHouseConnection GetTestClickHouseConnection(ClickHouseConnectionDriver driver, bool compression = true)
+        public static ClickHouseConnection GetTestClickHouseConnection(bool compression = true)
         {
             var builder = GetConnectionStringBuilder();
-            builder.Driver = driver; // Override driver with requested one
             builder.Compression = compression;
             return new ClickHouseConnection(builder.ConnectionString);
         }
@@ -90,6 +88,7 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("LowCardinality(String)", typeof(string), "toLowCardinality('lowcardinality')", "lowcardinality");
 
             yield return new DataTypeSample("Tuple(Int32, String, Nullable(Int32))", typeof(Tuple<int, string, int?>), "tuple(1, 'a', NULL)", Tuple.Create<int, string, int?>(1, "a", null));
+            yield return new DataTypeSample("Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))", typeof(Tuple<int, Tuple<byte, string, int?>>), "tuple(123, tuple(5, 'a', 7))", Tuple.Create(123, Tuple.Create((byte)5, "a", 7)));
 
             yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Utc));
             yield return new DataTypeSample("DateTime", typeof(DateTime), "toDateTime('1988-08-28 11:22:33')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Utc));
