@@ -1,4 +1,5 @@
 ﻿using System;
+using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 using NodaTime;
 
@@ -14,20 +15,13 @@ namespace ClickHouse.Client.Types
 
         public override string ToString() => TimeZone == null ? $"DateTime64({Scale})" : $"DateTime64({Scale}, {TimeZone.Id})";
 
-        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
         {
-            if (!typeName.StartsWith(Name))
-            {
-                throw new ArgumentException(nameof(typeName));
-            }
-
-            var parameters = typeName.Substring(Name.Length).TrimRoundBrackets().Split(',');
-
-            var scale = int.Parse(parameters[0]);
+            var scale = int.Parse(node.ChildNodes[0].Value);
             var timeZone = DateTimeZone.Utc;
-            if (parameters.Length > 1)
+            if (node.ChildNodes.Count > 1)
             {
-                var timeZoneName = parameters[1].Trim().Trim('\'');
+                var timeZoneName = node.ChildNodes[1].Value.Trim('\'');
                 timeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneName) ?? DateTimeZone.Utc;
             }
 

@@ -11,21 +11,16 @@ using NUnit.Framework;
 namespace ClickHouse.Client.Tests
 {
     [Parallelizable]
-    [TestFixture(ClickHouseConnectionDriver.Binary, true)]
-    [TestFixture(ClickHouseConnectionDriver.JSON, true)]
-    [TestFixture(ClickHouseConnectionDriver.TSV, true)]
-    [TestFixture(ClickHouseConnectionDriver.Binary, false)]
-    [TestFixture(ClickHouseConnectionDriver.JSON, false)]
-    [TestFixture(ClickHouseConnectionDriver.TSV, false)]
+    [TestFixture(true)]
+    [TestFixture(false)]
     public class SqlSelectTests
     {
         private readonly ClickHouseConnectionDriver driver;
         private readonly DbConnection connection;
 
-        public SqlSelectTests(ClickHouseConnectionDriver driver, bool useCompression)
+        public SqlSelectTests(bool useCompression)
         {
-            this.driver = driver;
-            connection = TestUtilities.GetTestClickHouseConnection(driver, useCompression);
+            connection = TestUtilities.GetTestClickHouseConnection(useCompression);
         }
 
         public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()
@@ -191,7 +186,7 @@ namespace ClickHouse.Client.Tests
                 // Correct
             }
         }
-        
+
         [Test]
         public async Task ShouldGetReaderColumnSchema()
         {
@@ -208,6 +203,22 @@ namespace ClickHouse.Client.Tests
             using var reader = await connection.ExecuteReaderAsync("SELECT 1 as num, 'a' as str");
             var schema = reader.GetSchemaTable();
             Assert.AreEqual(2, schema.Rows.Count);
+        }
+
+        [Test]
+        public async Task ShouldExecuteSelectWithParameters()
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT {id:Int32}, {str:String}";
+            
+            var p1 = command.AddParameter("id", 906324);
+            var p2 = command.AddParameter("str", "%@^&*#!$[ AAAA}{///sd/zcち");
+
+            var result = await command.ExecuteReaderAsync();
+            var row = result.GetEnsureSingleRow();
+            Assert.AreEqual(2, command.Parameters.Count);
+            Assert.AreEqual(p1.Value, row[0]);
+            Assert.AreEqual(p2.Value, row[1]);
         }
     }
 }

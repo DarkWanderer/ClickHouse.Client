@@ -1,4 +1,5 @@
 ﻿using System;
+using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
@@ -28,16 +29,10 @@ namespace ClickHouse.Client.Types
 
         public override Type FrameworkType => typeof(decimal);
 
-        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
         {
-            if (!typeName.StartsWith(Name))
-            {
-                throw new ArgumentException(nameof(typeName));
-            }
-
-            var parameters = typeName.Substring(Name.Length).TrimRoundBrackets().Split(',');
-            var precision = int.Parse(parameters[0]);
-            var scale = int.Parse(parameters[1]);
+            var precision = int.Parse(node.ChildNodes[0].Value);
+            var scale = int.Parse(node.ChildNodes[1].Value);
 
             var size = GetSizeFromPrecision(precision);
 

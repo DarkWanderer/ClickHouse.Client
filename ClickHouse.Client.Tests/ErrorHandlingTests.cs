@@ -9,7 +9,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public static async Task ExceptionHandlerShouldParseErrorCode()
         {
-            using var connection = TestUtilities.GetTestClickHouseConnection(ClickHouseConnectionDriver.Binary, true);
+            using var connection = TestUtilities.GetTestClickHouseConnection(true);
             try
             {
                 var result = await connection.ExecuteScalarAsync("SELECT A");

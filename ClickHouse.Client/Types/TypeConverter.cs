@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
+using ClickHouse.Client.Types.Grammar;
 
 [assembly: InternalsVisibleTo("ClickHouse.Client.Tests")] // assembly-level tag to expose below classes to tests
 
@@ -92,20 +93,26 @@ namespace ClickHouse.Client.Types
 
         public static ClickHouseType ParseClickHouseType(string type)
         {
-            if (Enum.TryParse<ClickHouseTypeCode>(type, out var chType) && SimpleTypes.TryGetValue(chType, out var typeInfo))
+            var node = Parser.Parse(type);
+            return ParseClickHouseType(node);
+        }
+
+        public static ClickHouseType ParseClickHouseType(SyntaxTreeNode node)
+        {
+            if (
+                node.ChildNodes.Count == 0 &&
+                Enum.TryParse<ClickHouseTypeCode>(node.Value, out var chType) && 
+                SimpleTypes.TryGetValue(chType, out var typeInfo))
             {
                 return typeInfo;
             }
 
-            var index = type.IndexOf('(');
-            var parameterizedTypeName = index > 0 ? type.Substring(0, index) : type;
-
-            if (ParameterizedTypes.ContainsKey(parameterizedTypeName))
+            if (ParameterizedTypes.ContainsKey(node.Value))
             {
-                return ParameterizedTypes[parameterizedTypeName].Parse(type, ParseClickHouseType);
+                return ParameterizedTypes[node.Value].Parse(node, ParseClickHouseType);
             }
 
-            throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type);
+            throw new ArgumentException("Unknown type: " + node.ToString());
         }
 
         /// <summary>

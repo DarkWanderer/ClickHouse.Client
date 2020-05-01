@@ -1,4 +1,5 @@
 ﻿using System;
+using ClickHouse.Client.Types.Grammar;
 
 namespace ClickHouse.Client.Types
 {
@@ -6,6 +7,6 @@ namespace ClickHouse.Client.Types
     {
         public virtual string Name => TypeCode.ToString();
 
-        public abstract ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc);
+        public abstract ParameterizedType Parse(SyntaxTreeNode typeName, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc);
     }
 }

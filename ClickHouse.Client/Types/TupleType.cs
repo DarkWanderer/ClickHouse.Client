@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
@@ -48,7 +49,10 @@ namespace ClickHouse.Client.Types
             // Coerce the values into types which can be stored in the tuple
             for (int i = 0; i < count; i++)
             {
-                valuesCopy[i] = values[i] == null ? null : Convert.ChangeType(values[i], UnderlyingTypes[i].FrameworkType);
+                if (values[i] is IConvertible convertible)
+                    valuesCopy[i] = Convert.ChangeType(values[i], UnderlyingTypes[i].FrameworkType);
+                else
+                    valuesCopy[i] = values[i];
             }
 
             return (ITuple)Activator.CreateInstance(frameworkType, valuesCopy);
@@ -56,22 +60,11 @@ namespace ClickHouse.Client.Types
 
         public override Type FrameworkType => frameworkType;
 
-        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
         {
-            if (!typeName.StartsWith(Name))
-            {
-                throw new ArgumentException(nameof(typeName));
-            }
-
-            var underlyingTypeNames = typeName
-                .Substring(Name.Length)
-                .TrimRoundBrackets()
-                .Split(',')
-                .Select(t => t.Trim());
-
             return new TupleType
             {
-                UnderlyingTypes = underlyingTypeNames.Select(typeResolverFunc).ToArray(),
+                UnderlyingTypes = node.ChildNodes.Select(typeResolverFunc).ToArray(),
             };
         }
 

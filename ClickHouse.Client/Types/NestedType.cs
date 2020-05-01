@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
@@ -8,18 +9,11 @@ namespace ClickHouse.Client.Types
     {
         public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Nested;
 
-        public override ParameterizedType Parse(string typeName, Func<string, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
         {
-            if (!typeName.StartsWith(Name))
-            {
-                throw new ArgumentException(nameof(typeName));
-            }
-
-            var underlyingTypeNames = typeName.Substring(Name.Length).TrimRoundBrackets().Split(',');
-
             return new NestedType
             {
-                UnderlyingTypes = underlyingTypeNames.Select(typeResolverFunc).ToArray(),
+                UnderlyingTypes = node.ChildNodes.Select(typeResolverFunc).ToArray(),
             };
         }
 
