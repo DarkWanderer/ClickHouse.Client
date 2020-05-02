@@ -83,6 +83,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
+        [Ignore("Dropped support for this use case for now")]
         public async Task ShouldExecuteInsertWithColumnsExpression()
         {
             var targetTable = $"temp.multiple_columns";
