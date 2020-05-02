@@ -88,12 +88,12 @@ namespace ClickHouse.Client.Copy
             }
 
             ClickHouseType[] columnTypes = null;
-            string[] columnNames = null;
+            string[] columnNames = columns?.ToArray();
 
             using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} LIMIT 0"))
             {
                 columnTypes = reader.GetClickHouseColumnTypes();
-                columnNames = reader.GetColumnNames();
+                columnNames ??= reader.GetColumnNames();
             }
 
             var tasks = new Task[MaxDegreeOfParallelism];
