@@ -8,6 +8,8 @@ namespace ClickHouse.Client.Types
 
         public abstract Type FrameworkType { get; }
 
+        public abstract string ToStringParameter(object value);
+
         public abstract override string ToString();
     }
 }

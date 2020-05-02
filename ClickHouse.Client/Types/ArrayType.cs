@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
@@ -23,6 +26,10 @@ namespace ClickHouse.Client.Types
         }
 
         public Array MakeArray(int length) => Array.CreateInstance(UnderlyingType.FrameworkType, length);
+
+        public override string ToStringParameter(object value) => !(value is IEnumerable<object> enumerable)
+            ? throw new NotSupportedException($"Parameter value {value} is not a tuple")
+            : $"({string.Join(',', enumerable.Select(UnderlyingType.ToStringParameter))})";
 
         public override string ToString() => $"Array({UnderlyingType.ToString()})";
     }

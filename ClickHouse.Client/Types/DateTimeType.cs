@@ -52,6 +52,10 @@ namespace ClickHouse.Client.Types
             throw new ArgumentOutOfRangeException("Unknown DateTime kind: " + dateTime.Kind.ToString());
         }
 
+        public override string ToStringParameter(object value) => TimeZone == null ? 
+            $"'{(DateTime)value:yyyy-MM-dd HH:mm:ss}'" : 
+            $"toDateTime('{(DateTime)value:yyyy-MM-dd HH:mm:ss}', '{TimeZone}')"; 
+
         public override string ToString() => TimeZone == null ? $"{Name}" : $"{Name}({TimeZone.Id})";
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)

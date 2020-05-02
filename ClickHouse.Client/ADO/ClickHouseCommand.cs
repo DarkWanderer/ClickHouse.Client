@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO.Parameters;
 using ClickHouse.Client.ADO.Readers;
+using ClickHouse.Client.Types;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO
 {
@@ -119,8 +123,18 @@ namespace ClickHouse.Client.ADO
                     break;
             }
 
+            HttpResponseMessage result;
             var parameters = Parameters.Cast<DbParameter>().ToDictionary(p => p.ParameterName, p => p.Value);
-            var result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token, parameters).ConfigureAwait(false);
+            if (await dbConnection.HttpParametersSupported())
+            {
+                result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token, parameters).ConfigureAwait(false);
+            }
+            else
+            {
+                var query = SubstituteParameters(sqlBuilder.ToString(), parameters);
+                result = await dbConnection.PostSqlQueryAsync(query, cts.Token).ConfigureAwait(false);
+            }
+
             return driver switch
             {
                 ClickHouseConnectionDriver.Binary => new ClickHouseBinaryReader(result),
@@ -128,6 +142,41 @@ namespace ClickHouse.Client.ADO
                 ClickHouseConnectionDriver.TSV => new ClickHouseTsvReader(result),
                 _ => throw new NotSupportedException("Unknown driver: " + driver.ToString()),
             };
+        }
+
+        private static string SubstituteParameters(string query, IDictionary<string, object> parameters)
+        {
+            var builder = new StringBuilder(query.Length);
+            
+            var paramStartPos = query.IndexOf('{');
+            var paramEndPos = -1;
+            
+            while (paramStartPos != -1)
+            {
+                builder.Append(query.Substring(paramEndPos + 1, paramStartPos - paramEndPos - 1));
+                    
+                paramStartPos += 1;
+                paramEndPos = query.IndexOf('}', paramStartPos);
+                var param = query.Substring(paramStartPos, paramEndPos - paramStartPos);
+                var delimiterPos = param.LastIndexOf(':');
+                if (delimiterPos == -1)
+                    throw new NotSupportedException($"param {param} doesn`t have data type");
+                var name = param.Substring(0, delimiterPos);
+                var type = TypeConverter.ParseClickHouseType(param.Substring(delimiterPos + 1));
+
+                if (!parameters.TryGetValue(name, out var value))
+                    throw new ArgumentException($"Missing parameter {param}");
+
+                var strValue = type.ToStringParameter(value);
+
+                builder.Append(strValue);
+                
+                paramStartPos = query.IndexOf('{', paramEndPos);
+            }
+            
+            builder.Append(query.Substring(paramEndPos + 1, query.Length - paramEndPos - 1));
+
+            return builder.ToString();
         }
     }
 }

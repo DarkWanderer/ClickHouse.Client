@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
@@ -67,6 +70,10 @@ namespace ClickHouse.Client.Types
                 UnderlyingTypes = node.ChildNodes.Select(typeResolverFunc).ToArray(),
             };
         }
+
+        public override string ToStringParameter(object value) => !(value is ITuple tuple)
+                ? throw new NotSupportedException($"Parameter value {value} is not a tuple")
+                : $"({string.Join(',', underlyingTypes.Select((x, i) => x.ToStringParameter(tuple[i])))})";
 
         public override string ToString() => $"{Name}({string.Join(",", UnderlyingTypes.Select(t => t.ToString()))})";
     }

@@ -49,6 +49,8 @@ namespace ClickHouse.Client.Types
             }
         }
 
+        public override string ToStringParameter(object value) => $"{(decimal)value}";
+
         public override string ToString() => $"{Name}({Precision}, {Scale})";
     }
 }

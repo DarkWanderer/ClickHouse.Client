@@ -21,6 +21,8 @@ namespace ClickHouse.Client.Types
                 UnderlyingType = typeResolverFunc(node.SingleChild),
             };
         }
+        
+        public override string ToStringParameter(object value) => $"'{((string)value).Escape()}'";
 
         public override string ToString() => $"{Name}({UnderlyingType.ToString()})";
     }

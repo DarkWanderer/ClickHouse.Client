@@ -1,4 +1,6 @@
-﻿namespace ClickHouse.Client.Types
+﻿using System;
+
+namespace ClickHouse.Client.Types
 {
     internal class DateType : DateTimeType
     {
@@ -7,5 +9,7 @@
         public override string Name => "Date";
 
         public override string ToString() => $"Date({TimeZone.Id})";
+        
+        public override string ToStringParameter(object value) => $"'{(DateTime)value:yyyy-MM-dd HH:mm:ss}'";
     }
 }

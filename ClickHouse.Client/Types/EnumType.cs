@@ -33,6 +33,8 @@ namespace ClickHouse.Client.Types
 
         public string Lookup(int value) => values.SingleOrDefault(kvp => kvp.Value == value).Key ?? throw new KeyNotFoundException();
 
+        public override string ToStringParameter(object value) => $"'{value.ToString().Escape()}'";
+
         public override string ToString() => $"{Name}({string.Join(",", values.Select(kvp => kvp.Key + "=" + kvp.Value))}";
     }
 }
