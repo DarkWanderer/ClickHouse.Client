@@ -52,7 +52,11 @@ namespace ClickHouse.Client.Types
             throw new ArgumentOutOfRangeException("Unknown DateTime kind: " + dateTime.Kind.ToString());
         }
 
-        public override string ToStringParameter(object value) => TimeZone == null ? 
+        public override string ToHttpParameter(object value) => TimeZone == null ? 
+            $"{(DateTime)value:yyyy-MM-dd HH:mm:ss}" : 
+            $"toDateTime('{(DateTime)value:yyyy-MM-dd HH:mm:ss}', '{TimeZone}')"; 
+
+        public override string ToInlineParameter(object value) => TimeZone == null ? 
             $"'{(DateTime)value:yyyy-MM-dd HH:mm:ss}'" : 
             $"toDateTime('{(DateTime)value:yyyy-MM-dd HH:mm:ss}', '{TimeZone}')"; 
 

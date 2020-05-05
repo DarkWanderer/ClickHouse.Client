@@ -22,7 +22,9 @@ namespace ClickHouse.Client.Types
             };
         }
 
-        public override string ToStringParameter(object value) => $"'{((string)value).Escape()}'";
+        public override string ToHttpParameter(object value) => (string)value;
+
+        public override string ToInlineParameter(object value) => ((string)value).Escape();
 
         public override string ToString() => $"FixedString{Length}";
     }

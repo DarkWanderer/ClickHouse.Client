@@ -18,6 +18,7 @@ namespace ClickHouse.Client.ADO
     {
         private readonly ClickHouseConnection dbConnection;
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
+        private readonly ClickHouseParameterCollection clickHouseParameterCollection = new ClickHouseParameterCollection();
 
         public ClickHouseCommand(ClickHouseConnection connection)
         {
@@ -40,7 +41,8 @@ namespace ClickHouse.Client.ADO
             set => throw new NotSupportedException();
         }
 
-        protected override DbParameterCollection DbParameterCollection { get; } = new ClickHouseParameterCollection();
+
+        protected override DbParameterCollection DbParameterCollection => clickHouseParameterCollection;
 
         protected override DbTransaction DbTransaction { get; set; }
 
@@ -58,8 +60,7 @@ namespace ClickHouse.Client.ADO
 
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
-            var parameters = Parameters.Cast<DbParameter>().ToDictionary(p => p.ParameterName, p => p.Value);
-            var response = await dbConnection.PostSqlQueryAsync(CommandText, cts.Token, parameters).ConfigureAwait(false);
+            var response = await dbConnection.PostSqlQueryAsync(CommandText, cts.Token, clickHouseParameterCollection).ConfigureAwait(false);
             var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return int.TryParse(result, out var r) ? r : 0;
         }
@@ -77,7 +78,7 @@ namespace ClickHouse.Client.ADO
         protected override DbParameter CreateDbParameter()
         {
             var parameter = new ClickHouseDbParameter();
-            DbParameterCollection.Add(parameter);
+            clickHouseParameterCollection.Add(parameter);
             return parameter;
         }
 
@@ -123,17 +124,7 @@ namespace ClickHouse.Client.ADO
                     break;
             }
 
-            HttpResponseMessage result;
-            var parameters = Parameters.Cast<DbParameter>().ToDictionary(p => p.ParameterName, p => p.Value);
-            if (await dbConnection.HttpParametersSupported())
-            {
-                result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token, parameters).ConfigureAwait(false);
-            }
-            else
-            {
-                var query = SubstituteParameters(sqlBuilder.ToString(), parameters);
-                result = await dbConnection.PostSqlQueryAsync(query, cts.Token).ConfigureAwait(false);
-            }
+            var result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token, clickHouseParameterCollection).ConfigureAwait(false);
 
             return driver switch
             {
@@ -142,41 +133,6 @@ namespace ClickHouse.Client.ADO
                 ClickHouseConnectionDriver.TSV => new ClickHouseTsvReader(result),
                 _ => throw new NotSupportedException("Unknown driver: " + driver.ToString()),
             };
-        }
-
-        private static string SubstituteParameters(string query, IDictionary<string, object> parameters)
-        {
-            var builder = new StringBuilder(query.Length);
-            
-            var paramStartPos = query.IndexOf('{');
-            var paramEndPos = -1;
-            
-            while (paramStartPos != -1)
-            {
-                builder.Append(query.Substring(paramEndPos + 1, paramStartPos - paramEndPos - 1));
-                    
-                paramStartPos += 1;
-                paramEndPos = query.IndexOf('}', paramStartPos);
-                var param = query.Substring(paramStartPos, paramEndPos - paramStartPos);
-                var delimiterPos = param.LastIndexOf(':');
-                if (delimiterPos == -1)
-                    throw new NotSupportedException($"param {param} doesn`t have data type");
-                var name = param.Substring(0, delimiterPos);
-                var type = TypeConverter.ParseClickHouseType(param.Substring(delimiterPos + 1));
-
-                if (!parameters.TryGetValue(name, out var value))
-                    throw new ArgumentException($"Missing parameter {param}");
-
-                var strValue = type.ToStringParameter(value);
-
-                builder.Append(strValue);
-                
-                paramStartPos = query.IndexOf('{', paramEndPos);
-            }
-            
-            builder.Append(query.Substring(paramEndPos + 1, query.Length - paramEndPos - 1));
-
-            return builder.ToString();
         }
     }
 }

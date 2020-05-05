@@ -28,6 +28,8 @@ namespace ClickHouse.Client.Utility
             {
                 if (currentVersion.Length <= i || currentVersion[i] < targetVersion[i])
                     return false;
+                if (currentVersion[i] > targetVersion[i])
+                    return true;
             }
 
             return true;

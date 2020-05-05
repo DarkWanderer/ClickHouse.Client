@@ -1,11 +1,14 @@
 ﻿using System.Data;
 using System.Data.Common;
+using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.ADO.Parameters
 {
-    internal class ClickHouseDbParameter : DbParameter
+    public class ClickHouseDbParameter : DbParameter
     {
         public override DbType DbType { get; set; }
+        
+        public string ClickHouseType { get; set; }
 
         public override ParameterDirection Direction { get; set; }
 

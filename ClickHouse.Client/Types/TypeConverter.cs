@@ -146,5 +146,21 @@ namespace ClickHouse.Client.Types
 
             throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type.ToString());
         }
+
+        public static string ToHttpParameterValue(object value, string clickHouseType = null)
+        {
+            if (value is null)
+                return string.Empty;
+            var type = string.IsNullOrWhiteSpace(clickHouseType) ? ToClickHouseType(value.GetType()) : ParseClickHouseType(clickHouseType);
+            return type.ToHttpParameter(value);
+        }
+        
+        public static string ToInlineParameterValue(object value, string clickHouseType = null)
+        {
+            if (value is null)
+                return string.Empty;
+            var type = string.IsNullOrWhiteSpace(clickHouseType) ? ToClickHouseType(value.GetType()) : ParseClickHouseType(clickHouseType);
+            return type.ToInlineParameter(value);
+        }
     }
 }

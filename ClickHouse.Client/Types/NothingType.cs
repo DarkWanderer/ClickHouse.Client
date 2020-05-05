@@ -8,7 +8,9 @@ namespace ClickHouse.Client.Types
 
         public override Type FrameworkType => typeof(DBNull);
         
-        public override string ToStringParameter(object value) => $"null";
+        public override string ToHttpParameter(object value) => $"null";
+        
+        public override string ToInlineParameter(object value) => $"null";
 
         public override string ToString() => "Nothing";
     }

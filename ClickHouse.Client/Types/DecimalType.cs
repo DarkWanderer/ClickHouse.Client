@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
@@ -49,7 +50,9 @@ namespace ClickHouse.Client.Types
             }
         }
 
-        public override string ToStringParameter(object value) => $"{(decimal)value}";
+        public override string ToHttpParameter(object value) => ((decimal)value).ToString(CultureInfo.InvariantCulture);
+        
+        public override string ToInlineParameter(object value) => ((decimal)value).ToString(CultureInfo.InvariantCulture);
 
         public override string ToString() => $"{Name}({Precision}, {Scale})";
     }

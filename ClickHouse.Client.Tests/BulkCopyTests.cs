@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -21,7 +21,7 @@ namespace ClickHouse.Client.Tests
         {
             foreach (var sample in TestUtilities.GetDataTypeSamples())
             {
-                if (sample.ClickHouseType == "Nothing" || sample.ClickHouseType == "Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))")
+                if (new []{ "Enum8", "Nothing", "Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))" }.Contains(sample.ClickHouseType))
                     continue;
                 yield return new TestCaseData(sample.ClickHouseType, sample.ExampleValue);
             }

@@ -29,8 +29,12 @@ namespace ClickHouse.Client.Types
             };
         }
 
-        public override string ToStringParameter(object value) => value != null ?
-            $"{UnderlyingType.ToStringParameter(value)}" :
+        public override string ToHttpParameter(object value) => value != DBNull.Value ?
+            $"{UnderlyingType.ToHttpParameter(value)}" :
+            "null";
+        
+        public override string ToInlineParameter(object value) => value != DBNull.Value ?
+            $"{UnderlyingType.ToInlineParameter(value)}" :
             "null";
 
         public override string ToString() => $"{Name}({UnderlyingType.ToString()})";

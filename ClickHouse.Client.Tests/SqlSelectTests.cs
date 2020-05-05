@@ -204,21 +204,27 @@ namespace ClickHouse.Client.Tests
             var schema = reader.GetSchemaTable();
             Assert.AreEqual(2, schema.Rows.Count);
         }
+        
+        public static IEnumerable<TestCaseData> ParametersQueries => TestUtilities.GetDataTypeSamples()
+            //.Where(sample => sample.ClickHouseType != "Enum") //old clh doesn`t know about regular Enum. Enum8 working fine
+            .Where(sample => sample.ExampleValue != DBNull.Value) //null value should be handled by writing "is null" statement
+            .Select(sample => new TestCaseData(
+                $"SELECT * FROM (SELECT {sample.ExampleExpression} AS res) WHERE {sample.WhereClause}",
+                sample.ExampleValue));
 
         [Test]
-        public async Task ShouldExecuteSelectWithParameters()
+        [TestCaseSource(typeof(SqlSelectTests), nameof(ParametersQueries))]
+        public async Task ShouldExecuteSelectWithParameters(string sql, object value)
         {
             using var command = connection.CreateCommand();
-            command.CommandText = "SELECT {id:Int32}, {str:String}";
+            command.CommandText = sql;
             
-            var p1 = command.AddParameter("id", 906324);
-            var p2 = command.AddParameter("str", "%@^&*#!$[ AAAA}{///sd/zcち");
+            var p1 = command.AddParameter("var", value);
 
             var result = await command.ExecuteReaderAsync();
             var row = result.GetEnsureSingleRow();
-            Assert.AreEqual(2, command.Parameters.Count);
-            Assert.AreEqual(p1.Value, row[0]);
-            Assert.AreEqual(p2.Value, row[1]);
+            Assert.AreEqual(1, command.Parameters.Count);
+            Assert.AreEqual(value, row[0]);
         }
     }
 }

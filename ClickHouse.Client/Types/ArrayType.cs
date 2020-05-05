@@ -27,9 +27,21 @@ namespace ClickHouse.Client.Types
 
         public Array MakeArray(int length) => Array.CreateInstance(UnderlyingType.FrameworkType, length);
 
-        public override string ToStringParameter(object value) => !(value is IEnumerable<object> enumerable)
-            ? throw new NotSupportedException($"Parameter value {value} is not a tuple")
-            : $"({string.Join(',', enumerable.Select(UnderlyingType.ToStringParameter))})";
+        public override string ToHttpParameter(object value)
+        {
+            if (!(value is IEnumerable enumerable))
+                throw new NotSupportedException($"Parameter value {value} is not an IEnumerable");
+
+            return $"[{string.Join(',', enumerable.Cast<object>().Select(x => Uri.EscapeDataString(UnderlyingType.ToInlineParameter(x))))}]";
+        }
+        
+        public override string ToInlineParameter(object value)
+        {
+            if (!(value is IEnumerable enumerable))
+                throw new NotSupportedException($"Parameter value {value} is not an IEnumerable");
+
+            return $"[{string.Join(',', enumerable.Cast<object>().Select(UnderlyingType.ToInlineParameter))}]";
+        }
 
         public override string ToString() => $"Array({UnderlyingType.ToString()})";
     }

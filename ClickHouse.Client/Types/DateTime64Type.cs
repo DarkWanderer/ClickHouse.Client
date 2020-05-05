@@ -13,6 +13,10 @@ namespace ClickHouse.Client.Types
 
         public int Scale { get; set; }
 
+        public override string ToHttpParameter(object value) => TimeZone == null ? 
+            $"toDateTime64('{(DateTime)value:yyyy-MM-dd HH:mm:ss.fff}', {Scale})" : 
+            $"toDateTime64('{(DateTime)value:yyyy-MM-dd HH:mm:ss.fff}', {Scale}, '{TimeZone}')"; 
+        
         public override string ToString() => TimeZone == null ? $"DateTime64({Scale})" : $"DateTime64({Scale}, {TimeZone.Id})";
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
