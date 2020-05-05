@@ -14,7 +14,7 @@ namespace ClickHouse.Client.Types
         public int Scale { get; set; }
 
         public override string ToHttpParameter(object value) => TimeZone == null ? 
-            $"{((DateTime)value).ToUniversalTime():yyyy-MM-dd HH:mm:ss.fff})" : 
+            $"{(DateTime)value:yyyy-MM-dd HH:mm:ss.fff}" : 
             $"{((DateTime)value).ToUniversalTime():yyyy-MM-dd HH:mm:ss.fff}"; 
         
         public override string ToInlineParameter(object value) => TimeZone == null ? 
