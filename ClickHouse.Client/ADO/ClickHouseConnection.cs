@@ -202,8 +202,7 @@ namespace ClickHouse.Client.ADO
                 if (delimiterPos == -1)
                     throw new NotSupportedException($"param {param} doesn`t have data type");
                 var name = param.Substring(0, delimiterPos);
-                var type = TypeConverter.ParseClickHouseType(param.Substring(delimiterPos + 1));
-
+                
                 if (!parameters.TryGetValue(name, out var parameter))
                     throw new ArgumentOutOfRangeException($"Parameter {name} not found in parameters list");
                 

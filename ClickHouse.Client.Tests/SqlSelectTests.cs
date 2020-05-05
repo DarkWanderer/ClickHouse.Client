@@ -222,7 +222,7 @@ namespace ClickHouse.Client.Tests
             using var command = connection.CreateCommand();
             command.CommandText = sql;
             
-            var p1 = command.AddParameter("var", value);
+            command.AddParameter("var", value);
 
             var result = await command.ExecuteReaderAsync();
             var row = result.GetEnsureSingleRow();
@@ -245,7 +245,7 @@ namespace ClickHouse.Client.Tests
             using var command = connection.CreateCommand();
             command.CommandText = sql;
             
-            var p1 = command.AddParameter("var", type, value);
+            command.AddParameter("var", type, value);
 
             var result = await command.ExecuteReaderAsync();
             var row = result.GetEnsureSingleRow();
