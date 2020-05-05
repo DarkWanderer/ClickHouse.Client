@@ -10,6 +10,8 @@ namespace ClickHouse.Client.Types
 
         public abstract string ToHttpParameter(object value);
 
+        public virtual string ToHttpUnderlyingParameter(object value) => ToHttpParameter(value);
+
         public abstract string ToInlineParameter(object value);
 
         public abstract override string ToString();

@@ -29,13 +29,13 @@ namespace ClickHouse.Client.Types
             };
         }
 
-        public override string ToHttpParameter(object value) => value != DBNull.Value ?
-            $"{UnderlyingType.ToHttpParameter(value)}" :
-            "null";
+        public override string ToHttpParameter(object value) => value is null || value == DBNull.Value ?
+            "null" :
+            $"{UnderlyingType.ToHttpParameter(value)}";
         
-        public override string ToInlineParameter(object value) => value != DBNull.Value ?
-            $"{UnderlyingType.ToInlineParameter(value)}" :
-            "null";
+        public override string ToInlineParameter(object value) => value is null || value == DBNull.Value ?
+            "null" :
+            $"{UnderlyingType.ToHttpParameter(value)}";
 
         public override string ToString() => $"{Name}({UnderlyingType.ToString()})";
     }

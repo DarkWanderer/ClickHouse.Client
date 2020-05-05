@@ -90,12 +90,12 @@ namespace ClickHouse.Client.Tests
 
             yield return new DataTypeSample("LowCardinality(String)", typeof(string), "toLowCardinality('lowcardinality')", "lowcardinality", "res = {var:LowCardinality(String)}");
 
-            yield return new DataTypeSample("Tuple(Int32, String, Nullable(Int32))", typeof(Tuple<int, string, int?>), "tuple(1, 'a', NULL)", Tuple.Create<int, string, int?>(1, "a", null), "res.1 = {var:Tuple(Int32, String, Nullable(Int32))}.1 AND res.2 = {var:Tuple(Int32, String, Nullable(Int32))}.2 AND res.3 = {var:Tuple(Int32, String, Nullable(Int32))}.3");
-            yield return new DataTypeSample("Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))", typeof(Tuple<int, Tuple<byte, string, int?>>), "tuple(123, tuple(5, 'a', 7))", Tuple.Create(123, Tuple.Create((byte)5, "a", 7)), "res.1 = {var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))}.1 AND res.2.1 = {var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))}.2.1 AND res.2.2 = {var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))}.2.2 AND res.2.3 = {var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))}.2.3");
+            yield return new DataTypeSample("Tuple(Int32, String, Nullable(Int32))", typeof(Tuple<int, string, int?>), "tuple(1, 'a', NULL)", Tuple.Create<int, string, int?>(1, "a", null), "res.1 = tupleElement({var:Tuple(Int32, String, Nullable(Int32))},1) AND res.2 = tupleElement({var:Tuple(Int32, String, Nullable(Int32))},2) AND res.3 is NULL AND tupleElement({var:Tuple(Int32, String, Nullable(Int32))},3) is NULL");
+            yield return new DataTypeSample("Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))", typeof(Tuple<int, Tuple<byte, string, int?>>), "tuple(123, tuple(5, 'a', 7))", Tuple.Create(123, Tuple.Create((byte)5, "a", 7)), "res.1 = tupleElement({var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))},1) AND res.2.1 = tupleElement(tupleElement({var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))},2),1) AND res.2.2 = tupleElement(tupleElement({var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))},2),2) AND res.2.3 = tupleElement(tupleElement({var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))},2),3)");
 
-            yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Utc), "res = {var:DateTime}"); //DateTime cause there is no separate Date type in .Net and we cant determine when Date passed and when DateTime with 00:00:00
+            yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Utc), "res = {var:Date}");
             yield return new DataTypeSample("DateTime", typeof(DateTime), "toDateTime('1988-08-28 11:22:33')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Utc), "res = {var:DateTime}");
-            yield return new DataTypeSample("DateTime64", typeof(DateTime), "toDateTime64('2020-02-20 11:22:33.444', 9)", new DateTime(2020, 02, 20, 11, 22, 33, 444, DateTimeKind.Utc), "res = {var:DateTime64(9)}");
+            yield return new DataTypeSample("DateTime64(9)", typeof(DateTime), "toDateTime64('2020-02-20 11:22:33.444', 9)", new DateTime(2020, 02, 20, 11, 22, 33, 444, DateTimeKind.Utc), "res = {var:DateTime64(9)}");
         }
 
         public static object[] GetEnsureSingleRow(this DbDataReader reader)

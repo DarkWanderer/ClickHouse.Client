@@ -54,11 +54,11 @@ namespace ClickHouse.Client.Types
 
         public override string ToHttpParameter(object value) => TimeZone == null ? 
             $"{(DateTime)value:yyyy-MM-dd HH:mm:ss}" : 
-            $"toDateTime('{(DateTime)value:yyyy-MM-dd HH:mm:ss}', '{TimeZone}')"; 
+            $"{((DateTime)value).ToUniversalTime():yyyy-MM-dd HH:mm:ss}"; 
 
         public override string ToInlineParameter(object value) => TimeZone == null ? 
-            $"'{(DateTime)value:yyyy-MM-dd HH:mm:ss}'" : 
-            $"toDateTime('{(DateTime)value:yyyy-MM-dd HH:mm:ss}', '{TimeZone}')"; 
+            $"'{(DateTime)value:yyyy-MM-dd HH:mm:ss}'" :
+            $"'{((DateTime)value).ToUniversalTime():yyyy-MM-dd HH:mm:ss}'"; 
 
         public override string ToString() => TimeZone == null ? $"{Name}" : $"{Name}({TimeZone.Id})";
 

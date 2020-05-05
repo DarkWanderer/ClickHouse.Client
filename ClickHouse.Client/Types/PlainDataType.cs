@@ -31,15 +31,17 @@ namespace ClickHouse.Client.Types
 
             return dataType switch
             {
-                ClickHouseTypeCode.UInt8 when value is byte byteValue => byteValue.ToString(),
-                ClickHouseTypeCode.UInt16 when value is ushort ushortValue => ushortValue.ToString(),
-                ClickHouseTypeCode.UInt32 when value is uint uintValue => uintValue.ToString(),
-                ClickHouseTypeCode.UInt64 when value is ulong ulongValue => ulongValue.ToString(),
-                ClickHouseTypeCode.Int8 when value is sbyte sbyteValue => sbyteValue.ToString(),
-                ClickHouseTypeCode.Int16 when value is short shortValue => shortValue.ToString(),
-                ClickHouseTypeCode.Int32 when value is int intValue => intValue.ToString(),
-                ClickHouseTypeCode.Int64 when value is long longValue => longValue.ToString(),
+                ClickHouseTypeCode.UInt8 => value.ToString(),
+                ClickHouseTypeCode.UInt16 => value.ToString(),
+                ClickHouseTypeCode.UInt32 => value.ToString(),
+                ClickHouseTypeCode.UInt64 => value.ToString(),
+                ClickHouseTypeCode.Int8 => value.ToString(),
+                ClickHouseTypeCode.Int16 => value.ToString(),
+                ClickHouseTypeCode.Int32 => value.ToString(),
+                ClickHouseTypeCode.Int64 => value.ToString(),
                 ClickHouseTypeCode.Float32 when value is float floatValue => floatValue.ToString(CultureInfo.InvariantCulture),
+                ClickHouseTypeCode.Float32 when value is double doubleValue => doubleValue.ToString(CultureInfo.InvariantCulture),
+                ClickHouseTypeCode.Float64 when value is float floatValue => floatValue.ToString(CultureInfo.InvariantCulture),
                 ClickHouseTypeCode.Float64 when value is double doubleValue => doubleValue.ToString(CultureInfo.InvariantCulture),
                 ClickHouseTypeCode.String when value is string stringValue => Uri.EscapeDataString(stringValue),
                 ClickHouseTypeCode.UUID when value is Guid guidValue => guidValue.ToString(),
@@ -49,6 +51,8 @@ namespace ClickHouse.Client.Types
                 _ => throw new NotSupportedException($"Cannot convert value {value} to type {dataType}")
             };
         }
+
+        public override string ToHttpUnderlyingParameter(object value) => ToInlineParameter(value);
         
         public override string ToInlineParameter(object value)
         {

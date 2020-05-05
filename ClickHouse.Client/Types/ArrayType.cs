@@ -32,7 +32,7 @@ namespace ClickHouse.Client.Types
             if (!(value is IEnumerable enumerable))
                 throw new NotSupportedException($"Parameter value {value} is not an IEnumerable");
 
-            return $"[{string.Join(',', enumerable.Cast<object>().Select(x => Uri.EscapeDataString(UnderlyingType.ToInlineParameter(x))))}]";
+            return $"[{string.Join(',', enumerable.Cast<object>().Select(x => Uri.EscapeDataString(UnderlyingType.ToHttpUnderlyingParameter(x))))}]";
         }
         
         public override string ToInlineParameter(object value)
