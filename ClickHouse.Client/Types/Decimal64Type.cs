@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
@@ -22,6 +23,8 @@ namespace ClickHouse.Client.Types
                 Scale = int.Parse(node.SingleChild.Value),
             };
         }
+        
+        public override string ToInlineParameter(object value) => $"toDecimal64({((decimal)value).ToString(CultureInfo.InvariantCulture)},{Scale})";
 
         public override string ToString() => $"{Name}({Scale})";
     }

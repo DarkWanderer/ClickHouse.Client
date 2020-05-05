@@ -125,8 +125,6 @@ namespace ClickHouse.Client.ADO
 
             postMessage.Content = content;
 
-            Console.WriteLine(sqlQuery);
-            Console.WriteLine(postMessage.RequestUri);
             var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }

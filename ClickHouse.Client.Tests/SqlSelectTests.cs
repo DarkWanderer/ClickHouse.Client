@@ -205,8 +205,33 @@ namespace ClickHouse.Client.Tests
             Assert.AreEqual(2, schema.Rows.Count);
         }
         
+        public static IEnumerable<TestCaseData> ParametersQueries => TestUtilities.GetDataTypeSamples()
+            //.Where(sample => !new [] {"Enum", "DateTime64(9)"}.Contains(sample.ClickHouseType)) //old clh doesn`t know about regular Enum and DateTime64
+            .Where(sample => sample.ExampleValue != DBNull.Value) //null value should be handled by writing "is null" statement
+            .Where(sample => sample.ClickHouseType != "Date") //DateTime with 00:00:00 can`t be Date type, cause it`ll broke DateTime logic. Specify type to fix that
+            .Where(sample => sample.ClickHouseType != "DateTime64(9)") //Default DateTime CLH analog is DateTime. If you want to use DateTime64 specify type as parameter
+            .Where(sample => sample.ClickHouseType != "UUID") // https://github.com/ClickHouse/ClickHouse/issues/7463
+            .Select(sample => new TestCaseData(
+                $"SELECT * FROM (SELECT {sample.ExampleExpression} AS res) WHERE {sample.WhereClause}",
+                sample.ExampleValue));
+
+        [Test]
+        [TestCaseSource(typeof(SqlSelectTests), nameof(ParametersQueries))]
+        public async Task ShouldExecuteSelectWithParameters(string sql, object value)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            
+            var p1 = command.AddParameter("var", value);
+
+            var result = await command.ExecuteReaderAsync();
+            var row = result.GetEnsureSingleRow();
+            Assert.AreEqual(1, command.Parameters.Count);
+            Assert.AreEqual(value, row[0]);
+        }
+        
         public static IEnumerable<TestCaseData> TypedParametersQueries => TestUtilities.GetDataTypeSamples()
-            //.Where(sample => sample.ClickHouseType != "Enum") //old clh doesn`t know about regular Enum. Enum8 working fine
+            //.Where(sample => !new [] {"Enum", "DateTime64(9)"}.Contains(sample.ClickHouseType)) //old clh doesn`t know about regular Enum and DateTime64
             .Where(sample => sample.ExampleValue != DBNull.Value) //null value should be handled by writing "is null" statement
             .Where(sample => sample.ClickHouseType != "UUID") // https://github.com/ClickHouse/ClickHouse/issues/7463
             .Select(sample => new TestCaseData(
