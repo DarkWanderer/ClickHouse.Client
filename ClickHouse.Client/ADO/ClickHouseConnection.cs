@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -250,6 +250,10 @@ namespace ClickHouse.Client.ADO
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
 
+        public ClickHouseCommand CreateCommand()
+        {
+            return (ClickHouseCommand) CreateDbCommand();
+        }
         protected override DbCommand CreateDbCommand() => new ClickHouseCommand(this);
 
         private void AddDefaultHttpHeaders(HttpRequestHeaders headers)

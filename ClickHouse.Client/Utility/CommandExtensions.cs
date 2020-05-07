@@ -1,14 +1,11 @@
-﻿using System.Data;
-using System.Data.Common;
-using System.Threading.Tasks;
-using ClickHouse.Client.ADO.Adapters;
+﻿using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Parameters;
 
 namespace ClickHouse.Client.Utility
 {
     public static class CommandExtensions
     {
-        public static ClickHouseDbParameter AddParameter(this DbCommand command, string parameterName, object parameterValue)
+        public static ClickHouseDbParameter AddParameter(this ClickHouseCommand command, string parameterName, object parameterValue)
         {
             var parameter = (ClickHouseDbParameter)command.CreateParameter();
             parameter.ParameterName = parameterName;
@@ -16,7 +13,7 @@ namespace ClickHouse.Client.Utility
             return parameter;
         }
         
-        public static ClickHouseDbParameter AddParameter(this DbCommand command, string parameterName, string clickHouseType, object parameterValue)
+        public static ClickHouseDbParameter AddParameter(this ClickHouseCommand command, string parameterName, string clickHouseType, object parameterValue)
         {
             var parameter = (ClickHouseDbParameter)command.CreateParameter();
             parameter.ParameterName = parameterName;

@@ -14,7 +14,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO
 {
-    internal class ClickHouseCommand : DbCommand, IDisposable
+    public class ClickHouseCommand : DbCommand, IDisposable
     {
         private readonly ClickHouseConnection dbConnection;
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
@@ -75,6 +75,11 @@ namespace ClickHouse.Client.ADO
 
         public override void Prepare() { /* ClickHouse has no notion of prepared statements */ }
 
+        public new ClickHouseDbParameter CreateParameter()
+        {
+            return (ClickHouseDbParameter)this.CreateDbParameter();
+        }
+        
         protected override DbParameter CreateDbParameter()
         {
             var parameter = new ClickHouseDbParameter();

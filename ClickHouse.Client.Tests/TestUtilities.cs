@@ -36,66 +36,64 @@ namespace ClickHouse.Client.Tests
             public readonly Type FrameworkType;
             public readonly string ExampleExpression;
             public readonly object ExampleValue;
-            public readonly string WhereClause;
 
-            public DataTypeSample(string clickHouseType, Type frameworkType, string exampleExpression, object exampleValue, string whereClause)
+            public DataTypeSample(string clickHouseType, Type frameworkType, string exampleExpression, object exampleValue)
             {
                 ClickHouseType = clickHouseType;
                 FrameworkType = frameworkType;
                 ExampleExpression = exampleExpression;
                 ExampleValue = exampleValue;
-                WhereClause = whereClause;
             }
         }
 
         public static IEnumerable<DataTypeSample> GetDataTypeSamples()
         {
-            yield return new DataTypeSample("Nothing", typeof(DBNull), "NULL", DBNull.Value, "res is {var:Nothing}");
+            yield return new DataTypeSample("Nothing", typeof(DBNull), "NULL", DBNull.Value);
 
-            yield return new DataTypeSample("Int8", typeof(sbyte), "toInt8(-8)", -8, "res = {var:Int8}");
-            yield return new DataTypeSample("UInt8", typeof(byte), "toUInt8(8)", 8, "res = {var:UInt8}");
+            yield return new DataTypeSample("Int8", typeof(sbyte), "toInt8(-8)", -8);
+            yield return new DataTypeSample("UInt8", typeof(byte), "toUInt8(8)", 8);
 
-            yield return new DataTypeSample("Int16", typeof(short), "toInt16(-16)", -16, "res = {var:Int16}");
-            yield return new DataTypeSample("UInt16", typeof(ushort), "toUInt16(16)", 16, "res = {var:UInt16}");
+            yield return new DataTypeSample("Int16", typeof(short), "toInt16(-16)", -16);
+            yield return new DataTypeSample("UInt16", typeof(ushort), "toUInt16(16)", 16);
 
-            yield return new DataTypeSample("Int32", typeof(int), "toInt16(-32)", -32, "res = {var:Int32}");
-            yield return new DataTypeSample("UInt32", typeof(uint), "toUInt16(32)", 32, "res = {var:UInt32}");
+            yield return new DataTypeSample("Int32", typeof(int), "toInt16(-32)", -32);
+            yield return new DataTypeSample("UInt32", typeof(uint), "toUInt16(32)", 32);
 
-            yield return new DataTypeSample("Int64", typeof(long), "toInt64(-64)", -64, "res = {var:Int64}");
-            yield return new DataTypeSample("UInt64", typeof(ulong), "toUInt64(64)", 64, "res = {var:UInt64}");
+            yield return new DataTypeSample("Int64", typeof(long), "toInt64(-64)", -64);
+            yield return new DataTypeSample("UInt64", typeof(ulong), "toUInt64(64)", 64);
 
-            yield return new DataTypeSample("Float32", typeof(float), "toFloat32(32e6)", 32e6, "res = {var:Float32}");
-            yield return new DataTypeSample("Float64", typeof(double), "toFloat64(64e6)", 64e6, "res = {var:Float64}");
+            yield return new DataTypeSample("Float32", typeof(float), "toFloat32(32e6)", 32e6);
+            yield return new DataTypeSample("Float64", typeof(double), "toFloat64(64e6)", 64e6);
 
-            yield return new DataTypeSample("FixedString(3)", typeof(string), "toFixedString('ASD',3)", "ASD", "res = {var:FixedString(3)}");
-            yield return new DataTypeSample("FixedString(5)", typeof(string), "toFixedString('ASD',5)", "ASD\0\0", "res = {var:FixedString(5)}");
+            yield return new DataTypeSample("FixedString(3)", typeof(string), "toFixedString('ASD',3)", "ASD");
+            yield return new DataTypeSample("FixedString(5)", typeof(string), "toFixedString('ASD',5)", "ASD\0\0");
 
-            yield return new DataTypeSample("UUID", typeof(Guid), "toUUID('61f0c404-5cb3-11e7-907b-a6006ad3dba0')", new Guid("61f0c404-5cb3-11e7-907b-a6006ad3dba0"), "res = {var:UUID}");
+            yield return new DataTypeSample("UUID", typeof(Guid), "toUUID('61f0c404-5cb3-11e7-907b-a6006ad3dba0')", new Guid("61f0c404-5cb3-11e7-907b-a6006ad3dba0"));
 
-            yield return new DataTypeSample("IPv4", typeof(IPAddress), "toIPv4('1.2.3.4')", IPAddress.Parse("1.2.3.4"), "res = {var:IPv4}");
-            yield return new DataTypeSample("IPv6", typeof(IPAddress), "toIPv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334')", IPAddress.Parse("2001:0db8:85a3:0000:0000:8a2e:0370:7334"), "res = {var:IPv6}");
+            yield return new DataTypeSample("IPv4", typeof(IPAddress), "toIPv4('1.2.3.4')", IPAddress.Parse("1.2.3.4"));
+            yield return new DataTypeSample("IPv6", typeof(IPAddress), "toIPv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334')", IPAddress.Parse("2001:0db8:85a3:0000:0000:8a2e:0370:7334"));
 
-            yield return new DataTypeSample("Enum", typeof(string), "CAST('a', 'Enum(\\'a\\' = 1, \\'b\\' = 2)')", "a", "res = {var:String}");
-            yield return new DataTypeSample("Enum8", typeof(string), "CAST('a', 'Enum8(\\'a\\' = 1, \\'b\\' = 2)')", "a", "res = {var:String}");
+            yield return new DataTypeSample("Enum", typeof(string), "CAST('a', 'Enum(\\'a\\' = 1, \\'b\\' = 2)')", "a");
+            yield return new DataTypeSample("Enum8", typeof(string), "CAST('a', 'Enum8(\\'a\\' = 1, \\'b\\' = 2)')", "a");
             
-            yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(123.45, 3)", new decimal(123.45), "res = {var:Decimal32(3)}");
-            yield return new DataTypeSample("Decimal64(7)", typeof(decimal), "toDecimal64(1.2345, 7)", new decimal(1.2345), "res = {var:Decimal64(7)}");
-            yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(12.34, 9)", new decimal(12.34), "res = {var:Decimal128(9)}");
+            yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(123.45, 3)", new decimal(123.45));
+            yield return new DataTypeSample("Decimal64(7)", typeof(decimal), "toDecimal64(1.2345, 7)", new decimal(1.2345));
+            yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(12.34, 9)", new decimal(12.34));
 
-            yield return new DataTypeSample("Array(Int32)", typeof(int[]), "array(1, 2, 3)", new[] { 1, 2, 3 }, "hasAll(res, {var:Array(Int32)}) AND hasAll({var:Array(Int32)}, res)");
+            yield return new DataTypeSample("Array(Int32)", typeof(int[]), "array(1, 2, 3)", new[] { 1, 2, 3 });
 
-            yield return new DataTypeSample("Nullable(Int32)", typeof(int?), "toInt32OrNull('123')", 123, "res = {var:Nullable(Int32)}");
-            yield return new DataTypeSample("Nullable(Int32)", typeof(int?), "toInt32OrNull(NULL)", DBNull.Value, "res = {var:Nullable(Int32)}");
-            yield return new DataTypeSample("Nullable(DateTime)", typeof(int?), "CAST(NULL AS Nullable(DateTime))", DBNull.Value, "res = {var:Nullable(DateTime)}");
+            yield return new DataTypeSample("Nullable(Int32)", typeof(int?), "toInt32OrNull('123')", 123);
+            yield return new DataTypeSample("Nullable(Int32)", typeof(int?), "toInt32OrNull(NULL)", DBNull.Value);
+            yield return new DataTypeSample("Nullable(DateTime)", typeof(int?), "CAST(NULL AS Nullable(DateTime))", DBNull.Value);
 
-            yield return new DataTypeSample("LowCardinality(String)", typeof(string), "toLowCardinality('lowcardinality')", "lowcardinality", "res = {var:LowCardinality(String)}");
+            yield return new DataTypeSample("LowCardinality(String)", typeof(string), "toLowCardinality('lowcardinality')", "lowcardinality");
 
-            yield return new DataTypeSample("Tuple(Int32, String, Nullable(Int32))", typeof(Tuple<int, string, int?>), "tuple(1, 'a', NULL)", Tuple.Create<int, string, int?>(1, "a", null), "res.1 = tupleElement({var:Tuple(Int32, String, Nullable(Int32))},1) AND res.2 = tupleElement({var:Tuple(Int32, String, Nullable(Int32))},2) AND res.3 is NULL AND tupleElement({var:Tuple(Int32, String, Nullable(Int32))},3) is NULL");
-            yield return new DataTypeSample("Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))", typeof(Tuple<int, Tuple<byte, string, int?>>), "tuple(123, tuple(5, 'a', 7))", Tuple.Create(123, Tuple.Create((byte)5, "a", 7)), "res.1 = tupleElement({var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))},1) AND res.2.1 = tupleElement(tupleElement({var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))},2),1) AND res.2.2 = tupleElement(tupleElement({var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))},2),2) AND res.2.3 = tupleElement(tupleElement({var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))},2),3)");
+            yield return new DataTypeSample("Tuple(Int32, String, Nullable(Int32))", typeof(Tuple<int, string, int?>), "tuple(1, 'a', NULL)", Tuple.Create<int, string, int?>(1, "a", null));
+            yield return new DataTypeSample("Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))", typeof(Tuple<int, Tuple<byte, string, int?>>), "tuple(123, tuple(5, 'a', 7))", Tuple.Create(123, Tuple.Create((byte)5, "a", 7)));
 
-            yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Utc), "res = {var:Date}");
-            yield return new DataTypeSample("DateTime", typeof(DateTime), "toDateTime('1988-08-28 11:22:33')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Utc), "res = {var:DateTime}");
-            yield return new DataTypeSample("DateTime64(9)", typeof(DateTime), "toDateTime64('2020-02-20 11:22:33.444', 9)", new DateTime(2020, 02, 20, 11, 22, 33, 444, DateTimeKind.Utc), "res = {var:DateTime64(9)}");
+            yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Utc));
+            yield return new DataTypeSample("DateTime", typeof(DateTime), "toDateTime('1988-08-28 11:22:33')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Utc));
+            yield return new DataTypeSample("DateTime64(9)", typeof(DateTime), "toDateTime64('2020-02-20 11:22:33.444', 9)", new DateTime(2020, 02, 20, 11, 22, 33, 444, DateTimeKind.Utc));
         }
 
         public static object[] GetEnsureSingleRow(this DbDataReader reader)
