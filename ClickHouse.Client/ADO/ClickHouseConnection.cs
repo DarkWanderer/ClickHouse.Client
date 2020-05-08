@@ -189,9 +189,9 @@ namespace ClickHouse.Client.ADO
             };
             if (parameters != null)
             {
-                foreach (var (name, value) in parameters)
+                foreach (var parameter in parameters)
                 {
-                    queryParameters.SetParameter(name, value);
+                    queryParameters.SetParameter(parameter.Key, parameter.Value);
                 }
             }
 

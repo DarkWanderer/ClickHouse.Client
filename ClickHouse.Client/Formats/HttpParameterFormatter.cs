@@ -71,10 +71,10 @@ namespace ClickHouse.Client.Formats
                         $"{Format(nullableType.UnderlyingType, value)}",
                 
                 ClickHouseTypeCode.Array when type is ArrayType arrayType && value is IEnumerable enumerable =>
-                    $"[{string.Join(',', enumerable.Cast<object>().Select(obj => InlineParameterFormatter.Format(arrayType.UnderlyingType, obj)))}]",
+                    $"[{string.Join(",", enumerable.Cast<object>().Select(obj => InlineParameterFormatter.Format(arrayType.UnderlyingType, obj)))}]",
                 
                 ClickHouseTypeCode.Tuple when type is TupleType tupleType && value is ITuple tuple =>
-                $"({string.Join(',', tupleType.UnderlyingTypes.Select((x, i) => InlineParameterFormatter.Format(x, tuple[i])))})",
+                $"({string.Join(",", tupleType.UnderlyingTypes.Select((x, i) => InlineParameterFormatter.Format(x, tuple[i])))})",
                 
                 _ => throw new NotSupportedException($"Cannot convert value {value} to type {type.TypeCode}")
             };
