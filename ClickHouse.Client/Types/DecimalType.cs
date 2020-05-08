@@ -50,10 +50,6 @@ namespace ClickHouse.Client.Types
             }
         }
 
-        public override string ToHttpParameter(object value) => ((decimal)value).ToString(CultureInfo.InvariantCulture);
-        
-        public override string ToInlineParameter(object value) => ((decimal)value).ToString(CultureInfo.InvariantCulture);
-
         public override string ToString() => $"{Name}({Precision}, {Scale})";
     }
 }

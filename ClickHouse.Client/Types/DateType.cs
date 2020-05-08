@@ -9,7 +9,5 @@ namespace ClickHouse.Client.Types
         public override string Name => "Date";
 
         public override string ToString() => $"Date({TimeZone.Id})";
-        
-        public override string ToHttpParameter(object value) => $"'{(DateTime)value:yyyy-MM-dd}'";
     }
 }

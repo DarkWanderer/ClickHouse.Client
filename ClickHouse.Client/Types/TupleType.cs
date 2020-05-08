@@ -71,14 +71,6 @@ namespace ClickHouse.Client.Types
             };
         }
 
-        public override string ToHttpParameter(object value) => !(value is ITuple tuple)
-            ? throw new NotSupportedException($"Parameter value {value} is not a tuple")
-            : $"({string.Join(',', underlyingTypes.Select((x, i) => x.ToHttpUnderlyingParameter(tuple[i])))})";
-        
-        public override string ToInlineParameter(object value) => !(value is ITuple tuple)
-            ? throw new NotSupportedException($"Parameter value {value} is not a tuple")
-            : $"({string.Join(',', underlyingTypes.Select((x, i) => x.ToInlineParameter(tuple[i])))})";
-
         public override string ToString() => $"{Name}({string.Join(",", UnderlyingTypes.Select(t => t.ToString()))})";
     }
 }
