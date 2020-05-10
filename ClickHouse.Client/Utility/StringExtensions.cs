@@ -35,5 +35,10 @@ namespace ClickHouse.Client.Utility
             }
             return hex.ToString();
         }
+        
+        public static string Escape(this string str)
+        {
+            return "'" + str.Replace("\\", "\\\\").Replace("\'", "\\\'") + "'";
+        }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
+using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
@@ -16,7 +17,7 @@ namespace ClickHouse.Client.Tests
     public class SqlSelectTests
     {
         private readonly ClickHouseConnectionDriver driver;
-        private readonly DbConnection connection;
+        private readonly ClickHouseConnection connection;
 
         public SqlSelectTests(bool useCompression)
         {
@@ -204,21 +205,123 @@ namespace ClickHouse.Client.Tests
             var schema = reader.GetSchemaTable();
             Assert.AreEqual(2, schema.Rows.Count);
         }
+        
+        public static IEnumerable<TestCaseData> ParametersQueries => TestUtilities.GetDataTypeSamples()
+            //.Where(sample => !new [] {"Enum", "DateTime64(9)"}.Contains(sample.ClickHouseType)) //old clh doesn`t know about regular Enum and DateTime64
+            .Where(sample => sample.ExampleValue != DBNull.Value) //null value should be handled by writing "is null" statement
+            .Where(sample => !sample.ClickHouseType.StartsWith("Array") && !sample.ClickHouseType.StartsWith("Tuple")) // complex types should be handled differently
+            .Where(sample => sample.ClickHouseType != "Date") //DateTime with 00:00:00 can`t be Date type, cause it`ll broke DateTime logic. Specify type to fix that
+            .Where(sample => sample.ClickHouseType != "DateTime64(9)") //Default DateTime CLH analog is DateTime. If you want to use DateTime64 specify type as parameter
+            .Where(sample => sample.ClickHouseType != "UUID") // https://github.com/ClickHouse/ClickHouse/issues/7463
+            .Select(sample => new TestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));
 
         [Test]
-        public async Task ShouldExecuteSelectWithParameters()
+        [TestCaseSource(typeof(SqlSelectTests), nameof(ParametersQueries))]
+        public async Task ShouldExecuteSelectWithParameters(string exampleExpression, string type, object value)
         {
+            if (type.StartsWith("Enum")) type = "String";
+            var sql = $"SELECT 1 FROM (SELECT {exampleExpression} AS res) WHERE res = {{var:{type}}}";
             using var command = connection.CreateCommand();
-            command.CommandText = "SELECT {id:Int32}, {str:String}";
+            command.CommandText = sql;
             
-            var p1 = command.AddParameter("id", 906324);
-            var p2 = command.AddParameter("str", "%@^&*#!$[ AAAA}{///sd/zcち");
+            command.AddParameter("var", value);
 
             var result = await command.ExecuteReaderAsync();
-            var row = result.GetEnsureSingleRow();
-            Assert.AreEqual(2, command.Parameters.Count);
-            Assert.AreEqual(p1.Value, row[0]);
-            Assert.AreEqual(p2.Value, row[1]);
+            result.GetEnsureSingleRow();
+        }
+        
+        [Test]
+        public async Task ShouldExecuteSelectWithTupleParameter()
+        {
+            var sql = @"
+                SELECT 1
+                FROM (SELECT tuple(1, 'a', NULL) AS res)
+                WHERE res.1 = tupleElement({var:Tuple(Int32, String, Nullable(Int32))}, 1)
+                  AND res.2 = tupleElement({var:Tuple(Int32, String, Nullable(Int32))}, 2)
+                  AND res.3 is NULL 
+                  AND tupleElement({var:Tuple(Int32, String, Nullable(Int32))}, 3) is NULL";
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            
+            command.AddParameter("var", Tuple.Create<int, string, int?>(1, "a", null));
+
+            var result = await command.ExecuteReaderAsync();
+            result.GetEnsureSingleRow();
+        }
+        
+        [Test]
+        public async Task ShouldExecuteSelectWithUnderlyingTupleParameter()
+        {
+            var sql = @"
+                SELECT 1
+                FROM (SELECT tuple(123, tuple(5, 'a', 7)) AS res)
+                WHERE res.1 = tupleElement({var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))}, 1)
+                  AND res.2.1 = tupleElement(tupleElement({var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))}, 2), 1)
+                  AND res.2.2 = tupleElement(tupleElement({var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))}, 2), 2)
+                  AND res.2.3 = tupleElement(tupleElement({var:Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))}, 2), 3)";
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            
+            command.AddParameter("var", Tuple.Create(123, Tuple.Create((byte)5, "a", 7)));
+
+            var result = await command.ExecuteReaderAsync();
+            result.GetEnsureSingleRow();
+        }
+        
+        [Test]
+        public async Task ShouldExecuteSelectWithIntArrayParameter()
+        {
+            var sql = @"
+                SELECT 1
+                FROM (SELECT array(1, 2, 3) AS res)
+                WHERE hasAll(res, {var:Array(Int32)}) 
+                  AND hasAll({var:Array(Int32)}, res)";
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            
+            command.AddParameter("var", new[] { 1, 2, 3 });
+
+            var result = await command.ExecuteReaderAsync();
+            result.GetEnsureSingleRow();
+        }
+        
+        [Test]
+        public async Task ShouldExecuteSelectWithStringArrayParameter()
+        {
+            var sql = @"
+                SELECT 1
+                FROM (SELECT array('x', '\'', '&') AS res)
+                WHERE hasAll(res, {var:Array(String)}) 
+                  AND hasAll({var:Array(String)}, res)";
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            
+            command.AddParameter("var", new[] { "x", "'", "&" });
+
+            var result = await command.ExecuteReaderAsync();
+            result.GetEnsureSingleRow();
+        }
+
+        public static IEnumerable<TestCaseData> TypedParametersQueries => TestUtilities.GetDataTypeSamples()
+            //.Where(sample => !new [] {"Enum", "DateTime64(9)"}.Contains(sample.ClickHouseType)) //old clh doesn`t know about regular Enum and DateTime64
+            .Where(sample => sample.ExampleValue != DBNull.Value) //null value should be handled by writing "is null" statement
+            .Where(sample => !sample.ClickHouseType.StartsWith("Array") && !sample.ClickHouseType.StartsWith("Tuple")) // complex types should be handled differently
+            .Where(sample => sample.ClickHouseType != "UUID") // https://github.com/ClickHouse/ClickHouse/issues/7463
+            .Select(sample => new TestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));
+
+        [Test]
+        [TestCaseSource(typeof(SqlSelectTests), nameof(TypedParametersQueries))]
+        public async Task ShouldExecuteSelectWithTypedParameters(string exampleExpression, string type, object value)
+        {
+            if (type.StartsWith("Enum")) type = "String";
+            var sql = $"SELECT 1 FROM (SELECT {exampleExpression} AS res) WHERE res = {{var:{type}}}";
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            
+            command.AddParameter("var", type, value);
+
+            var result = await command.ExecuteReaderAsync();
+            result.GetEnsureSingleRow();
         }
     }
 }

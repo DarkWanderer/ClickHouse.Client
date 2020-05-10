@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
@@ -74,7 +74,8 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("IPv6", typeof(IPAddress), "toIPv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334')", IPAddress.Parse("2001:0db8:85a3:0000:0000:8a2e:0370:7334"));
 
             yield return new DataTypeSample("Enum", typeof(string), "CAST('a', 'Enum(\\'a\\' = 1, \\'b\\' = 2)')", "a");
-
+            yield return new DataTypeSample("Enum8", typeof(string), "CAST('a', 'Enum8(\\'a\\' = 1, \\'b\\' = 2)')", "a");
+            
             yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(123.45, 3)", new decimal(123.45));
             yield return new DataTypeSample("Decimal64(7)", typeof(decimal), "toDecimal64(1.2345, 7)", new decimal(1.2345));
             yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(12.34, 9)", new decimal(12.34));
@@ -92,7 +93,7 @@ namespace ClickHouse.Client.Tests
 
             yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Utc));
             yield return new DataTypeSample("DateTime", typeof(DateTime), "toDateTime('1988-08-28 11:22:33')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Utc));
-            yield return new DataTypeSample("DateTime64", typeof(DateTime), "toDateTime64('2020-02-20 11:22:33.444', 9)", new DateTime(2020, 02, 20, 11, 22, 33, 444, DateTimeKind.Utc));
+            yield return new DataTypeSample("DateTime64(9)", typeof(DateTime), "toDateTime64('2020-02-20 11:22:33.444', 9)", new DateTime(2020, 02, 20, 11, 22, 33, 444, DateTimeKind.Utc));
         }
 
         public static object[] GetEnsureSingleRow(this DbDataReader reader)

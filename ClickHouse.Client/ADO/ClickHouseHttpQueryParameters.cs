@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Web;
+using ClickHouse.Client.ADO.Parameters;
+using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.ADO
 {
@@ -43,7 +45,10 @@ namespace ClickHouse.Client.ADO
             set => SetOrRemove("session_id", value);
         }
 
-        public void SetParameter(string name, string value) => SetOrRemove("param_" + name, value);
+        public void SetParameter(string name, string value)
+        {
+            parameterCollection.Set($"param_{name}", value);
+        }
 
         public object Clone() => new ClickHouseHttpQueryParameters(ToString());
 

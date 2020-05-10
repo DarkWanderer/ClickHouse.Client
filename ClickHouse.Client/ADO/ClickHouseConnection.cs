@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -9,6 +9,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ClickHouse.Client.ADO.Parameters;
+using ClickHouse.Client.Formats;
+using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO
@@ -98,9 +101,40 @@ namespace ClickHouse.Client.ADO
 
         public override DataTable GetSchema(string type, string[] restrictions) => SchemaDescriber.DescribeSchema(this, type, restrictions);
 
-        internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token, IDictionary<string, object> parameters = null)
+        internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token, ClickHouseParameterCollection parameters = null)
         {
-            using var postMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri(null, parameters));
+            
+            var uri = string.Empty;
+            if (parameters == null)
+            {
+                uri = MakeUri();
+            }
+            else
+            {
+                var httpParametersSupported = await this.HttpParametersSupported();
+            
+                var formatedParamters = new Dictionary<string, string>(parameters.Count);
+                
+                foreach (ClickHouseDbParameter parameter in parameters)
+                {
+                    var formatedParameter = httpParametersSupported
+                        ? HttpParameterFormatter.Format(parameter)
+                        : InlineParameterFormatter.Format(parameter);
+                    formatedParamters.TryAdd(parameter.ParameterName, formatedParameter);
+                }
+
+                if (httpParametersSupported)
+                {
+                    uri = MakeUri(null, formatedParamters);
+                }
+                else
+                {
+                    sqlQuery = SubstituteParameters(sqlQuery, formatedParamters);
+                    uri = MakeUri();
+                }
+            }
+
+            using var postMessage = new HttpRequestMessage(HttpMethod.Post, uri);
 
             AddDefaultHttpHeaders(postMessage.Headers);
             HttpContent content = new StringContent(sqlQuery);
@@ -143,7 +177,7 @@ namespace ClickHouse.Client.ADO
         }
 
         // TODO: move this method out of ClickHouseConnection
-        private string MakeUri(string sql = null, IDictionary<string, object> parameters = null)
+        private string MakeUri(string sql = null, IDictionary<string, string> parameters = null)
         {
             var uriBuilder = new UriBuilder(serverUri);
             var queryParameters = new ClickHouseHttpQueryParameters()
@@ -157,12 +191,44 @@ namespace ClickHouse.Client.ADO
             {
                 foreach (var parameter in parameters)
                 {
-                    queryParameters.SetParameter(parameter.Key, parameter.Value?.ToString());
+                    queryParameters.SetParameter(parameter.Key, parameter.Value);
                 }
             }
 
             uriBuilder.Query = queryParameters.ToString();
             return uriBuilder.ToString();
+        }
+        
+        private static string SubstituteParameters(string query, IDictionary<string, string> parameters)
+        {
+            var builder = new StringBuilder(query.Length);
+
+            var paramStartPos = query.IndexOf('{');
+            var paramEndPos = -1;
+            
+            while (paramStartPos != -1)
+            {
+                builder.Append(query.Substring(paramEndPos + 1, paramStartPos - paramEndPos - 1));
+                    
+                paramStartPos += 1;
+                paramEndPos = query.IndexOf('}', paramStartPos);
+                var param = query.Substring(paramStartPos, paramEndPos - paramStartPos);
+                var delimiterPos = param.LastIndexOf(':');
+                if (delimiterPos == -1)
+                    throw new NotSupportedException($"param {param} doesn`t have data type");
+                var name = param.Substring(0, delimiterPos);
+                
+                if (!parameters.TryGetValue(name, out var value))
+                    throw new ArgumentOutOfRangeException($"Parameter {name} not found in parameters list");
+
+                builder.Append(value);
+                
+                paramStartPos = query.IndexOf('{', paramEndPos);
+            }
+            
+            builder.Append(query.Substring(paramEndPos + 1, query.Length - paramEndPos - 1));
+
+            return builder.ToString();
         }
 
         internal ClickHouseConnectionDriver Driver { get; private set; }
@@ -197,6 +263,10 @@ namespace ClickHouse.Client.ADO
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
 
+        public ClickHouseCommand CreateCommand()
+        {
+            return (ClickHouseCommand) CreateDbCommand();
+        }
         protected override DbCommand CreateDbCommand() => new ClickHouseCommand(this);
 
         private void AddDefaultHttpHeaders(HttpRequestHeaders headers)

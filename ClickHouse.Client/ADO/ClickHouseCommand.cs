@@ -1,19 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO.Parameters;
 using ClickHouse.Client.ADO.Readers;
+using ClickHouse.Client.Types;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO
 {
-    internal class ClickHouseCommand : DbCommand, IDisposable
+    public class ClickHouseCommand : DbCommand, IDisposable
     {
         private readonly ClickHouseConnection dbConnection;
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
+        private readonly ClickHouseParameterCollection clickHouseParameterCollection = new ClickHouseParameterCollection();
 
         public ClickHouseCommand(ClickHouseConnection connection)
         {
@@ -36,7 +41,8 @@ namespace ClickHouse.Client.ADO
             set => throw new NotSupportedException();
         }
 
-        protected override DbParameterCollection DbParameterCollection { get; } = new ClickHouseParameterCollection();
+
+        protected override DbParameterCollection DbParameterCollection => clickHouseParameterCollection;
 
         protected override DbTransaction DbTransaction { get; set; }
 
@@ -54,8 +60,7 @@ namespace ClickHouse.Client.ADO
 
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
-            var parameters = Parameters.Cast<DbParameter>().ToDictionary(p => p.ParameterName, p => p.Value);
-            var response = await dbConnection.PostSqlQueryAsync(CommandText, cts.Token, parameters).ConfigureAwait(false);
+            var response = await dbConnection.PostSqlQueryAsync(CommandText, cts.Token, clickHouseParameterCollection).ConfigureAwait(false);
             var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return int.TryParse(result, out var r) ? r : 0;
         }
@@ -70,10 +75,15 @@ namespace ClickHouse.Client.ADO
 
         public override void Prepare() { /* ClickHouse has no notion of prepared statements */ }
 
+        public new ClickHouseDbParameter CreateParameter()
+        {
+            return (ClickHouseDbParameter)this.CreateDbParameter();
+        }
+        
         protected override DbParameter CreateDbParameter()
         {
             var parameter = new ClickHouseDbParameter();
-            DbParameterCollection.Add(parameter);
+            clickHouseParameterCollection.Add(parameter);
             return parameter;
         }
 
@@ -119,8 +129,8 @@ namespace ClickHouse.Client.ADO
                     break;
             }
 
-            var parameters = Parameters.Cast<DbParameter>().ToDictionary(p => p.ParameterName, p => p.Value);
-            var result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token, parameters).ConfigureAwait(false);
+            var result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token, clickHouseParameterCollection).ConfigureAwait(false);
+
             return driver switch
             {
                 ClickHouseConnectionDriver.Binary => new ClickHouseBinaryReader(result),

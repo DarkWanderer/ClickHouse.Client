@@ -12,7 +12,7 @@ namespace ClickHouse.Client.Types
         public override Type FrameworkType => typeof(DateTime);
 
         public int Scale { get; set; }
-
+        
         public override string ToString() => TimeZone == null ? $"DateTime64({Scale})" : $"DateTime64({Scale}, {TimeZone.Id})";
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
