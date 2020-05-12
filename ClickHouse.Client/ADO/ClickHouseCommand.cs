@@ -16,13 +16,17 @@ namespace ClickHouse.Client.ADO
 {
     public class ClickHouseCommand : DbCommand, IDisposable
     {
-        private readonly ClickHouseConnection dbConnection;
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
         private readonly ClickHouseParameterCollection clickHouseParameterCollection = new ClickHouseParameterCollection();
+        private ClickHouseConnection connection;
+
+        public ClickHouseCommand()
+        {
+        }
 
         public ClickHouseCommand(ClickHouseConnection connection)
         {
-            dbConnection = connection;
+            this.connection = connection;
         }
 
         public override string CommandText { get; set; }
@@ -37,8 +41,8 @@ namespace ClickHouse.Client.ADO
 
         protected override DbConnection DbConnection
         {
-            get => dbConnection;
-            set => throw new NotSupportedException();
+            get => connection;
+            set => connection = (ClickHouseConnection)value;
         }
 
         protected override DbParameterCollection DbParameterCollection => clickHouseParameterCollection;
@@ -59,7 +63,10 @@ namespace ClickHouse.Client.ADO
 
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
-            var response = await dbConnection.PostSqlQueryAsync(CommandText, cts.Token, clickHouseParameterCollection).ConfigureAwait(false);
+            if (connection == null)
+                throw new InvalidOperationException("Connection is not set");
+
+            var response = await connection.PostSqlQueryAsync(CommandText, cts.Token, clickHouseParameterCollection).ConfigureAwait(false);
             var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return int.TryParse(result, out var r) ? r : 0;
         }
@@ -94,8 +101,11 @@ namespace ClickHouse.Client.ADO
 
         protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
+            if (connection == null)
+                throw new InvalidOperationException("Connection is not set");
+
             var sqlBuilder = new StringBuilder(CommandText);
-            var driver = dbConnection.Driver;
+            var driver = connection.Driver;
             switch (behavior)
             {
                 case CommandBehavior.SingleRow:
@@ -124,7 +134,7 @@ namespace ClickHouse.Client.ADO
                     break;
             }
 
-            var result = await dbConnection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token, clickHouseParameterCollection).ConfigureAwait(false);
+            var result = await connection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token, clickHouseParameterCollection).ConfigureAwait(false);
 
             return driver switch
             {

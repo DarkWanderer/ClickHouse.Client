@@ -46,8 +46,7 @@ namespace ClickHouse.Client.Tests.ORM
         {
             var parameters = new Dictionary<string, object> { { "value", value } };
             var results = await connection.QueryAsync<string>(sql, parameters);
-            var result = results.Single();
-            Assert.AreEqual(string.Format(CultureInfo.InvariantCulture, "{0}", value), result);
+            Assert.AreEqual(string.Format(CultureInfo.InvariantCulture, "{0}", value), results.Single());
         }
 
         [Test]
