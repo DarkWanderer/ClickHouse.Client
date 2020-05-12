@@ -9,11 +9,11 @@ namespace ClickHouse.Client.Types
     {
         public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Nested;
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
             return new NestedType
             {
-                UnderlyingTypes = node.ChildNodes.Select(typeResolverFunc).ToArray(),
+                UnderlyingTypes = node.ChildNodes.Select(parseClickHouseTypeFunc).ToArray(),
             };
         }
 

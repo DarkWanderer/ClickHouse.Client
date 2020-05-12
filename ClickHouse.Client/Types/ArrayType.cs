@@ -17,11 +17,11 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "Array";
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
             return new ArrayType
             {
-                UnderlyingType = typeResolverFunc(node.SingleChild),
+                UnderlyingType = parseClickHouseTypeFunc(node.SingleChild),
             };
         }
 

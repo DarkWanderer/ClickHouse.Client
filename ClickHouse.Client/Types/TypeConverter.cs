@@ -97,7 +97,7 @@ namespace ClickHouse.Client.Types
             return ParseClickHouseType(node);
         }
 
-        public static ClickHouseType ParseClickHouseType(SyntaxTreeNode node)
+        internal static ClickHouseType ParseClickHouseType(SyntaxTreeNode node)
         {
             if (
                 node.ChildNodes.Count == 0 &&

@@ -63,11 +63,11 @@ namespace ClickHouse.Client.Types
 
         public override Type FrameworkType => frameworkType;
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
             return new TupleType
             {
-                UnderlyingTypes = node.ChildNodes.Select(typeResolverFunc).ToArray(),
+                UnderlyingTypes = node.ChildNodes.Select(parseClickHouseTypeFunc).ToArray(),
             };
         }
 

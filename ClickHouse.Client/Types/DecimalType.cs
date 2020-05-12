@@ -30,7 +30,7 @@ namespace ClickHouse.Client.Types
 
         public override Type FrameworkType => typeof(decimal);
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
             var precision = int.Parse(node.ChildNodes[0].Value);
             var scale = int.Parse(node.ChildNodes[1].Value);

@@ -16,7 +16,7 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "Decimal128";
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
             return new Decimal128Type
             {

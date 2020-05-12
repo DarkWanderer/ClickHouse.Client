@@ -7,6 +7,6 @@ namespace ClickHouse.Client.Types
     {
         public virtual string Name => TypeCode.ToString();
 
-        public abstract ParameterizedType Parse(SyntaxTreeNode typeName, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc);
+        public abstract ParameterizedType Parse(SyntaxTreeNode typeName, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc);
     }
 }

@@ -21,11 +21,11 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "Nullable";
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> typeResolverFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
             return new NullableType
             {
-                UnderlyingType = typeResolverFunc(node.SingleChild),
+                UnderlyingType = parseClickHouseTypeFunc(node.SingleChild),
             };
         }
 
