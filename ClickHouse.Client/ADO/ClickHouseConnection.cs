@@ -110,7 +110,7 @@ namespace ClickHouse.Client.ADO
             }
             else
             {
-                var httpParametersSupported = await this.HttpParametersSupported();
+                var httpParametersSupported = await this.SupportsHttpParameters();
 
                 var formatedParamters = new Dictionary<string, string>(parameters.Count);
 
