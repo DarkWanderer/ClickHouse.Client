@@ -4,12 +4,31 @@ using NUnit.Framework;
 using Dapper;
 using System.Linq;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace ClickHouse.Client.Tests.ORM
 {
     public class DapperTests
     {
         private readonly ClickHouseConnection connection = TestUtilities.GetTestClickHouseConnection(default);
+
+        public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()
+            .Where(s => ShouldBeSupportedByDapper(s.ClickHouseType))
+            .Where(s => !s.ClickHouseType.StartsWith("Array")) // Dapper issue, see ShouldExecuteSelectWithParameters test
+            .Select(sample => new TestCaseData($"SELECT {{value:{sample.ClickHouseType}}}", sample.ExampleValue));
+
+        // "The member value of type <xxxxxxxx> cannot be used as a parameter value"
+        private static bool ShouldBeSupportedByDapper(string clickHouseType)
+        {
+            if (clickHouseType.StartsWith("Tuple") || clickHouseType.StartsWith("Nullable"))
+                return false;
+            if (clickHouseType.StartsWith("IPv"))
+                return false;
+            if (clickHouseType == "UUID" || clickHouseType == "Date" || clickHouseType == "Nothing")
+                return false;
+
+            return true;
+        }
 
         [Test]
         public async Task ShouldExecuteSimpleSelect()
@@ -22,14 +41,13 @@ namespace ClickHouse.Client.Tests.ORM
         }
 
         [Test]
-        public async Task ShouldExecuteSelectWithParameter()
+        [TestCaseSource(typeof(DapperTests), nameof(SimpleSelectQueries))]
+        public async Task ShouldExecuteSelectWithParameter(string sql, object value)
         {
-            var parameters = new Dictionary<string, object> { { "name", "mysql" } };
-            string sql = "SELECT * FROM system.table_functions WHERE name = {name:String}";
-
-            var functions = (await connection.QueryAsync<string>(sql, parameters)).ToList();
-            CollectionAssert.IsNotEmpty(functions);
-            CollectionAssert.AllItemsAreNotNull(functions);
+            var parameters = new Dictionary<string, object> { { "value", value } };
+            var results = await connection.QueryAsync<string>(sql, parameters);
+            var result = results.Single();
+            Assert.AreEqual(string.Format(CultureInfo.InvariantCulture, "{0}", value), result);
         }
 
         [Test]
