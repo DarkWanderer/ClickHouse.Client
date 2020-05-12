@@ -276,28 +276,5 @@ namespace ClickHouse.Client.Tests
             var result = await command.ExecuteReaderAsync();
             result.GetEnsureSingleRow();
         }
-
-        public static IEnumerable<TestCaseData> TypedParametersQueries => TestUtilities.GetDataTypeSamples()
-            //.Where(sample => !new [] {"Enum", "DateTime64(9)"}.Contains(sample.ClickHouseType)) //old clh doesn`t know about regular Enum and DateTime64
-            .Where(sample => sample.ExampleValue != DBNull.Value) //null value should be handled by writing "is null" statement
-            .Where(sample => !sample.ClickHouseType.StartsWith("Array") && !sample.ClickHouseType.StartsWith("Tuple")) // complex types should be handled differently
-            .Where(sample => sample.ClickHouseType != "UUID") // https://github.com/ClickHouse/ClickHouse/issues/7463
-            .Select(sample => new TestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));
-
-        [Test]
-        [TestCaseSource(typeof(SqlSimpleSelectTests), nameof(TypedParametersQueries))]
-        public async Task ShouldExecuteSelectWithTypedParameters(string exampleExpression, string type, object value)
-        {
-            if (type.StartsWith("Enum"))
-                type = "String";
-            var sql = $"SELECT 1 FROM (SELECT {exampleExpression} AS res) WHERE res = {{var:{type}}}";
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-
-            command.AddParameter("var", type, value);
-
-            var result = await command.ExecuteReaderAsync();
-            result.GetEnsureSingleRow();
-        }
     }
 }

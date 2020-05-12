@@ -112,23 +112,23 @@ namespace ClickHouse.Client.ADO
             {
                 var httpParametersSupported = await this.SupportsHttpParameters();
 
-                var formatedParamters = new Dictionary<string, string>(parameters.Count);
+                var formattedParameters = new Dictionary<string, string>(parameters.Count);
 
                 foreach (ClickHouseDbParameter parameter in parameters)
                 {
-                    var formatedParameter = httpParametersSupported
+                    var formattedParameter = httpParametersSupported
                         ? HttpParameterFormatter.Format(parameter)
                         : InlineParameterFormatter.Format(parameter);
-                    formatedParamters.TryAdd(parameter.ParameterName, formatedParameter);
+                    formattedParameters.TryAdd(parameter.ParameterName, formattedParameter);
                 }
 
                 if (httpParametersSupported)
                 {
-                    uri = MakeUri(null, formatedParamters);
+                    uri = MakeUri(null, formattedParameters);
                 }
                 else
                 {
-                    sqlQuery = SubstituteParameters(sqlQuery, formatedParamters);
+                    sqlQuery = SubstituteParameters(sqlQuery, formattedParameters);
                     uri = MakeUri();
                 }
             }

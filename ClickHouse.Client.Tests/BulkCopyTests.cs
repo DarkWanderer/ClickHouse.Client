@@ -43,9 +43,8 @@ namespace ClickHouse.Client.Tests
                 .Replace(",", null)
                 .Replace(" ", null)
                 .Replace("'", null)
-                .Replace("/", null);
-
-            clickHouseType = clickHouseType.Replace("Enum", "Enum('a' = 1, 'b' = 2)");
+                .Replace("/", null)
+                .Replace("=", null);
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
