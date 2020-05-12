@@ -10,7 +10,7 @@ namespace ClickHouse.Client.Utility
             var parameter = command.CreateParameter();
             parameter.ParameterName = parameterName;
             parameter.Value = parameterValue;
-            command.AddParameter(parameterName, parameter);
+            command.Parameters.Add(parameter);
             return parameter;
         }
 
@@ -20,7 +20,7 @@ namespace ClickHouse.Client.Utility
             parameter.ParameterName = parameterName;
             parameter.ClickHouseType = clickHouseType;
             parameter.Value = parameterValue;
-            command.AddParameter(parameterName, parameter);
+            command.Parameters.Add(parameter);
             return parameter;
         }
     }
