@@ -103,7 +103,6 @@ namespace ClickHouse.Client.ADO
 
         internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token, ClickHouseParameterCollection parameters = null)
         {
-            
             var uri = string.Empty;
             if (parameters == null)
             {
@@ -112,9 +111,9 @@ namespace ClickHouse.Client.ADO
             else
             {
                 var httpParametersSupported = await this.HttpParametersSupported();
-            
+
                 var formatedParamters = new Dictionary<string, string>(parameters.Count);
-                
+
                 foreach (ClickHouseDbParameter parameter in parameters)
                 {
                     var formatedParameter = httpParametersSupported
@@ -198,18 +197,18 @@ namespace ClickHouse.Client.ADO
             uriBuilder.Query = queryParameters.ToString();
             return uriBuilder.ToString();
         }
-        
+
         private static string SubstituteParameters(string query, IDictionary<string, string> parameters)
         {
             var builder = new StringBuilder(query.Length);
 
             var paramStartPos = query.IndexOf('{');
             var paramEndPos = -1;
-            
+
             while (paramStartPos != -1)
             {
                 builder.Append(query.Substring(paramEndPos + 1, paramStartPos - paramEndPos - 1));
-                    
+
                 paramStartPos += 1;
                 paramEndPos = query.IndexOf('}', paramStartPos);
                 var param = query.Substring(paramStartPos, paramEndPos - paramStartPos);
@@ -217,15 +216,15 @@ namespace ClickHouse.Client.ADO
                 if (delimiterPos == -1)
                     throw new NotSupportedException($"param {param} doesn`t have data type");
                 var name = param.Substring(0, delimiterPos);
-                
+
                 if (!parameters.TryGetValue(name, out var value))
                     throw new ArgumentOutOfRangeException($"Parameter {name} not found in parameters list");
 
                 builder.Append(value);
-                
+
                 paramStartPos = query.IndexOf('{', paramEndPos);
             }
-            
+
             builder.Append(query.Substring(paramEndPos + 1, query.Length - paramEndPos - 1));
 
             return builder.ToString();
@@ -247,6 +246,8 @@ namespace ClickHouse.Client.ADO
 
         public override async Task OpenAsync(CancellationToken token)
         {
+            if (State == ConnectionState.Open)
+                return;
             try
             {
                 var response = await PostSqlQueryAsync("SELECT version()", token).ConfigureAwait(false);
@@ -263,10 +264,8 @@ namespace ClickHouse.Client.ADO
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
 
-        public ClickHouseCommand CreateCommand()
-        {
-            return (ClickHouseCommand) CreateDbCommand();
-        }
+        public new ClickHouseCommand CreateCommand() => (ClickHouseCommand)CreateDbCommand();
+
         protected override DbCommand CreateDbCommand() => new ClickHouseCommand(this);
 
         private void AddDefaultHttpHeaders(HttpRequestHeaders headers)

@@ -21,7 +21,7 @@ namespace ClickHouse.Client.Tests
         {
             foreach (var sample in TestUtilities.GetDataTypeSamples())
             {
-                if (new []{ "Enum8", "Nothing", "Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))" }.Contains(sample.ClickHouseType))
+                if (new[] { "Enum8", "Nothing", "Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))" }.Contains(sample.ClickHouseType))
                     continue;
                 yield return new TestCaseData(sample.ClickHouseType, sample.ExampleValue);
             }
@@ -100,7 +100,7 @@ namespace ClickHouse.Client.Tests
 
             using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
         }
-      
+
         [Test]
         public async Task ShouldExecuteInsertWithBacktickedColumns()
         {

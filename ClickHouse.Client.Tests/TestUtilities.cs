@@ -75,7 +75,7 @@ namespace ClickHouse.Client.Tests
 
             yield return new DataTypeSample("Enum", typeof(string), "CAST('a', 'Enum(\\'a\\' = 1, \\'b\\' = 2)')", "a");
             yield return new DataTypeSample("Enum8", typeof(string), "CAST('a', 'Enum8(\\'a\\' = 1, \\'b\\' = 2)')", "a");
-            
+
             yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(123.45, 3)", new decimal(123.45));
             yield return new DataTypeSample("Decimal64(7)", typeof(decimal), "toDecimal64(1.2345, 7)", new decimal(1.2345));
             yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(12.34, 9)", new decimal(12.34));

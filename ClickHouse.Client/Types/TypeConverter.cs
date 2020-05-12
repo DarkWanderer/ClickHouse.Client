@@ -101,7 +101,7 @@ namespace ClickHouse.Client.Types
         {
             if (
                 node.ChildNodes.Count == 0 &&
-                Enum.TryParse<ClickHouseTypeCode>(node.Value, out var chType) && 
+                Enum.TryParse<ClickHouseTypeCode>(node.Value, out var chType) &&
                 SimpleTypes.TryGetValue(chType, out var typeInfo))
             {
                 return typeInfo;

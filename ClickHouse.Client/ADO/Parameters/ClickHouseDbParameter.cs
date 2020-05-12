@@ -7,7 +7,7 @@ namespace ClickHouse.Client.ADO.Parameters
     public class ClickHouseDbParameter : DbParameter
     {
         public override DbType DbType { get; set; }
-        
+
         public string ClickHouseType { get; set; }
 
         public override ParameterDirection Direction { get; set; }
@@ -25,5 +25,7 @@ namespace ClickHouse.Client.ADO.Parameters
         public override object Value { get; set; }
 
         public override void ResetDbType() { }
+
+        public override string ToString() => $"{ParameterName}:{Value}";
     }
 }

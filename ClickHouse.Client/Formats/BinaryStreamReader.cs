@@ -82,7 +82,7 @@ namespace ClickHouse.Client.Formats
                     var dt64t = (DateTime64Type)databaseType;
                     var chTicks = reader.ReadInt64();
                     // 7 is a 'magic constant' - Log10 of TimeSpan.TicksInSecond
-                    return TypeConverter.DateTimeEpochStart.AddTicks((long)MathUtils.ShiftDecimalPlaces(chTicks, 7 - dt64t.Scale));
+                    return TypeConverter.DateTimeEpochStart.AddTicks(MathUtils.ShiftDecimalPlaces(chTicks, 7 - dt64t.Scale));
 
                 case ClickHouseTypeCode.UUID:
                     // Byte manipulation because of ClickHouse's weird GUID implementation

@@ -7,18 +7,20 @@ namespace ClickHouse.Client.Utility
     {
         public static ClickHouseDbParameter AddParameter(this ClickHouseCommand command, string parameterName, object parameterValue)
         {
-            var parameter = (ClickHouseDbParameter)command.CreateParameter();
+            var parameter = command.CreateParameter();
             parameter.ParameterName = parameterName;
             parameter.Value = parameterValue;
+            command.AddParameter(parameterName, parameter);
             return parameter;
         }
-        
+
         public static ClickHouseDbParameter AddParameter(this ClickHouseCommand command, string parameterName, string clickHouseType, object parameterValue)
         {
-            var parameter = (ClickHouseDbParameter)command.CreateParameter();
+            var parameter = command.CreateParameter();
             parameter.ParameterName = parameterName;
             parameter.ClickHouseType = clickHouseType;
             parameter.Value = parameterValue;
+            command.AddParameter(parameterName, parameter);
             return parameter;
         }
     }

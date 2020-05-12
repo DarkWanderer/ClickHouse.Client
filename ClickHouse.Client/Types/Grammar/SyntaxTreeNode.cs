@@ -5,7 +5,6 @@ using System.Text;
 
 namespace ClickHouse.Client.Types.Grammar
 {
-
     public class SyntaxTreeNode
     {
         public string Value { get; set; }

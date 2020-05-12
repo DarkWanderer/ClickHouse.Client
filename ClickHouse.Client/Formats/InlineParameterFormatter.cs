@@ -26,7 +26,7 @@ namespace ClickHouse.Client.Formats
         {
             return type.TypeCode switch
             {
-                var simpleType when 
+                var simpleType when
                     simpleType == ClickHouseTypeCode.UInt8 ||
                     simpleType == ClickHouseTypeCode.UInt16 ||
                     simpleType == ClickHouseTypeCode.UInt32 ||
@@ -35,47 +35,47 @@ namespace ClickHouse.Client.Formats
                     simpleType == ClickHouseTypeCode.Int16 ||
                     simpleType == ClickHouseTypeCode.Int32 ||
                     simpleType == ClickHouseTypeCode.Int64 => value.ToString(),
-                
-                var floatType when 
+
+                var floatType when
                     floatType == ClickHouseTypeCode.Float32 ||
                     floatType == ClickHouseTypeCode.Float64 => FormatFloat(value),
-                
+
                 ClickHouseTypeCode.Decimal => FormatDecimal(type, value),
-                
+
                 var stringType when
                     stringType == ClickHouseTypeCode.String ||
                     stringType == ClickHouseTypeCode.FixedString ||
                     stringType == ClickHouseTypeCode.LowCardinality ||
                     stringType == ClickHouseTypeCode.Enum8 ||
                     stringType == ClickHouseTypeCode.Enum16 ||
-                    stringType == ClickHouseTypeCode.UUID=> value.ToString().Escape(),
-                
+                    stringType == ClickHouseTypeCode.UUID => value.ToString().Escape(),
+
                 ClickHouseTypeCode.Nothing => $"null",
 
                 ClickHouseTypeCode.Date when value is DateTime date => $"'{date:yyyy-MM-dd}'",
                 ClickHouseTypeCode.DateTime when type is DateTimeType dateTimeType && value is DateTime dateTime =>
-                    dateTimeType.TimeZone == null 
-                        ? $"'{dateTime:yyyy-MM-dd HH:mm:ss}'" 
+                    dateTimeType.TimeZone == null
+                        ? $"'{dateTime:yyyy-MM-dd HH:mm:ss}'"
                         : $"'{dateTime.ToUniversalTime():yyyy-MM-dd HH:mm:ss}'",
                 ClickHouseTypeCode.DateTime64 when type is DateTime64Type dateTimeType && value is DateTime dateTime =>
-                    dateTimeType.TimeZone == null 
-                        ? $"'{dateTime:yyyy-MM-dd HH:mm:ss.fff}'" 
+                    dateTimeType.TimeZone == null
+                        ? $"'{dateTime:yyyy-MM-dd HH:mm:ss.fff}'"
                         : $"'{dateTime.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fff}'",
-                
+
                 ClickHouseTypeCode.IPv4 when value is IPAddress iPAddressValue => $"toIPv4({iPAddressValue.ToString().Escape()})",
                 ClickHouseTypeCode.IPv6 when value is IPAddress iPAddressValue => $"toIPv6({iPAddressValue.ToString().Escape()})",
-                
-                ClickHouseTypeCode.Nullable when type is NullableType nullableType => 
+
+                ClickHouseTypeCode.Nullable when type is NullableType nullableType =>
                     value is null || value == DBNull.Value ?
                         "null" :
                         $"{Format(nullableType.UnderlyingType, value)}",
-                
+
                 ClickHouseTypeCode.Array when type is ArrayType arrayType && value is IEnumerable enumerable =>
                     $"[{string.Join(",", enumerable.Cast<object>().Select(obj => Format(arrayType.UnderlyingType, obj)))}]",
-                
+
                 ClickHouseTypeCode.Tuple when type is TupleType tupleType && value is ITuple tuple =>
                 $"({string.Join(",", tupleType.UnderlyingTypes.Select((x, i) => Format(x, tuple[i])))})",
-                
+
                 _ => throw new NotSupportedException($"Cannot convert value {value} to type {type.TypeCode}")
             };
         }

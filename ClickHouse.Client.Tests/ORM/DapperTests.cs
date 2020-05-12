@@ -3,6 +3,7 @@ using ClickHouse.Client.ADO;
 using NUnit.Framework;
 using Dapper;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace ClickHouse.Client.Tests.ORM
 {
@@ -21,12 +22,24 @@ namespace ClickHouse.Client.Tests.ORM
         }
 
         [Test]
-        [Ignore("Parameters support is WIP")]
-        public async Task ShouldExecuteSelectWithParameters ()
+        public async Task ShouldExecuteSelectWithParameter()
         {
-            string sql = "SELECT * FROM system.table_functions WHERE name IN @Names";
+            var parameters = new Dictionary<string, object> { { "name", "mysql" } };
+            string sql = "SELECT * FROM system.table_functions WHERE name = {name:String}";
 
-            var functions = (await connection.QueryAsync<string>(sql, new { Names = new string[] { "mysql", "odbc" } } )).ToList();
+            var functions = (await connection.QueryAsync<string>(sql, parameters)).ToList();
+            CollectionAssert.IsNotEmpty(functions);
+            CollectionAssert.AllItemsAreNotNull(functions);
+        }
+
+        [Test]
+        [Ignore("Requires Dapper support, see https://github.com/StackExchange/Dapper/pull/1462")]
+        public async Task ShouldExecuteSelectWithParameters()
+        {
+            var parameters = new Dictionary<string, object> { { "names", new[] { "mysql", "odbc" } } };
+            string sql = "SELECT * FROM system.table_functions WHERE has({names:Array(String)}, name)";
+
+            var functions = (await connection.QueryAsync<string>(sql, parameters)).ToList();
             CollectionAssert.IsNotEmpty(functions);
             CollectionAssert.AllItemsAreNotNull(functions);
         }

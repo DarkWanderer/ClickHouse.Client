@@ -41,7 +41,6 @@ namespace ClickHouse.Client.ADO
             set => throw new NotSupportedException();
         }
 
-
         protected override DbParameterCollection DbParameterCollection => clickHouseParameterCollection;
 
         protected override DbTransaction DbTransaction { get; set; }
@@ -75,15 +74,11 @@ namespace ClickHouse.Client.ADO
 
         public override void Prepare() { /* ClickHouse has no notion of prepared statements */ }
 
-        public new ClickHouseDbParameter CreateParameter()
-        {
-            return (ClickHouseDbParameter)this.CreateDbParameter();
-        }
-        
+        public new ClickHouseDbParameter CreateParameter() => (ClickHouseDbParameter)CreateDbParameter();
+
         protected override DbParameter CreateDbParameter()
         {
             var parameter = new ClickHouseDbParameter();
-            clickHouseParameterCollection.Add(parameter);
             return parameter;
         }
 

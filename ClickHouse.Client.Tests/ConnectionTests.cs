@@ -85,7 +85,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        public void ShouldFetchSchemaTableColumns ()
+        public void ShouldFetchSchemaTableColumns()
         {
             var schema = connection.GetSchema("Columns", new[] { "system", "functions" });
             Assert.IsNotNull(schema);
