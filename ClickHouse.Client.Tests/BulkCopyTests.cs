@@ -47,7 +47,7 @@ namespace ClickHouse.Client.Tests
                 .Replace("=", null);
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Log");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
@@ -69,7 +69,7 @@ namespace ClickHouse.Client.Tests
             var targetTable = $"temp.multiple_columns";
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Memory");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Log");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
@@ -88,7 +88,7 @@ namespace ClickHouse.Client.Tests
             var targetTable = $"temp.multiple_columns";
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Memory");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Log");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
@@ -106,7 +106,7 @@ namespace ClickHouse.Client.Tests
             var targetTable = $"temp.backticked_columns";
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`field.id` Nullable(UInt8), `@value` Nullable(UInt8)) ENGINE Memory");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`field.id` Nullable(UInt8), `@value` Nullable(UInt8)) ENGINE Log");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
