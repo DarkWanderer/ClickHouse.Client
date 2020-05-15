@@ -29,7 +29,7 @@ build_script:
 - dotnet build --no-restore --configuration Release
 
 before_test:
-- docker pull yandex/clickhouse-server
+- docker pull yandex/clickhouse-server:20.3
 - docker run -p 8123:8123 -d --name clickhouse-server yandex/clickhouse-server
 - sleep 3
 
