@@ -3,11 +3,17 @@ image:
   - Visual Studio 2019
   - Ubuntu
 
+skip_branch_with_pr: true
+skip_tags: true
+skip_commits:
+  files:
+    - '**/*.md'
+
 environment:
   CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
 nuget:
-  project_feed: false
+  project_feed: true
   disable_publish_on_pr: true
 
 services:
@@ -29,6 +35,7 @@ build_script:
 - dotnet build --no-restore --configuration Release
 
 before_test:
+- docker version
 - docker pull yandex/clickhouse-server
 - docker run -m 3GB -p 8123:8123 -d --name clickhouse-server yandex/clickhouse-server
 - sleep 3
