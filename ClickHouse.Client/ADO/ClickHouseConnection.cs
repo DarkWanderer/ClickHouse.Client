@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -81,7 +81,7 @@ namespace ClickHouse.Client.ADO
                 database = builder.Database;
                 username = builder.Username;
                 password = builder.Password;
-                serverUri = new UriBuilder("http", builder.Host, builder.Port).Uri;
+                serverUri = new UriBuilder(builder.Protocol, builder.Host, builder.Port).Uri;
                 useCompression = builder.Compression;
                 session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
                 Driver = builder.Driver;

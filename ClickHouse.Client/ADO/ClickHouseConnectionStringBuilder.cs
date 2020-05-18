@@ -28,6 +28,12 @@ namespace ClickHouse.Client.ADO
             set => this["Password"] = value;
         }
 
+        public string Protocol
+        {
+            get => TryGetValue("Protocol", out var value) ? value as string : "http";
+            set => this["Protocol"] = value;
+        }
+
         public string Host
         {
             get => TryGetValue("Host", out var value) ? value as string : "localhost";
