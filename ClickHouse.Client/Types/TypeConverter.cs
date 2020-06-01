@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using ClickHouse.Client.Types.Grammar;
 
 [assembly: InternalsVisibleTo("ClickHouse.Client.Tests")] // assembly-level tag to expose below classes to tests
@@ -19,68 +20,66 @@ namespace ClickHouse.Client.Types
 
         static TypeConverter()
         {
-            // Unsigned integral types
-            RegisterPlainTypeInfo<byte>(ClickHouseTypeCode.UInt8);
-            RegisterPlainTypeInfo<ushort>(ClickHouseTypeCode.UInt16);
-            RegisterPlainTypeInfo<uint>(ClickHouseTypeCode.UInt32);
-            RegisterPlainTypeInfo<ulong>(ClickHouseTypeCode.UInt64);
+            // Integral types
+            RegisterPlainType<Int8Type>();
+            RegisterPlainType<Int16Type>();
+            RegisterPlainType<Int32Type>();
+            RegisterPlainType<Int64Type>();
 
-            // Signed integral types
-            RegisterPlainTypeInfo<sbyte>(ClickHouseTypeCode.Int8);
-            RegisterPlainTypeInfo<short>(ClickHouseTypeCode.Int16);
-            RegisterPlainTypeInfo<int>(ClickHouseTypeCode.Int32);
-            RegisterPlainTypeInfo<long>(ClickHouseTypeCode.Int64);
+            RegisterPlainType<UInt8Type>();
+            RegisterPlainType<UInt16Type>();
+            RegisterPlainType<UInt32Type>();
+            RegisterPlainType<UInt64Type>();
 
-            // Float types
-            RegisterPlainTypeInfo<float>(ClickHouseTypeCode.Float32);
-            RegisterPlainTypeInfo<double>(ClickHouseTypeCode.Float64);
+            // Floating point types
+            RegisterPlainType<Float32Type>();
+            RegisterPlainType<Float64Type>();
+
+            // Special types
+            RegisterPlainType<UuidType>();
+            RegisterPlainType<IPv4Type>();
+            RegisterPlainType<IPv6Type>();
 
             // String types
-            RegisterPlainTypeInfo<string>(ClickHouseTypeCode.String);
+            RegisterPlainType<StringType>();
+            RegisterParameterizedType<FixedStringType>();
 
-            RegisterPlainTypeInfo<Guid>(ClickHouseTypeCode.UUID);
-            RegisterPlainTypeInfo<IPAddress>(ClickHouseTypeCode.IPv4);
-            RegisterPlainTypeInfo<IPAddress>(ClickHouseTypeCode.IPv6);
+            // DateTime types
+            RegisterPlainType<DateType>();
+            RegisterParameterizedType<DateTimeType>();
+            RegisterParameterizedType<DateTime64Type>();
 
             // Special 'nothing' type
-            var nti = new NothingType();
-            SimpleTypes.Add(ClickHouseTypeCode.Nothing, nti);
-            ReverseMapping.Add(typeof(DBNull), nti);
+            RegisterPlainType<NothingType>();
 
-            // complex types like FixedString/Array/Nested etc.
-            RegisterParameterizedType<FixedStringType>();
+            // complex types like Tuple/Array/Nested etc.
             RegisterParameterizedType<ArrayType>();
             RegisterParameterizedType<NullableType>();
             RegisterParameterizedType<TupleType>();
             RegisterParameterizedType<NestedType>();
             RegisterParameterizedType<LowCardinalityType>();
 
-            RegisterParameterizedType<DateType>();
-            RegisterParameterizedType<DateTimeType>();
-            RegisterParameterizedType<DateTime64Type>();
 
             RegisterParameterizedType<DecimalType>();
             RegisterParameterizedType<Decimal32Type>();
             RegisterParameterizedType<Decimal64Type>();
             RegisterParameterizedType<Decimal128Type>();
 
-            RegisterParameterizedType<EnumType>();
             RegisterParameterizedType<Enum8Type>();
             RegisterParameterizedType<Enum16Type>();
 
             ReverseMapping.Add(typeof(decimal), new Decimal128Type());
-            ReverseMapping.Add(typeof(DateTime), new DateTimeType());
-
-            RegisterPlainTypeInfo<DateTime>(ClickHouseTypeCode.Date);
+            ReverseMapping[typeof(DateTime)] = new DateTimeType();
         }
 
-        private static void RegisterPlainTypeInfo<T>(ClickHouseTypeCode type)
+        private static void RegisterPlainType<T>() 
+            where T: ClickHouseType, new()
         {
-            var typeInfo = new PlainDataType<T>(type);
-            SimpleTypes.Add(type, typeInfo);
-            if (!ReverseMapping.ContainsKey(typeInfo.FrameworkType))
+            var type = new T();
+            SimpleTypes.Add(type.TypeCode, type);
+            if (!ReverseMapping.ContainsKey(type.FrameworkType))
             {
-                ReverseMapping.Add(typeInfo.FrameworkType, typeInfo);
+                ReverseMapping.Add(type.FrameworkType, type);
             }
         }
 

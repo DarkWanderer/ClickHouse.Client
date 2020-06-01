@@ -4,7 +4,7 @@ using NodaTime;
 
 namespace ClickHouse.Client.Types
 {
-    internal class DateTime64Type : DateTimeType
+    internal class DateTime64Type : AbstractDateTimeType
     {
         public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.DateTime64;
 
@@ -30,5 +30,7 @@ namespace ClickHouse.Client.Types
                 Scale = scale,
             };
         }
+
+        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
     }
 }

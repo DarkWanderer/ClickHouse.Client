@@ -131,13 +131,7 @@ namespace ClickHouse.Client.ADO
 
             var result = await connection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token, clickHouseParameterCollection).ConfigureAwait(false);
 
-            return driver switch
-            {
-                ClickHouseConnectionDriver.Binary => new ClickHouseBinaryReader(result),
-                ClickHouseConnectionDriver.JSON => new ClickHouseJsonCompactReader(result),
-                ClickHouseConnectionDriver.TSV => new ClickHouseTsvReader(result),
-                _ => throw new NotSupportedException("Unknown driver: " + driver.ToString()),
-            };
+            return new ClickHouseBinaryReader(result);
         }
     }
 }

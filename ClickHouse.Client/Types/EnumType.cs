@@ -5,7 +5,7 @@ using ClickHouse.Client.Types.Grammar;
 
 namespace ClickHouse.Client.Types
 {
-    internal class EnumType : ParameterizedType
+    internal abstract class EnumType : ParameterizedType
     {
         private Dictionary<string, int> values = new Dictionary<string, int>();
 
@@ -22,10 +22,14 @@ namespace ClickHouse.Client.Types
                 .Select(p => p.Split('='))
                 .ToDictionary(kvp => kvp[0].Trim().Trim('\''), kvp => Convert.ToInt32(kvp[1].Trim()));
 
-            return new EnumType
+            switch (node.Value)
             {
-                values = parameters,
-            };
+                case "Enum8":
+                    return new Enum8Type { values = parameters };
+                case "Enum16":
+                    return new Enum16Type { values = parameters };
+                default: throw new ArgumentOutOfRangeException();
+            }
         }
 
         public int Lookup(string key) => values[key];

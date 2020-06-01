@@ -68,5 +68,7 @@ namespace ClickHouse.Client.Types
             int p when p >= 19 && p < 39 => 16,
             _ => throw new ArgumentOutOfRangeException(nameof(Precision)),
         };
+
+        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
     }
 }

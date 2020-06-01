@@ -13,6 +13,8 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "FixedString";
 
+        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
+
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
             return new FixedStringType

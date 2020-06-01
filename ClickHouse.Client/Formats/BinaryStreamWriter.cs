@@ -171,7 +171,7 @@ namespace ClickHouse.Client.Formats
                     writer.Write(days);
                     break;
                 case ClickHouseTypeCode.DateTime:
-                    var dtType = (DateTimeType)databaseType;
+                    var dtType = (AbstractDateTimeType)databaseType;
                     var dto = dtType.ToDateTimeOffset((DateTime)data);
                     var seconds = (uint)(dto.UtcDateTime - TypeConverter.DateTimeEpochStart).TotalSeconds;
                     writer.Write(seconds);

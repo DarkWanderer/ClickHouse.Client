@@ -53,7 +53,7 @@ namespace ClickHouse.Client.Formats
                 ClickHouseTypeCode.Nothing => $"null",
 
                 ClickHouseTypeCode.Date when value is DateTime date => $"{date:yyyy-MM-dd}",
-                ClickHouseTypeCode.DateTime when type is DateTimeType dateTimeType && value is DateTime dateTime =>
+                ClickHouseTypeCode.DateTime when type is AbstractDateTimeType dateTimeType && value is DateTime dateTime =>
                     dateTimeType.TimeZone == null
                         ? $"{dateTime:yyyy-MM-dd HH:mm:ss}"
                         : $"{dateTime.ToUniversalTime():yyyy-MM-dd HH:mm:ss}",

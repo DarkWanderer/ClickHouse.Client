@@ -48,8 +48,8 @@ namespace ClickHouse.Client.ADO.Readers
                 var data = CurrentRow;
                 for (var i = 0; i < count; i++)
                 {
-                    var rawTypeInfo = RawTypes[i];
-                    data[i] = streamReader.ReadValue(rawTypeInfo, true);
+                    var rawType = RawTypes[i];
+                    data[i] = streamReader.Read(rawType);
                 }
                 return true;
             }

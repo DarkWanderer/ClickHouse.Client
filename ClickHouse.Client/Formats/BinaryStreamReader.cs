@@ -7,7 +7,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Formats
 {
-    internal class BinaryStreamReader : IDisposable
+    internal class BinaryStreamReader : IDisposable, ISerializationTypeVisitorReader
     {
         private readonly ExtendedBinaryReader reader;
 
@@ -18,132 +18,132 @@ namespace ClickHouse.Client.Formats
 
         public void Dispose() => reader.Dispose();
 
-        public object ReadValue(ClickHouseType databaseType, bool nullAsDbNull)
+        public object Read(ClickHouseType type) => type.AcceptRead(this);
+
+        public object Read(LowCardinalityType lowCardinalityType) => Read(lowCardinalityType.UnderlyingType);
+
+        public object Read(FixedStringType fixedStringType) => Encoding.UTF8.GetString(reader.ReadBytes(fixedStringType.Length));
+
+        public object Read(Int8Type int8Type) => reader.ReadSByte();
+
+        public object Read(UInt32Type uInt32Type) => reader.ReadUInt32();
+
+        public object Read(Int32Type int32Type) => reader.ReadInt32();
+
+        public object Read(UInt16Type uInt16Type) => reader.ReadUInt16();
+
+        public object Read(Int16Type int16Type) => reader.ReadInt16();
+
+        public object Read(UInt8Type uInt8Type) => reader.ReadByte();
+
+        public object Read(NothingType nothingType) => null;
+
+        public object Read(ArrayType arrayType) => ReadArray(arrayType, true);
+
+        public object ReadArray(ArrayType arrayType, bool nullAsDbNull)
         {
-            switch (databaseType.TypeCode)
+            var length = reader.Read7BitEncodedInt();
+            var data = arrayType.MakeArray(length);
+            for (var i = 0; i < length; i++)
             {
-                case ClickHouseTypeCode.UInt8:
-                    return reader.ReadByte();
-                case ClickHouseTypeCode.UInt16:
-                    return reader.ReadUInt16();
-                case ClickHouseTypeCode.UInt32:
-                    return reader.ReadUInt32();
-                case ClickHouseTypeCode.UInt64:
-                    return reader.ReadUInt64();
-
-                case ClickHouseTypeCode.Int8:
-                    return reader.ReadSByte();
-                case ClickHouseTypeCode.Int16:
-                    return reader.ReadInt16();
-                case ClickHouseTypeCode.Int32:
-                    return reader.ReadInt32();
-                case ClickHouseTypeCode.Int64:
-                    return reader.ReadInt64();
-
-                case ClickHouseTypeCode.Float32:
-                    return reader.ReadSingle();
-                case ClickHouseTypeCode.Float64:
-                    return reader.ReadDouble();
-
-                case ClickHouseTypeCode.String:
-                    return reader.ReadString();
-                case ClickHouseTypeCode.FixedString:
-                    var stringInfo = (FixedStringType)databaseType;
-                    return Encoding.UTF8.GetString(reader.ReadBytes(stringInfo.Length));
-
-                case ClickHouseTypeCode.Array:
-                    var arrayTypeInfo = (ArrayType)databaseType;
-                    var length = reader.Read7BitEncodedInt();
-                    var data = arrayTypeInfo.MakeArray(length);
-                    for (var i = 0; i < length; i++)
-                    {
-                        data.SetValue(ReadValue(arrayTypeInfo.UnderlyingType, nullAsDbNull), i);
-                    }
-                    return data;
-
-                case ClickHouseTypeCode.Nullable:
-                    var nullableTypeInfo = (NullableType)databaseType;
-                    if (reader.ReadByte() > 0)
-                    {
-                        return nullAsDbNull ? DBNull.Value : null;
-                    }
-                    else
-                    {
-                        return ReadValue(nullableTypeInfo.UnderlyingType, nullAsDbNull);
-                    }
-
-                case ClickHouseTypeCode.Date:
-                    var days = reader.ReadUInt16();
-                    return TypeConverter.DateTimeEpochStart.AddDays(days);
-                case ClickHouseTypeCode.DateTime:
-                    var seconds = reader.ReadUInt32();
-                    return TypeConverter.DateTimeEpochStart.AddSeconds(seconds);
-                case ClickHouseTypeCode.DateTime64:
-                    var dt64t = (DateTime64Type)databaseType;
-                    var chTicks = reader.ReadInt64();
-                    // 7 is a 'magic constant' - Log10 of TimeSpan.TicksInSecond
-                    return TypeConverter.DateTimeEpochStart.AddTicks(MathUtils.ShiftDecimalPlaces(chTicks, 7 - dt64t.Scale));
-
-                case ClickHouseTypeCode.UUID:
-                    // Byte manipulation because of ClickHouse's weird GUID implementation
-                    var bytes = new byte[16];
-                    reader.Read(bytes, 6, 2);
-                    reader.Read(bytes, 4, 2);
-                    reader.Read(bytes, 0, 4);
-                    reader.Read(bytes, 8, 8);
-                    Array.Reverse(bytes, 8, 8);
-                    return new Guid(bytes);
-
-                case ClickHouseTypeCode.IPv4:
-                    var ipv4bytes = reader.ReadBytes(4);
-                    Array.Reverse(ipv4bytes);
-                    return new IPAddress(ipv4bytes);
-
-                case ClickHouseTypeCode.IPv6:
-                    var ipv6bytes = reader.ReadBytes(16);
-                    return new IPAddress(ipv6bytes);
-
-                case ClickHouseTypeCode.Tuple:
-                    var tupleTypeInfo = (TupleType)databaseType;
-                    var count = tupleTypeInfo.UnderlyingTypes.Length;
-                    var contents = new object[count];
-                    for (var i = 0; i < count; i++)
-                    {
-                        // Underlying data in Tuple should always be null, not DBNull
-                        contents[i] = ReadValue(tupleTypeInfo.UnderlyingTypes[i], false);
-                    }
-                    return tupleTypeInfo.MakeTuple(contents);
-
-                case ClickHouseTypeCode.Decimal:
-                    var dti = (DecimalType)databaseType;
-                    switch (dti.Size)
-                    {
-                        case 4:
-                            return (decimal)reader.ReadInt32() / dti.Exponent;
-                        case 8:
-                            return (decimal)reader.ReadInt64() / dti.Exponent;
-                        default:
-                            var bigInt = new BigInteger(reader.ReadBytes(dti.Size));
-                            return (decimal)bigInt / dti.Exponent;
-                    }
-                case ClickHouseTypeCode.Nothing:
-                    break;
-                case ClickHouseTypeCode.Nested:
-                    throw new NotSupportedException("Nested types cannot be read directly");
-
-                case ClickHouseTypeCode.Enum8:
-                    var enum8TypeInfo = (EnumType)databaseType;
-                    return enum8TypeInfo.Lookup(reader.ReadSByte());
-
-                case ClickHouseTypeCode.Enum16:
-                    var enum16TypeInfo = (EnumType)databaseType;
-                    return enum16TypeInfo.Lookup(reader.ReadInt16());
-
-                case ClickHouseTypeCode.LowCardinality:
-                    var lcCardinality = (LowCardinalityType)databaseType;
-                    return ReadValue(lcCardinality.UnderlyingType, nullAsDbNull);
+                data.SetValue(Read(arrayType.UnderlyingType), i);
             }
-            throw new NotImplementedException($"Reading of {databaseType.TypeCode} is not implemented");
+            return data;
         }
+
+        public object Read(AbstractDateTimeType dateTimeType)
+        {
+            var seconds = reader.ReadUInt32();
+            return TypeConverter.DateTimeEpochStart.AddSeconds(seconds);
+        }
+
+        public object Read(DecimalType decimalType)
+        {
+            switch (decimalType.Size)
+            {
+                case 4:
+                    return (decimal)reader.ReadInt32() / decimalType.Exponent;
+                case 8:
+                    return (decimal)reader.ReadInt64() / decimalType.Exponent;
+                default:
+                    var bigInt = new BigInteger(reader.ReadBytes(decimalType.Size));
+                    return (decimal)bigInt / decimalType.Exponent;
+            }
+        }
+
+        public object Read(NullableType nullableType)
+        {
+            var nullAsDbNull = true; // TODO
+            if (reader.ReadByte() > 0)
+            {
+                return nullAsDbNull ? DBNull.Value : null;
+            }
+            else
+            {
+                return Read(nullableType.UnderlyingType);
+            }
+        }
+
+        public object Read(TupleType tupleType)
+        {
+            var count = tupleType.UnderlyingTypes.Length;
+            var contents = new object[count];
+            for (var i = 0; i < count; i++)
+            {
+                // Underlying data in Tuple should always be null, not DBNull
+                var value = Read(tupleType.UnderlyingTypes[i]);
+                contents[i] = value is DBNull ? null : value;
+            }
+            return tupleType.MakeTuple(contents);
+        }
+
+        public object Read(StringType stringType) => reader.ReadString();
+
+        public object Read(UuidType uuidType)
+        {
+            // Byte manipulation because of ClickHouse's weird GUID/UUID implementation
+            var bytes = new byte[16];
+            reader.Read(bytes, 6, 2);
+            reader.Read(bytes, 4, 2);
+            reader.Read(bytes, 0, 4);
+            reader.Read(bytes, 8, 8);
+            Array.Reverse(bytes, 8, 8);
+            return new Guid(bytes);
+        }
+
+        public object Read(Float32Type float32Type) => reader.ReadSingle();
+        public object Read(Int64Type int64Type) => reader.ReadInt64();
+        public object Read(UInt64Type uInt64Type) => reader.ReadUInt64();
+        public object Read(Float64Type float64Type) => reader.ReadDouble();
+
+        public object Read(IPv4Type pv4Type)
+        {
+            var ipv4bytes = reader.ReadBytes(4);
+            Array.Reverse(ipv4bytes);
+            return new IPAddress(ipv4bytes);
+        }
+
+        public object Read(IPv6Type pv6Type)
+        {
+            var ipv6bytes = reader.ReadBytes(16);
+            return new IPAddress(ipv6bytes);
+        }
+
+        public object Read(DateTime64Type dateTimeType)
+        {
+            var chTicks = reader.ReadInt64();
+            // 7 is a 'magic constant' - Log10 of TimeSpan.TicksInSecond
+            return TypeConverter.DateTimeEpochStart.AddTicks(MathUtils.ShiftDecimalPlaces(chTicks, 7 - dateTimeType.Scale));
+        }
+
+        public object Read(DateType dateType)
+        {
+            var days = reader.ReadUInt16();
+            return TypeConverter.DateTimeEpochStart.AddDays(days);
+        }
+
+        public object Read(Enum8Type enumType) => enumType.Lookup(reader.ReadSByte());
+
+        public object Read(Enum16Type enumType) => enumType.Lookup(reader.ReadInt16());
     }
 }

@@ -62,7 +62,7 @@ namespace ClickHouse.Client.ADO.Readers
         public virtual DateTimeOffset GetDateTimeOffset(int ordinal)
         {
             var dt = GetDateTime(ordinal);
-            return ((DateTimeType)RawTypes[ordinal]).ToDateTimeOffset(dt);
+            return ((AbstractDateTimeType)RawTypes[ordinal]).ToDateTimeOffset(dt);
         }
 
         public override decimal GetDecimal(int ordinal) => Convert.ToDecimal(GetValue(ordinal), CultureInfo.InvariantCulture);

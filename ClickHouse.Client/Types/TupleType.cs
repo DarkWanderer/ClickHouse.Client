@@ -68,5 +68,7 @@ namespace ClickHouse.Client.Types
         }
 
         public override string ToString() => $"{Name}({string.Join(",", UnderlyingTypes.Select(t => t.ToString()))})";
+
+        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
     }
 }

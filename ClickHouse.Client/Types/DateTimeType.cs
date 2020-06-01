@@ -5,10 +5,8 @@ using NodaTime.TimeZones;
 
 namespace ClickHouse.Client.Types
 {
-    internal class DateTimeType : ParameterizedType
+    internal abstract class AbstractDateTimeType : ParameterizedType
     {
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.DateTime;
-
         public override Type FrameworkType => typeof(DateTime);
 
         public DateTimeZone TimeZone { get; set; }
@@ -52,6 +50,11 @@ namespace ClickHouse.Client.Types
         }
 
         public override string ToString() => TimeZone == null ? $"{Name}" : $"{Name}({TimeZone.Id})";
+    }
+
+    internal class DateTimeType : AbstractDateTimeType
+    {
+        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.DateTime;
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
@@ -60,5 +63,7 @@ namespace ClickHouse.Client.Types
 
             return new DateTimeType { TimeZone = timeZone };
         }
+
+        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
     }
 }
