@@ -61,9 +61,18 @@ namespace ClickHouse.Client.Formats
                 case ClickHouseTypeCode.Decimal:
                     var dti = (DecimalType)databaseType;
                     var value = new BigInteger(MathUtils.ShiftDecimalPlaces(Convert.ToDecimal(data), dti.Scale));
-                    var dbytes = new byte[dti.Size];
-                    value.ToByteArray().CopyTo(dbytes, 0);
-                    writer.Write(dbytes);
+                    var biBytes = value.ToByteArray();
+                    var decimalBytes = new byte[dti.Size];
+                    biBytes.CopyTo(decimalBytes, 0);
+
+                    // If a negative BigInteger is not long enough to fill the whole buffer, the remainder needs to be filled with 0xFF
+                    if (value < 0)
+                    {
+                        for (int i = biBytes.Length; i < dti.Size; i++)
+                            decimalBytes[i] = 0xFF;
+                    }
+
+                    writer.Write(decimalBytes);
                     break;
 
                 case ClickHouseTypeCode.String:
