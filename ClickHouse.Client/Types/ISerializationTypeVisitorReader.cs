@@ -25,7 +25,7 @@
         object Read(ArrayType arrayType);
 
         object Read(AbstractDateTimeType dateTimeType);
-        
+
         object Read(DateTime64Type dateTimeType);
 
         object Read(DecimalType decimalType);

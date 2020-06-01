@@ -38,9 +38,7 @@ namespace ClickHouse.Client.Formats
 
         public object Read(NothingType nothingType) => null;
 
-        public object Read(ArrayType arrayType) => ReadArray(arrayType, true);
-
-        public object ReadArray(ArrayType arrayType, bool nullAsDbNull)
+        public object Read(ArrayType arrayType)
         {
             var length = reader.Read7BitEncodedInt();
             var data = arrayType.MakeArray(length);
@@ -51,11 +49,7 @@ namespace ClickHouse.Client.Formats
             return data;
         }
 
-        public object Read(AbstractDateTimeType dateTimeType)
-        {
-            var seconds = reader.ReadUInt32();
-            return TypeConverter.DateTimeEpochStart.AddSeconds(seconds);
-        }
+        public object Read(AbstractDateTimeType dateTimeType) => TypeConverter.DateTimeEpochStart.AddSeconds(reader.ReadUInt32());
 
         public object Read(DecimalType decimalType)
         {
@@ -71,18 +65,7 @@ namespace ClickHouse.Client.Formats
             }
         }
 
-        public object Read(NullableType nullableType)
-        {
-            var nullAsDbNull = true; // TODO
-            if (reader.ReadByte() > 0)
-            {
-                return nullAsDbNull ? DBNull.Value : null;
-            }
-            else
-            {
-                return Read(nullableType.UnderlyingType);
-            }
-        }
+        public object Read(NullableType nullableType) => reader.ReadByte() > 0 ? DBNull.Value : Read(nullableType.UnderlyingType);
 
         public object Read(TupleType tupleType)
         {
@@ -126,24 +109,11 @@ namespace ClickHouse.Client.Formats
             return new IPAddress(ipv4bytes);
         }
 
-        public object Read(IPv6Type pv6Type)
-        {
-            var ipv6bytes = reader.ReadBytes(16);
-            return new IPAddress(ipv6bytes);
-        }
+        public object Read(IPv6Type pv6Type) => new IPAddress(reader.ReadBytes(16));
 
-        public object Read(DateTime64Type dateTimeType)
-        {
-            var chTicks = reader.ReadInt64();
-            // 7 is a 'magic constant' - Log10 of TimeSpan.TicksInSecond
-            return TypeConverter.DateTimeEpochStart.AddTicks(MathUtils.ShiftDecimalPlaces(chTicks, 7 - dateTimeType.Scale));
-        }
+        public object Read(DateTime64Type dateTimeType) => TypeConverter.DateTimeEpochStart.AddTicks(MathUtils.ShiftDecimalPlaces(reader.ReadInt64(), 7 - dateTimeType.Scale));
 
-        public object Read(DateType dateType)
-        {
-            var days = reader.ReadUInt16();
-            return TypeConverter.DateTimeEpochStart.AddDays(days);
-        }
+        public object Read(DateType dateType) => TypeConverter.DateTimeEpochStart.AddDays(reader.ReadUInt16());
 
         public object Read(Enum8Type enumType) => enumType.Lookup(reader.ReadSByte());
 

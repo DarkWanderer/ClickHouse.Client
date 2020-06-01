@@ -3,7 +3,6 @@ using System.Net;
 
 namespace ClickHouse.Client.Types
 {
-
     internal class IPv4Type : ClickHouseType
     {
         public override Type FrameworkType => typeof(IPAddress);

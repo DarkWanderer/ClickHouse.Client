@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -132,7 +131,7 @@ namespace ClickHouse.Client.Formats
 
         public void Write(UInt16Type uInt16Type, object value) => writer.Write(Convert.ToUInt16(value));
 
-        public void Write(NothingType nothingType, object value) => throw new NotImplementedException();
+        public void Write(NothingType nothingType, object value) { }
 
         public void Write(Int16Type int16Type, object value) => writer.Write(Convert.ToInt16(value));
 
