@@ -112,8 +112,11 @@ namespace ClickHouse.Client.Formats
         }
 
         public object Read(Float32Type float32Type) => reader.ReadSingle();
+
         public object Read(Int64Type int64Type) => reader.ReadInt64();
+
         public object Read(UInt64Type uInt64Type) => reader.ReadUInt64();
+
         public object Read(Float64Type float64Type) => reader.ReadDouble();
 
         public object Read(IPv4Type pv4Type)

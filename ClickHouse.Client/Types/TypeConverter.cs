@@ -59,7 +59,6 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<NestedType>();
             RegisterParameterizedType<LowCardinalityType>();
 
-
             RegisterParameterizedType<DecimalType>();
             RegisterParameterizedType<Decimal32Type>();
             RegisterParameterizedType<Decimal64Type>();

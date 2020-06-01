@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Net;
 
 namespace ClickHouse.Client.Types
 {
-    internal class UuidType : ClickHouseType
+    internal class IPv6Type : ClickHouseType
     {
-        public override Type FrameworkType => typeof(Guid);
+        public override Type FrameworkType => typeof(IPAddress);
 
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.UUID;
+        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.IPv6;
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 

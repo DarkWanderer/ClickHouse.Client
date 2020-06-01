@@ -147,7 +147,7 @@ namespace ClickHouse.Client.Copy
                 {
                     for (var i = 0; i < row.Length; i++)
                     {
-                        streamer.WriteValue(row[i], columnTypes[i]);
+                        streamer.Write(columnTypes[i], row[i]);
                     }
                 }
             }

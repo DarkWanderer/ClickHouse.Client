@@ -15,7 +15,7 @@ namespace ClickHouse.Client.Types
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 
-        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.VisitWrite(this, value);
+        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {

@@ -10,7 +10,7 @@ namespace ClickHouse.Client.Types
 
         public abstract object AcceptRead(ISerializationTypeVisitorReader reader);
 
-        public virtual void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => throw new NotImplementedException();
+        public abstract void AcceptWrite(ISerializationTypeVisitorWriter writer, object value);
 
         public override string ToString() => TypeCode.ToString();
     }

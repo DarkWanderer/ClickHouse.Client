@@ -13,22 +13,4 @@ namespace ClickHouse.Client.Types
 
         public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
     }
-
-    internal class IPv4Type : ClickHouseType
-    {
-        public override Type FrameworkType => typeof(IPAddress);
-
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.IPv4;
-
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
-    }
-
-    internal class IPv6Type : ClickHouseType
-    {
-        public override Type FrameworkType => typeof(IPAddress);
-
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.IPv6;
-
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
-    }
 }
