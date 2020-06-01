@@ -115,9 +115,9 @@ namespace ClickHouse.Client.Formats
                     return tupleTypeInfo.MakeTuple(contents);
 
                 case ClickHouseTypeCode.Decimal:
-                    var decimalTypeInfo = (DecimalType)databaseType;
-                    var value = new BigInteger(reader.ReadBytes(decimalTypeInfo.Size));
-                    return MathUtils.ShiftDecimalPlaces((decimal)value, -decimalTypeInfo.Scale);
+                    var dti = (DecimalType)databaseType;
+                    var value = new BigInteger(reader.ReadBytes(dti.Size));
+                    return (decimal)value / dti.Exponent;
                 case ClickHouseTypeCode.Nothing:
                     break;
                 case ClickHouseTypeCode.Nested:

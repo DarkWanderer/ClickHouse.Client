@@ -60,7 +60,7 @@ namespace ClickHouse.Client.Formats
 
                 case ClickHouseTypeCode.Decimal:
                     var dti = (DecimalType)databaseType;
-                    var value = new BigInteger(MathUtils.ShiftDecimalPlaces(Convert.ToDecimal(data), dti.Scale));
+                    var value = new BigInteger(Convert.ToDecimal(data) * dti.Exponent);
                     var biBytes = value.ToByteArray();
                     var decimalBytes = new byte[dti.Size];
                     biBytes.CopyTo(decimalBytes, 0);

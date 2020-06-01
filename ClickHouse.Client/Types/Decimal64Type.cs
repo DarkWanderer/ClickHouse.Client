@@ -16,13 +16,10 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "Decimal64";
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc) => new Decimal64Type
         {
-            return new Decimal64Type
-            {
-                Scale = int.Parse(node.SingleChild.Value),
-            };
-        }
+            Scale = int.Parse(node.SingleChild.Value),
+        };
 
         public override string ToString() => $"{Name}({Scale})";
     }

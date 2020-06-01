@@ -7,9 +7,27 @@ namespace ClickHouse.Client.Types
 {
     internal class DecimalType : ParameterizedType
     {
+        private int scale;
+
         public virtual int Precision { get; set; }
 
-        public int Scale { get; set; }
+        /// <summary>
+        /// Gets or sets the decimal 'scale' (precision) in ClickHouse
+        /// </summary>
+        public int Scale
+        {
+            get => scale;
+            set
+            {
+                scale = value;
+                Exponent = MathUtils.ToPower(10, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets decimal exponent value based on Scale
+        /// </summary>
+        public long Exponent { get; private set; }
 
         public override string Name => "Decimal";
 
@@ -19,14 +37,6 @@ namespace ClickHouse.Client.Types
         /// Gets size of type in bytes
         /// </summary>
         public virtual int Size => GetSizeFromPrecision(Precision);
-
-        private int GetSizeFromPrecision(int precision) => precision switch
-        {
-            int p when p >= 1 && p < 10 => 4,
-            int p when p >= 10 && p < 19 => 8,
-            int p when p >= 19 && p < 39 => 16,
-            _ => throw new ArgumentOutOfRangeException(nameof(Precision)),
-        };
 
         public override Type FrameworkType => typeof(decimal);
 
@@ -51,5 +61,13 @@ namespace ClickHouse.Client.Types
         }
 
         public override string ToString() => $"{Name}({Precision}, {Scale})";
+
+        private int GetSizeFromPrecision(int precision) => precision switch
+        {
+            int p when p >= 1 && p < 10 => 4,
+            int p when p >= 10 && p < 19 => 8,
+            int p when p >= 19 && p < 39 => 16,
+            _ => throw new ArgumentOutOfRangeException(nameof(Precision)),
+        };
     }
 }
