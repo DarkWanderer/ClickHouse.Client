@@ -126,7 +126,7 @@ namespace ClickHouse.Client.Tests
                 .Cast<ClickHouseTypeCode>()
                 .Select(dt => dt.ToString())
                 .Where(dt => dt.Contains("Int") || dt.Contains("Float"))
-                .Select(dt => $"to{dt.ToString()}(55)")
+                .Select(dt => $"to{dt}(55)")
                 .ToArray();
             var sql = $"select {string.Join(',', types)}";
 

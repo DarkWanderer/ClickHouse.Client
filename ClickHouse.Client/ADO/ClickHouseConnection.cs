@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO.Parameters;
 using ClickHouse.Client.Formats;
-using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO

@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using ClickHouse.Client.Types.Grammar;
-using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
 {

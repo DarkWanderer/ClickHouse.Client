@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using System.Data.Common;
-using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.ADO.Parameters
 {

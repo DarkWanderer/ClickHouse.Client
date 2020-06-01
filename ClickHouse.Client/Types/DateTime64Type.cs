@@ -1,6 +1,5 @@
 ﻿using System;
 using ClickHouse.Client.Types.Grammar;
-using ClickHouse.Client.Utility;
 using NodaTime;
 
 namespace ClickHouse.Client.Types

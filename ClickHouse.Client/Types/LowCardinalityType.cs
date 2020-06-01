@@ -1,6 +1,5 @@
 ﻿using System;
 using ClickHouse.Client.Types.Grammar;
-using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
 {
@@ -22,6 +21,6 @@ namespace ClickHouse.Client.Types
             };
         }
 
-        public override string ToString() => $"{Name}({UnderlyingType.ToString()})";
+        public override string ToString() => $"{Name}({UnderlyingType})";
     }
 }

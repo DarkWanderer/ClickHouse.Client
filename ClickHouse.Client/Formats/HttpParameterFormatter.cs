@@ -1,13 +1,10 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Runtime.CompilerServices;
 using ClickHouse.Client.ADO.Parameters;
 using ClickHouse.Client.Types;
-using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Formats
 {

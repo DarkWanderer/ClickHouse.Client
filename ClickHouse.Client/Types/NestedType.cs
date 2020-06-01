@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using ClickHouse.Client.Types.Grammar;
-using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
 {

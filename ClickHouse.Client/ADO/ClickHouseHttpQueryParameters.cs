@@ -2,8 +2,6 @@ using System;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Web;
-using ClickHouse.Client.ADO.Parameters;
-using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.ADO
 {
