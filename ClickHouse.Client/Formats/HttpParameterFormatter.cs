@@ -32,7 +32,7 @@ namespace ClickHouse.Client.Formats
                     simpleType == ClickHouseTypeCode.Int8 ||
                     simpleType == ClickHouseTypeCode.Int16 ||
                     simpleType == ClickHouseTypeCode.Int32 ||
-                    simpleType == ClickHouseTypeCode.Int64 => value.ToString(),
+                    simpleType == ClickHouseTypeCode.Int64 => Convert.ToString(value, CultureInfo.InvariantCulture),
 
                 var floatType when
                     floatType == ClickHouseTypeCode.Float32 ||
