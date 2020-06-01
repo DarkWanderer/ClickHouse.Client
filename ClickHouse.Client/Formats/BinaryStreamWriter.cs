@@ -60,19 +60,19 @@ namespace ClickHouse.Client.Formats
 
                 case ClickHouseTypeCode.Decimal:
                     var dti = (DecimalType)databaseType;
-                    var value = new BigInteger(Convert.ToDecimal(data) * dti.Exponent);
-                    var biBytes = value.ToByteArray();
-                    var decimalBytes = new byte[dti.Size];
-                    biBytes.CopyTo(decimalBytes, 0);
-
-                    // If a negative BigInteger is not long enough to fill the whole buffer, the remainder needs to be filled with 0xFF
-                    if (value < 0)
+                    decimal multipliedValue = Convert.ToDecimal(data) * dti.Exponent;
+                    switch (dti.Size)
                     {
-                        for (int i = biBytes.Length; i < dti.Size; i++)
-                            decimalBytes[i] = 0xFF;
+                        case 4:
+                            writer.Write((int)multipliedValue);
+                            break;
+                        case 8:
+                            writer.Write((long)multipliedValue);
+                            break;
+                        default:
+                            WriteLargeDecimal(dti, multipliedValue);
+                            break;
                     }
-
-                    writer.Write(decimalBytes);
                     break;
 
                 case ClickHouseTypeCode.String:
@@ -147,7 +147,7 @@ namespace ClickHouse.Client.Formats
                     var address4 = ExtractIPAddress(data);
                     if (address4.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
                     {
-                        throw new ArgumentException($"Expected IPv4, got {address4.ToString()}");
+                        throw new ArgumentException($"Expected IPv4, got {address4}");
                     }
 
                     var ipv4bytes = address4.GetAddressBytes();
@@ -159,7 +159,7 @@ namespace ClickHouse.Client.Formats
                     var address6 = ExtractIPAddress(data);
                     if (address6.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6)
                     {
-                        throw new ArgumentException($"Expected IPv4, got {address6.ToString()}");
+                        throw new ArgumentException($"Expected IPv4, got {address6}");
                     }
 
                     var ipv6bytes = address6.GetAddressBytes();
@@ -208,6 +208,22 @@ namespace ClickHouse.Client.Formats
             }
         }
 
+        private void WriteLargeDecimal(DecimalType dti, decimal value)
+        {
+            var bigInt = new BigInteger(value);
+            byte[] bigIntBytes = bigInt.ToByteArray();
+            byte[] decimalBytes = new byte[dti.Size];
+            bigIntBytes.CopyTo(decimalBytes, 0);
+
+            // If a negative BigInteger is not long enough to fill the whole buffer, the remainder needs to be filled with 0xFF
+            if (bigInt < 0)
+            {
+                for (int i = bigIntBytes.Length; i < dti.Size; i++)
+                    decimalBytes[i] = 0xFF;
+            }
+            writer.Write(decimalBytes);
+        }
+
         private static Guid ExtractGuid(object data)
         {
             if (data is Guid g)
@@ -236,7 +252,7 @@ namespace ClickHouse.Client.Formats
             }
             else
             {
-                throw new ArgumentException($"Cannot convert {data?.GetType()?.Name ?? "null"} to IPv4");
+                throw new ArgumentException($"Cannot convert {data?.GetType()?.Name ?? "null"} to IP address");
             }
         }
     }

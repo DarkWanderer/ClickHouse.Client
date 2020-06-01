@@ -116,8 +116,16 @@ namespace ClickHouse.Client.Formats
 
                 case ClickHouseTypeCode.Decimal:
                     var dti = (DecimalType)databaseType;
-                    var value = new BigInteger(reader.ReadBytes(dti.Size));
-                    return (decimal)value / dti.Exponent;
+                    switch (dti.Size)
+                    {
+                        case 4:
+                            return (decimal)reader.ReadInt32() / dti.Exponent;
+                        case 8:
+                            return (decimal)reader.ReadInt64() / dti.Exponent;
+                        default:
+                            var bigInt = new BigInteger(reader.ReadBytes(dti.Size));
+                            return (decimal)bigInt / dti.Exponent;
+                    }
                 case ClickHouseTypeCode.Nothing:
                     break;
                 case ClickHouseTypeCode.Nested:
