@@ -60,5 +60,15 @@ namespace ClickHouse.Client.Tests.ORM
             CollectionAssert.IsNotEmpty(functions);
             CollectionAssert.AllItemsAreNotNull(functions);
         }
+
+        [Test]
+        [Ignore("Requires Dapper support, see https://github.com/StackExchange/Dapper/pull/1467")]
+        public async Task ShouldExecuteSelectReturningArray()
+        {
+            string sql = "SELECT array(1,2,3)";
+            var result = (await connection.QueryAsync<int[]>(sql)).Single();
+            CollectionAssert.IsNotEmpty(result);
+            CollectionAssert.AllItemsAreNotNull(result);
+        }
     }
 }
