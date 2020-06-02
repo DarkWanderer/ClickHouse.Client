@@ -48,6 +48,8 @@
 
         void Write(TupleType tupleType, object value);
 
+        void Write(NestedType nestedType, object value);
+
         void Write(DateType dateTimeType, object value);
 
         void Write(DateTimeType dateTimeType, object value);

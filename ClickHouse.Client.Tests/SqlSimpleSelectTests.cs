@@ -156,17 +156,6 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        [NonParallelizable]
-        public async Task ShouldSelectNestedDataType()
-        {
-            await connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS test");
-            await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.nested");
-            await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.nested(nested_v Nested (int16_v Int16, uint32_v UInt32, dtime_v DateTime, string_v String)) ENGINE = Memory");
-
-            using var reader = await connection.ExecuteReaderAsync("SELECT nested_v.int16_v, nested_v.uint32_v, nested_v.dtime_v, nested_v.string_v FROM test.nested");
-        }
-
-        [Test]
         public async Task ShouldCancelRunningAsyncQuery()
         {
             var command = connection.CreateCommand();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -228,5 +229,7 @@ namespace ClickHouse.Client.Formats
             var enumIndex = value is string enumStr ? (sbyte)enumType.Lookup(enumStr) : Convert.ToSByte(value);
             writer.Write(enumIndex);
         }
+
+        public void Write(NestedType nestedType, object value) => throw new NotSupportedException("Writing Nested values directly is not supported, see documentation");
     }
 }

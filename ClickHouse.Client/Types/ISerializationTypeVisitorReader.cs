@@ -38,6 +38,8 @@
 
         object Read(TupleType tupleType);
 
+        object Read(NestedType nestedType);
+
         object Read(IPv4Type pv4Type);
 
         object Read(Float32Type float32Type);

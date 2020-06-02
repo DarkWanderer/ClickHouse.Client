@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
@@ -36,17 +37,7 @@ namespace ClickHouse.Client.Tests
         [TestCaseSource(typeof(BulkCopyTests), nameof(GetInsertSingleValueTestCases))]
         public async Task ShouldExecuteSingleValueInsertViaBulkCopy(string clickHouseType, object insertedValue)
         {
-            var targetTable = $"temp.b_{clickHouseType}";
-            targetTable = targetTable
-                .Replace("(", null)
-                .Replace(")", null)
-                .Replace(",", null)
-                .Replace(" ", null)
-                .Replace("'", null)
-                .Replace("/", null)
-                .Replace("=", null)
-                .Replace("-", null);
-
+            var targetTable = SanitizeTableName($"temp.b_{clickHouseType}");
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Log");
@@ -118,6 +109,19 @@ namespace ClickHouse.Client.Tests
             await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5, 5 }, 5), new[] { "`field.id`, `@value`" });
 
             using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM {targetTable}");
+        }
+
+        private string SanitizeTableName(string input)
+        {
+            var builder = new StringBuilder();
+            foreach (var c in input)
+            {
+                if (char.IsLetterOrDigit(c))
+                    builder.Append(c);
+                else if (c == '_' || c == '.')
+                    builder.Append(c);
+            }
+            return builder.ToString();
         }
     }
 }

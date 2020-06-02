@@ -8,6 +8,12 @@ namespace ClickHouse.Client.Types
     {
         public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Nested;
 
+        public override Type FrameworkType => base.FrameworkType.MakeArrayType();
+
+        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
+
+        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
+
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
             return new NestedType
@@ -15,7 +21,5 @@ namespace ClickHouse.Client.Types
                 UnderlyingTypes = node.ChildNodes.Select(parseClickHouseTypeFunc).ToArray(),
             };
         }
-
-        public override Type FrameworkType => base.FrameworkType.MakeArrayType();
     }
 }
