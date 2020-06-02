@@ -112,11 +112,10 @@ namespace ClickHouse.Client.Tests
                 .Select(s => s.ClickHouseType)
                 .Select(TypeConverter.ParseClickHouseType)
                 .Select(t => t.TypeCode)
-                .Where(tc => tc != ClickHouseTypeCode.Nested) // Nested type is tested separately
                 .Distinct()
                 .ToList();
 
-            CollectionAssert.AreEquivalent(TypeConverter.RegisteredTypes.Distinct(), testedTypes);
+            CollectionAssert.AreEquivalent(TypeConverter.RegisteredTypes.Where(tc => tc != ClickHouseTypeCode.Nested).Distinct(), testedTypes);
         }
 
         [Test]
