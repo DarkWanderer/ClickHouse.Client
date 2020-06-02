@@ -54,7 +54,7 @@ namespace ClickHouse.Client.ADO
 
         public override void Cancel() => cts.Cancel();
 
-        public override int ExecuteNonQuery() => ExecuteNonQueryAsync(cts.Token).GetAwaiter().GetResult();
+        public override int ExecuteNonQuery() => ExecuteNonQueryAsync(CancellationToken.None).GetAwaiter().GetResult();
 
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
@@ -67,7 +67,7 @@ namespace ClickHouse.Client.ADO
             return int.TryParse(result, out var r) ? r : 0;
         }
 
-        public override object ExecuteScalar() => ExecuteScalarAsync(cts.Token).GetAwaiter().GetResult();
+        public override object ExecuteScalar() => ExecuteScalarAsync(CancellationToken.None).GetAwaiter().GetResult();
 
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
@@ -94,7 +94,7 @@ namespace ClickHouse.Client.ADO
             }
         }
 
-        protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => ExecuteDbDataReaderAsync(behavior, cts.Token).GetAwaiter().GetResult();
+        protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => ExecuteDbDataReaderAsync(behavior, CancellationToken.None).GetAwaiter().GetResult();
 
         protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
