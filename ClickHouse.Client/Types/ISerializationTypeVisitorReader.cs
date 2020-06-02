@@ -53,5 +53,7 @@
         object Read(Float64Type float64Type);
 
         object Read(IPv6Type pv6Type);
+
+        object Read(EnumType enumType);
     }
 }

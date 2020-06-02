@@ -14,7 +14,6 @@ namespace ClickHouse.Client.Tests
         {
             var builder = TestUtilities.GetConnectionStringBuilder();
             builder.UseSession = true;
-            builder.Driver = ClickHouseConnectionDriver.Binary;
             builder.Compression = true;
             connection = new ClickHouseConnection(builder.ToString());
         }

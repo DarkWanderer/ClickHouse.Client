@@ -100,7 +100,6 @@ namespace ClickHouse.Client.ADO
                 throw new InvalidOperationException("Connection is not set");
 
             var sqlBuilder = new StringBuilder(CommandText);
-            var driver = connection.Driver;
             switch (behavior)
             {
                 case CommandBehavior.SingleRow:
@@ -116,21 +115,8 @@ namespace ClickHouse.Client.ADO
                 case CommandBehavior.SequentialAccess:
                     break;
             }
-            switch (driver)
-            {
-                case ClickHouseConnectionDriver.Binary:
-                    sqlBuilder.Append(" FORMAT RowBinaryWithNamesAndTypes");
-                    break;
-                case ClickHouseConnectionDriver.JSON:
-                    sqlBuilder.Append(" FORMAT JSONCompact");
-                    break;
-                case ClickHouseConnectionDriver.TSV:
-                    sqlBuilder.Append(" FORMAT TSVWithNamesAndTypes");
-                    break;
-            }
-
+            sqlBuilder.Append(" FORMAT RowBinaryWithNamesAndTypes");
             var result = await connection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token, clickHouseParameterCollection).ConfigureAwait(false);
-
             return new ClickHouseBinaryReader(result);
         }
     }

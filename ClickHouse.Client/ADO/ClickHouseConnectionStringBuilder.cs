@@ -72,18 +72,11 @@ namespace ClickHouse.Client.ADO
             set => this["Port"] = value;
         }
 
-        public ClickHouseConnectionDriver Driver
+        [Obsolete]
+        public string Driver
         {
-            get
-            {
-                if (TryGetValue("Driver", out var value) && value is string @string && Enum.TryParse<ClickHouseConnectionDriver>(@string, out var @enum))
-                {
-                    return @enum;
-                }
-
-                return ClickHouseConnectionDriver.Binary;
-            }
-            set => this["Driver"] = value.ToString();
+            get => TryGetValue("Driver", out var value) ? value as string : null;
+            set => this["Driver"] = value;
         }
 
         public TimeSpan Timeout

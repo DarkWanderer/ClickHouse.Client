@@ -16,6 +16,11 @@ namespace ClickHouse.Client.Types
         private static readonly IDictionary<string, ParameterizedType> ParameterizedTypes = new Dictionary<string, ParameterizedType>();
         private static readonly IDictionary<Type, ClickHouseType> ReverseMapping = new Dictionary<Type, ClickHouseType>();
 
+        public static IEnumerable<ClickHouseTypeCode> RegisteredTypes => SimpleTypes.Keys
+            .Concat(ParameterizedTypes.Values.Select(t => t.TypeCode))
+            .OrderBy(x => x)
+            .ToArray();
+
         static TypeConverter()
         {
             // Integral types
@@ -62,6 +67,7 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<Decimal64Type>();
             RegisterParameterizedType<Decimal128Type>();
 
+            RegisterParameterizedType<EnumType>();
             RegisterParameterizedType<Enum8Type>();
             RegisterParameterizedType<Enum16Type>();
 

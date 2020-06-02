@@ -44,7 +44,7 @@ namespace ClickHouse.Client.Formats
             var data = arrayType.MakeArray(length);
             for (var i = 0; i < length; i++)
             {
-                data.SetValue(Read(arrayType.UnderlyingType), i);
+                data.SetValue(ClearDBNull(Read(arrayType.UnderlyingType)), i);
             }
             return data;
         }
@@ -73,9 +73,8 @@ namespace ClickHouse.Client.Formats
             var contents = new object[count];
             for (var i = 0; i < count; i++)
             {
-                // Underlying data in Tuple should always be null, not DBNull
                 var value = Read(tupleType.UnderlyingTypes[i]);
-                contents[i] = value is DBNull ? null : value;
+                contents[i] = ClearDBNull(value);
             }
             return tupleType.MakeTuple(contents);
         }
@@ -118,5 +117,9 @@ namespace ClickHouse.Client.Formats
         public object Read(Enum8Type enumType) => enumType.Lookup(reader.ReadSByte());
 
         public object Read(Enum16Type enumType) => enumType.Lookup(reader.ReadInt16());
+
+        public object Read(EnumType enumType) => enumType.Lookup(reader.ReadSByte());
+
+        private object ClearDBNull(object value) => value is DBNull ? null : value;
     }
 }

@@ -53,14 +53,14 @@ namespace ClickHouse.Client.Formats
                 ClickHouseTypeCode.Nothing => $"null",
 
                 ClickHouseTypeCode.Date when value is DateTime date => $"{date:yyyy-MM-dd}",
-                ClickHouseTypeCode.DateTime when type is AbstractDateTimeType dateTimeType && value is DateTime dateTime =>
+                ClickHouseTypeCode.DateTime when type is DateTimeType dateTimeType && value is DateTime dateTime =>
                     dateTimeType.TimeZone == null
                         ? $"{dateTime:yyyy-MM-dd HH:mm:ss}"
                         : $"{dateTime.ToUniversalTime():yyyy-MM-dd HH:mm:ss}",
                 ClickHouseTypeCode.DateTime64 when type is DateTime64Type dateTimeType && value is DateTime dateTime =>
                     dateTimeType.TimeZone == null
-                        ? $"{dateTime:yyyy-MM-dd HH:mm:ss.fff}"
-                        : $"{dateTime.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fff}",
+                        ? $"{dateTime:yyyy-MM-dd HH:mm:ss.fffffff}"
+                        : $"{dateTime.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fffffff}",
 
                 ClickHouseTypeCode.Nullable when type is NullableType nullableType =>
                     value is null || value == DBNull.Value ?

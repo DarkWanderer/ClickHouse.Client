@@ -53,5 +53,7 @@
         void Write(DateTimeType dateTimeType, object value);
 
         void Write(DecimalType decimalType, object value);
+
+        void Write(EnumType enumType, object value);
     }
 }

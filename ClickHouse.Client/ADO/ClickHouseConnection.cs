@@ -66,7 +66,6 @@ namespace ClickHouse.Client.ADO
                     Password = password,
                     Host = serverUri?.Host,
                     Port = (ushort)serverUri?.Port,
-                    Driver = Driver,
                     Compression = useCompression,
                     UseSession = session != null,
                     Timeout = timeout,
@@ -83,7 +82,6 @@ namespace ClickHouse.Client.ADO
                 serverUri = new UriBuilder(builder.Protocol, builder.Host, builder.Port).Uri;
                 useCompression = builder.Compression;
                 session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
-                Driver = builder.Driver;
                 timeout = builder.Timeout;
             }
         }
@@ -228,8 +226,6 @@ namespace ClickHouse.Client.ADO
 
             return builder.ToString();
         }
-
-        internal ClickHouseConnectionDriver Driver { get; private set; }
 
         public override ConnectionState State => state;
 

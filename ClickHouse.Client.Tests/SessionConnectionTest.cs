@@ -13,7 +13,6 @@ namespace ClickHouse.Client.Tests
         {
             var builder = TestUtilities.GetConnectionStringBuilder();
             builder.UseSession = useSession;
-            builder.Driver = ClickHouseConnectionDriver.Binary;
             builder.Compression = true;
             if (sessionId != null)
                 builder.SessionId = sessionId;

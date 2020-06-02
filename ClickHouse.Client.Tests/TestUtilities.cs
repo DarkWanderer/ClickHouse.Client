@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data.Common;
 using System.Linq;
 using System.Net;
 using ClickHouse.Client.ADO;
+using ClickHouse.Client.Types;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
@@ -65,6 +67,7 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("Float32", typeof(float), "toFloat32(32e6)", 32e6);
             yield return new DataTypeSample("Float64", typeof(double), "toFloat64(64e6)", 64e6);
 
+            yield return new DataTypeSample("String", typeof(string), "'TestString'", "TestString");
             yield return new DataTypeSample("FixedString(3)", typeof(string), "toFixedString('ASD',3)", "ASD");
             yield return new DataTypeSample("FixedString(5)", typeof(string), "toFixedString('ASD',5)", "ASD\0\0");
 
@@ -86,6 +89,7 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(-12.34, 9)", new decimal(-12.34));
 
             yield return new DataTypeSample("Array(Int32)", typeof(int[]), "array(1, 2, 3)", new[] { 1, 2, 3 });
+            yield return new DataTypeSample("Array(Nullable(Int32))", typeof(int?[]), "array(1, 2, NULL)", new int?[] { 1, 2, null });
 
             yield return new DataTypeSample("Nullable(Int32)", typeof(int?), "toInt32OrNull('123')", 123);
             yield return new DataTypeSample("Nullable(Int32)", typeof(int?), "toInt32OrNull(NULL)", DBNull.Value);
@@ -98,17 +102,37 @@ namespace ClickHouse.Client.Tests
 
             yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Utc));
             yield return new DataTypeSample("DateTime", typeof(DateTime), "toDateTime('1988-08-28 11:22:33')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Utc));
-            yield return new DataTypeSample("DateTime64(9)", typeof(DateTime), "toDateTime64('2020-02-20 11:22:33.444', 9)", new DateTime(2020, 02, 20, 11, 22, 33, 444, DateTimeKind.Utc));
+            yield return new DataTypeSample("DateTime64(6)", typeof(DateTime), "toDateTime64('2020-02-20 11:22:33.444444', 9)", new DateTime(637177945534444440, DateTimeKind.Utc));
+        }
+
+        [Test]
+        public static void EnsureAllTypesAreCovered()
+        {
+            var testedTypes = GetDataTypeSamples()
+                .Select(s => s.ClickHouseType)
+                .Select(TypeConverter.ParseClickHouseType)
+                .Select(t => t.TypeCode)
+                .Where(tc => tc != ClickHouseTypeCode.Nested) // Nested type is tested separately
+                .Distinct()
+                .ToList();
+
+            CollectionAssert.AreEquivalent(TypeConverter.RegisteredTypes.Distinct(), testedTypes);
+        }
+
+        [Test]
+        public static void EnsureAllTypesAreMapped()
+        {
+            CollectionAssert.AreEquivalent(Enum.GetValues(typeof(ClickHouseTypeCode)), TypeConverter.RegisteredTypes.Distinct());
         }
 
         public static object[] GetEnsureSingleRow(this DbDataReader reader)
         {
             Assert.IsTrue(reader.HasRows, "Reader expected to have rows");
-            Assert.IsTrue(reader.Read(), "Reader Read() returned false");
+            Assert.IsTrue(reader.Read(), "Failed to read first row");
 
             var data = reader.GetFieldValues();
 
-            Assert.IsFalse(reader.Read(), "Extra row: " + string.Join(",", reader.GetFieldValues()));
+            Assert.IsFalse(reader.Read(), "Unexpected extra row: " + string.Join(",", reader.GetFieldValues()));
 
             return data;
         }

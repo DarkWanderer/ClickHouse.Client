@@ -222,5 +222,11 @@ namespace ClickHouse.Client.Formats
             var days = (ushort)(((DateTime)value).Date - TypeConverter.DateTimeEpochStart).TotalDays;
             writer.Write(days);
         }
+
+        public void Write(EnumType enumType, object value)
+        {
+            var enumIndex = value is string enumStr ? (sbyte)enumType.Lookup(enumStr) : Convert.ToSByte(value);
+            writer.Write(enumIndex);
+        }
     }
 }

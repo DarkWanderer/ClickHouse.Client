@@ -5,7 +5,7 @@ using ClickHouse.Client.Types.Grammar;
 
 namespace ClickHouse.Client.Types
 {
-    internal abstract class EnumType : ParameterizedType
+    internal class EnumType : ParameterizedType
     {
         private Dictionary<string, int> values = new Dictionary<string, int>();
 
@@ -24,6 +24,7 @@ namespace ClickHouse.Client.Types
 
             switch (node.Value)
             {
+                case "Enum":
                 case "Enum8":
                     return new Enum8Type { values = parameters };
                 case "Enum16":
@@ -37,5 +38,9 @@ namespace ClickHouse.Client.Types
         public string Lookup(int value) => values.SingleOrDefault(kvp => kvp.Value == value).Key ?? throw new KeyNotFoundException();
 
         public override string ToString() => $"{Name}({string.Join(",", values.Select(kvp => kvp.Key + "=" + kvp.Value))}";
+
+        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
+
+        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
     }
 }
