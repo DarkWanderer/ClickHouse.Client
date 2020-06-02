@@ -42,7 +42,7 @@ namespace ClickHouse.Client.ADO
 
         public bool Compression
         {
-            get => TryGetValue("Compression", out var value) ? "true".Equals(value as string, StringComparison.OrdinalIgnoreCase) : false;
+            get => TryGetValue("Compression", out var value) ? "true".Equals(value as string, StringComparison.OrdinalIgnoreCase) : true;
             set => this["Compression"] = value;
         }
 
