@@ -21,7 +21,7 @@ namespace ClickHouse.Client.Benchmark.Benchmarks
             var values = Enumerable.Range(0, count).Select(i => new object[] { (long)i }).ToList();
             Console.WriteLine("Running benchmark");
 
-            var targetDatabase = "temp";
+            var targetDatabase = "benchmark";
             var targetTable = $"{targetDatabase}.bulk_insert_test";
 
             var stopwatch = new Stopwatch();

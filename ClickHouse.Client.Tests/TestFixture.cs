@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
@@ -26,6 +23,10 @@ namespace ClickHouse.Client.Tests
         }
 
         [OneTimeTearDown]
-        public async Task Teardown() => await connection.ExecuteStatementAsync($"DROP DATABASE test");
+        public async Task Teardown()
+        {
+            await Task.FromResult(0);
+            //await connection.ExecuteStatementAsync($"DROP DATABASE test");
+        }
     }
 }
