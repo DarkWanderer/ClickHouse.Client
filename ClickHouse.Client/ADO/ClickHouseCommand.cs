@@ -61,7 +61,8 @@ namespace ClickHouse.Client.ADO
             if (connection == null)
                 throw new InvalidOperationException("Connection is not set");
 
-            var response = await connection.PostSqlQueryAsync(CommandText, cts.Token, clickHouseParameterCollection).ConfigureAwait(false);
+            using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
+            var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, clickHouseParameterCollection).ConfigureAwait(false);
             var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return int.TryParse(result, out var r) ? r : 0;
         }
@@ -70,7 +71,8 @@ namespace ClickHouse.Client.ADO
 
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
-            using var reader = await ExecuteDbDataReaderAsync(CommandBehavior.Default, cancellationToken).ConfigureAwait(false);
+            using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
+            using var reader = await ExecuteDbDataReaderAsync(CommandBehavior.Default, linkedCancellationTokenSource.Token).ConfigureAwait(false);
             return reader.Read() ? reader.GetValue(0) : null;
         }
 
@@ -99,6 +101,7 @@ namespace ClickHouse.Client.ADO
             if (connection == null)
                 throw new InvalidOperationException("Connection is not set");
 
+            using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
             var sqlBuilder = new StringBuilder(CommandText);
             switch (behavior)
             {
@@ -116,7 +119,7 @@ namespace ClickHouse.Client.ADO
                     break;
             }
             sqlBuilder.Append(" FORMAT RowBinaryWithNamesAndTypes");
-            var result = await connection.PostSqlQueryAsync(sqlBuilder.ToString(), cts.Token, clickHouseParameterCollection).ConfigureAwait(false);
+            var result = await connection.PostSqlQueryAsync(sqlBuilder.ToString(), linkedCancellationTokenSource.Token, clickHouseParameterCollection).ConfigureAwait(false);
             return new ClickHouseBinaryReader(result);
         }
     }
