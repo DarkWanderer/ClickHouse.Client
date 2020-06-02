@@ -9,16 +9,17 @@ ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra
 
 ## Why another client?
 
-Compared to other existing .NET clients, which use 'native' protocol, `ClickHouse.Client` has following advantages 
+Compared to other existing .NET clients, `ClickHouse.Client` has following advantages 
 * Does not have to buffer response, reducing memory usage
 * Is version-agnostic
-* Does not require calling 'NextResult' on plain `SELECT` queries
+* Offers wider support for ClickHouse-specific types (e.g.: LowCardinality, DateTime64, Nested etc.)
+* Is more compliant to ADO.NET standards (e.g. does not require calling 'NextResult' on `SELECT` queries)
 
 ## Key features
 
-* Uses HTTP, so is compatible with any server version
-* Uses fast binary row protocol for communication
-* Fully supports parameterized types, including recursive packing (`Array(Nullable(Int32))` etc.)
+* Uses HTTP(S), so is compatible with any server version
+* Uses fast row-based binary protocol for communication
+* Fully supports complex types, including recursive packing (`Array`, `Tuple`, their combinations - `Array(Nullable(Int32))`, etc.)
 * High-throughput
 * Available for .NET Core/Framework/Standard
-* [Bulk insertion](https://github.com/DarkWanderer/ClickHouse.Client/wiki/Bulk-insertion) support
+* Supports [bulk insertion](https://github.com/DarkWanderer/ClickHouse.Client/wiki/Bulk-insertion)
