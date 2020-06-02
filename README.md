@@ -19,7 +19,9 @@ Compared to other existing .NET clients, `ClickHouse.Client` has following advan
 
 * Uses HTTP(S), so is compatible with any server version
 * Uses fast row-based binary protocol for communication
-* Fully supports complex types, including recursive packing (`Array`, `Tuple`, their combinations - `Array(Nullable(Int32))`, etc.)
+* Fully supports ClickHouse-specific types:
+  * Composite types: `Array`, `Tuple`, `Nullable`, `Nested`, including combinations
+  * Specialized types: `IPv4`, `IPv6`, `UUID`, `DateTime64`, `LowCardinality`, `Enum` etc.
 * High-throughput
 * Available for .NET Core/Framework/Standard
 * Supports [bulk insertion](https://github.com/DarkWanderer/ClickHouse.Client/wiki/Bulk-insertion)
