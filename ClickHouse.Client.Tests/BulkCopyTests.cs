@@ -15,9 +15,6 @@ namespace ClickHouse.Client.Tests
     {
         private readonly ClickHouseConnection connection = TestUtilities.GetTestClickHouseConnection();
 
-        [SetUp]
-        public Task FixtureSetup() => connection.ExecuteStatementAsync("CREATE DATABASE IF NOT EXISTS temp");
-
         public static IEnumerable<TestCaseData> GetInsertSingleValueTestCases()
         {
             foreach (var sample in TestUtilities.GetDataTypeSamples())
@@ -37,10 +34,10 @@ namespace ClickHouse.Client.Tests
         [TestCaseSource(typeof(BulkCopyTests), nameof(GetInsertSingleValueTestCases))]
         public async Task ShouldExecuteSingleValueInsertViaBulkCopy(string clickHouseType, object insertedValue)
         {
-            var targetTable = SanitizeTableName($"temp.b_{clickHouseType}");
+            var targetTable = SanitizeTableName($"test.b_{clickHouseType}");
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Log");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
@@ -59,10 +56,10 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldExecuteInsertWithLessColumns()
         {
-            var targetTable = $"temp.multiple_columns";
+            var targetTable = $"test.multiple_columns";
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Log");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Memory");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
@@ -78,10 +75,10 @@ namespace ClickHouse.Client.Tests
         [Ignore("Dropped support for this use case for now")]
         public async Task ShouldExecuteInsertWithColumnsExpression()
         {
-            var targetTable = $"temp.multiple_columns";
+            var targetTable = $"test.multiple_columns";
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Log");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Memory");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
@@ -96,10 +93,10 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldExecuteInsertWithBacktickedColumns()
         {
-            var targetTable = $"temp.backticked_columns";
+            var targetTable = $"test.backticked_columns";
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`field.id` Nullable(UInt8), `@value` Nullable(UInt8)) ENGINE Log");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`field.id` Nullable(UInt8), `@value` Nullable(UInt8)) ENGINE Memory");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
