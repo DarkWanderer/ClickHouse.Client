@@ -25,9 +25,6 @@ namespace ClickHouse.Client.Tests
             }
             yield return new TestCaseData("String", "1\t2\n3");
             yield return new TestCaseData("DateTime('Asia/Ashkhabad')", new DateTime(2020, 2, 20, 20, 20, 20, DateTimeKind.Utc));
-            //yield return new TestCaseData("DateTime('Asia/Almaty')", new DateTime(2020, 2, 20, 20, 20, 20, DateTimeKind.Local));
-            //yield return new TestCaseData("DateTime('Asia/Anadyr')", new DateTime(2020, 2, 20, 20, 20, 20, DateTimeKind.Unspecified));
-            // yield return new TestCaseData("Nested(A UInt8, B String)", new[] { Tuple.Create(1, "AAA"), Tuple.Create(2, "BBB") });
         }
 
         [Test]
@@ -39,10 +36,7 @@ namespace ClickHouse.Client.Tests
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
 
-            using var bulkCopy = new ClickHouseBulkCopy(connection)
-            {
-                DestinationTableName = targetTable,
-            };
+            using var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = targetTable };
 
             await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { insertedValue }, 1));
 
@@ -80,10 +74,7 @@ namespace ClickHouse.Client.Tests
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Memory");
 
-            using var bulkCopy = new ClickHouseBulkCopy(connection)
-            {
-                DestinationTableName = targetTable,
-            };
+            using var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = targetTable };
 
             await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5 }, 5), new[] { "COLUMNS('e2')" }, CancellationToken.None);
 
@@ -113,9 +104,7 @@ namespace ClickHouse.Client.Tests
             var builder = new StringBuilder();
             foreach (var c in input)
             {
-                if (char.IsLetterOrDigit(c))
-                    builder.Append(c);
-                else if (c == '_' || c == '.')
+                if (char.IsLetterOrDigit(c) || c == '_' || c == '.')
                     builder.Append(c);
             }
             return builder.ToString();

@@ -60,15 +60,7 @@ namespace ClickHouse.Client.ADO
 
         public ushort Port
         {
-            get
-            {
-                if (TryGetValue("Port", out var value) && value is string @string && ushort.TryParse(@string, out var @ushort))
-                {
-                    return @ushort;
-                }
-
-                return 8123;
-            }
+            get => TryGetValue("Port", out var value) && value is string @string && ushort.TryParse(@string, out var @ushort) ? @ushort : (ushort)8123;
             set => this["Port"] = value;
         }
 
@@ -83,12 +75,9 @@ namespace ClickHouse.Client.ADO
         {
             get
             {
-                if (TryGetValue("Timeout", out var value) && value is string @string && double.TryParse(@string, NumberStyles.Any, CultureInfo.InvariantCulture, out var timeout))
-                {
-                    return TimeSpan.FromSeconds(timeout);
-                }
-
-                return TimeSpan.FromMinutes(2);
+                return TryGetValue("Timeout", out var value) && value is string @string && double.TryParse(@string, NumberStyles.Any, CultureInfo.InvariantCulture, out var timeout)
+                    ? TimeSpan.FromSeconds(timeout)
+                    : TimeSpan.FromMinutes(2);
             }
             set => this["Timeout"] = value.TotalSeconds;
         }

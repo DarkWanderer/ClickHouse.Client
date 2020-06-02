@@ -118,10 +118,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        public static void EnsureAllTypesAreMapped()
-        {
-            CollectionAssert.AreEquivalent(Enum.GetValues(typeof(ClickHouseTypeCode)), TypeConverter.RegisteredTypes.Distinct());
-        }
+        public static void EnsureAllTypesAreMapped() => CollectionAssert.AreEquivalent(Enum.GetValues(typeof(ClickHouseTypeCode)), TypeConverter.RegisteredTypes.Distinct());
 
         public static object[] GetEnsureSingleRow(this DbDataReader reader)
         {

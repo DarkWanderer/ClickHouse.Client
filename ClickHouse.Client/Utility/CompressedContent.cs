@@ -48,7 +48,7 @@ namespace ClickHouse.Client.Utility
                 _ => throw new ArgumentOutOfRangeException(nameof(compressionMethod))
             };
 
-            return originalContent.CopyToAsync(compressedStream).ContinueWith(task => { compressedStream.Dispose(); });
+            return originalContent.CopyToAsync(compressedStream).ContinueWith(task => compressedStream.Dispose());
         }
     }
 }
