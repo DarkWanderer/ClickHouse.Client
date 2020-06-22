@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -62,9 +63,9 @@ namespace ClickHouse.Client.ADO
                 throw new InvalidOperationException("Connection is not set");
 
             using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
-            var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, clickHouseParameterCollection).ConfigureAwait(false);
+            using var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, clickHouseParameterCollection).ConfigureAwait(false);
             var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            return int.TryParse(result, out var r) ? r : 0;
+            return int.TryParse(result, NumberStyles.Integer, CultureInfo.InvariantCulture, out var r) ? r : 0;
         }
 
         public override object ExecuteScalar() => ExecuteScalarAsync(CancellationToken.None).GetAwaiter().GetResult();
@@ -80,11 +81,7 @@ namespace ClickHouse.Client.ADO
 
         public new ClickHouseDbParameter CreateParameter() => (ClickHouseDbParameter)CreateDbParameter();
 
-        protected override DbParameter CreateDbParameter()
-        {
-            var parameter = new ClickHouseDbParameter();
-            return parameter;
-        }
+        protected override DbParameter CreateDbParameter() => new ClickHouseDbParameter();
 
         protected override void Dispose(bool disposing)
         {
