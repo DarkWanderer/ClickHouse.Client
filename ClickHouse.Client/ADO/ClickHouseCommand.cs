@@ -68,6 +68,16 @@ namespace ClickHouse.Client.ADO
             return int.TryParse(result, NumberStyles.Integer, CultureInfo.InvariantCulture, out var r) ? r : 0;
         }
 
+        public async Task<ClickHouseRawResult> ExecuteRawResultAsync(CancellationToken cancellationToken)
+        {
+            if (connection == null)
+                throw new InvalidOperationException("Connection is not set");
+
+            using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
+            var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, clickHouseParameterCollection).ConfigureAwait(false);
+            return new ClickHouseRawResult(response);
+        }
+
         public override object ExecuteScalar() => ExecuteScalarAsync(CancellationToken.None).GetAwaiter().GetResult();
 
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
