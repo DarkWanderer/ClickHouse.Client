@@ -33,22 +33,31 @@ namespace ClickHouse.Client.Utility
             Headers.ContentEncoding.Add(this.compressionMethod.ToString().ToLowerInvariant());
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                originalContent?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
         protected override bool TryComputeLength(out long length)
         {
             length = -1;
             return false;
         }
 
-        protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
+        protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
         {
-            Stream compressedStream = compressionMethod switch
+            using Stream compressedStream = compressionMethod switch
             {
                 DecompressionMethods.GZip => new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true),
                 DecompressionMethods.Deflate => new DeflateStream(stream, CompressionMode.Compress, leaveOpen: true),
                 _ => throw new ArgumentOutOfRangeException(nameof(compressionMethod))
             };
 
-            return originalContent.CopyToAsync(compressedStream).ContinueWith(task => compressedStream.Dispose());
+            await originalContent.CopyToAsync(compressedStream);
         }
     }
 }
