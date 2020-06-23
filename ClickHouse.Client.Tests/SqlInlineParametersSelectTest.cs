@@ -11,37 +11,30 @@ namespace ClickHouse.Client.Tests
     [Parallelizable]
     [TestFixture(true)]
     [TestFixture(false)]
-    public class SqlParameterizedSelectTests
+    public class SqlInlineParametersSelectTest
     {
+        private class OldClickHouseVersionConnection : ClickHouseConnection
+        {
+            public OldClickHouseVersionConnection(string connectionString) : base(connectionString) { }
+
+            public override string ServerVersion => "19.11.3.10";
+        }
+
         private readonly ClickHouseConnection connection;
 
-        public SqlParameterizedSelectTests(bool useCompression)
+        public SqlInlineParametersSelectTest(bool useCompression)
         {
-            connection = TestUtilities.GetTestClickHouseConnection(useCompression);
+            var connectionStringBuilder = TestUtilities.GetConnectionStringBuilder();
+            connectionStringBuilder.Compression = useCompression;
+            connection = new OldClickHouseVersionConnection(connectionStringBuilder.ToString());
         }
 
         public static IEnumerable<TestCaseData> TypedQueryParameters => TestUtilities.GetDataTypeSamples()
-            .Where(sample => sample.ExampleValue != DBNull.Value) // null value should be handled by writing "is null" statement
-            //.Where(sample => !sample.ClickHouseType.StartsWith("Tuple")) // Bug in Tuple(Nullable(...))
             .Where(sample => sample.ClickHouseType != "UUID") // https://github.com/ClickHouse/ClickHouse/issues/7463
             .Select(sample => new TestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));
 
         [Test]
-        [TestCaseSource(typeof(SqlParameterizedSelectTests), nameof(TypedQueryParameters))]
-        public async Task ShouldExecuteParameterizedSelectWhereWithTypeDetection(string exampleExpression, string clickHouseType, object value)
-        {
-            if (clickHouseType.StartsWith("DateTime64") || clickHouseType == "Date")
-                Assert.Pass("Automatic type detection does not work for " + clickHouseType);
-            if (clickHouseType.StartsWith("Enum"))
-                clickHouseType = "String";
-
-            using var command = connection.CreateCommand();
-            command.CommandText = $"SELECT res FROM (SELECT {exampleExpression} AS res) WHERE res = {{var:{clickHouseType}}}";
-            command.AddParameter("var", value);
-
-            var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow().Single();
-            Assert.AreEqual(value, result);
-        }
+        public async Task EnsureCompatibilityModeIsUsed() => Assert.IsFalse(await connection.SupportsHttpParameters());
 
         [Test]
         [TestCaseSource(typeof(SqlParameterizedSelectTests), nameof(TypedQueryParameters))]
