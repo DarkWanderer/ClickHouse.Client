@@ -68,6 +68,11 @@ namespace ClickHouse.Client.ADO
             return int.TryParse(result, NumberStyles.Integer, CultureInfo.InvariantCulture, out var r) ? r : 0;
         }
 
+        /// <summary>
+        ///  Allows to return raw result from a query (with custom FORMAT)
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>ClickHouseRawResult object containing response stream</returns>
         public async Task<ClickHouseRawResult> ExecuteRawResultAsync(CancellationToken cancellationToken)
         {
             if (connection == null)

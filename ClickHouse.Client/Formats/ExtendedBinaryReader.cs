@@ -16,7 +16,7 @@ namespace ClickHouse.Client.Formats
             var bytesRead = base.Read(buffer, 0, count);
             if (bytesRead < count)
             {
-                throw new EndOfStreamException();
+                throw new EndOfStreamException($"Expected to read {count} bytes, got {bytesRead}");
             }
 
             return buffer;
@@ -27,7 +27,7 @@ namespace ClickHouse.Client.Formats
             var bytesRead = base.Read(buffer, index, count);
             if (bytesRead < count)
             {
-                throw new EndOfStreamException();
+                throw new EndOfStreamException($"Expected to read {count} bytes, got {bytesRead}");
             }
 
             return bytesRead;
