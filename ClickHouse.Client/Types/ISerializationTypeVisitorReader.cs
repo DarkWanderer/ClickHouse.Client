@@ -24,7 +24,7 @@
 
         object Read(ArrayType arrayType);
 
-        object Read(AbstractDateTimeType dateTimeType);
+        object Read(DateTimeType dateTimeType);
 
         object Read(DateTime64Type dateTimeType);
 

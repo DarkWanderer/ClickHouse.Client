@@ -49,7 +49,7 @@ namespace ClickHouse.Client.Formats
             return data;
         }
 
-        public object Read(AbstractDateTimeType dateTimeType) => TypeConverter.DateTimeEpochStart.AddSeconds(reader.ReadUInt32());
+        public object Read(DateTimeType dateTimeType) => TypeConverter.DateTimeEpochStart.AddSeconds(reader.ReadUInt32());
 
         public object Read(DecimalType decimalType)
         {
