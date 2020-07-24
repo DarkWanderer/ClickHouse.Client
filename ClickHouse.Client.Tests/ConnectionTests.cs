@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,10 +16,21 @@ namespace ClickHouse.Client.Tests
         private readonly ClickHouseConnection connection = TestUtilities.GetTestClickHouseConnection(default);
 
         [Test]
-        public void ShouldCreateConnectionWithProvidedHttpClient()
+        public async Task ShouldCreateConnectionWithProvidedHttpClient()
+        {
+            using var httpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+            using var httpClient = new HttpClient(httpClientHandler);
+            using var connection = new ClickHouseConnection(TestUtilities.GetConnectionStringBuilder().ToString(), httpClient);
+            await connection.OpenAsync();
+            Assert.IsNotEmpty(connection.ServerVersion);
+        }
+
+        [Test]
+        public async Task ShouldThrowExceptionOnInvalidHttpClient()
         {
             using var httpClient = new HttpClient();
             using var connection = new ClickHouseConnection(TestUtilities.GetConnectionStringBuilder().ToString(), httpClient);
+            Assert.Throws<InvalidOperationException>(() => connection.Open());
         }
 
         [Test]

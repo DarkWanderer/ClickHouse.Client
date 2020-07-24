@@ -45,6 +45,12 @@ namespace ClickHouse.Client.ADO
             // Connection string has to be initialized after HttpClient, as it may set HttpClient.Timeout
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClickHouseConnection"/> class using provided HttpClient.
+        /// Note that HttpClient must have AutomaticDecompression enabled if compression is not disabled in connection string
+        /// </summary>
+        /// <param name="connectionString">Connection string</param>
+        /// <param name="httpClient">instance of HttpClient</param>
         public ClickHouseConnection(string connectionString, HttpClient httpClient)
         {
             ConnectionString = connectionString;
@@ -243,11 +249,17 @@ namespace ClickHouse.Client.ADO
         {
             if (State == ConnectionState.Open)
                 return;
+            const string versionQuery = "SELECT version() FORMAT TSV";
             try
             {
-                var response = await PostSqlQueryAsync("SELECT version()", token).ConfigureAwait(false);
+                var response = await PostSqlQueryAsync(versionQuery, token).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
-                serverVersion = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+
+                if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check that HttpClient is correctly set up
+                    throw new InvalidOperationException("ClickHouse server returned compressed result but HttpClient did not decompress it");
+
+                serverVersion = Encoding.UTF8.GetString(data).Trim();
                 state = ConnectionState.Open;
             }
             catch
@@ -257,11 +269,11 @@ namespace ClickHouse.Client.ADO
             }
         }
 
+        public new ClickHouseCommand CreateCommand() => new ClickHouseCommand(this);
+
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
 
-        public new ClickHouseCommand CreateCommand() => (ClickHouseCommand)CreateDbCommand();
-
-        protected override DbCommand CreateDbCommand() => new ClickHouseCommand(this);
+        protected override DbCommand CreateDbCommand() => CreateCommand();
 
         private void AddDefaultHttpHeaders(HttpRequestHeaders headers)
         {
