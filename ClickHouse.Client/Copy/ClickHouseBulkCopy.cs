@@ -43,7 +43,7 @@ namespace ClickHouse.Client.Copy
         /// <summary>
         /// Gets total number of rows written by this instance.
         /// </summary>
-        public long RowsWritten => rowsWritten;
+        public long RowsWritten => Interlocked.Read(ref rowsWritten);
 
         public Task WriteToServerAsync(IDataReader reader) => WriteToServerAsync(reader, CancellationToken.None);
 
@@ -54,7 +54,7 @@ namespace ClickHouse.Client.Copy
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            return WriteToServerAsync(AsEnumerable(reader), reader.GetColumnNames(), token);
+            return WriteToServerAsync(reader.AsEnumerable(), reader.GetColumnNames(), token);
         }
 
         public Task WriteToServerAsync(DataTable table, CancellationToken token)
@@ -107,13 +107,15 @@ namespace ClickHouse.Client.Copy
                 token.ThrowIfCancellationRequested();
                 while (true)
                 {
-                    var completedTaskIndex = Array.FindIndex(tasks, t => t.Status == TaskStatus.RanToCompletion || t.Status == TaskStatus.Faulted || t.Status == TaskStatus.Canceled);
+                    var completedTaskIndex = Array.FindIndex(tasks, t => t.IsCompleted);
                     if (completedTaskIndex >= 0)
                     {
-                        await tasks[completedTaskIndex].ConfigureAwait(false); // to receive exception if one happens
+                        // propagate exception if one happens
+                        // 'await' instead of 'Wait()' to avoid dealing with AggregateException
+                        await tasks[completedTaskIndex].ConfigureAwait(false);
                         var task = PushBatch(batch, columnTypes, columnNames, token);
                         tasks[completedTaskIndex] = task;
-                        break;
+                        break; // while (true); go to next batch
                     }
                     else
                     {
@@ -124,17 +126,10 @@ namespace ClickHouse.Client.Copy
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        private string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose() => connection?.Dispose();
 
-        private static IEnumerable<object[]> AsEnumerable(IDataReader reader)
-        {
-            while (reader.Read())
-            {
-                var values = new object[reader.FieldCount];
-                reader.GetValues(values);
-                yield return values;
-            }
-        }
+        private string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
 
         private async Task PushBatch(ICollection<object[]> rows, ClickHouseType[] columnTypes, string[] columnNames, CancellationToken token)
         {
@@ -156,24 +151,6 @@ namespace ClickHouse.Client.Copy
             var query = $"INSERT INTO {DestinationTableName} ({string.Join(", ", columnNames)}) FORMAT RowBinary";
             await connection.PostBulkDataAsync(query, stream, true, token).ConfigureAwait(false);
             Interlocked.Add(ref rowsWritten, rows.Count);
-        }
-
-        private bool disposed = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposed && disposing)
-            {
-                connection?.Dispose();
-                disposed = true;
-            }
-        }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
     }
 }

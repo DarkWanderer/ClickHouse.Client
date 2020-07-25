@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Types;
 
@@ -28,6 +29,16 @@ namespace ClickHouse.Client.Utility
             }
 
             return names;
+        }
+
+        internal static IEnumerable<object[]> AsEnumerable(this IDataReader reader)
+        {
+            while (reader.Read())
+            {
+                var values = new object[reader.FieldCount];
+                reader.GetValues(values);
+                yield return values;
+            }
         }
     }
 }
