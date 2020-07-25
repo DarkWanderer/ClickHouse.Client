@@ -22,7 +22,7 @@ namespace ClickHouse.Client.Tests
 
         public static IEnumerable<TestCaseData> TypedQueryParameters => TestUtilities.GetDataTypeSamples()
             .Where(sample => sample.ExampleValue != DBNull.Value) // null value should be handled by writing "is null" statement
-            //.Where(sample => !sample.ClickHouseType.StartsWith("Tuple")) // Bug in Tuple(Nullable(...))
+                                                                  //.Where(sample => !sample.ClickHouseType.StartsWith("Tuple")) // Bug in Tuple(Nullable(...))
             .Where(sample => sample.ClickHouseType != "UUID") // https://github.com/ClickHouse/ClickHouse/issues/7463
             .Select(sample => new TestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));
 

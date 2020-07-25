@@ -28,7 +28,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldThrowExceptionOnInvalidHttpClient()
         {
-            using var httpClient = new HttpClient();
+            using var httpClient = new HttpClient(); // No decompression handler
             using var connection = new ClickHouseConnection(TestUtilities.GetConnectionStringBuilder().ToString(), httpClient);
             Assert.Throws<InvalidOperationException>(() => connection.Open());
         }

@@ -62,10 +62,7 @@ namespace ClickHouse.Client.Formats
                         ? $"{dateTime:yyyy-MM-dd HH:mm:ss.fffffff}"
                         : $"{dateTime.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fffffff}",
 
-                ClickHouseTypeCode.Nullable when type is NullableType nullableType =>
-                    value is null || value == DBNull.Value ?
-                        "null" :
-                        $"{Format(nullableType.UnderlyingType, value)}",
+                ClickHouseTypeCode.Nullable when type is NullableType nullableType => value is null || value is DBNull ? "null" : $"{Format(nullableType.UnderlyingType, value)}",
 
                 ClickHouseTypeCode.Array when type is ArrayType arrayType && value is IEnumerable enumerable =>
                     $"[{string.Join(",", enumerable.Cast<object>().Select(obj => InlineParameterFormatter.Format(arrayType.UnderlyingType, obj)))}]",

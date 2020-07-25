@@ -59,7 +59,10 @@ namespace ClickHouse.Client.Formats
                     return $"toDate('{value:yyyy-MM-dd}')";
 
                 case ClickHouseTypeCode.DateTime when type is AbstractDateTimeType dateTimeType && value is DateTime dateTime:
-                    if (dateTimeType.TimeZone != null) { dateTime = dateTime.ToUniversalTime(); }
+                    if (dateTimeType.TimeZone != null)
+                    {
+                        dateTime = dateTime.ToUniversalTime();
+                    }
                     return $"toDateTime('{dateTime:yyyy-MM-dd HH:mm:ss}')";
 
                 case ClickHouseTypeCode.DateTime64 when type is DateTime64Type dateTimeType && value is DateTime dateTime:
@@ -72,7 +75,7 @@ namespace ClickHouse.Client.Formats
 
                 case ClickHouseTypeCode.Nullable:
                     var nullableType = (NullableType)type;
-                    return value is null || value == DBNull.Value ? "null" : $"{Format(nullableType.UnderlyingType, value)}";
+                    return value is null || value is DBNull ? "null" : $"{Format(nullableType.UnderlyingType, value)}";
 
                 case ClickHouseTypeCode.Array:
                     var arrayType = (ArrayType)type;

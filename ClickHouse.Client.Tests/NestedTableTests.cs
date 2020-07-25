@@ -55,7 +55,7 @@ namespace ClickHouse.Client.Tests
         [Ignore("TODO: need to figure this out. 'Query parameter `id` was not set' error")]
         public async Task ShouldInsertIntoNestedTableViaParameters()
         {
-            var row = new object[] { 1, new[] { 1, 2, 3 },  };
+            var row = new object[] { 1, new[] { 1, 2, 3 } };
             using var command = connection.CreateCommand();
             command.CommandText = "INSERT INTO test.nested VALUES ({id:Unt32}, {key:Array(UInt8)}, {val:Array(String)})";
             command.AddParameter("id", 1);
