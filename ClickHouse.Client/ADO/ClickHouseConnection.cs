@@ -256,7 +256,7 @@ namespace ClickHouse.Client.ADO
                 response.EnsureSuccessStatusCode();
                 var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
-                if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check that HttpClient is correctly set up
+                if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check if response starts with GZip marker
                     throw new InvalidOperationException("ClickHouse server returned compressed result but HttpClient did not decompress it");
 
                 serverVersion = Encoding.UTF8.GetString(data).Trim();
