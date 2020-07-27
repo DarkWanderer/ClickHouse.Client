@@ -48,13 +48,12 @@ namespace ClickHouse.Client.Tests
         }
 
         public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()
-            .Where(sample => sample.ClickHouseType != "Nothing")
             .Where(sample => sample.ExampleValue != DBNull.Value)
             .Select(sample => new TestCaseData($"SELECT {sample.ExampleExpression} AS col"));
 
         [Test]
         [TestCaseSource(typeof(DataAdapterTests), nameof(SimpleSelectQueries))]
-        public void DataAdapterShouldFillDataTableWithNullableColumn(string sql)
+        public void DataAdapterShouldFillSingleValue(string sql)
         {
             using var adapter = new ClickHouseDataAdapter();
             using var command = connection.CreateCommand();
