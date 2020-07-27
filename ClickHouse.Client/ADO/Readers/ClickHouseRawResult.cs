@@ -9,7 +9,7 @@ namespace ClickHouse.Client.ADO
     {
         private readonly HttpResponseMessage response;
 
-        public ClickHouseRawResult(HttpResponseMessage response)
+        internal ClickHouseRawResult(HttpResponseMessage response)
         {
             this.response = response;
         }

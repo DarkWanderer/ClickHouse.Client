@@ -10,7 +10,7 @@ using ClickHouse.Client.ADO.Readers;
 
 namespace ClickHouse.Client.ADO
 {
-    public class ClickHouseCommand : DbCommand, IDisposable
+    public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
     {
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
         private readonly ClickHouseParameterCollection clickHouseParameterCollection = new ClickHouseParameterCollection();

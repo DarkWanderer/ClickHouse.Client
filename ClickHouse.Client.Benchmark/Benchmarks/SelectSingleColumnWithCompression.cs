@@ -7,6 +7,5 @@
         {
             Compression = true;
         }
-
     }
 }

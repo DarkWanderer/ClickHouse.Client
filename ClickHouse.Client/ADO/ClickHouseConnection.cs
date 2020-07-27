@@ -15,7 +15,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO
 {
-    public class ClickHouseConnection : DbConnection, ICloneable
+    public class ClickHouseConnection : DbConnection, IClickHouseConnection, ICloneable
     {
         private readonly HttpClient httpClient;
 
