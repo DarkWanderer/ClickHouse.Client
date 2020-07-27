@@ -30,7 +30,6 @@ namespace ClickHouse.Client.Benchmark
             Console.WriteLine($"{result.Duration.TotalSeconds:#,#} seconds");
             Console.WriteLine($"{result.DataThroughput:#,#} bytes/s");
             Console.WriteLine($"{result.RowsThroughput:#,#} rows/s");
-
         }
     }
 }

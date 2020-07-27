@@ -5,6 +5,7 @@ using Dapper;
 using System.Linq;
 using System.Collections.Generic;
 using System.Globalization;
+using System;
 
 namespace ClickHouse.Client.Tests.ORM
 {
@@ -14,15 +15,14 @@ namespace ClickHouse.Client.Tests.ORM
 
         public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()
             .Where(s => ShouldBeSupportedByDapper(s.ClickHouseType))
+            .Where(s => s.ExampleValue != DBNull.Value)
             .Where(s => !s.ClickHouseType.StartsWith("Array")) // Dapper issue, see ShouldExecuteSelectWithParameters test
             .Select(sample => new TestCaseData($"SELECT {{value:{sample.ClickHouseType}}}", sample.ExampleValue));
 
         // "The member value of type <xxxxxxxx> cannot be used as a parameter value"
         private static bool ShouldBeSupportedByDapper(string clickHouseType)
         {
-            if (clickHouseType.StartsWith("Tuple") || clickHouseType.StartsWith("Nullable"))
-                return false;
-            if (clickHouseType.StartsWith("IPv"))
+            if (clickHouseType.StartsWith("Tuple") || clickHouseType.StartsWith("IPv"))
                 return false;
             if (clickHouseType == "UUID" || clickHouseType == "Date" || clickHouseType == "Nothing")
                 return false;
@@ -42,7 +42,7 @@ namespace ClickHouse.Client.Tests.ORM
 
         [Test]
         [TestCaseSource(typeof(DapperTests), nameof(SimpleSelectQueries))]
-        public async Task ShouldExecuteSelectWithParameter(string sql, object value)
+        public async Task ShouldExecuteSelectWithSingleParameterValue(string sql, object value)
         {
             var parameters = new Dictionary<string, object> { { "value", value } };
             var results = await connection.QueryAsync<string>(sql, parameters);
@@ -51,7 +51,7 @@ namespace ClickHouse.Client.Tests.ORM
 
         [Test]
         [Ignore("Requires Dapper support, see https://github.com/StackExchange/Dapper/pull/1462")]
-        public async Task ShouldExecuteSelectWithParameters()
+        public async Task ShouldExecuteSelectWithArrayParameter()
         {
             var parameters = new Dictionary<string, object> { { "names", new[] { "mysql", "odbc" } } };
             string sql = "SELECT * FROM system.table_functions WHERE has({names:Array(String)}, name)";

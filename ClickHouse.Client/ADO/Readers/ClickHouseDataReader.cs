@@ -71,7 +71,11 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override IEnumerator GetEnumerator() => CurrentRow.GetEnumerator();
 
-        public override Type GetFieldType(int ordinal) => RawTypes[ordinal].FrameworkType;
+        public override Type GetFieldType(int ordinal)
+        {
+            var rawType = RawTypes[ordinal];
+            return rawType is NullableType nt ? nt.UnderlyingType.FrameworkType : rawType.FrameworkType;
+        }
 
         public override float GetFloat(int ordinal) => Convert.ToSingle(GetValue(ordinal), CultureInfo.InvariantCulture);
 
