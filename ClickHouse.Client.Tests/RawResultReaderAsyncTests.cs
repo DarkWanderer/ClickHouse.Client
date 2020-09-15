@@ -14,11 +14,11 @@ namespace ClickHouse.Client.Tests
         public async Task ShouldReadRawResult()
         {
             using var command = connection.CreateCommand();
-            command.CommandText = "SELECT 1 FORMAT TSV";
+            command.CommandText = "SELECT 1,2,3 FORMAT TSV";
             using var result = await command.ExecuteRawResultAsync(CancellationToken.None);
             using var stream = await result.ReadAsStreamAsync();
             using var reader = new StreamReader(stream);
-            Assert.AreEqual("1", reader.ReadToEnd().Trim());
+            Assert.AreEqual("1\t2\t3", reader.ReadToEnd().Trim());
         }
     }
 }

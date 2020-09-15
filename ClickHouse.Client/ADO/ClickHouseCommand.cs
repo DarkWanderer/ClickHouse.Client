@@ -13,7 +13,7 @@ namespace ClickHouse.Client.ADO
     public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
     {
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
-        private readonly ClickHouseParameterCollection clickHouseParameterCollection = new ClickHouseParameterCollection();
+        private readonly ClickHouseParameterCollection commandParameters = new ClickHouseParameterCollection();
         private ClickHouseConnection connection;
 
         public ClickHouseCommand()
@@ -41,7 +41,7 @@ namespace ClickHouse.Client.ADO
             set => connection = (ClickHouseConnection)value;
         }
 
-        protected override DbParameterCollection DbParameterCollection => clickHouseParameterCollection;
+        protected override DbParameterCollection DbParameterCollection => commandParameters;
 
         protected override DbTransaction DbTransaction { get; set; }
 
@@ -63,7 +63,7 @@ namespace ClickHouse.Client.ADO
                 throw new InvalidOperationException("Connection is not set");
 
             using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
-            using var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, clickHouseParameterCollection).ConfigureAwait(false);
+            using var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, commandParameters).ConfigureAwait(false);
             var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return int.TryParse(result, NumberStyles.Integer, CultureInfo.InvariantCulture, out var r) ? r : 0;
         }
@@ -79,7 +79,7 @@ namespace ClickHouse.Client.ADO
                 throw new InvalidOperationException("Connection is not set");
 
             using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
-            var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, clickHouseParameterCollection).ConfigureAwait(false);
+            var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, commandParameters).ConfigureAwait(false);
             return new ClickHouseRawResult(response);
         }
 
@@ -124,14 +124,10 @@ namespace ClickHouse.Client.ADO
                 case CommandBehavior.SchemaOnly:
                     sqlBuilder.Append(" LIMIT 0");
                     break;
-                case CommandBehavior.CloseConnection:
-                case CommandBehavior.Default:
-                case CommandBehavior.KeyInfo:
-                case CommandBehavior.SequentialAccess:
+                default:
                     break;
             }
-            sqlBuilder.Append(" FORMAT RowBinaryWithNamesAndTypes");
-            var result = await connection.PostSqlQueryAsync(sqlBuilder.ToString(), linkedCancellationTokenSource.Token, clickHouseParameterCollection).ConfigureAwait(false);
+            var result = await connection.PostSqlQueryAsync(sqlBuilder.ToString(), linkedCancellationTokenSource.Token, commandParameters).ConfigureAwait(false);
             return new ClickHouseBinaryReader(result);
         }
     }

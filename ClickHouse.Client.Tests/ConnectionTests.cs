@@ -46,7 +46,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldPostQueryAsync()
         {
-            using var response = await connection.PostSqlQueryAsync("SELECT 1", CancellationToken.None);
+            using var response = await connection.PostSqlQueryAsync("SELECT 1 FORMAT TabSeparated", CancellationToken.None);
             var result = await response.Content.ReadAsStringAsync();
             Assert.AreEqual("1", result.Trim());
         }

@@ -17,7 +17,7 @@ namespace ClickHouse.Client.Tests
         {
             public OldClickHouseVersionConnection(string connectionString) : base(connectionString) { }
 
-            public override string ServerVersion => "19.11.3.10";
+            public override Task<bool> SupportsHttpParameters() => Task.FromResult(false);
         }
 
         private readonly ClickHouseConnection connection;
