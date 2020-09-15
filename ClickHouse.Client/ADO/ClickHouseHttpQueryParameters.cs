@@ -43,7 +43,7 @@ namespace ClickHouse.Client.ADO
             set => SetOrRemove("session_id", value);
         }
 
-        public void SetParameter(string name, string value) => parameterCollection.Set($"param_{name}", value);
+        public void SetQueryParameter(string name, string value) => parameterCollection.Set($"{name}", value);
 
         public object Clone() => new ClickHouseHttpQueryParameters(ToString());
 

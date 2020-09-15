@@ -19,6 +19,9 @@ nuget:
 services:
 - docker
 
+install:
+- dotnet tool install --global Codecov.Tool
+
 dotnet_csproj:
   patch: true
   file: '**\*.csproj'
