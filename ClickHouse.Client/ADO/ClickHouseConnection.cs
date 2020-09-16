@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -18,6 +19,8 @@ namespace ClickHouse.Client.ADO
 {
     public class ClickHouseConnection : DbConnection, IClickHouseConnection, ICloneable
     {
+        private const string CustomSettingPrefix = "set_";
+
         private readonly HttpClient httpClient;
         private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
         private ConnectionState state = ConnectionState.Closed; // Not an autoproperty because of interface implementation
@@ -77,6 +80,10 @@ namespace ClickHouse.Client.ADO
                     UseSession = session != null,
                     Timeout = timeout,
                 };
+
+                foreach (var kvp in CustomSettings)
+                    builder[CustomSettingPrefix + kvp.Key] = kvp.Value;
+
                 return builder.ToString();
             }
 
@@ -90,6 +97,11 @@ namespace ClickHouse.Client.ADO
                 useCompression = builder.Compression;
                 session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
                 timeout = builder.Timeout;
+
+                foreach (var key in builder.Keys.Cast<string>().Where(k => k.StartsWith(CustomSettingPrefix)))
+                {
+                    CustomSettings.Set(key.Replace(CustomSettingPrefix, string.Empty), builder[key]);
+                }
             }
         }
 
