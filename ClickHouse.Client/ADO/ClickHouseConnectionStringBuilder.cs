@@ -10,6 +10,8 @@ namespace ClickHouse.Client.ADO
         {
         }
 
+        public ClickHouseConnectionStringBuilder(string connectionString) => ConnectionString = connectionString;
+
         public string Database
         {
             get => TryGetValue("Database", out var value) ? value as string : "default";

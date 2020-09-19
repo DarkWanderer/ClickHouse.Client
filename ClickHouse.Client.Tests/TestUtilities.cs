@@ -19,6 +19,7 @@ namespace ClickHouse.Client.Tests
         {
             var builder = GetConnectionStringBuilder();
             builder.Compression = compression;
+            builder["set_session_timeout"] = 1; // Expire sessions quickly after test
             return new ClickHouseConnection(builder.ConnectionString);
         }
 
@@ -28,7 +29,7 @@ namespace ClickHouse.Client.Tests
             var devConnectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION") ??
                 throw new InvalidOperationException("Must set CLICKHOUSE_CONNECTION environment variable pointing at ClickHouse server");
 
-            return new ClickHouseConnectionStringBuilder() { ConnectionString = devConnectionString };
+            return new ClickHouseConnectionStringBuilder(devConnectionString);
         }
 
         public struct DataTypeSample
