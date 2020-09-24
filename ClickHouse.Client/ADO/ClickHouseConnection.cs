@@ -159,7 +159,7 @@ namespace ClickHouse.Client.ADO
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }
 
-        internal async Task<HttpResponseMessage> PostBulkDataAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
+        internal async Task PostBulkDataAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
         {
             var builder = CreateUriBuilder(sql);
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());
@@ -172,8 +172,8 @@ namespace ClickHouse.Client.ADO
                 postMessage.Content.Headers.Add("Content-Encoding", "gzip");
             }
 
-            var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
-            return await HandleError(response, sql).ConfigureAwait(false);
+            using var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
+            await HandleError(response, sql).ConfigureAwait(false);
         }
 
         private static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query)
