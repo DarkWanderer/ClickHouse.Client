@@ -12,12 +12,9 @@ using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
-    [NonParallelizable]
     public class BulkCopyTests
     {
         private readonly ClickHouseConnection connection = TestUtilities.GetTestClickHouseConnection();
-
-        private long OpenConnectionsCount => IPGlobalProperties.GetIPGlobalProperties().GetTcpIPv4Statistics().CurrentConnections;
 
         public static IEnumerable<TestCaseData> GetInsertSingleValueTestCases()
         {
@@ -35,7 +32,6 @@ namespace ClickHouse.Client.Tests
         [TestCaseSource(typeof(BulkCopyTests), nameof(GetInsertSingleValueTestCases))]
         public async Task ShouldExecuteSingleValueInsertViaBulkCopy(string clickHouseType, object insertedValue)
         {
-            var connectionsBefore = OpenConnectionsCount;
             var targetTable = SanitizeTableName($"test.b_{clickHouseType}");
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
@@ -50,7 +46,6 @@ namespace ClickHouse.Client.Tests
             reader.AssertHasFieldCount(1);
             var data = reader.GetValue(0);
             Assert.AreEqual(insertedValue, data);
-            Assert.LessOrEqual(OpenConnectionsCount, connectionsBefore);
         }
 
         [Test]
