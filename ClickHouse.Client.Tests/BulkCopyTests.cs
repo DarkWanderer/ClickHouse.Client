@@ -50,7 +50,7 @@ namespace ClickHouse.Client.Tests
             reader.AssertHasFieldCount(1);
             var data = reader.GetValue(0);
             Assert.AreEqual(insertedValue, data);
-            Assert.AreEqual(connectionsBefore, OpenConnectionsCount);
+            Assert.LessOrEqual(OpenConnectionsCount, connectionsBefore);
         }
 
         [Test]
