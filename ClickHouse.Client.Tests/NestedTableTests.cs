@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
@@ -11,16 +13,12 @@ namespace ClickHouse.Client.Tests
     public class NestedTableTests
     {
         private readonly string Table = $"test.nested";
-        private readonly ClickHouseConnection connection;
-
-        public NestedTableTests()
-        {
-            connection = TestUtilities.GetTestClickHouseConnection(true);
-        }
+        private readonly IEnumerable<ClickHouseConnection> connections = Enumerable.Repeat(TestUtilities.GetTestClickHouseConnection(true), 4);
 
         [SetUp]
         public async Task Setup()
         {
+            var connection = connections.First();
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table}(id UInt32, params Nested (param_id UInt8, param_val String)) ENGINE = Memory");
         }
@@ -28,7 +26,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldInsertIntoNestedTableViaBulk()
         {
-            using var bulkCopy = new ClickHouseBulkCopy(connection)
+            using var bulkCopy = new ClickHouseBulkCopy(connections)
             {
                 DestinationTableName = Table,
             };
@@ -36,7 +34,7 @@ namespace ClickHouse.Client.Tests
             var row2 = new object[] { 2, new[] { 4, 5, 6 }, new[] { "v4", "v5", "v6" } };
 
             await bulkCopy.WriteToServerAsync(new[] { row1, row2 }, CancellationToken.None);
-            using var reader = await connection.ExecuteReaderAsync("SELECT * FROM test.nested ORDER BY id ASC");
+            using var reader = await connections.First().ExecuteReaderAsync("SELECT * FROM test.nested ORDER BY id ASC");
 
             Assert.IsTrue(reader.Read());
             var values = reader.GetFieldValues();
@@ -54,6 +52,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldInsertIntoNestedTableViaParameters()
         {
+            var connection = connections.First();
             var row = new object[] { 1, new[] { 1, 2, 3 } };
             using var command = connection.CreateCommand();
             command.CommandText = "INSERT INTO test.nested VALUES ({id:UInt32}, {key:Array(UInt8)}, {val:Array(String)})";
