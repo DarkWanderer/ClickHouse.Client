@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.Utility;
 
@@ -16,7 +17,7 @@ namespace ClickHouse.Client.Benchmark.Benchmarks
         {
             var stopwatch = new Stopwatch();
 
-            using var connection = GetConnection();
+            using var connection = GetConnections(1).First();
             using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers");
 
             var totalMilliseconds = Convert.ToInt64(Duration.TotalMilliseconds);

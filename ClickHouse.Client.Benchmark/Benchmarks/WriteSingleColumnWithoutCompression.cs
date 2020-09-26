@@ -27,18 +27,19 @@ namespace ClickHouse.Client.Benchmark.Benchmarks
             var stopwatch = new Stopwatch();
 
             // Create database and table for benchmark
-            using var targetConnection = GetConnection();
+            var targetConnections = GetConnections(16);
+            var targetConnection = targetConnections.First();
+
             await targetConnection.ExecuteStatementAsync($"CREATE DATABASE IF NOT EXISTS {targetDatabase}");
             await targetConnection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
             await targetConnection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE Memory");
 
             targetConnection.ChangeDatabase(targetDatabase);
 
-            using var bulkCopyInterface = new ClickHouseBulkCopy(targetConnection)
+            using var bulkCopyInterface = new ClickHouseBulkCopy(targetConnections)
             {
                 DestinationTableName = targetTable,
-                BatchSize = 1000000,
-                MaxDegreeOfParallelism = 16
+                BatchSize = 1000000
             };
 
             stopwatch.Start();

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 
@@ -20,6 +22,6 @@ namespace ClickHouse.Client.Benchmark.Benchmarks
 
         protected bool Compression { get => connectionStringBuilder.Compression; set => connectionStringBuilder.Compression = value; }
 
-        protected ClickHouseConnection GetConnection() => new ClickHouseConnection(connectionStringBuilder.ToString());
+        protected IEnumerable<ClickHouseConnection> GetConnections(int maxDegreeOfParallelism) => Enumerable.Repeat(new ClickHouseConnection(connectionStringBuilder.ToString()), maxDegreeOfParallelism);
     }
 }
