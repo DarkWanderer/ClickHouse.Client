@@ -66,8 +66,6 @@ namespace ClickHouse.Client.Copy
         /// </summary>
         public long RowsWritten => Interlocked.Read(ref rowsWritten);
 
-        public TimeSpan Timeout { get; set; }
-
         public Task WriteToServerAsync(IDataReader reader) => WriteToServerAsync(reader, CancellationToken.None);
 
         public Task WriteToServerAsync(IDataReader reader, CancellationToken token)
