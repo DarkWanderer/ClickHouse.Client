@@ -55,6 +55,9 @@ namespace ClickHouse.Client.ADO.Readers
             }
             catch (EndOfStreamException)
             {
+                // HACK this is a horrible hack related to the fact that GZip-compressed stream
+                // does not provide a Peek method for some reason, forcing us to only be able to
+                // detect EOF by actually trying to read
                 return false;
             }
         }
