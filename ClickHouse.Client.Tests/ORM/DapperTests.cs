@@ -41,6 +41,7 @@ namespace ClickHouse.Client.Tests.ORM
         }
 
         [Test]
+        [Parallelizable]
         [TestCaseSource(typeof(DapperTests), nameof(SimpleSelectQueries))]
         public async Task ShouldExecuteSelectWithSingleParameterValue(string sql, object value)
         {

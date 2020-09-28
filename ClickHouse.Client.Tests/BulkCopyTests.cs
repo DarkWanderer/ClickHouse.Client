@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +28,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
+        [Parallelizable]
         [TestCaseSource(typeof(BulkCopyTests), nameof(GetInsertSingleValueTestCases))]
         public async Task ShouldExecuteSingleValueInsertViaBulkCopy(string clickHouseType, object insertedValue)
         {

@@ -27,6 +27,7 @@ namespace ClickHouse.Client.Tests
             .Select(sample => new TestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));
 
         [Test]
+        [Parallelizable]
         [TestCaseSource(typeof(SqlParameterizedSelectTests), nameof(TypedQueryParameters))]
         public async Task ShouldExecuteParameterizedSelectWhereWithTypeDetection(string exampleExpression, string clickHouseType, object value)
         {
@@ -44,6 +45,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
+        [Parallelizable]
         [TestCaseSource(typeof(SqlParameterizedSelectTests), nameof(TypedQueryParameters))]
         public async Task ShouldExecuteParameterizedSelectWithExplicitType(string exampleExpression, string clickHouseType, object value)
         {
@@ -58,6 +60,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
+        [Parallelizable]
         [TestCaseSource(typeof(SqlParameterizedSelectTests), nameof(TypedQueryParameters))]
         public async Task ShouldExecuteParameterizedSelectWhereWithExplicitType(string exampleExpression, string clickHouseType, object value)
         {

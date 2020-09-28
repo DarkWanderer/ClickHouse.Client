@@ -52,6 +52,7 @@ namespace ClickHouse.Client.Tests
             .Select(sample => new TestCaseData($"SELECT {sample.ExampleExpression} AS col"));
 
         [Test]
+        [Parallelizable]
         [TestCaseSource(typeof(DataAdapterTests), nameof(SimpleSelectQueries))]
         public void DataAdapterShouldFillSingleValue(string sql)
         {

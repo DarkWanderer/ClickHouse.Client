@@ -27,6 +27,7 @@ namespace ClickHouse.Client.Tests
             .Select(sample => new TestCaseData($"SELECT {sample.ExampleExpression}") { ExpectedResult = sample.ExampleValue });
 
         [Test]
+        [Parallelizable]
         [TestCaseSource(typeof(SqlSimpleSelectTests), nameof(SimpleSelectQueries))]
         public async Task<object> ShouldExecuteSimpleSelectQuery(string sql)
         {
@@ -53,6 +54,7 @@ namespace ClickHouse.Client.Tests
         [TestCase("你好")]
         [TestCase("こんにちは")]
         [TestCase("⌬⏣")]
+        [Parallelizable]
         public async Task ShouldSelectUnicode(string input)
         {
             using var reader = await connection.ExecuteReaderAsync($"SELECT '{input}'");
