@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using ClickHouse.Client.ADO;
+using ClickHouse.Client.ADO.Adapters;
 using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Types;
 
@@ -91,34 +92,37 @@ namespace ClickHouse.Client.Utility
             return result;
         }
 
-        public static DataTable DescribeSchema(this ClickHouseConnection connection, string type, string[] restrictions)
+        public static DataTable DescribeSchema(this ClickHouseConnection connection, string type, string[] restrictions) => type switch
         {
-            switch (type)
-            {
-                case "Columns":
-                    return DescribeColumns(connection, restrictions);
-                default:
-                    throw new NotSupportedException();
-            }
-        }
+            "Columns" => DescribeColumns(connection, restrictions),
+            _ => throw new NotSupportedException(),
+        };
 
         private static DataTable DescribeColumns(ClickHouseConnection connection, string[] restrictions)
         {
+            var command = connection.CreateCommand();
             var query = new StringBuilder("SELECT database as Database, table as Table, name as Name, type as ProviderType, type as DataType FROM system.columns");
             var database = restrictions != null && restrictions.Length > 0 ? restrictions[0] : null;
             var table = restrictions != null && restrictions.Length > 1 ? restrictions[1] : null;
 
             if (database != null)
             {
-                query.Append($" WHERE database='{database}'");
+                query.Append(" WHERE database={database:String}");
+                command.AddParameter("database", "String", database);
             }
 
             if (table != null)
             {
-                query.Append($" AND table='{table}'");
+                query.Append(" AND table={table:String}");
+                command.AddParameter("table", "String", table);
             }
 
-            var result = connection.ExecuteDataTable(query.ToString());
+            command.CommandText = query.ToString();
+            using var adapter = new ClickHouseDataAdapter();
+            adapter.SelectCommand = command;
+            var result = new DataTable();
+            adapter.Fill(result);
+
             foreach (var row in result.Rows.Cast<DataRow>())
             {
                 var clickHouseType = TypeConverter.ParseClickHouseType((string)row["ProviderType"]);
