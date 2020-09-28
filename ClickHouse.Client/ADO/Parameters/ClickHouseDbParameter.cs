@@ -9,7 +9,7 @@ namespace ClickHouse.Client.ADO.Parameters
 
         public string ClickHouseType { get; set; }
 
-        public override ParameterDirection Direction { get; set; }
+        public override ParameterDirection Direction { get => ParameterDirection.Input; set { } }
 
         public override bool IsNullable { get; set; }
 
