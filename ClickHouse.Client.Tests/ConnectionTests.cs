@@ -11,10 +11,8 @@ using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
-    public class ConnectionTests
+    public class ConnectionTests : AbstractConnectionTestFixture
     {
-        private readonly ClickHouseConnection connection = TestUtilities.GetTestClickHouseConnection(default);
-
         [Test]
         public async Task ShouldCreateConnectionWithProvidedHttpClient()
         {
@@ -51,6 +49,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public void ShouldConnectToServer()
         {
+            using var connection = TestUtilities.GetTestClickHouseConnection();
             connection.Open();
             Assert.IsNotEmpty(connection.ServerVersion);
             Assert.AreEqual(ConnectionState.Open, connection.State);

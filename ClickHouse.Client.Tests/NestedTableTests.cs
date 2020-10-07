@@ -1,22 +1,15 @@
 ﻿using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
-using ClickHouse.Client.ADO;
 using ClickHouse.Client.Copy;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
-    public class NestedTableTests
+    public class NestedTableTests : AbstractConnectionTestFixture
     {
         private readonly string Table = $"test.nested";
-        private readonly ClickHouseConnection connection;
-
-        public NestedTableTests()
-        {
-            connection = TestUtilities.GetTestClickHouseConnection(true);
-        }
 
         [SetUp]
         public async Task Setup()

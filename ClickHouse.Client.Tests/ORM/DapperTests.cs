@@ -9,10 +9,8 @@ using System;
 
 namespace ClickHouse.Client.Tests.ORM
 {
-    public class DapperTests
+    public class DapperTests : AbstractConnectionTestFixture
     {
-        private readonly ClickHouseConnection connection = TestUtilities.GetTestClickHouseConnection(default);
-
         public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()
             .Where(s => ShouldBeSupportedByDapper(s.ClickHouseType))
             .Where(s => s.ExampleValue != DBNull.Value)

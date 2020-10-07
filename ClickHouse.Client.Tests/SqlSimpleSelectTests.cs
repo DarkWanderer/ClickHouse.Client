@@ -14,7 +14,7 @@ namespace ClickHouse.Client.Tests
     [Parallelizable]
     [TestFixture(true)]
     [TestFixture(false)]
-    public class SqlSimpleSelectTests
+    public class SqlSimpleSelectTests : IDisposable
     {
         private readonly ClickHouseConnection connection;
 
@@ -194,5 +194,7 @@ namespace ClickHouse.Client.Tests
             var schema = reader.GetSchemaTable();
             Assert.AreEqual(2, schema.Rows.Count);
         }
+
+        public void Dispose() => connection?.Dispose();
     }
 }

@@ -6,11 +6,11 @@ using NUnit.Framework;
 namespace ClickHouse.Client.Tests
 {
     [SetUpFixture]
-    public class TestFixture
+    public class GlobalSetupFixture
     {
         private readonly ClickHouseConnection connection;
 
-        public TestFixture()
+        public GlobalSetupFixture()
         {
             connection = TestUtilities.GetTestClickHouseConnection();
         }

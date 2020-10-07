@@ -4,17 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ClickHouse.Client.ADO;
 using ClickHouse.Client.Copy;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
-    public class BulkCopyTests
+    public class BulkCopyTests : AbstractConnectionTestFixture
     {
-        private readonly ClickHouseConnection connection = TestUtilities.GetTestClickHouseConnection();
-
         public static IEnumerable<TestCaseData> GetInsertSingleValueTestCases()
         {
             foreach (var sample in TestUtilities.GetDataTypeSamples())

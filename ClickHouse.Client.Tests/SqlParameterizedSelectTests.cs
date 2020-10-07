@@ -11,7 +11,7 @@ namespace ClickHouse.Client.Tests
     [Parallelizable]
     [TestFixture(true)]
     [TestFixture(false)]
-    public class SqlParameterizedSelectTests
+    public class SqlParameterizedSelectTests : IDisposable
     {
         private readonly ClickHouseConnection connection;
 
@@ -112,5 +112,7 @@ namespace ClickHouse.Client.Tests
             var result = await command.ExecuteReaderAsync();
             result.GetEnsureSingleRow();
         }
+
+        public void Dispose() => connection?.Dispose();
     }
 }

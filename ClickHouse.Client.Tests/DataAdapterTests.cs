@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Linq;
 using ClickHouse.Client.ADO.Adapters;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {
-    public class DataAdapterTests
+    public class DataAdapterTests : AbstractConnectionTestFixture
     {
-        private readonly DbConnection connection = TestUtilities.GetTestClickHouseConnection();
-
         [Test]
         public void DataAdapterShouldFillDataSet()
         {
