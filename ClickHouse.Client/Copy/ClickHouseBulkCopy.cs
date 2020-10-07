@@ -4,6 +4,7 @@ using System.Data;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
@@ -133,9 +134,15 @@ namespace ClickHouse.Client.Copy
 
         private async Task PushBatch(ICollection<object[]> rows, ClickHouseType[] columnTypes, string[] columnNames, CancellationToken token)
         {
+            var query = $"INSERT INTO {DestinationTableName} ({string.Join(", ", columnNames)}) FORMAT RowBinary";
+
             using var stream = new MemoryStream() { Capacity = 512 * 1024 };
             using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))
             {
+                // Write query at start of data, so that we are not limited by URI length
+                using (var textWriter = new StreamWriter(gzipStream, Encoding.UTF8, 4 * 1024, true))
+                    textWriter.WriteLine(query);
+
                 using var writer = new ExtendedBinaryWriter(gzipStream);
                 using var streamer = new BinaryStreamWriter(writer);
                 foreach (var row in rows)
@@ -148,8 +155,7 @@ namespace ClickHouse.Client.Copy
             }
             stream.Seek(0, SeekOrigin.Begin);
 
-            var query = $"INSERT INTO {DestinationTableName} ({string.Join(", ", columnNames)}) FORMAT RowBinary";
-            await connection.PostBulkDataAsync(query, stream, true, token).ConfigureAwait(false);
+            await connection.PostStreamAsync(stream, isCompressed: true, token).ConfigureAwait(false);
             Interlocked.Add(ref rowsWritten, rows.Count);
         }
     }

@@ -159,9 +159,9 @@ namespace ClickHouse.Client.ADO
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }
 
-        internal async Task PostBulkDataAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
+        internal async Task PostStreamAsync(Stream data, bool isCompressed, CancellationToken token)
         {
-            var builder = CreateUriBuilder(sql);
+            var builder = CreateUriBuilder();
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());
             AddDefaultHttpHeaders(postMessage.Headers);
 
@@ -173,7 +173,7 @@ namespace ClickHouse.Client.ADO
             }
 
             using var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
-            await HandleError(response, sql).ConfigureAwait(false);
+            await HandleError(response, null).ConfigureAwait(false);
         }
 
         private static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query)
