@@ -93,6 +93,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
+        [Explicit]
         public async Task ShouldInsertIntoTableWithLotsOfColumns()
         {
             var tblName = "test.b_long_columns";
