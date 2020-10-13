@@ -91,5 +91,27 @@ namespace ClickHouse.Client.Tests
             }
             return builder.ToString();
         }
+
+        [Test]
+        public async Task ShouldInsertIntoTableWithLotsOfColumns()
+        {
+            var tblName = "test.b_long_columns";
+            var columnCount = 3900;
+
+            //Generating create tbl statement with a lot of columns 
+            var query = $"CREATE TABLE IF NOT EXISTS {tblName}(\n";
+            var columns = Enumerable.Range(1, columnCount)
+                .Select(x => $" some_loooooooooooooonnnnnnnnnnnngggggggg_column_name_{x} Int32");
+            query += string.Join(",\n", columns);
+            query += ")\n ENGINE = MergeTree()\n ORDER BY (some_loooooooooooooonnnnnnnnnnnngggggggg_column_name_1)";
+
+            //Create tbl in db
+            await connection.ExecuteStatementAsync(query);
+
+            var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = tblName };
+
+            var rowToInsert = new[] { Enumerable.Range(1, columnCount).Select(x => (object)x).ToArray() };
+            await bulkCopy.WriteToServerAsync(rowToInsert);
+        }
     }
 }
