@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --framework netcoreapp3.0 --configuration Release --no-restore
+      run: dotnet build --framework netcoreapp2.2 --configuration Release --no-restore
     - name: Test
       run: dotnet test --framework netcoreapp3.0 --no-build --configuration Release --no-restore --verbosity normal
       env:
