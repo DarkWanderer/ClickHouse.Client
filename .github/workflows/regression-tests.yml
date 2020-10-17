@@ -1,4 +1,4 @@
-name: .NET Core
+name: Regression tests
 
 on:
   push:
@@ -9,9 +9,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        clickhouse-version: [19.11.2.7, 20.3.18.10, latest]
     services:
       clickhouse:
-        image: yandex/clickhouse-server
+        image: yandex/clickhouse-server:${{matrix.clickhouse-version}}
         ports:
           - 8123:8123
     steps:
