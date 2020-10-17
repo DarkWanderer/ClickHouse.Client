@@ -159,9 +159,9 @@ namespace ClickHouse.Client.ADO
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }
 
-        internal async Task PostStreamAsync(Stream data, bool isCompressed, CancellationToken token)
+        internal async Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
         {
-            var builder = CreateUriBuilder();
+            var builder = CreateUriBuilder(sql);
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());
             AddDefaultHttpHeaders(postMessage.Headers);
 
@@ -173,7 +173,7 @@ namespace ClickHouse.Client.ADO
             }
 
             using var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
-            await HandleError(response, null).ConfigureAwait(false);
+            await HandleError(response, sql).ConfigureAwait(false);
         }
 
         private static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query)
@@ -255,10 +255,6 @@ namespace ClickHouse.Client.ADO
 
         public new ClickHouseCommand CreateCommand() => new ClickHouseCommand(this);
 
-        protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
-
-        protected override DbCommand CreateDbCommand() => CreateCommand();
-
         /// <summary>
         /// Detects whether server supports parameters through URI
         ///   ClickHouse Release 19.11.3.11, 2019-07-18: New Feature: Added support for prepared statements. #5331 (Alexander) #5630 (alexey-milovidov)
@@ -272,6 +268,24 @@ namespace ClickHouse.Client.ADO
                 throw new InvalidOperationException("Connection does not define server version");
             return Version.Parse(ServerVersion) >= new Version(19, 11, 3, 11);
         }
+
+        /// <summary>
+        /// Detects whether server supports putting query into POST body along with binary data
+        /// Added somewhere in ClickHouse 20.5
+        /// </summary>
+        /// <returns>whether parameters are supported</returns>
+        public virtual async Task<bool> SupportsInlineQuery()
+        {
+            if (State != ConnectionState.Open)
+                await OpenAsync();
+            if (string.IsNullOrWhiteSpace(ServerVersion))
+                throw new InvalidOperationException("Connection does not define server version");
+            return Version.Parse(ServerVersion) >= new Version(20, 5);
+        }
+
+        protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
+
+        protected override DbCommand CreateDbCommand() => CreateCommand();
 
         private void AddDefaultHttpHeaders(HttpRequestHeaders headers)
         {
