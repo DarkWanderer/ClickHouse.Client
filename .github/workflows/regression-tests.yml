@@ -10,6 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         clickhouse-version: [19.11.2.7, 20.3.18.10, latest]
     services:
