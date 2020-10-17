@@ -19,10 +19,12 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.301
+        dotnet-version: '3.1.x'
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --framework netcoreapp3.0 --configuration Release --no-restore
     - name: Test
-      run: dotnet test  --no-build --framework netcoreapp3.0 --configuration Release --no-restore --verbosity normal
+      run: dotnet test --framework netcoreapp3.0 --no-build --configuration Release --no-restore --verbosity normal
+      env:
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
