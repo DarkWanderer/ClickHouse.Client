@@ -283,6 +283,19 @@ namespace ClickHouse.Client.ADO
             return Version.Parse(ServerVersion) >= new Version(20, 5);
         }
 
+        /// <summary>
+        ///  20.1.2.4 Add DateTime64 datatype with configurable sub-second precision. #7170 (Vasily Nemkov)
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task<bool> SupportsDateTime64()
+        {
+            if (State != ConnectionState.Open)
+                await OpenAsync();
+            if (string.IsNullOrWhiteSpace(ServerVersion))
+                throw new InvalidOperationException("Connection does not define server version");
+            return Version.Parse(ServerVersion) >= new Version(20, 1, 2, 4);
+        }
+
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
 
         protected override DbCommand CreateDbCommand() => CreateCommand();

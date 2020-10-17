@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Types;
 using NUnit.Framework;
@@ -11,6 +12,16 @@ namespace ClickHouse.Client.Tests
 {
     public static class TestUtilities
     {
+        private static Lazy<bool> dateTime64SupportEnabledLazy = 
+            new Lazy<bool>(GetDateTime64SupportEnabled, LazyThreadSafetyMode.ExecutionAndPublication);
+
+        private static bool GetDateTime64SupportEnabled() { 
+            using var connection = GetTestClickHouseConnection();
+            return connection.SupportsDateTime64().Result;
+        }
+
+        public static bool DateTime64Supported => dateTime64SupportEnabledLazy.Value;
+
         /// <summary>
         /// Utility method to allow to redirect ClickHouse connections to different machine, in case of Windows development environment
         /// </summary>
@@ -110,7 +121,9 @@ namespace ClickHouse.Client.Tests
 
             yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Utc));
             yield return new DataTypeSample("DateTime", typeof(DateTime), "toDateTime('1988-08-28 11:22:33')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Utc));
-            yield return new DataTypeSample("DateTime64(7)", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9)", new DateTime(644444444444444444, DateTimeKind.Utc));
+
+            if (dateTime64SupportEnabledLazy.Value)
+                yield return new DataTypeSample("DateTime64(7)", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9)", new DateTime(644444444444444444, DateTimeKind.Utc));
         }
 
         [Test]

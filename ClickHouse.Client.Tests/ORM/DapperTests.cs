@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using ClickHouse.Client.ADO;
 using NUnit.Framework;
 using Dapper;
 using System.Linq;
