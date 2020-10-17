@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       clickhouse:
-        image: clickhouse-server'
+        image: yandex/clickhouse-server
         ports:
           - 8123:8123
     steps:
