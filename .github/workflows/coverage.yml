@@ -21,9 +21,9 @@ jobs:
       with:
         dotnet-version: '3.1.x'
     - name: Install coverlet-collector
-      run: dotnet add ClickHouse.Client.Tests\ClickHouse.Client.Tests.csproj package coverlet.collector
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector
     - name: Install coverlet-msbuild
-      run: dotnet add ClickHouse.Client.Tests\ClickHouse.Client.Tests.csproj package coverlet.msbuild
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.msbuild
     - name: Install dependencies
       run: dotnet restore
     - name: Build
