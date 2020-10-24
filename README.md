@@ -6,6 +6,7 @@ ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra
 [![NuGet status](https://img.shields.io/nuget/dt/ClickHouse.Client?style=for-the-badge)](https://www.nuget.org/packages/ClickHouse.Client/)
 [![Build status](https://img.shields.io/appveyor/build/DarkWanderer/clickhouse-client/master?style=for-the-badge)](https://ci.appveyor.com/project/DarkWanderer/clickhouse-client/branch/master)
 [![Tests status](https://img.shields.io/appveyor/tests/DarkWanderer/clickhouse-client/master?style=for-the-badge)](https://ci.appveyor.com/project/DarkWanderer/clickhouse-client/branch/master)
+[![Code coverage](https://img.shields.io/codecov/c/github/DarkWanderer/ClickHouse.Client?style=for-the-badge&token=gAjCHhoRnH)](https://codecov.io/gh/DarkWanderer/ClickHouse.Client/)
 
 ## Key features
 
