@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using ClickHouse.Client.ADO;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests

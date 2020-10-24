@@ -17,7 +17,7 @@ namespace ClickHouse.Client.Tests
         {
             public OldClickHouseVersionConnection(string connectionString) : base(connectionString) { }
 
-            public override Task<bool> SupportsHttpParameters() => Task.FromResult(false);
+            internal override Task<bool> SupportsHttpParameters() => Task.FromResult(false);
         }
 
         private readonly ClickHouseConnection connection;
