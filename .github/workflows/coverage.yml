@@ -1,0 +1,34 @@
+name: Code coverage
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  coverage:
+    name: Run coverage
+    runs-on: ubuntu-latest
+
+    services:
+      clickhouse:
+        image: yandex/clickhouse-server:${{matrix.clickhouse-version}}
+        ports:
+          - 8123:8123
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+    - name: Install coverlet-collector
+      run: dotnet add package ClickHouse.Client.Tests\ClickHouse.Client.Tests.csproj coverlet.collector
+    - name: Install coverlet-msbuild
+      run: dotnet add package ClickHouse.Client.Tests\ClickHouse.Client.Tests.csproj coverlet.msbuild
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --framework netcoreapp2.2 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
+    - name: Run test with coverage
+      run: dotnet test --framework netcoreapp3.0 --configuration Release --no-restore --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+      env:
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
