@@ -260,7 +260,7 @@ namespace ClickHouse.Client.ADO
         ///   ClickHouse Release 19.11.3.11, 2019-07-18: New Feature: Added support for prepared statements. #5331 (Alexander) #5630 (alexey-milovidov)
         /// </summary>
         /// <returns>whether parameters are supported</returns>
-        public virtual async Task<bool> SupportsHttpParameters()
+        internal virtual async Task<bool> SupportsHttpParameters()
         {
             if (State != ConnectionState.Open)
                 await OpenAsync();
@@ -274,7 +274,7 @@ namespace ClickHouse.Client.ADO
         /// Added somewhere in ClickHouse 20.5
         /// </summary>
         /// <returns>whether parameters are supported</returns>
-        public virtual async Task<bool> SupportsInlineQuery()
+        internal virtual async Task<bool> SupportsInlineQuery()
         {
             if (State != ConnectionState.Open)
                 await OpenAsync();
@@ -287,7 +287,7 @@ namespace ClickHouse.Client.ADO
         ///  20.1.2.4 Add DateTime64 datatype with configurable sub-second precision. #7170 (Vasily Nemkov)
         /// </summary>
         /// <returns></returns>
-        public virtual async Task<bool> SupportsDateTime64()
+        internal virtual async Task<bool> SupportsDateTime64()
         {
             if (State != ConnectionState.Open)
                 await OpenAsync();
