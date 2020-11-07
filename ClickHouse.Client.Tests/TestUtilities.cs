@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Types;
 using NUnit.Framework;
