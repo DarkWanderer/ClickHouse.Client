@@ -86,6 +86,7 @@ namespace ClickHouse.Client.ADO.Readers
             }
             else if (value is string s)
             {
+                // TODO: remove this
                 return new Guid(s);
             }
             else
