@@ -45,8 +45,6 @@ namespace ClickHouse.Client.ADO
 
         protected override DbTransaction DbTransaction { get; set; }
 
-        protected override bool CanRaiseEvents => base.CanRaiseEvents;
-
         public new void Dispose()
         {
             cts?.Dispose();

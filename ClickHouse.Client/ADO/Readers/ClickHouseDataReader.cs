@@ -37,8 +37,6 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override int RecordsAffected { get; }
 
-        public override int VisibleFieldCount => base.VisibleFieldCount;
-
         protected object[] CurrentRow { get; set; }
 
         protected string[] FieldNames { get; set; }
@@ -144,30 +142,12 @@ namespace ClickHouse.Client.ADO.Readers
             }
         }
 
-        protected override DbDataReader GetDbDataReader(int ordinal) => base.GetDbDataReader(ordinal);
-
-        public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken) => base.GetFieldValueAsync<T>(ordinal, cancellationToken);
-
         public override T GetFieldValue<T>(int ordinal) => (T)GetValue(ordinal);
 
-        public override Type GetProviderSpecificFieldType(int ordinal) => base.GetProviderSpecificFieldType(ordinal);
-
-        public override object GetProviderSpecificValue(int ordinal) => base.GetProviderSpecificValue(ordinal);
-
-        public override int GetProviderSpecificValues(object[] values) => base.GetProviderSpecificValues(values);
-
         public override DataTable GetSchemaTable() => SchemaDescriber.DescribeSchema(this);
-
-        public override Stream GetStream(int ordinal) => base.GetStream(ordinal);
-
-        public override TextReader GetTextReader(int ordinal) => base.GetTextReader(ordinal);
-
-        public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken) => base.IsDBNullAsync(ordinal, cancellationToken);
 
         public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => Task.FromResult(false);
 
         public abstract override bool Read();
-
-        public override Task<bool> ReadAsync(CancellationToken cancellationToken) => base.ReadAsync(cancellationToken);
     }
 }
