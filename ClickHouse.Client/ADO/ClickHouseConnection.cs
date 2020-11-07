@@ -286,7 +286,7 @@ namespace ClickHouse.Client.ADO
         /// <summary>
         ///  20.1.2.4 Add DateTime64 datatype with configurable sub-second precision. #7170 (Vasily Nemkov)
         /// </summary>
-        /// <returns></returns>
+        /// <returns>whether DateTime64 is supported</returns>
         internal virtual async Task<bool> SupportsDateTime64()
         {
             if (State != ConnectionState.Open)
