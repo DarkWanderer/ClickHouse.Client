@@ -34,15 +34,22 @@ namespace ClickHouse.Client.Tests
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
 
-            using var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = targetTable };
+            using var bulkCopy = new ClickHouseBulkCopy(connection)
+            {
+                DestinationTableName = targetTable,
+                MaxDegreeOfParallelism = 2,
+                BatchSize = 100
+            };
 
             await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { insertedValue }, 1));
+
+            Assert.AreEqual(1, bulkCopy.RowsWritten);
 
             using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
             Assert.IsTrue(reader.Read(), "Cannot read inserted data");
             reader.AssertHasFieldCount(1);
             var data = reader.GetValue(0);
-            Assert.AreEqual(insertedValue, data);
+            Assert.AreEqual(insertedValue, data, "Original and actually inserted values differ");
         }
 
         [Test]
