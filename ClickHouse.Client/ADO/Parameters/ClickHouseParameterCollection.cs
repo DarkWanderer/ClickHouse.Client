@@ -56,6 +56,13 @@ namespace ClickHouse.Client.ADO.Parameters
 
         protected override void SetParameter(int index, DbParameter value) => parameters[index] = (ClickHouseDbParameter)value;
 
-        protected override void SetParameter(string parameterName, DbParameter value) => SetParameter(IndexOf(parameterName), value);
+        protected override void SetParameter(string parameterName, DbParameter value)
+        {
+            var index = IndexOf(parameterName);
+            if (index < 0)
+                Add(value);
+            else
+                SetParameter(index, value);
+        }
     }
 }
