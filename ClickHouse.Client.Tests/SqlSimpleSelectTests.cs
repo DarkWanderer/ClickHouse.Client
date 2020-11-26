@@ -146,16 +146,16 @@ namespace ClickHouse.Client.Tests
         public async Task ShouldSelectSingleColumnRange()
         {
             const int count = 100;
-            using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers LIMIT {count}");
+            using var reader = await connection.ExecuteReaderAsync($"SELECT toInt16(number) FROM system.numbers LIMIT {count}");
 
             var results = new List<int>();
 
             Assert.IsTrue(reader.HasRows);
             reader.AssertHasFieldCount(1);
-            Assert.AreEqual(typeof(ulong), reader.GetFieldType(0));
+            Assert.AreEqual(typeof(short), reader.GetFieldType(0));
 
             while (reader.Read())
-                results.Add(reader.GetInt32(0)); // Intentional conversion to int32
+                results.Add(reader.GetInt16(0)); // Intentional conversion to int32
 
             CollectionAssert.AreEqual(Enumerable.Range(0, count), results);
         }

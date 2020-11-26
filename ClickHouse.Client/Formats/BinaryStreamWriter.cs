@@ -39,38 +39,6 @@ namespace ClickHouse.Client.Formats
             writer.Write(decimalBytes);
         }
 
-        private static Guid ExtractGuid(object data)
-        {
-            if (data is Guid g)
-            {
-                return g;
-            }
-            else if (data is string s)
-            {
-                return new Guid(s);
-            }
-            else
-            {
-                throw new ArgumentException($"Cannot convert {data?.GetType()?.Name ?? "null"} to GUID");
-            }
-        }
-
-        private static IPAddress ExtractIPAddress(object data)
-        {
-            if (data is IPAddress a)
-            {
-                return a;
-            }
-            else if (data is string s)
-            {
-                return IPAddress.Parse(s);
-            }
-            else
-            {
-                throw new ArgumentException($"Cannot convert {data?.GetType()?.Name ?? "null"} to IP address");
-            }
-        }
-
         public void Write(LowCardinalityType lowCardinalityType, object value) => Write(lowCardinalityType.UnderlyingType, value);
 
         public void Write(FixedStringType fixedStringType, object value)
@@ -230,5 +198,9 @@ namespace ClickHouse.Client.Formats
         }
 
         public void Write(NestedType nestedType, object value) => throw new NotSupportedException("Writing Nested values directly is not supported, see documentation");
+
+        private static IPAddress ExtractIPAddress(object data) => data is IPAddress a ? a : IPAddress.Parse((string)data);
+
+        private static Guid ExtractGuid(object data) => data is Guid g ? g : new Guid((string)data);
     }
 }

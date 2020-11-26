@@ -36,7 +36,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldReadByte()
         {
-            using var reader = await connection.ExecuteReaderAsync("SELECT toInt8(1) as value");
+            using var reader = await connection.ExecuteReaderAsync("SELECT toUInt8(1) as value");
             Assert.IsTrue(reader.Read());
             Assert.AreEqual(1, reader.GetByte(0));
             Assert.IsFalse(reader.Read());
@@ -54,7 +54,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldReadDouble()
         {
-            using var reader = await connection.ExecuteReaderAsync("SELECT toFloat32(1) as value");
+            using var reader = await connection.ExecuteReaderAsync("SELECT toFloat64(1) as value");
             Assert.IsTrue(reader.Read());
             Assert.AreEqual(1, reader.GetDouble(0));
             Assert.IsFalse(reader.Read());
