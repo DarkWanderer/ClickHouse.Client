@@ -31,22 +31,22 @@ namespace ClickHouse.Client.Types
             throw new ArgumentOutOfRangeException("Unknown DateTime kind: " + dateTime.Kind.ToString());
         }
 
-        public DateTime ToUtc(DateTime dateTime)
-        {
-            switch (dateTime.Kind)
-            {
-                case DateTimeKind.Local:
-                case DateTimeKind.Utc:
-                    return dateTime.ToUniversalTime();
-                case DateTimeKind.Unspecified:
-                    if (TimeZone == null)
-                        return dateTime;
+        //public DateTime ToUtc(DateTime dateTime)
+        //{
+        //    switch (dateTime.Kind)
+        //    {
+        //        case DateTimeKind.Local:
+        //        case DateTimeKind.Utc:
+        //            return dateTime.ToUniversalTime();
+        //        case DateTimeKind.Unspecified:
+        //            if (TimeZone == null)
+        //                return dateTime;
 
-                    var zonedDateTime = TimeZone.ResolveLocal(LocalDateTime.FromDateTime(dateTime), Resolvers.LenientResolver);
-                    return zonedDateTime.ToDateTimeUtc();
-            }
-            throw new ArgumentOutOfRangeException("Unknown DateTime kind: " + dateTime.Kind.ToString());
-        }
+        //            var zonedDateTime = TimeZone.ResolveLocal(LocalDateTime.FromDateTime(dateTime), Resolvers.LenientResolver);
+        //            return zonedDateTime.ToDateTimeUtc();
+        //    }
+        //    throw new ArgumentOutOfRangeException("Unknown DateTime kind: " + dateTime.Kind.ToString());
+        //}
 
         public override string ToString() => TimeZone == null ? $"{Name}" : $"{Name}({TimeZone.Id})";
     }

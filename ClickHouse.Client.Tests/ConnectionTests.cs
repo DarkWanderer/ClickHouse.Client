@@ -117,6 +117,17 @@ namespace ClickHouse.Client.Tests
             CollectionAssert.IsSubsetOf(new[] { "Database", "Table", "DataType", "ProviderType" }, GetColumnNames(schema));
         }
 
+        [Test]
+        public void ChangeDatabaseShouldChangeDatabase()
+        {
+            // Using separate connection instance here to avoid conflicting with other tests
+            using var conn = TestUtilities.GetTestClickHouseConnection();
+            conn.ChangeDatabase("system");
+            Assert.AreEqual("system", conn.Database);
+            conn.ChangeDatabase("default");
+            Assert.AreEqual("default", conn.Database);
+        }
+
         private static string[] GetColumnNames(DataTable table) => table.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
     }
 }

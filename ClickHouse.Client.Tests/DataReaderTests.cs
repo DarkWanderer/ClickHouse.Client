@@ -65,7 +65,7 @@ namespace ClickHouse.Client.Tests
         {
             using var reader = await connection.ExecuteReaderAsync("SELECT toInt16(1) as value");
             Assert.IsTrue(reader.Read());
-            Assert.AreEqual(1, reader.GetInt64(0));
+            Assert.AreEqual(1, reader.GetInt16(0));
             Assert.IsFalse(reader.Read());
         }
 
@@ -120,6 +120,24 @@ namespace ClickHouse.Client.Tests
             using var reader = await connection.ExecuteReaderAsync("SELECT 'ASD' as value");
             Assert.IsTrue(reader.Read());
             Assert.AreEqual("ASD", reader.GetFieldValue<string>(0));
+            Assert.IsFalse(reader.Read());
+        }
+
+        [Test]
+        public async Task ShouldGetDataTypeName()
+        {
+            using var reader = await connection.ExecuteReaderAsync("SELECT 'ASD' as value");
+            Assert.IsTrue(reader.Read());
+            Assert.AreEqual("String", reader.GetDataTypeName(0));
+            Assert.IsFalse(reader.Read());
+        }
+
+        [Test]
+        public async Task ShouldEnumerateCurrentRowValues()
+        {
+            using var reader = await connection.ExecuteReaderAsync("SELECT 1,2,3");
+            Assert.IsTrue(reader.Read());
+            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, reader);
             Assert.IsFalse(reader.Read());
         }
     }
