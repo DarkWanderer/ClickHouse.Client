@@ -184,7 +184,6 @@ namespace ClickHouse.Client.ADO.Readers
                 reader?.Dispose();
                 streamReader?.Dispose();
             }
-            base.Dispose(disposing);
         }
     }
 }
