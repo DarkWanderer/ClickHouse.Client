@@ -1,7 +1,5 @@
 version: 2.3.0.{build}
-image:
-  - Visual Studio 2019
-  - Ubuntu
+image: Visual Studio 2019
 
 skip_branch_with_pr: true
 skip_tags: true
@@ -46,17 +44,8 @@ before_test:
 test_script:
 - dotnet test --no-build --framework netcoreapp3.0 --configuration Release --test-adapter-path:. --logger:Appveyor
 
-for:
-- matrix:
-    only:
-      - image: Ubuntu
-  build_script:
-  - msbuild /p:Configuration=Release -verbosity:minimal
-- matrix:
-    only:
-      - image: Visual Studio 2019
-  after_build:
-  - dotnet pack ClickHouse.Client/ClickHouse.Client.csproj --no-build --configuration Release --include-symbols --include-source -p:SymbolPackageFormat=snupkg
-  artifacts:
-  - path: '**/*nupkg'
-    name: NuGet
+after_build:
+- dotnet pack ClickHouse.Client/ClickHouse.Client.csproj --no-build --configuration Release --include-symbols --include-source -p:SymbolPackageFormat=snupkg
+artifacts:
+- path: '**/*nupkg'
+name: NuGet
