@@ -7,18 +7,27 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO.Readers
 {
-    public abstract class ClickHouseDataReader : DbDataReader
+    public class ClickHouseDataReader : DbDataReader
     {
-        private readonly HttpResponseMessage httpResponse; // Used to dispose at the end of reader
+        private const int BufferSize = 512 * 1024;
 
-        protected ClickHouseDataReader(HttpResponseMessage httpResponse)
+        private readonly HttpResponseMessage httpResponse; // Used to dispose at the end of reader
+        private readonly ExtendedBinaryReader reader;
+        private readonly BinaryStreamReader streamReader;
+
+        public ClickHouseDataReader(HttpResponseMessage httpResponse)
         {
             this.httpResponse = httpResponse ?? throw new ArgumentNullException(nameof(httpResponse));
+            var stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), BufferSize);
+            reader = new ExtendedBinaryReader(stream); // will dispose of stream
+            streamReader = new BinaryStreamReader(reader);
+            ReadHeaders();
         }
 
         internal ClickHouseType GetClickHouseType(int ordinal) => RawTypes[ordinal];
@@ -119,20 +128,63 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override void Close() => Dispose();
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                httpResponse?.Dispose();
-            }
-        }
-
         public override T GetFieldValue<T>(int ordinal) => (T)GetValue(ordinal);
 
         public override DataTable GetSchemaTable() => SchemaDescriber.DescribeSchema(this);
 
         public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => Task.FromResult(false);
 
-        public abstract override bool Read();
+
+        private void ReadHeaders()
+        {
+            var count = reader.Read7BitEncodedInt();
+            FieldNames = new string[count];
+            RawTypes = new ClickHouseType[count];
+            CurrentRow = new object[count];
+
+            for (var i = 0; i < count; i++)
+            {
+                FieldNames[i] = reader.ReadString();
+            }
+
+            for (var i = 0; i < count; i++)
+            {
+                var chType = reader.ReadString();
+                RawTypes[i] = TypeConverter.ParseClickHouseType(chType);
+            }
+        }
+
+        public override bool Read()
+        {
+            try
+            {
+                var count = RawTypes.Length;
+                var data = CurrentRow;
+                for (var i = 0; i < count; i++)
+                {
+                    var rawType = RawTypes[i];
+                    data[i] = streamReader.Read(rawType);
+                }
+                return true;
+            }
+            catch (EndOfStreamException)
+            {
+                // HACK this is a horrible hack related to the fact that GZip-compressed stream
+                // does not provide a Peek method for some reason, forcing us to only be able to
+                // detect EOF by actually trying to read
+                return false;
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                httpResponse?.Dispose();
+                reader?.Dispose();
+                streamReader?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }
