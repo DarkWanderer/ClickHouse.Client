@@ -9,25 +9,31 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - name: Checkout code
-      id: checkout
-      uses: actions/checkout@v2
+      
+    - name: Checkout
+      uses: actions/checkout@main      
       
     - name: Setup .NET Core
       id: setup
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.x'
+        source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
         
     - name: Build & pack
       id: build_pack
       run: dotnet pack --configuration Release --include-source --include-symbols ClickHouse.Client/ClickHouse.Client.csproj
-      
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: package
+        path: ClickHouse.Client/bin/Release/ClickHouse.Client.*nupkg
+    
     - name: Push NuGet to GitHub
       id: push_to_github
-      run: |
-        dotnet nuget add source --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-        dotnet nuget push ClickHouse.Client.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}
+      run: dotnet nuget push ClickHouse.Client/bin/Release/ClickHouse.Client.nupkg
         
     - name: Create Release
       id: create_release
@@ -38,8 +44,8 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
         body: |
-          Changes in this Release
-          - First Change
-          - Second Change
+          * **Added**: 
+          * **Fixed**: 
+          * **Improved**:
         draft: true
         prerelease: true
