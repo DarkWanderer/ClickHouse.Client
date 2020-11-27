@@ -68,7 +68,7 @@ namespace ClickHouse.Client.Formats
             var address4 = ExtractIPAddress(value);
             if (address4.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
             {
-                throw new ArgumentException($"Expected IPv4, got {address4}");
+                throw new ArgumentException($"Expected IPv4, got {address4.AddressFamily}");
             }
 
             var ipv4bytes = address4.GetAddressBytes();
@@ -145,7 +145,7 @@ namespace ClickHouse.Client.Formats
             var address6 = ExtractIPAddress(value);
             if (address6.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6)
             {
-                throw new ArgumentException($"Expected IPv6, got {address6}");
+                throw new ArgumentException($"Expected IPv6, got {address6.AddressFamily}");
             }
 
             var ipv6bytes = address6.GetAddressBytes();

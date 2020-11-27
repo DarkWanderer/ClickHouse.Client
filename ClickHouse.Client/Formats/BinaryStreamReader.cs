@@ -122,6 +122,6 @@ namespace ClickHouse.Client.Formats
 
         public object Read(NestedType tupleType) => throw new NotSupportedException();
 
-        private object ClearDBNull(object value) => value is DBNull ? null : value;
+        private static object ClearDBNull(object value) => value is DBNull ? null : value;
     }
 }
