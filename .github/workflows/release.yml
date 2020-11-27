@@ -1,0 +1,45 @@
+name: Create release
+
+on:
+  push:
+    tags:
+      - '*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      id: checkout
+      uses: actions/checkout@v2
+      
+    - name: Setup .NET Core
+      id: setup
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+        
+    - name: Build & pack
+      id: build_pack
+      run: dotnet pack --configuration Release --include-source --include-symbols ClickHouse.Client/ClickHouse.Client.csproj
+      
+    - name: Push NuGet to GitHub
+      id: push_to_github
+      run: |
+        dotnet nuget add source --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+        dotnet nuget push ClickHouse.Client.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        body: |
+          Changes in this Release
+          - First Change
+          - Second Change
+        draft: true
+        prerelease: true
