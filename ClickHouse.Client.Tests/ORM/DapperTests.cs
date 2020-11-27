@@ -48,7 +48,6 @@ namespace ClickHouse.Client.Tests.ORM
         }
 
         [Test]
-        [Ignore("Requires Dapper support, see https://github.com/StackExchange/Dapper/pull/1462")]
         public async Task ShouldExecuteSelectWithArrayParameter()
         {
             var parameters = new Dictionary<string, object> { { "names", new[] { "mysql", "odbc" } } };
