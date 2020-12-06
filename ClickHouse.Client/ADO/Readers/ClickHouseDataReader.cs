@@ -134,6 +134,31 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => Task.FromResult(false);
 
+        public override bool Read()
+        {
+            if (reader.PeekChar() == -1)
+                return false; // End of stream reached
+
+            var count = RawTypes.Length;
+            var data = CurrentRow;
+            for (var i = 0; i < count; i++)
+            {
+                var rawType = RawTypes[i];
+                data[i] = streamReader.Read(rawType);
+            }
+            return true;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                httpResponse?.Dispose();
+                reader?.Dispose();
+                streamReader?.Dispose();
+            }
+        }
+
         private void ReadHeaders()
         {
             var count = reader.Read7BitEncodedInt();
@@ -150,38 +175,6 @@ namespace ClickHouse.Client.ADO.Readers
             {
                 var chType = reader.ReadString();
                 RawTypes[i] = TypeConverter.ParseClickHouseType(chType);
-            }
-        }
-
-        public override bool Read()
-        {
-            try
-            {
-                var count = RawTypes.Length;
-                var data = CurrentRow;
-                for (var i = 0; i < count; i++)
-                {
-                    var rawType = RawTypes[i];
-                    data[i] = streamReader.Read(rawType);
-                }
-                return true;
-            }
-            catch (EndOfStreamException)
-            {
-                // HACK this is a horrible hack related to the fact that GZip-compressed stream
-                // does not provide a Peek method for some reason, forcing us to only be able to
-                // detect EOF by actually trying to read
-                return false;
-            }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                httpResponse?.Dispose();
-                reader?.Dispose();
-                streamReader?.Dispose();
             }
         }
     }
