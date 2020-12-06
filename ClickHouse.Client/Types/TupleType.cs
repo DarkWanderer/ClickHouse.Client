@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ClickHouse.Client.Types.Grammar;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Types
 {
@@ -25,12 +26,14 @@ namespace ClickHouse.Client.Types
         private static Type DeviseFrameworkType(ClickHouseType[] underlyingTypes)
         {
             var count = underlyingTypes.Length;
+            if (count > 7)
+                return typeof(LargeTuple);
+
             var typeArgs = new Type[count];
             for (var i = 0; i < count; i++)
             {
                 typeArgs[i] = underlyingTypes[i].FrameworkType;
             }
-
             var genericType = Type.GetType("System.Tuple`" + typeArgs.Length);
             return genericType.MakeGenericType(typeArgs);
         }
@@ -39,9 +42,10 @@ namespace ClickHouse.Client.Types
         {
             var count = values.Length;
             if (underlyingTypes.Length != count)
-            {
                 throw new ArgumentException($"Count of tuple type elements ({underlyingTypes.Length}) does not match number of elements ({count})");
-            }
+
+            if (count > 7)
+                return new LargeTuple(values);
 
             var valuesCopy = new object[count];
 
