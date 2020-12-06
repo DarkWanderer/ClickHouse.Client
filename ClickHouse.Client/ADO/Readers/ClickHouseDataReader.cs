@@ -21,7 +21,7 @@ namespace ClickHouse.Client.ADO.Readers
         private readonly ExtendedBinaryReader reader;
         private readonly BinaryStreamReader streamReader;
 
-        public ClickHouseDataReader(HttpResponseMessage httpResponse)
+        internal ClickHouseDataReader(HttpResponseMessage httpResponse)
         {
             this.httpResponse = httpResponse ?? throw new ArgumentNullException(nameof(httpResponse));
             var stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), BufferSize);
@@ -54,7 +54,7 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override bool GetBoolean(int ordinal) => Convert.ToBoolean(GetValue(ordinal), CultureInfo.InvariantCulture);
 
-        public override byte GetByte(int ordinal) => (byte) GetValue(ordinal);
+        public override byte GetByte(int ordinal) => (byte)GetValue(ordinal);
 
         public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length) => throw new NotImplementedException();
 
@@ -133,7 +133,6 @@ namespace ClickHouse.Client.ADO.Readers
         public override DataTable GetSchemaTable() => SchemaDescriber.DescribeSchema(this);
 
         public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => Task.FromResult(false);
-
 
         private void ReadHeaders()
         {
