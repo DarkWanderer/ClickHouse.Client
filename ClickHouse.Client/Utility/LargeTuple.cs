@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace ClickHouse.Client.Utility
 {
-    internal class LargeTuple : ITuple, IReadOnlyCollection<object>
+    internal class LargeTuple : ITuple
     {
         private readonly object[] items;
 
@@ -18,10 +18,8 @@ namespace ClickHouse.Client.Utility
 
         public int Length => items.Length;
 
-        public int Count { get; }
+        public int Count => items.Length;
 
         public IEnumerator<object> GetEnumerator() => items.Cast<object>().GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => items.GetEnumerator();
     }
 }
