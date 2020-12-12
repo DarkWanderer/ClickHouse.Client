@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    name: Test
+    name: Regression
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -32,6 +32,6 @@ jobs:
     - name: Build
       run: dotnet build --framework netcoreapp2.2 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
     - name: Test
-      run: dotnet test --framework netcoreapp3.0 --configuration Release --no-restore --verbosity normal
+      run: dotnet test --framework netcoreapp3.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
