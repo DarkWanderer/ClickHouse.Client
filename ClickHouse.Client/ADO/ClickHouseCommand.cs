@@ -126,7 +126,7 @@ namespace ClickHouse.Client.ADO
                     break;
             }
             var result = await connection.PostSqlQueryAsync(sqlBuilder.ToString(), linkedCancellationTokenSource.Token, commandParameters).ConfigureAwait(false);
-            return new ClickHouseBinaryReader(result);
+            return new ClickHouseDataReader(result);
         }
     }
 }

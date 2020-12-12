@@ -7,18 +7,27 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO.Readers
 {
-    public abstract class ClickHouseDataReader : DbDataReader
+    public class ClickHouseDataReader : DbDataReader
     {
-        private readonly HttpResponseMessage httpResponse; // Used to dispose at the end of reader
+        private const int BufferSize = 512 * 1024;
 
-        protected ClickHouseDataReader(HttpResponseMessage httpResponse)
+        private readonly HttpResponseMessage httpResponse; // Used to dispose at the end of reader
+        private readonly ExtendedBinaryReader reader;
+        private readonly BinaryStreamReader streamReader;
+
+        internal ClickHouseDataReader(HttpResponseMessage httpResponse)
         {
             this.httpResponse = httpResponse ?? throw new ArgumentNullException(nameof(httpResponse));
+            var stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), BufferSize);
+            reader = new ExtendedBinaryReader(stream); // will dispose of stream
+            streamReader = new BinaryStreamReader(reader);
+            ReadHeaders();
         }
 
         internal ClickHouseType GetClickHouseType(int ordinal) => RawTypes[ordinal];
@@ -45,11 +54,11 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override bool GetBoolean(int ordinal) => Convert.ToBoolean(GetValue(ordinal), CultureInfo.InvariantCulture);
 
-        public override byte GetByte(int ordinal) => Convert.ToByte(GetValue(ordinal), CultureInfo.InvariantCulture);
+        public override byte GetByte(int ordinal) => (byte)GetValue(ordinal);
 
         public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length) => throw new NotImplementedException();
 
-        public override char GetChar(int ordinal) => Convert.ToChar(GetValue(ordinal), CultureInfo.InvariantCulture);
+        public override char GetChar(int ordinal) => (char)GetValue(ordinal);
 
         public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => throw new NotImplementedException();
 
@@ -63,9 +72,9 @@ namespace ClickHouse.Client.ADO.Readers
             return ((AbstractDateTimeType)RawTypes[ordinal]).ToDateTimeOffset(dt);
         }
 
-        public override decimal GetDecimal(int ordinal) => Convert.ToDecimal(GetValue(ordinal), CultureInfo.InvariantCulture);
+        public override decimal GetDecimal(int ordinal) => (decimal)GetValue(ordinal);
 
-        public override double GetDouble(int ordinal) => Convert.ToDouble(GetValue(ordinal), CultureInfo.InvariantCulture);
+        public override double GetDouble(int ordinal) => (double)GetValue(ordinal);
 
         public override IEnumerator GetEnumerator() => CurrentRow.GetEnumerator();
 
@@ -75,31 +84,15 @@ namespace ClickHouse.Client.ADO.Readers
             return rawType is NullableType nt ? nt.UnderlyingType.FrameworkType : rawType.FrameworkType;
         }
 
-        public override float GetFloat(int ordinal) => Convert.ToSingle(GetValue(ordinal), CultureInfo.InvariantCulture);
+        public override float GetFloat(int ordinal) => (float)GetValue(ordinal);
 
-        public override Guid GetGuid(int ordinal)
-        {
-            var value = GetValue(ordinal);
-            if (value is Guid guid)
-            {
-                return guid;
-            }
-            else if (value is string s)
-            {
-                // TODO: remove this
-                return new Guid(s);
-            }
-            else
-            {
-                throw new InvalidOperationException($"Cannot convert value of type {value?.GetType()?.Name ?? "null"} to Guid");
-            }
-        }
+        public override Guid GetGuid(int ordinal) => (Guid)GetValue(ordinal);
 
-        public override short GetInt16(int ordinal) => Convert.ToInt16(GetValue(ordinal), CultureInfo.InvariantCulture);
+        public override short GetInt16(int ordinal) => (short)GetValue(ordinal);
 
-        public override int GetInt32(int ordinal) => Convert.ToInt32(GetValue(ordinal), CultureInfo.InvariantCulture);
+        public override int GetInt32(int ordinal) => (int)GetValue(ordinal);
 
-        public override long GetInt64(int ordinal) => Convert.ToInt64(GetValue(ordinal), CultureInfo.InvariantCulture);
+        public override long GetInt64(int ordinal) => (long)GetValue(ordinal);
 
         public override string GetName(int ordinal) => FieldNames[ordinal];
 
@@ -114,7 +107,7 @@ namespace ClickHouse.Client.ADO.Readers
             return index;
         }
 
-        public override string GetString(int ordinal) => Convert.ToString(GetValue(ordinal), CultureInfo.InvariantCulture);
+        public override string GetString(int ordinal) => (string)GetValue(ordinal);
 
         public override object GetValue(int ordinal) => CurrentRow[ordinal];
 
@@ -135,20 +128,54 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override void Close() => Dispose();
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                httpResponse?.Dispose();
-            }
-        }
-
         public override T GetFieldValue<T>(int ordinal) => (T)GetValue(ordinal);
 
         public override DataTable GetSchemaTable() => SchemaDescriber.DescribeSchema(this);
 
         public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => Task.FromResult(false);
 
-        public abstract override bool Read();
+        public override bool Read()
+        {
+            if (reader.PeekChar() == -1)
+                return false; // End of stream reached
+
+            var count = RawTypes.Length;
+            var data = CurrentRow;
+            for (var i = 0; i < count; i++)
+            {
+                var rawType = RawTypes[i];
+                data[i] = streamReader.Read(rawType);
+            }
+            return true;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                httpResponse?.Dispose();
+                reader?.Dispose();
+                streamReader?.Dispose();
+            }
+        }
+
+        private void ReadHeaders()
+        {
+            var count = reader.Read7BitEncodedInt();
+            FieldNames = new string[count];
+            RawTypes = new ClickHouseType[count];
+            CurrentRow = new object[count];
+
+            for (var i = 0; i < count; i++)
+            {
+                FieldNames[i] = reader.ReadString();
+            }
+
+            for (var i = 0; i < count; i++)
+            {
+                var chType = reader.ReadString();
+                RawTypes[i] = TypeConverter.ParseClickHouseType(chType);
+            }
+        }
     }
 }

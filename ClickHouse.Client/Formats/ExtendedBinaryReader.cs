@@ -5,8 +5,13 @@ namespace ClickHouse.Client.Formats
 {
     internal class ExtendedBinaryReader : BinaryReader
     {
+        private readonly PeekableStreamWrapper streamWrapper;
+
         public ExtendedBinaryReader(Stream stream)
-            : base(stream, Encoding.UTF8, false) { }
+            : base(new PeekableStreamWrapper(stream), Encoding.UTF8, false)
+        {
+            streamWrapper = (PeekableStreamWrapper)BaseStream;
+        }
 
         public new int Read7BitEncodedInt() => base.Read7BitEncodedInt();
 
@@ -32,5 +37,7 @@ namespace ClickHouse.Client.Formats
 
             return bytesRead;
         }
+
+        public override int PeekChar() => streamWrapper.Peek();
     }
 }
