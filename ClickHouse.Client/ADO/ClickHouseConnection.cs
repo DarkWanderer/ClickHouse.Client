@@ -24,7 +24,7 @@ namespace ClickHouse.Client.ADO
         private readonly HttpClient httpClient;
         private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
         private ConnectionState state = ConnectionState.Closed; // Not an autoproperty because of interface implementation
-        private string serverVersion;
+        private Version serverVersion;
         private string database = "default";
         private string username;
         private string password;
@@ -113,7 +113,7 @@ namespace ClickHouse.Client.ADO
 
         public override string DataSource { get; }
 
-        public override string ServerVersion => serverVersion;
+        public override string ServerVersion => serverVersion?.ToString();
 
         public override DataTable GetSchema() => GetSchema(null, null);
 
@@ -234,16 +234,16 @@ namespace ClickHouse.Client.ADO
             try
             {
                 var response = await PostSqlQueryAsync(versionQuery, token).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
+                response = await HandleError(response, versionQuery);
                 var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
                 if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check if response starts with GZip marker
-                    throw new InvalidOperationException("ClickHouse server returned compressed result but HttpClient did not decompress it");
+                    throw new InvalidOperationException("ClickHouse server returned compressed result but HttpClient did not decompress it. Check HttpClient settings");
 
-                if (data.Length == 0) // Check if response starts with GZip marker
+                if (data.Length == 0)
                     throw new InvalidOperationException("ClickHouse server did not return version, check if the server is functional");
 
-                serverVersion = Encoding.UTF8.GetString(data).Trim();
+                serverVersion = Version.Parse(Encoding.UTF8.GetString(data).Trim());
                 state = ConnectionState.Open;
             }
             catch
@@ -264,9 +264,9 @@ namespace ClickHouse.Client.ADO
         {
             if (State != ConnectionState.Open)
                 await OpenAsync();
-            if (string.IsNullOrWhiteSpace(ServerVersion))
+            if (serverVersion == null)
                 throw new InvalidOperationException("Connection does not define server version");
-            return Version.Parse(ServerVersion) >= new Version(19, 11, 3, 11);
+            return serverVersion >= new Version(19, 11, 3, 11);
         }
 
         /// <summary>
@@ -278,9 +278,9 @@ namespace ClickHouse.Client.ADO
         {
             if (State != ConnectionState.Open)
                 await OpenAsync();
-            if (string.IsNullOrWhiteSpace(ServerVersion))
+            if (serverVersion == null)
                 throw new InvalidOperationException("Connection does not define server version");
-            return Version.Parse(ServerVersion) >= new Version(20, 5);
+            return serverVersion >= new Version(20, 5);
         }
 
         /// <summary>
@@ -291,9 +291,9 @@ namespace ClickHouse.Client.ADO
         {
             if (State != ConnectionState.Open)
                 await OpenAsync();
-            if (string.IsNullOrWhiteSpace(ServerVersion))
+            if (serverVersion == null)
                 throw new InvalidOperationException("Connection does not define server version");
-            return Version.Parse(ServerVersion) >= new Version(20, 1, 2, 4);
+            return serverVersion >= new Version(20, 1, 2, 4);
         }
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
