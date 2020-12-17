@@ -98,7 +98,6 @@ namespace ClickHouse.Client.Tests
         [TestCase("with,comma")]
         [TestCase("with^caret")]
         [TestCase("with&ampersand")]
-        [TestCase("with{curly}brackets")]
         [TestCase("with(round)brackets")]
         [TestCase("with*star")]
         [TestCase("with?question")]
