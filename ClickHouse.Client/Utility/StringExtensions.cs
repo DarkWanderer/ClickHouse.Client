@@ -14,6 +14,8 @@ namespace ClickHouse.Client.Utility
         /// <returns>Backticked column name</returns>
         public static string EncloseColumnName(this string str)
         {
+            if (string.IsNullOrEmpty(str))
+                return str;
             if (str[0] == '`' && str[str.Length - 1] == '`')
                 return str; // Early return if already enclosed
 
