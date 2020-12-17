@@ -96,6 +96,8 @@ namespace ClickHouse.Client.Copy
                 columnTypes = reader.GetClickHouseColumnTypes();
                 columnNames ??= reader.GetColumnNames();
             }
+            for (int i = 0; i < columnNames.Length; i++)
+                columnNames[i] = columnNames[i].EncloseColumnName();
 
             var tasks = new Task[MaxDegreeOfParallelism];
             for (var i = 0; i < tasks.Length; i++)

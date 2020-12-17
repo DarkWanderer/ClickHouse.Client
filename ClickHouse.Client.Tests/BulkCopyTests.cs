@@ -29,7 +29,7 @@ namespace ClickHouse.Client.Tests
         [TestCaseSource(typeof(BulkCopyTests), nameof(GetInsertSingleValueTestCases))]
         public async Task ShouldExecuteSingleValueInsertViaBulkCopy(string clickHouseType, object insertedValue)
         {
-            var targetTable = SanitizeTableName($"test.b_{clickHouseType}");
+            var targetTable = SanitizeTableName($"test.bulk_{clickHouseType}");
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
@@ -88,15 +88,37 @@ namespace ClickHouse.Client.Tests
             using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM {targetTable}");
         }
 
-        private string SanitizeTableName(string input)
+        [Test]
+        [TestCase("with.dot")]
+        [TestCase("with'quote")]
+        [TestCase("double\"quote")]
+        [TestCase("with space")]
+        [TestCase("with`backtick")]
+        [TestCase("with:colon")]
+        [TestCase("with,comma")]
+        [TestCase("with^caret")]
+        [TestCase("with&ampersand")]
+        [TestCase("with(round)brackets")]
+        [TestCase("with*star")]
+        [TestCase("with?question")]
+        [TestCase("with?exclamation")]
+        public async Task ShouldExecuteBulkInsertWithComplexColumnName(string columnName)
         {
-            var builder = new StringBuilder();
-            foreach (var c in input)
+            var targetTable = SanitizeTableName($"test.bulk_complex_{columnName}");
+
+            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`{columnName.Replace("`", "\\`")}` Int32) ENGINE Memory");
+
+            using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
-                if (char.IsLetterOrDigit(c) || c == '_' || c == '.')
-                    builder.Append(c);
-            }
-            return builder.ToString();
+                DestinationTableName = targetTable,
+                MaxDegreeOfParallelism = 2,
+                BatchSize = 100
+            };
+
+            await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)1 }, 1), CancellationToken.None);
+
+            Assert.AreEqual(1, bulkCopy.RowsWritten);
         }
 
         [Test]
@@ -105,7 +127,7 @@ namespace ClickHouse.Client.Tests
             if (!await connection.SupportsInlineQuery())
                 Assert.Inconclusive("This test is only valid for versions which support 'inline' POST body query");
 
-            var tblName = "test.b_long_columns";
+            var tblName = "test.bulk_long_columns";
             var columnCount = 3900;
 
             //Generating create tbl statement with a lot of columns 
@@ -122,6 +144,17 @@ namespace ClickHouse.Client.Tests
 
             var rowToInsert = new[] { Enumerable.Range(1, columnCount).Select(x => (object)x).ToArray() };
             await bulkCopy.WriteToServerAsync(rowToInsert);
+        }
+
+        private string SanitizeTableName(string input)
+        {
+            var builder = new StringBuilder();
+            foreach (var c in input)
+            {
+                if (char.IsLetterOrDigit(c) || c == '_')
+                    builder.Append(c);
+            }
+            return builder.ToString();
         }
     }
 }
