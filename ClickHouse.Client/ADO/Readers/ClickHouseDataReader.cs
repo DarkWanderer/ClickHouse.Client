@@ -161,6 +161,13 @@ namespace ClickHouse.Client.ADO.Readers
 
         private void ReadHeaders()
         {
+            if (reader.PeekChar() == -1)
+            {
+                // Empty dataset
+                FieldNames = new string[0];
+                RawTypes = new ClickHouseType[0];
+                return;
+            }
             var count = reader.Read7BitEncodedInt();
             FieldNames = new string[count];
             RawTypes = new ClickHouseType[count];
