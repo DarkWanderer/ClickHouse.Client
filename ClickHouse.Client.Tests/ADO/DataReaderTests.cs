@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
 using ClickHouse.Client.Utility;
+using ClickHouse.Client.ADO.Readers;
 
 namespace ClickHouse.Client.Tests
 {
@@ -88,6 +89,33 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
+        public async Task ShouldReadUInt16()
+        {
+            using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync("SELECT toUInt16(1) as value");
+            Assert.IsTrue(reader.Read());
+            Assert.AreEqual(1, reader.GetUInt16(0));
+            Assert.IsFalse(reader.Read());
+        }
+
+        [Test]
+        public async Task ShouldReadUInt32()
+        {
+            using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync("SELECT toUInt32(1) as value");
+            Assert.IsTrue(reader.Read());
+            Assert.AreEqual(1, reader.GetUInt32(0));
+            Assert.IsFalse(reader.Read());
+        }
+
+        [Test]
+        public async Task ShouldReadUInt64()
+        {
+            using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync("SELECT toUInt64(1) as value");
+            Assert.IsTrue(reader.Read());
+            Assert.AreEqual(1, reader.GetUInt64(0));
+            Assert.IsFalse(reader.Read());
+        }
+
+        [Test]
         public async Task ShouldReadString()
         {
             using var reader = await connection.ExecuteReaderAsync("SELECT 'ASD' as value");
@@ -102,6 +130,24 @@ namespace ClickHouse.Client.Tests
             using var reader = await connection.ExecuteReaderAsync("SELECT NULL as value");
             Assert.IsTrue(reader.Read());
             Assert.IsTrue(reader.IsDBNull(0));
+            Assert.IsFalse(reader.Read());
+        }
+
+        [Test]
+        public async Task ShouldReadIPv4()
+        {
+            using var reader = (ClickHouseDataReader) await connection.ExecuteReaderAsync("SELECT toIPv4('1.2.3.4')");
+            Assert.IsTrue(reader.Read());
+            Assert.IsNotNull(reader.GetIPAddress(0));
+            Assert.IsFalse(reader.Read());
+        }
+
+        [Test]
+        public async Task ShouldReadTuple()
+        {
+            using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync("SELECT tuple(1,'a', NULL)");
+            Assert.IsTrue(reader.Read());
+            Assert.IsNotNull(reader.GetTuple(0));
             Assert.IsFalse(reader.Read());
         }
 

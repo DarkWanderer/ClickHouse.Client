@@ -4,7 +4,9 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.Formats;
@@ -133,6 +135,21 @@ namespace ClickHouse.Client.ADO.Readers
         public override DataTable GetSchemaTable() => SchemaDescriber.DescribeSchema(this);
 
         public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => Task.FromResult(false);
+
+        // Custom extension
+        public ushort GetUInt16(int ordinal) => (ushort)GetValue(ordinal);
+
+        // Custom extension
+        public uint GetUInt32(int ordinal) => (uint)GetValue(ordinal);
+
+        // Custom extension
+        public ulong GetUInt64(int ordinal) => (ulong)GetValue(ordinal);
+
+        // Custom extension
+        public IPAddress GetIPAddress(int ordinal) => (IPAddress)GetValue(ordinal);
+
+        // Custom extension
+        public ITuple GetTuple(int ordinal) => (ITuple)GetValue(ordinal);
 
         public override bool Read()
         {
