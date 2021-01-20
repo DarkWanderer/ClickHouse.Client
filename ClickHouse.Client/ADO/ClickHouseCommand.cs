@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO.Parameters;
 using ClickHouse.Client.ADO.Readers;
+using ClickHouse.Client.Formats;
 
 namespace ClickHouse.Client.ADO
 {
@@ -62,8 +62,15 @@ namespace ClickHouse.Client.ADO
 
             using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
             using var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, commandParameters).ConfigureAwait(false);
-            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            return int.TryParse(result, NumberStyles.Integer, CultureInfo.InvariantCulture, out var r) ? r : 0;
+            try
+            {
+                using var reader = new ExtendedBinaryReader(await response.Content.ReadAsStreamAsync());
+                return reader.Read7BitEncodedInt();
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         /// <summary>
