@@ -99,9 +99,9 @@ namespace ClickHouse.Client.ADO
 
         public override void Prepare() { /* ClickHouse has no notion of prepared statements */ }
 
-        public new ClickHouseDbParameter CreateParameter() => (ClickHouseDbParameter)CreateDbParameter();
+        public new ClickHouseDbParameter CreateParameter() => new ClickHouseDbParameter();
 
-        protected override DbParameter CreateDbParameter() => new ClickHouseDbParameter();
+        protected override DbParameter CreateDbParameter() => CreateParameter();
 
         protected override void Dispose(bool disposing)
         {
