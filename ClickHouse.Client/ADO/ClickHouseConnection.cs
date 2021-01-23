@@ -121,6 +121,32 @@ namespace ClickHouse.Client.ADO
 
         public override DataTable GetSchema(string type, string[] restrictions) => SchemaDescriber.DescribeSchema(this, type, restrictions);
 
+        /// <summary>
+        /// Warning: implementation-specific API. Exposed to allow custom optimizations
+        /// May change in future versions
+        /// </summary>
+        /// <param name="sql">SQL query to add to URL, may be empty</param>
+        /// <param name="data">Raw stream to be sent. May contain SQL query at the beginning. May be gzip-compressed</param>
+        /// <param name="isCompressed">indicates whether "Content-Encoding: gzip" header should be added</param>
+        /// <param name="token">Cancellation token</param>
+        /// <returns>Task-wrapped HttpResponseMessage object</returns>
+        public async Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
+        {
+            var builder = CreateUriBuilder(sql);
+            using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());
+            AddDefaultHttpHeaders(postMessage.Headers);
+
+            postMessage.Content = new StreamContent(data);
+            postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            if (isCompressed)
+            {
+                postMessage.Content.Headers.Add("Content-Encoding", "gzip");
+            }
+
+            using var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
+            await HandleError(response, sql).ConfigureAwait(false);
+        }
+
         internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token, ClickHouseParameterCollection parameters = null)
         {
             var uriBuilder = CreateUriBuilder();
@@ -157,23 +183,6 @@ namespace ClickHouse.Client.ADO
 
             var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
-        }
-
-        internal async Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
-        {
-            var builder = CreateUriBuilder(sql);
-            using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());
-            AddDefaultHttpHeaders(postMessage.Headers);
-
-            postMessage.Content = new StreamContent(data);
-            postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-            if (isCompressed)
-            {
-                postMessage.Content.Headers.Add("Content-Encoding", "gzip");
-            }
-
-            using var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
-            await HandleError(response, sql).ConfigureAwait(false);
         }
 
         private static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query)
