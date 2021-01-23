@@ -136,7 +136,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldReadIPv4()
         {
-            using var reader = (ClickHouseDataReader) await connection.ExecuteReaderAsync("SELECT toIPv4('1.2.3.4')");
+            using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync("SELECT toIPv4('1.2.3.4')");
             Assert.IsTrue(reader.Read());
             Assert.IsNotNull(reader.GetIPAddress(0));
             Assert.IsFalse(reader.Read());

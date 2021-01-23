@@ -29,7 +29,7 @@ namespace ClickHouse.Client.Tests
         [TestCaseSource(typeof(BulkCopyTests), nameof(GetInsertSingleValueTestCases))]
         public async Task ShouldExecuteSingleValueInsertViaBulkCopy(string clickHouseType, object insertedValue)
         {
-            var targetTable = SanitizeTableName($"test.bulk_{clickHouseType}");
+            var targetTable = "test." + SanitizeTableName($"bulk_single_{clickHouseType}");
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
@@ -104,7 +104,7 @@ namespace ClickHouse.Client.Tests
         [TestCase("with?exclamation")]
         public async Task ShouldExecuteBulkInsertWithComplexColumnName(string columnName)
         {
-            var targetTable = SanitizeTableName($"test.bulk_complex_{columnName}");
+            var targetTable = "test." + SanitizeTableName($"bulk_complex_{columnName}");
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`{columnName.Replace("`", "\\`")}` Int32) ENGINE Memory");

@@ -19,7 +19,7 @@ namespace ClickHouse.Client.Tests
                 SessionId = "SESSION"
             };
 
-            var result = new Uri( builder.ToString());
+            var result = new Uri(builder.ToString());
             var @params = HttpUtility.ParseQueryString(result.Query);
 
             Assert.AreEqual("some.server", result.Host);
