@@ -1,0 +1,2 @@
+ignore:
+- ClickHouse.Client/Properties/Resources.Designer.cs
