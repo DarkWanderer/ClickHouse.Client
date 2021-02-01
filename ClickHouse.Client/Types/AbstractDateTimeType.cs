@@ -37,9 +37,12 @@ namespace ClickHouse.Client.Types
         }
 
 
-        public DateTimeOffset ToDateTimeOffset(uint tickes)
+        public DateTimeOffset ToDateTimeOffsetTicks(DateTime tickes)
         {
-            var instant = Instant.FromDateTimeUtc(TypeConverter.DateTimeEpochStart.AddSeconds( tickes));
+            var instant = Instant.FromDateTimeUtc(tickes);
+            if (TimeZone == null)
+                return instant.ToDateTimeOffset();
+
             var offset = TimeZone.GetUtcOffset(instant);
             return instant.WithOffset(offset).ToDateTimeOffset();
         }
