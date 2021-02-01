@@ -2,8 +2,9 @@
 
 ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra-fast 'big data' relational database
 
+[![Latest version](https://img.shields.io/nuget/v/ClickHouse.Client)](https://www.nuget.org/packages/ClickHouse.Client/)
+[![Downloads](https://img.shields.io/nuget/dt/ClickHouse.Client)](https://www.nuget.org/packages/ClickHouse.Client/)
 [![License](https://img.shields.io/github/license/DarkWanderer/ClickHouse.Client)](https://github.com/DarkWanderer/ClickHouse.Client/blob/master/LICENSE)
-[![NuGet status](https://img.shields.io/nuget/dt/ClickHouse.Client)](https://www.nuget.org/packages/ClickHouse.Client/)
 ![Regression](https://github.com/DarkWanderer/ClickHouse.Client/workflows/Regression/badge.svg)
 [![Code coverage](https://img.shields.io/codecov/c/github/DarkWanderer/ClickHouse.Client?token=gAjCHhoRnH)](https://codecov.io/gh/DarkWanderer/ClickHouse.Client/)
 
