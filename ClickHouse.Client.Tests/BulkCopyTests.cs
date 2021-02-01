@@ -21,7 +21,7 @@ namespace ClickHouse.Client.Tests
                 yield return new TestCaseData(sample.ClickHouseType, sample.ExampleValue);
             }
             yield return new TestCaseData("String", "1\t2\n3");
-            yield return new TestCaseData("DateTime('Asia/Ashkhabad')", new DateTime(2020, 2, 20, 20, 20, 20, DateTimeKind.Utc));
+            yield return new TestCaseData("DateTime('Asia/Ashkhabad')", new DateTimeOffset(2020, 2, 20, 20, 20, 20,new TimeSpan(6,0,0)).DateTime);
         }
 
         [Test]
