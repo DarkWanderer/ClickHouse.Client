@@ -10,6 +10,11 @@ namespace ClickHouse.Client.Types
 
         public DateTimeZone TimeZone { get; set; }
 
+        private static readonly NodaTime.Instant instance = new Instant();
+        public int Offset { get => TimeZone?.GetUtcOffset(instance).Seconds ?? 0; }
+
+
+
         public DateTimeOffset ToDateTimeOffset(DateTime dateTime)
         {
             switch (dateTime.Kind)
@@ -29,6 +34,17 @@ namespace ClickHouse.Client.Types
                     return zonedDateTime.ToDateTimeOffset();
             }
             throw new ArgumentOutOfRangeException("Unknown DateTime kind: " + dateTime.Kind.ToString());
+        }
+
+
+        public DateTimeOffset ToDateTimeOffsetTicks(DateTime tickes)
+        {
+            var instant = Instant.FromDateTimeUtc(tickes);
+            if (TimeZone == null)
+                return instant.ToDateTimeOffset();
+
+            var offset = TimeZone.GetUtcOffset(instant);
+            return instant.WithOffset(offset).ToDateTimeOffset();
         }
 
         //public DateTime ToUtc(DateTime dateTime)
