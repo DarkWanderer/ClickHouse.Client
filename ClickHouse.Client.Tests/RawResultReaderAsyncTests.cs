@@ -26,7 +26,7 @@ namespace ClickHouse.Client.Tests
             command.CommandText = "SELECT 1,2,3 FORMAT TSV";
             using var result = await command.ExecuteRawResultAsync(CancellationToken.None);
             using var stream = new MemoryStream();
-                await result.CopyToAsync(stream);
+            await result.CopyToAsync(stream);
 
             stream.Seek(0, SeekOrigin.Begin);
 
