@@ -116,8 +116,6 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task DateTimeOffsetShouldProduceCorrectOffset()
         {
-            //SELECT toString(toDateTime(1577836800, 'Asia/Sakhalin'),'Etc/UTC')
-            //true response is : 2020-01-01 00:00:00
             using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync("SELECT toDateTime(1577836800, 'Asia/Sakhalin')");
             reader.AssertHasFieldCount(1);
             Assert.IsTrue(reader.Read());
