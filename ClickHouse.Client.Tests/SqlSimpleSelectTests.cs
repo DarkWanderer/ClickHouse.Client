@@ -180,6 +180,13 @@ namespace ClickHouse.Client.Tests
             }
         }
 
+        [Test]
+        public async Task ShouldSelectSimpleAggregateFunction()
+        {
+            var result = await connection.ExecuteScalarAsync("SELECT CAST(1,'SimpleAggregateFunction(anyLast, Nullable(Float64))')");
+            Assert.AreEqual(1, result);
+        }
+
         public void Dispose() => connection?.Dispose();
     }
 }

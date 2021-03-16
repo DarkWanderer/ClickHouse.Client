@@ -164,8 +164,7 @@ namespace ClickHouse.Client.Tests
             await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)1 }, 1), CancellationToken.None);
 
             Assert.AreEqual(1, bulkCopy.RowsWritten);
-            // Small corner cut here: checking table read in the same test as table write, as I don't want to create another table
-            // This should be a separate test generally
+            // Verify we can read back
             Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT value FROM {targetTable}"));
         }
 
