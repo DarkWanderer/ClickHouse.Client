@@ -46,6 +46,7 @@ namespace ClickHouse.Client.Tests
         [TestCase("Nullable(UInt32)", ExpectedResult = typeof(uint?))]
         [TestCase("Array(Array(String))", ExpectedResult = typeof(string[][]))]
         [TestCase("Array(Nullable(UInt32))", ExpectedResult = typeof(uint?[]))]
+        [TestCase("SimpleAggregateFunction(anyLast,Nullable(UInt32))", ExpectedResult = typeof(uint?))]
         public Type ShouldConvertFromClickHouseType(string clickHouseType) => TypeConverter.ParseClickHouseType(clickHouseType).FrameworkType;
 
         [Test]

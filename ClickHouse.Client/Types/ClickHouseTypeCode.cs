@@ -38,6 +38,8 @@
         Tuple,
         Nullable,
         LowCardinality,
+
+        SimpleAggregatedFunction,
     }
 #pragma warning restore CA1720 // Identifier contains type name
 }

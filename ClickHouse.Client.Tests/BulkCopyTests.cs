@@ -146,6 +146,28 @@ namespace ClickHouse.Client.Tests
             await bulkCopy.WriteToServerAsync(rowToInsert);
         }
 
+        [Test]
+        public async Task ShouldExecuteBulkInsertIntoSimpleAggregatedFunctionColumn()
+        {
+            var targetTable = "test." + SanitizeTableName($"bulk_simple_aggregated_function");
+
+            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value SimpleAggregateFunction(anyLast,Nullable(Float64))) ENGINE Memory");
+
+            using var bulkCopy = new ClickHouseBulkCopy(connection)
+            {
+                DestinationTableName = targetTable,
+                MaxDegreeOfParallelism = 2,
+                BatchSize = 100
+            };
+
+            await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)1 }, 1), CancellationToken.None);
+
+            Assert.AreEqual(1, bulkCopy.RowsWritten);
+            // Verify we can read back
+            Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT value FROM {targetTable}"));
+        }
+
         private string SanitizeTableName(string input)
         {
             var builder = new StringBuilder();
