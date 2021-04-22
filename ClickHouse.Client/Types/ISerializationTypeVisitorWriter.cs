@@ -2,8 +2,6 @@
 {
     internal interface ISerializationTypeVisitorWriter
     {
-        void Write(LowCardinalityType lowCardinalityType, object value);
-
         void Write(Int8Type int8Type, object value);
 
         void Write(UInt32Type uInt32Type, object value);

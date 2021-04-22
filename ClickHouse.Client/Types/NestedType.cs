@@ -6,7 +6,7 @@ namespace ClickHouse.Client.Types
 {
     internal class NestedType : TupleType
     {
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Nested;
+        public override string Name => "Nested";
 
         public override Type FrameworkType => base.FrameworkType.MakeArrayType();
 

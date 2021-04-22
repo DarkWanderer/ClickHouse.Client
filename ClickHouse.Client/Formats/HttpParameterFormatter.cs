@@ -22,66 +22,71 @@ namespace ClickHouse.Client.Formats
 
         internal static string Format(ClickHouseType type, object value)
         {
-            return type.TypeCode switch
+            switch (type)
             {
-                var simpleType when
-                    simpleType == ClickHouseTypeCode.UInt8 ||
-                    simpleType == ClickHouseTypeCode.UInt16 ||
-                    simpleType == ClickHouseTypeCode.UInt32 ||
-                    simpleType == ClickHouseTypeCode.UInt64 ||
-                    simpleType == ClickHouseTypeCode.Int8 ||
-                    simpleType == ClickHouseTypeCode.Int16 ||
-                    simpleType == ClickHouseTypeCode.Int32 ||
-                    simpleType == ClickHouseTypeCode.Int64 => Convert.ToString(value, CultureInfo.InvariantCulture),
+                case NothingType nt:
+                    return "null";
+                case IntegerType it:
+                    return Convert.ToString(value, CultureInfo.InvariantCulture);
+                case FloatType ft:
+                    return FormatFloat(value);
+                case DecimalType dt:
+                    return Convert.ToDecimal(value).ToString(CultureInfo.InvariantCulture);
+                case DateType dt:
+                    return ExtractUtc(value).ToString("yyyy-MM-dd");
 
-                var floatType when
-                    floatType == ClickHouseTypeCode.Float32 ||
-                    floatType == ClickHouseTypeCode.Float64 => FormatFloat(value),
+                case StringType st:
+                case FixedStringType tt:
+                case Enum8Type e8t:
+                case Enum16Type e16t:
+                case IPv4Type ip4:
+                case IPv6Type ip6:
+                    return value.ToString();
 
-                ClickHouseTypeCode.Decimal when value is decimal decimalValue => decimalValue.ToString(CultureInfo.InvariantCulture),
+                case LowCardinalityType lt:
+                    return Format(lt.UnderlyingType, value);
 
-                var stringType when
-                    stringType == ClickHouseTypeCode.String ||
-                    stringType == ClickHouseTypeCode.FixedString ||
-                    stringType == ClickHouseTypeCode.LowCardinality ||
-                    stringType == ClickHouseTypeCode.Enum8 ||
-                    stringType == ClickHouseTypeCode.Enum16 ||
-                    stringType == ClickHouseTypeCode.UUID ||
-                    stringType == ClickHouseTypeCode.IPv4 ||
-                    stringType == ClickHouseTypeCode.IPv6 => value.ToString(),
+                case DateTimeType dtt when value is DateTime dt:
+                    return dtt.TimeZone == null
+                        ? $"{dt:yyyy-MM-dd HH:mm:ss}"
+                        : $"{dt.ToUniversalTime():yyyy-MM-dd HH:mm:ss}";
 
-                ClickHouseTypeCode.Nothing => $"null",
+                case DateTimeType dtt when value is DateTimeOffset dto:
+                    return dtt.TimeZone == null
+                        ? $"{dto:yyyy-MM-dd HH:mm:ss}"
+                        : $"{dto.ToUniversalTime():yyyy-MM-dd HH:mm:ss}";
 
-                ClickHouseTypeCode.Date when value is DateTime date => $"{date:yyyy-MM-dd}",
-                ClickHouseTypeCode.DateTime when type is DateTimeType dateTimeType && value is DateTime dateTime =>
-                    dateTimeType.TimeZone == null
-                        ? $"{dateTime:yyyy-MM-dd HH:mm:ss}"
-                        : $"{dateTime.ToUniversalTime():yyyy-MM-dd HH:mm:ss}",
-                ClickHouseTypeCode.DateTime64 when type is DateTime64Type dateTimeType && value is DateTime dateTime =>
-                    dateTimeType.TimeZone == null
-                        ? $"{dateTime:yyyy-MM-dd HH:mm:ss.fffffff}"
-                        : $"{dateTime.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fffffff}",
+                case DateTime64Type dtt when value is DateTimeOffset dto:
+                    return dtt.TimeZone == null
+                        ? $"{dto:yyyy-MM-dd HH:mm:ss.fffffff}"
+                        : $"{dto.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fffffff}";
 
-                ClickHouseTypeCode.Nullable when type is NullableType nullableType => value is null || value is DBNull ? "null" : $"{Format(nullableType.UnderlyingType, value)}",
+                case NullableType nt:
+                    return value is null || value is DBNull ? "null" : $"{Format(nt.UnderlyingType, value)}";
 
-                ClickHouseTypeCode.Array when type is ArrayType arrayType && value is IEnumerable enumerable =>
-                    $"[{string.Join(",", enumerable.Cast<object>().Select(obj => InlineParameterFormatter.Format(arrayType.UnderlyingType, obj)))}]",
+                case ArrayType at when value is IEnumerable enumerable:
+                    return $"[{string.Join(",", enumerable.Cast<object>().Select(obj => InlineParameterFormatter.Format(at.UnderlyingType, obj)))}]";
 
-                ClickHouseTypeCode.Tuple when type is TupleType tupleType && value is ITuple tuple =>
-                $"({string.Join(",", tupleType.UnderlyingTypes.Select((x, i) => InlineParameterFormatter.Format(x, tuple[i])))})",
+                case TupleType tupleType when value is ITuple tuple:
+                    return $"({string.Join(",", tupleType.UnderlyingTypes.Select((x, i) => InlineParameterFormatter.Format(x, tuple[i])))})";
 
-                _ => throw new NotSupportedException($"Cannot convert value {value} to type {type.TypeCode}")
-            };
+                default:
+                    throw new Exception($"Cannot convert {value} to {type}");
+            }
         }
 
-        private static string FormatFloat(object value)
+        private static DateTime ExtractUtc(object value) => value switch
         {
-            return value switch
-            {
-                float floatValue => floatValue.ToString(CultureInfo.InvariantCulture),
-                double doubleValue => doubleValue.ToString(CultureInfo.InvariantCulture),
-                _ => throw new NotSupportedException($"Cannot convert value {value} to float type")
-            };
-        }
+            DateTime dt => dt.ToUniversalTime(),
+            DateTimeOffset dto => dto.ToUniversalTime().DateTime,
+            _ => throw new NotSupportedException($"Cannot convert value {value} to date/time type")
+        };
+
+        private static string FormatFloat(object value) => value switch
+        {
+            float floatValue => floatValue.ToString(CultureInfo.InvariantCulture),
+            double doubleValue => doubleValue.ToString(CultureInfo.InvariantCulture),
+            _ => throw new NotSupportedException($"Cannot convert value {value} to float type")
+        };
     }
 }

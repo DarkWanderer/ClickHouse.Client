@@ -6,9 +6,23 @@ namespace ClickHouse.Client.Types
 {
     internal abstract class AbstractDateTimeType : ParameterizedType
     {
-        public override Type FrameworkType => typeof(DateTime);
+        public override Type FrameworkType => typeof(DateTimeOffset);
 
         public DateTimeZone TimeZone { get; set; }
+
+        public DateTimeOffset FromUnixTimeTicks(long ticks)
+        {
+            var instant = Instant.FromUnixTimeTicks(ticks);
+            var offset = TimeZone.GetUtcOffset(instant);
+            return instant.WithOffset(offset).ToDateTimeOffset();
+        }
+
+        public DateTimeOffset FromUnixTimeSeconds(long seconds)
+        {
+            var instant = Instant.FromUnixTimeSeconds(seconds);
+            var offset = TimeZone.GetUtcOffset(instant);
+            return instant.WithOffset(offset).ToDateTimeOffset();
+        }
 
         public DateTimeOffset ToDateTimeOffset(DateTime dateTime)
         {

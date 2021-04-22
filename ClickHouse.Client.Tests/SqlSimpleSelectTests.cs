@@ -80,16 +80,8 @@ namespace ClickHouse.Client.Tests
             using var reader = await connection.ExecuteReaderAsync("SELECT toDateTime(1577836800, 'Asia/Sakhalin')");
 
             reader.AssertHasFieldCount(1);
-            var datetime = (DateTime)reader.GetEnsureSingleRow().Single();
-            if (datetime.Kind == DateTimeKind.Utc)
-            {
-                Assert.AreEqual(new DateTime(2020, 01, 01, 0, 0, 0, DateTimeKind.Utc), datetime.ToUniversalTime());
-            }
-            else
-            {
-                Assert.AreEqual(new DateTime(2020, 01, 01, 11, 0, 0, DateTimeKind.Unspecified), datetime);
-                Assert.AreEqual(DateTimeKind.Unspecified, datetime.Kind);
-            }
+            var dto = (DateTimeOffset)reader.GetEnsureSingleRow().Single();
+            Assert.AreEqual(new DateTimeOffset(2020, 01, 01, 11, 00, 00, TimeSpan.FromHours(11)), dto);
         }
 
         [Test]
@@ -101,16 +93,8 @@ namespace ClickHouse.Client.Tests
             using var reader = await connection.ExecuteReaderAsync("SELECT toDateTime64(1577836800, 3, 'Asia/Sakhalin')");
 
             reader.AssertHasFieldCount(1);
-            var datetime = (DateTime)reader.GetEnsureSingleRow().Single();
-            if (datetime.Kind == DateTimeKind.Utc)
-            {
-                Assert.AreEqual(new DateTime(2020, 01, 01, 0, 0, 0, DateTimeKind.Utc), datetime.ToUniversalTime());
-            }
-            else
-            {
-                Assert.AreEqual(new DateTime(2020, 01, 01, 11, 0, 0, DateTimeKind.Unspecified), datetime);
-                Assert.AreEqual(DateTimeKind.Unspecified, datetime.Kind);
-            }
+            var dto = (DateTimeOffset)reader.GetEnsureSingleRow().Single();
+            Assert.AreEqual(new DateTimeOffset(2020, 01, 01, 11, 00, 00, TimeSpan.FromHours(11)), dto);
         }
 
         [Test]
@@ -127,9 +111,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldSelectNumericTypes()
         {
-            var types = Enum.GetValues(typeof(ClickHouseTypeCode))
-                .Cast<ClickHouseTypeCode>()
-                .Select(dt => dt.ToString())
+            var types = TypeConverter.RegisteredTypes
                 .Where(dt => dt.Contains("Int") || dt.Contains("Float"))
                 .Select(dt => $"to{dt}(55)")
                 .ToArray();
