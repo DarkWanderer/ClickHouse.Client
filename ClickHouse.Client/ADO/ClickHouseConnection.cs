@@ -252,7 +252,10 @@ namespace ClickHouse.Client.ADO
                 if (data.Length == 0)
                     throw new InvalidOperationException("ClickHouse server did not return version, check if the server is functional");
 
-                serverVersion = Version.Parse(Encoding.UTF8.GetString(data).Trim());
+                if (!Version.TryParse(Encoding.UTF8.GetString(data).Trim(), out serverVersion))
+                {
+                    throw new InvalidOperationException($"ClickHouse server did not Parse version {Encoding.UTF8.GetString(data).Trim()}");
+                }
                 state = ConnectionState.Open;
             }
             catch
