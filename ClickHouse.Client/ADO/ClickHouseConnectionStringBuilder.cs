@@ -17,6 +17,12 @@ namespace ClickHouse.Client.ADO
             get => TryGetValue("Database", out var value) ? value as string : "default";
             set => this["Database"] = value;
         }
+        
+        public string SslCertificatePath
+        {
+            get => TryGetValue("SslCertificatePath", out var value) ? value as string : string.Empty;
+            set => this["SslCertificatePath"] = value;
+        }
 
         public string Username
         {
