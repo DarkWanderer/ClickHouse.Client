@@ -2,8 +2,11 @@
 using System.Net;
 using System.Numerics;
 using System.Text;
+using System.Linq;
+
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
+using System.Collections.Generic;
 
 namespace ClickHouse.Client.Formats
 {
@@ -44,7 +47,15 @@ namespace ClickHouse.Client.Formats
             var data = arrayType.MakeArray(length);
             for (var i = 0; i < length; i++)
             {
-                data.SetValue(ClearDBNull(Read(arrayType.UnderlyingType)), i);
+                var val = ClearDBNull(Read(arrayType.UnderlyingType));
+                if (arrayType.UnderlyingType.TypeCode == ClickHouseTypeCode.Nested)
+                {
+                    //data.SetValue(val, i);
+                    //data.SetValue(new object[] { (1, "test") }, 0);
+                }
+                else {
+                    data.SetValue(val, i);
+                }
             }
             return data;
         }
@@ -120,7 +131,19 @@ namespace ClickHouse.Client.Formats
 
         public object Read(EnumType enumType) => enumType.Lookup(reader.ReadSByte());
 
-        public object Read(NestedType tupleType) => throw new NotSupportedException();
+        public object Read(NestedType tupleType)
+        {
+            // => throw new NotSupportedException();
+            var count = tupleType.UnderlyingTypes.Length;
+            var contents = new object[count];
+            for (var i = 0; i < count; i++)
+            {
+                var value = Read(tupleType.UnderlyingTypes[i]);
+                contents[i] = ClearDBNull(value);
+            }
+            //return (1, "vx1" );
+            return tupleType.MakeTuple(contents);
+        }
 
         private static object ClearDBNull(object value) => value is DBNull ? null : value;
     }

@@ -16,6 +16,10 @@ namespace ClickHouse.Client.Types
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
+            foreach (SyntaxTreeNode childNode in node.ChildNodes)
+            {
+                childNode.NestedChild = true;
+            }
             return new NestedType
             {
                 UnderlyingTypes = node.ChildNodes.Select(parseClickHouseTypeFunc).ToArray(),

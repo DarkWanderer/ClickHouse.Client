@@ -197,7 +197,18 @@ namespace ClickHouse.Client.Formats
             writer.Write(enumIndex);
         }
 
-        public void Write(NestedType nestedType, object value) => throw new NotSupportedException("Writing Nested values directly is not supported, see documentation");
+        public void Write(NestedType nestedType, object value) 
+        {
+            // => throw new NotSupportedException("Writing Nested values directly is not supported, see documentation");
+
+            var items = (object[])value;
+            //writer.Write7BitEncodedInt(items.Length);
+            for (var i = 0; i < items.Length; i++)
+            {
+                Write(nestedType.UnderlyingTypes[i], items[i]);
+            }
+
+        }
 
         private static IPAddress ExtractIPAddress(object data) => data is IPAddress a ? a : IPAddress.Parse((string)data);
 
