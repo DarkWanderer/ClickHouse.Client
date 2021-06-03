@@ -11,6 +11,7 @@ namespace ClickHouse.Client.Tests
     {
         private readonly string Table = $"test.nested";
         private readonly string Table2 = $"test.nested2";
+        private readonly string Table3 = $"test.nested3";
 
         [SetUp]
         public async Task Setup()
@@ -20,6 +21,9 @@ namespace ClickHouse.Client.Tests
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table2}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table2}(id UInt32, params Nested (param_id UInt8, param_val String, sub_nested Nested (param_id UInt8, param_val String))) ENGINE = Memory");
+
+            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table3}");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table3}(id UInt32, params Nested (param_id UInt8, param_val String, sub_nested Nested (param_id UInt8, param_val String, sub_sub_nested Nested(param_id UInt8, param_val String)))) ENGINE = Memory");
         }
 
         [Test]
@@ -60,6 +64,32 @@ namespace ClickHouse.Client.Tests
 
             await bulkCopy.WriteToServerAsync(new[] { row1, row2 }, CancellationToken.None);
             using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM {Table2} ORDER BY id ASC");
+
+            Assert.IsTrue(reader.Read());
+            var values = reader.GetFieldValues();
+            Assert.AreEqual(1, values[0]);
+            CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, values[1] as IEnumerable);
+            CollectionAssert.AreEquivalent(new[] { "v1", "v2", "v3" }, values[2] as IEnumerable);
+
+            Assert.IsTrue(reader.Read());
+            values = reader.GetFieldValues();
+            Assert.AreEqual(2, values[0]);
+            CollectionAssert.AreEquivalent(new[] { 4, 5, 6 }, values[1] as IEnumerable);
+            CollectionAssert.AreEquivalent(new[] { "v4", "v5", "v6" }, values[2] as IEnumerable);
+        }
+
+        [Test]
+        public async Task ShouldInsertIntoSubSubNestedTableViaBulk()
+        {
+            using var bulkCopy = new ClickHouseBulkCopy(connection)
+            {
+                DestinationTableName = Table3,
+            };
+            var row1 = new object[] { 1, new[] { 1 }, new[] { "v1" }, new[] { new[] { new object[] { 1, "v1" , new[] { new object[] { 2, "sub_v2" } } } } } };
+            //var row2 = new object[] { 2, new[] { 4 }, new[] { "v4" }, new[] { new[] { new object[] { 4, "v4" }, new object[] { 5, "v5" }, new object[] { 6, "v6" } } } };
+
+            await bulkCopy.WriteToServerAsync(new[] { row1/*, row2*/ }, CancellationToken.None);
+            using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM {Table3} ORDER BY id ASC");
 
             Assert.IsTrue(reader.Read());
             var values = reader.GetFieldValues();

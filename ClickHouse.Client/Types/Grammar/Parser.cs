@@ -14,6 +14,7 @@ namespace ClickHouse.Client.Types.Grammar
             uint level = 0;
             foreach (var token in tokens)
             {
+                bool nestedChild = false;
                 switch (token)
                 {
                     case "(":
@@ -38,12 +39,21 @@ namespace ClickHouse.Client.Types.Grammar
                         }
                         break;
                     default:
-                        if (token == "Nested" && level == 1)
+                        if ((token == "Nested" || token.EndsWith(" Nested")) && level >= 1)
                         {
                             var arryLevel = new SyntaxTreeNode { Value = "Array", Level = level, Virtual = true };
-                            current.ChildNodes.Add(arryLevel);
+                            if (current.Value == "Array")
+                            {
+                                current.ChildNodes.Add(arryLevel);
+                            }
+                            else
+                            {
+                                // we're a sub nested type
+                                nestedChild = true;
+                                stack.Peek().ChildNodes.Add(arryLevel);
+                            }
                             stack.Push(arryLevel);
-                            var nested = new SyntaxTreeNode { Value = token, Level = level++ };
+                            var nested = new SyntaxTreeNode { Value = token, Level = level++, NestedChild = nestedChild };
                             arryLevel.ChildNodes.Add(nested);
                             current = nested;
                         }

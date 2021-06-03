@@ -111,9 +111,9 @@ namespace ClickHouse.Client.Types
                 return typeInfo;
             }
 
-            if (ParameterizedTypes.ContainsKey(node.Value))
+            if (ParameterizedTypes.TryGetValue(node.ParsedValue, out var subParser))
             {
-                return ParameterizedTypes[node.Value].Parse(node, ParseClickHouseType);
+                return subParser.Parse(node, ParseClickHouseType);
             }
 
             throw new ArgumentException("Unknown type: " + node.ToString());

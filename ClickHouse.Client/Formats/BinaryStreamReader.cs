@@ -2,11 +2,9 @@
 using System.Net;
 using System.Numerics;
 using System.Text;
-using System.Linq;
 
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
-using System.Collections.Generic;
 
 namespace ClickHouse.Client.Formats
 {
