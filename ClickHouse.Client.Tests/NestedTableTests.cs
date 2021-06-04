@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace ClickHouse.Client.Tests
         private readonly string Table = $"test.nested";
         private readonly string Table2 = $"test.nested2";
         private readonly string Table3 = $"test.nested3";
+        private bool isSupported = true;
 
         [SetUp]
         public async Task Setup()
@@ -20,11 +22,21 @@ namespace ClickHouse.Client.Tests
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table}(id UInt32, params Nested (param_id UInt8, param_val String)) ENGINE = Memory");
 
-            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table2}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table2}(id UInt32, params Nested (param_id UInt8, param_val String, sub_nested Nested (param_id UInt8, param_val String))) ENGINE = Memory");
+            var ver = connection.ServerVersion.Split('.');
+            int major = int.Parse(ver[0]);
+            int minor = int.Parse(ver[1]);
+            if (!(major>21 || major==21 && minor >= 5))
+            {
+                isSupported = false;
+            }
+            if (isSupported)
+            {
+                await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table2}");
+                await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table2}(id UInt32, params Nested (param_id UInt8, param_val String, sub_nested Nested (param_id UInt8, param_val String))) ENGINE = Memory");
 
-            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table3}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table3}(id UInt32, params Nested (param_id UInt8, param_val String, sub_nested Nested (param_id UInt8, param_val String, sub_sub_nested Nested(param_id UInt8, param_val String)))) ENGINE = Memory");
+                await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table3}");
+                await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table3}(id UInt32, params Nested (param_id UInt8, param_val String, sub_nested Nested (param_id UInt8, param_val String, sub_sub_nested Nested(param_id UInt8, param_val String)))) ENGINE = Memory");
+            }
         }
 
         [Test]
@@ -56,6 +68,10 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldInsertIntoSubNestedTableViaBulk()
         {
+            if (!isSupported)
+            {
+                Assert.Ignore("none supported clickhouse version, require at least 21.5");
+            }
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
                 DestinationTableName = Table2,
@@ -97,6 +113,10 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldInsertIntoSubSubNestedTableViaBulk()
         {
+            if (!isSupported)
+            {
+                Assert.Ignore("none supported clickhouse version, require at least 21.5");
+            }
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
                 DestinationTableName = Table3,
