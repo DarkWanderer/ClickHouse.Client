@@ -14,6 +14,7 @@ namespace ClickHouse.Client.Types.Grammar
             uint level = 0;
             foreach (var token in tokens)
             {
+                // TODO: clean toke from back-ticks?!
                 bool nestedChild = false;
                 switch (token)
                 {

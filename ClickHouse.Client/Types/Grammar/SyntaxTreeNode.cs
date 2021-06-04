@@ -30,6 +30,7 @@ namespace ClickHouse.Client.Types.Grammar
             {
                 if (NestedChild && Level > 0)
                 {
+                    // TODO: clean toke from back-ticks/weird values?!
                     int index = Value.LastIndexOf(' ');
                     if (index > 0)
                     {
