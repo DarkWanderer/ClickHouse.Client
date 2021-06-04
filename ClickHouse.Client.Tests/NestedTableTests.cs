@@ -14,8 +14,17 @@ namespace ClickHouse.Client.Tests
         private readonly string Table = $"test.nested";
         private readonly string Table2 = $"test.nested2";
         private readonly string Table3 = $"test.nested3";
+        private readonly string Table4 = $"test.nested4";
         private bool isSupported = true;
 
+
+        private void checkSupported()
+        {
+            if (!isSupported)
+            {
+                Assert.Ignore("none supported clickhouse version, require at least 21.5");
+            }
+        }
         [SetUp]
         public async Task Setup()
         {
@@ -36,6 +45,9 @@ namespace ClickHouse.Client.Tests
 
                 await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table3}");
                 await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table3}(id UInt32, params Nested (param_id UInt8, param_val String, sub_nested Nested (param_id UInt8, param_val String, sub_sub_nested Nested(param_id UInt8, param_val String)))) ENGINE = Memory");
+
+                await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table4}");
+                await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table4}(id UInt32, params Nested (param_id UInt8, param_val String, sub_nested Nested (param_id UInt8, param_val String, sub_sub_nested Nested(param_id UInt8, param_val String)))) ENGINE = Memory");
             }
         }
 
@@ -68,10 +80,8 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldInsertIntoSubNestedTableViaBulk()
         {
-            if (!isSupported)
-            {
-                Assert.Ignore("none supported clickhouse version, require at least 21.5");
-            }
+            this.checkSupported();
+
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
                 DestinationTableName = Table2,
@@ -113,10 +123,8 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldInsertIntoSubSubNestedTableViaBulk()
         {
-            if (!isSupported)
-            {
-                Assert.Ignore("none supported clickhouse version, require at least 21.5");
-            }
+            this.checkSupported();
+
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
                 DestinationTableName = Table3,
@@ -136,6 +144,29 @@ namespace ClickHouse.Client.Tests
             Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[0])[1], "v1");
             Assert.AreEqual(((ITuple)((object[])((ITuple)((object[])((object[])values[3])[0])[0])[2])[0])[0], 2);
             Assert.AreEqual(((ITuple)((object[])((ITuple)((object[])((object[])values[3])[0])[0])[2])[0])[1], "sub_v2");
+        }
+
+        [Test]
+        public async Task ShouldInsertIntoSubSubColulmnNestedTableViaBulk()
+        {
+            this.checkSupported();
+
+            using var bulkCopy = new ClickHouseBulkCopy(connection)
+            {
+                DestinationTableName = Table4,
+            };
+            var row1 = new object[] { new[] { new[] { new object[] { 1, "v1", new[] { new object[] { 2, "sub_v2" } } } } } };
+
+
+            await bulkCopy.WriteToServerAsync(new[] { row1/*, row2*/ }, new[] { "params.sub_nested" });
+            using var reader = await connection.ExecuteReaderAsync($"SELECT params.sub_nested FROM {Table4} ORDER BY id ASC");
+
+            Assert.IsTrue(reader.Read());
+            var values = reader.GetFieldValues();
+            Assert.AreEqual(((ITuple)((object[])((object[])values[0])[0])[0])[0], 1);
+            Assert.AreEqual(((ITuple)((object[])((object[])values[0])[0])[0])[1], "v1");
+            Assert.AreEqual(((ITuple)((object[])((ITuple)((object[])((object[])values[0])[0])[0])[2])[0])[0], 2);
+            Assert.AreEqual(((ITuple)((object[])((ITuple)((object[])((object[])values[0])[0])[0])[2])[0])[1], "sub_v2");
         }
 
         [Test]
