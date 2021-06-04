@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.Copy;
@@ -60,7 +61,7 @@ namespace ClickHouse.Client.Tests
                 DestinationTableName = Table2,
             };
             var row1 = new object[] { 1, new[] { 1 }, new[] { "v1" }, new[] { new[] { new object[] { 1, "v1" }, new object[] { 2, "v2" }, new object[] { 3, "v3" } } } };
-            var row2 = new object[] { 2, new[] { 4 }, new[] { "v4" }, new[] { new[] { new object[] { 4, "v4" }, new object[] { 5, "v5" }, new object[] { 6, "v6" } } } };
+            var row2 = new object[] { 2, new[] { 4,8 }, new[] { "v4","v8" }, new[] { new[] { new object[] { 4, "v4" }, new object[] { 5, "v5" }, new object[] { 6, "v6" } }, new[] { new object[] { 9, "v9" } } } };
 
             await bulkCopy.WriteToServerAsync(new[] { row1, row2 }, CancellationToken.None);
             using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM {Table2} ORDER BY id ASC");
@@ -68,14 +69,29 @@ namespace ClickHouse.Client.Tests
             Assert.IsTrue(reader.Read());
             var values = reader.GetFieldValues();
             Assert.AreEqual(1, values[0]);
-            CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, values[1] as IEnumerable);
-            CollectionAssert.AreEquivalent(new[] { "v1", "v2", "v3" }, values[2] as IEnumerable);
+            CollectionAssert.AreEquivalent(new[] { 1 }, values[1] as IEnumerable);
+            CollectionAssert.AreEquivalent(new[] { "v1" }, values[2] as IEnumerable);
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[0])[0], 1);
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[0])[1], "v1");
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[1])[0], 2);
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[1])[1], "v2");
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[2])[0], 3);
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[2])[1], "v3");
+            
 
             Assert.IsTrue(reader.Read());
             values = reader.GetFieldValues();
             Assert.AreEqual(2, values[0]);
-            CollectionAssert.AreEquivalent(new[] { 4, 5, 6 }, values[1] as IEnumerable);
-            CollectionAssert.AreEquivalent(new[] { "v4", "v5", "v6" }, values[2] as IEnumerable);
+            CollectionAssert.AreEquivalent(new[] { 4, 8 }, values[1] as IEnumerable);
+            CollectionAssert.AreEquivalent(new[] { "v4", "v8" }, values[2] as IEnumerable);
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[0])[0], 4);
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[0])[1], "v4");
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[1])[0], 5);
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[1])[1], "v5");
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[2])[0], 6);
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[2])[1], "v6");
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[1])[0])[0], 9);
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[1])[0])[1], "v9");
         }
 
         [Test]
@@ -86,7 +102,7 @@ namespace ClickHouse.Client.Tests
                 DestinationTableName = Table3,
             };
             var row1 = new object[] { 1, new[] { 1 }, new[] { "v1" }, new[] { new[] { new object[] { 1, "v1" , new[] { new object[] { 2, "sub_v2" } } } } } };
-            //var row2 = new object[] { 2, new[] { 4 }, new[] { "v4" }, new[] { new[] { new object[] { 4, "v4" }, new object[] { 5, "v5" }, new object[] { 6, "v6" } } } };
+            
 
             await bulkCopy.WriteToServerAsync(new[] { row1/*, row2*/ }, CancellationToken.None);
             using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM {Table3} ORDER BY id ASC");
@@ -94,14 +110,12 @@ namespace ClickHouse.Client.Tests
             Assert.IsTrue(reader.Read());
             var values = reader.GetFieldValues();
             Assert.AreEqual(1, values[0]);
-            CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, values[1] as IEnumerable);
-            CollectionAssert.AreEquivalent(new[] { "v1", "v2", "v3" }, values[2] as IEnumerable);
-
-            Assert.IsTrue(reader.Read());
-            values = reader.GetFieldValues();
-            Assert.AreEqual(2, values[0]);
-            CollectionAssert.AreEquivalent(new[] { 4, 5, 6 }, values[1] as IEnumerable);
-            CollectionAssert.AreEquivalent(new[] { "v4", "v5", "v6" }, values[2] as IEnumerable);
+            CollectionAssert.AreEquivalent(new[] { 1 }, values[1] as IEnumerable);
+            CollectionAssert.AreEquivalent(new[] { "v1" }, values[2] as IEnumerable);
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[0])[0], 1);
+            Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[0])[1], "v1");
+            Assert.AreEqual(((ITuple)((object[])((ITuple)((object[])((object[])values[3])[0])[0])[2])[0])[0], 2);
+            Assert.AreEqual(((ITuple)((object[])((ITuple)((object[])((object[])values[3])[0])[0])[2])[0])[1], "sub_v2");
         }
 
         [Test]

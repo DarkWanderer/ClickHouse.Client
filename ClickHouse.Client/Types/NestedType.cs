@@ -8,7 +8,20 @@ namespace ClickHouse.Client.Types
     {
         public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Nested;
 
-        public override Type FrameworkType => base.FrameworkType.MakeArrayType();
+        public override Type FrameworkType
+        {
+            get
+            {
+                if (base.FrameworkType.BaseType.IsAssignableFrom(typeof(Array)))
+                {
+                    return base.FrameworkType;
+                }
+                else
+                {
+                    return base.FrameworkType.MakeArrayType();
+                }
+            }
+        }
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 

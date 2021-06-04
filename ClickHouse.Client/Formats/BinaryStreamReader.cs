@@ -43,17 +43,11 @@ namespace ClickHouse.Client.Formats
         {
             var length = reader.Read7BitEncodedInt();
             var data = arrayType.MakeArray(length);
+
             for (var i = 0; i < length; i++)
             {
                 var val = ClearDBNull(Read(arrayType.UnderlyingType));
-                if (arrayType.UnderlyingType.TypeCode == ClickHouseTypeCode.Nested)
-                {
-                    //data.SetValue(val, i);
-                    //data.SetValue(new object[] { (1, "test") }, 0);
-                }
-                else {
-                    data.SetValue(val, i);
-                }
+                data.SetValue(val, i);
             }
             return data;
         }
@@ -139,7 +133,6 @@ namespace ClickHouse.Client.Formats
                 var value = Read(tupleType.UnderlyingTypes[i]);
                 contents[i] = ClearDBNull(value);
             }
-            //return (1, "vx1" );
             return tupleType.MakeTuple(contents);
         }
 
