@@ -201,8 +201,7 @@ namespace ClickHouse.Client.Formats
         {
             // => throw new NotSupportedException("Writing Nested values directly is not supported, see documentation");
 
-            var items = (object[])value;
-            //writer.Write7BitEncodedInt(items.Length);
+            var items = (object[])value;            
             for (var i = 0; i < items.Length; i++)
             {
                 Write(nestedType.UnderlyingTypes[i], items[i]);
