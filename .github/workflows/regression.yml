@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        clickhouse-version: [19.11.2.7, 20.3.18.10]
+        clickhouse-version: [19.11.2.7, 20.3.18.10, 21.5.5.12]
     services:
       clickhouse:
         image: yandex/clickhouse-server:${{matrix.clickhouse-version}}
