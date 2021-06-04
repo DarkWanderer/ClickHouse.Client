@@ -25,7 +25,7 @@ namespace ClickHouse.Client.Tests
             var ver = connection.ServerVersion.Split('.');
             int major = int.Parse(ver[0]);
             int minor = int.Parse(ver[1]);
-            if (!(major>21 || major==21 && minor >= 5))
+            if (!(major>21 || (major==21 && minor >= 5)))
             {
                 isSupported = false;
             }
