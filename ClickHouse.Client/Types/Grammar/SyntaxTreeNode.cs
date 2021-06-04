@@ -30,7 +30,7 @@ namespace ClickHouse.Client.Types.Grammar
             {
                 if (NestedChild && Level > 0)
                 {
-                    // TODO: clean "Value" from back-ticks/weird values?!
+                    // TODO: clean "Value" from back-ticks/weird values/etc..also see; https://clickhouse.tech/docs/en/sql-reference/data-types/multiword-types/?! 
                     int index = Value.LastIndexOf(' ');
                     if (index > 0)
                     {
