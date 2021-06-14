@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,7 +33,8 @@ namespace ClickHouse.Client.ADO
         private string session;
         private TimeSpan timeout;
         private Uri serverUri;
-
+        private X509Certificate2 certificate;
+		
         public ClickHouseConnection()
             : this(string.Empty)
         {
@@ -42,6 +44,13 @@ namespace ClickHouse.Client.ADO
         {
             ConnectionString = connectionString;
             var httpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+            
+            if (certificate != null)
+            {
+                httpClientHandler.ClientCertificates.Add(certificate);
+                httpClientHandler.ServerCertificateCustomValidationCallback = (message, certificate2, chain, policy) => true;
+            }
+
             httpClient = new HttpClient(httpClientHandler, true)
             {
                 Timeout = timeout,
@@ -97,6 +106,12 @@ namespace ClickHouse.Client.ADO
                 useCompression = builder.Compression;
                 session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
                 timeout = builder.Timeout;
+                
+                string sslCertificatePath = builder.SslCertificatePath;
+                if (!string.IsNullOrEmpty(sslCertificatePath))
+                {
+                    certificate = new X509Certificate2(sslCertificatePath);
+                }
 
                 foreach (var key in builder.Keys.Cast<string>().Where(k => k.StartsWith(CustomSettingPrefix)))
                 {
