@@ -16,7 +16,7 @@ namespace ClickHouse.Client.Benchmark.Benchmarks
 
         public override async Task<BenchmarkResult> Run()
         {
-            var count = Convert.ToInt32(Duration.TotalSeconds * 5000000.0);
+            var count = int.MaxValue / 32;
             Console.WriteLine("Preparing data");
             var values = Enumerable.Range(0, count).Select(i => new object[] { (long)i }).ToList();
             Console.WriteLine("Running benchmark");
@@ -29,16 +29,15 @@ namespace ClickHouse.Client.Benchmark.Benchmarks
             // Create database and table for benchmark
             using var targetConnection = GetConnection();
             await targetConnection.ExecuteStatementAsync($"CREATE DATABASE IF NOT EXISTS {targetDatabase}");
-            await targetConnection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await targetConnection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE Memory");
+            await targetConnection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE Null");
 
             targetConnection.ChangeDatabase(targetDatabase);
 
             using var bulkCopyInterface = new ClickHouseBulkCopy(targetConnection)
             {
                 DestinationTableName = targetTable,
-                BatchSize = 1000000,
-                MaxDegreeOfParallelism = 16
+                BatchSize = 100000,
+                MaxDegreeOfParallelism = 1
             };
 
             stopwatch.Start();
@@ -50,7 +49,6 @@ namespace ClickHouse.Client.Benchmark.Benchmarks
             //Assert.AreEqual(count, Convert.ToInt32(await targetConnection.ExecuteScalarAsync($"SELECT COUNT(*) FROM {targetTable}")));
 
             // Clear table after benchmark
-            await targetConnection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
 
             var rps = (long)count * 1000 / stopwatch.ElapsedMilliseconds;
             return new BenchmarkResult { Duration = stopwatch.Elapsed, RowsCount = Convert.ToUInt64(count), DataSize = Convert.ToUInt64(count) * sizeof(long) };

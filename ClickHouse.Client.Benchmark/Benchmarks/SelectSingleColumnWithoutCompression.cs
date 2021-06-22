@@ -15,14 +15,15 @@ namespace ClickHouse.Client.Benchmark.Benchmarks
         public override async Task<BenchmarkResult> Run()
         {
             var stopwatch = new Stopwatch();
+            ulong maxCount = int.MaxValue / 32;
+            ulong counter = 0;
 
             using var connection = GetConnection();
             using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers");
 
             var totalMilliseconds = Convert.ToInt64(Duration.TotalMilliseconds);
-            ulong counter = 0;
             stopwatch.Start();
-            while (reader.Read() && stopwatch.ElapsedMilliseconds < totalMilliseconds)
+            while (reader.Read() && counter < maxCount)
                 counter++;
             stopwatch.Stop();
 
