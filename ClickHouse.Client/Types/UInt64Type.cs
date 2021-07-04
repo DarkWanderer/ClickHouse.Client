@@ -2,11 +2,11 @@
 
 namespace ClickHouse.Client.Types
 {
-    internal class UInt64Type : ClickHouseType
+    internal class UInt64Type : IntegerType
     {
         public override Type FrameworkType => typeof(ulong);
 
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.UInt64;
+        public override string ToString() => "UInt64";
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 

@@ -66,13 +66,9 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override string GetDataTypeName(int ordinal) => RawTypes[ordinal].ToString();
 
-        public override DateTime GetDateTime(int ordinal) => (DateTime)GetValue(ordinal);
+        public override DateTime GetDateTime(int ordinal) => GetDateTimeOffset(ordinal).DateTime;
 
-        public virtual DateTimeOffset GetDateTimeOffset(int ordinal)
-        {
-            var dt = GetDateTime(ordinal);
-            return ((AbstractDateTimeType)RawTypes[ordinal]).ToDateTimeOffset(dt);
-        }
+        public virtual DateTimeOffset GetDateTimeOffset(int ordinal) => (DateTimeOffset)GetValue(ordinal);
 
         public override decimal GetDecimal(int ordinal) => (decimal)GetValue(ordinal);
 

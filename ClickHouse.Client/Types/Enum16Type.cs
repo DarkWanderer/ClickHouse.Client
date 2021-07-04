@@ -4,7 +4,7 @@
     {
         public override string Name => "Enum16";
 
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Enum16;
+        public override string ToString() => "Enum16";
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 

@@ -11,8 +11,6 @@ namespace ClickHouse.Client.Types
         private Type frameworkType;
         private ClickHouseType[] underlyingTypes;
 
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Tuple;
-
         public ClickHouseType[] UnderlyingTypes
         {
             get => underlyingTypes;
@@ -59,6 +57,8 @@ namespace ClickHouse.Client.Types
         }
 
         public override Type FrameworkType => frameworkType;
+
+        public override string Name => "Tuple";
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {

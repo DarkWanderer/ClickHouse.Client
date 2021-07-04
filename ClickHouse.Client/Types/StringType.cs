@@ -6,7 +6,7 @@ namespace ClickHouse.Client.Types
     {
         public override Type FrameworkType => typeof(string);
 
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.String;
+        public override string ToString() => "String";
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 

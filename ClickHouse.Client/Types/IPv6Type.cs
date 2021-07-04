@@ -7,7 +7,7 @@ namespace ClickHouse.Client.Types
     {
         public override Type FrameworkType => typeof(IPAddress);
 
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.IPv6;
+        public override string ToString() => "IPv6";
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 

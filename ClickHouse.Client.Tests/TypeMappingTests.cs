@@ -38,10 +38,10 @@ namespace ClickHouse.Client.Tests
         [TestCase("LowCardinality(String)", ExpectedResult = typeof(string))]
 
         [TestCase("Date", ExpectedResult = typeof(DateTime))]
-        [TestCase("DateTime", ExpectedResult = typeof(DateTime))]
-        [TestCase("DateTime('Etc/UTC')", ExpectedResult = typeof(DateTime))]
-        [TestCase("DateTime64(3)", ExpectedResult = typeof(DateTime))]
-        [TestCase("DateTime64(3, 'Etc/UTC')", ExpectedResult = typeof(DateTime))]
+        [TestCase("DateTime", ExpectedResult = typeof(DateTimeOffset))]
+        [TestCase("DateTime('Etc/UTC')", ExpectedResult = typeof(DateTimeOffset))]
+        [TestCase("DateTime64(3)", ExpectedResult = typeof(DateTimeOffset))]
+        [TestCase("DateTime64(3, 'Etc/UTC')", ExpectedResult = typeof(DateTimeOffset))]
 
         [TestCase("Nullable(UInt32)", ExpectedResult = typeof(uint?))]
         [TestCase("Array(Array(String))", ExpectedResult = typeof(string[][]))]

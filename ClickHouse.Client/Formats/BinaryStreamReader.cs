@@ -20,8 +20,6 @@ namespace ClickHouse.Client.Formats
 
         public object Read(ClickHouseType type) => type.AcceptRead(this);
 
-        public object Read(LowCardinalityType lowCardinalityType) => Read(lowCardinalityType.UnderlyingType);
-
         public object Read(FixedStringType fixedStringType) => Encoding.UTF8.GetString(reader.ReadBytes(fixedStringType.Length));
 
         public object Read(Int8Type int8Type) => reader.ReadSByte();
@@ -48,8 +46,6 @@ namespace ClickHouse.Client.Formats
             }
             return data;
         }
-
-        public object Read(DateTimeType dateTimeType) => TypeConverter.DateTimeEpochStart.AddSeconds(reader.ReadUInt32());
 
         public object Read(DecimalType decimalType)
         {
@@ -110,7 +106,9 @@ namespace ClickHouse.Client.Formats
 
         public object Read(IPv6Type pv6Type) => new IPAddress(reader.ReadBytes(16));
 
-        public object Read(DateTime64Type dateTimeType) => TypeConverter.DateTimeEpochStart.AddTicks(MathUtils.ShiftDecimalPlaces(reader.ReadInt64(), 7 - dateTimeType.Scale));
+        public object Read(DateTime64Type dateTimeType) => dateTimeType.FromClickHouseTicks(reader.ReadInt64());
+
+        public object Read(DateTimeType dateTimeType) => dateTimeType.FromUnixTimeSeconds(reader.ReadUInt32());
 
         public object Read(DateType dateType) => TypeConverter.DateTimeEpochStart.AddDays(reader.ReadUInt16());
 

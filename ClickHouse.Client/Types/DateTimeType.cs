@@ -6,7 +6,7 @@ namespace ClickHouse.Client.Types
 {
     internal class DateTimeType : AbstractDateTimeType
     {
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.DateTime;
+        public override string Name => "DateTime";
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {

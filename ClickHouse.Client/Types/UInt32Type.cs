@@ -2,11 +2,11 @@
 
 namespace ClickHouse.Client.Types
 {
-    internal class UInt32Type : ClickHouseType
+    internal class UInt32Type : IntegerType
     {
         public override Type FrameworkType => typeof(uint);
 
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.UInt32;
+        public override string ToString() => "UInt32";
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 

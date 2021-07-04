@@ -30,8 +30,6 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "Decimal";
 
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Decimal;
-
         /// <summary>
         /// Gets size of type in bytes
         /// </summary>
