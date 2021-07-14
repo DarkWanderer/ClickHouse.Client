@@ -116,6 +116,10 @@ namespace ClickHouse.Client.ADO
 
         public override string ServerVersion => serverVersion?.ToString();
 
+        /// <summary>
+        /// Gets enum describing which ClickHouse features are available on this particular server version
+        /// Requires connection to be in Open state
+        /// </summary>
         public virtual FeatureFlags SupportedFeatures
         {
             get => state == ConnectionState.Open ? supportedFeatures : throw new InvalidOperationException();
@@ -139,7 +143,6 @@ namespace ClickHouse.Client.ADO
         /// <returns>Task-wrapped HttpResponseMessage object</returns>
         public async Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
         {
-            await EnsureOpenAsync();
             var builder = CreateUriBuilder(sql);
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());
             AddDefaultHttpHeaders(postMessage.Headers);
@@ -157,10 +160,10 @@ namespace ClickHouse.Client.ADO
 
         internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token, ClickHouseParameterCollection parameters = null)
         {
-            await EnsureOpenAsync();
             var uriBuilder = CreateUriBuilder();
             if (parameters != null)
             {
+                await EnsureOpenAsync(); // Preserve old behavior
                 if (SupportedFeatures.HasFlag(FeatureFlags.SupportsHttpParameters))
                 {
                     foreach (ClickHouseDbParameter parameter in parameters)
