@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ClickHouse.Client.ADO;
 using ClickHouse.Client.Copy;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
@@ -124,7 +125,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldInsertIntoTableWithLotsOfColumns()
         {
-            if (!await connection.SupportsInlineQuery())
+            if (connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsInlineQuery))
                 Assert.Inconclusive("This test is only valid for versions which support 'inline' POST body query");
 
             var tblName = "test.bulk_long_columns";

@@ -17,7 +17,7 @@ namespace ClickHouse.Client.Tests
         {
             public OldClickHouseVersionConnection(string connectionString) : base(connectionString) { }
 
-            internal override Task<bool> SupportsHttpParameters() => Task.FromResult(false);
+            public override FeatureFlags SupportedFeatures => base.SupportedFeatures & ~FeatureFlags.SupportsHttpParameters;
         }
 
         private readonly ClickHouseConnection connection;
@@ -33,7 +33,7 @@ namespace ClickHouse.Client.Tests
             .Select(sample => new TestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));
 
         [Test]
-        public async Task EnsureCompatibilityModeIsUsed() => Assert.IsFalse(await connection.SupportsHttpParameters());
+        public void EnsureCompatibilityModeIsUsed() => Assert.IsFalse(connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsInlineQuery));
 
         [Test]
         [Parallelizable]

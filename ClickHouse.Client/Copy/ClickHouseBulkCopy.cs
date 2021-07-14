@@ -137,7 +137,7 @@ namespace ClickHouse.Client.Copy
         private async Task PushBatch(ICollection<object[]> rows, ClickHouseType[] columnTypes, string[] columnNames, CancellationToken token)
         {
             var query = $"INSERT INTO {DestinationTableName} ({string.Join(", ", columnNames)}) FORMAT RowBinary";
-            bool useInlineQuery = await connection.SupportsInlineQuery();
+            bool useInlineQuery = connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsInlineQuery);
 
             using var stream = new MemoryStream() { Capacity = 512 * 1024 };
             using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))

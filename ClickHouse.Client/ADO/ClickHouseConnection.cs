@@ -32,6 +32,7 @@ namespace ClickHouse.Client.ADO
         private string session;
         private TimeSpan timeout;
         private Uri serverUri;
+        private FeatureFlags supportedFeatures;
 
         public ClickHouseConnection()
             : this(string.Empty)
@@ -115,6 +116,12 @@ namespace ClickHouse.Client.ADO
 
         public override string ServerVersion => serverVersion?.ToString();
 
+        public virtual FeatureFlags SupportedFeatures
+        {
+            get => state == ConnectionState.Open ? supportedFeatures : throw new InvalidOperationException();
+            private set => supportedFeatures = value;
+        }
+
         public override DataTable GetSchema() => GetSchema(null, null);
 
         public override DataTable GetSchema(string type) => GetSchema(type, null);
@@ -132,6 +139,7 @@ namespace ClickHouse.Client.ADO
         /// <returns>Task-wrapped HttpResponseMessage object</returns>
         public async Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
         {
+            await EnsureOpenAsync();
             var builder = CreateUriBuilder(sql);
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());
             AddDefaultHttpHeaders(postMessage.Headers);
@@ -149,12 +157,11 @@ namespace ClickHouse.Client.ADO
 
         internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token, ClickHouseParameterCollection parameters = null)
         {
+            await EnsureOpenAsync();
             var uriBuilder = CreateUriBuilder();
             if (parameters != null)
             {
-                var httpParametersSupported = await SupportsHttpParameters();
-
-                if (httpParametersSupported)
+                if (SupportedFeatures.HasFlag(FeatureFlags.SupportsHttpParameters))
                 {
                     foreach (ClickHouseDbParameter parameter in parameters)
                         uriBuilder.AddQueryParameter(parameter.ParameterName, HttpParameterFormatter.Format(parameter));
@@ -253,6 +260,7 @@ namespace ClickHouse.Client.ADO
                     throw new InvalidOperationException("ClickHouse server did not return version, check if the server is functional");
 
                 serverVersion = Version.Parse(Encoding.UTF8.GetString(data).Trim());
+                SupportedFeatures = GetFeatureFlags(serverVersion);
                 state = ConnectionState.Open;
             }
             catch
@@ -264,45 +272,27 @@ namespace ClickHouse.Client.ADO
 
         public new ClickHouseCommand CreateCommand() => new ClickHouseCommand(this);
 
-        /// <summary>
-        /// Detects whether server supports parameters through URI
-        ///   ClickHouse Release 19.11.3.11, 2019-07-18: New Feature: Added support for prepared statements. #5331 (Alexander) #5630 (alexey-milovidov)
-        /// </summary>
-        /// <returns>whether parameters are supported</returns>
-        internal virtual async Task<bool> SupportsHttpParameters()
+        internal static FeatureFlags GetFeatureFlags(Version serverVersion)
         {
-            if (State != ConnectionState.Open)
-                await OpenAsync();
-            if (serverVersion == null)
-                throw new InvalidOperationException("Connection does not define server version");
-            return serverVersion >= new Version(19, 11, 3, 11);
-        }
-
-        /// <summary>
-        /// Detects whether server supports putting query into POST body along with binary data
-        /// Added somewhere in ClickHouse 20.5
-        /// </summary>
-        /// <returns>whether parameters are supported</returns>
-        internal virtual async Task<bool> SupportsInlineQuery()
-        {
-            if (State != ConnectionState.Open)
-                await OpenAsync();
-            if (serverVersion == null)
-                throw new InvalidOperationException("Connection does not define server version");
-            return serverVersion >= new Version(20, 5);
-        }
-
-        /// <summary>
-        ///  20.1.2.4 Add DateTime64 datatype with configurable sub-second precision. #7170 (Vasily Nemkov)
-        /// </summary>
-        /// <returns>whether DateTime64 is supported</returns>
-        internal virtual async Task<bool> SupportsDateTime64()
-        {
-            if (State != ConnectionState.Open)
-                await OpenAsync();
-            if (serverVersion == null)
-                throw new InvalidOperationException("Connection does not define server version");
-            return serverVersion >= new Version(20, 1, 2, 4);
+            FeatureFlags flags = 0;
+            if (serverVersion > new Version(19, 11, 3, 11))
+            {
+                flags |= FeatureFlags.SupportsHttpParameters;
+            }
+            if (serverVersion > new Version(20, 1, 2, 4))
+            {
+                flags |= FeatureFlags.SupportsDateTime64;
+            }
+            if (serverVersion > new Version(20, 5))
+            {
+                flags |= FeatureFlags.SupportsInlineQuery;
+            }
+            if (serverVersion > new Version(20, 0))
+            {
+                flags |= FeatureFlags.SupportsDecimal;
+                flags |= FeatureFlags.SupportsIPv6;
+            }
+            return flags;
         }
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
@@ -330,5 +320,7 @@ namespace ClickHouse.Client.ADO
             CustomParameters = customSettings,
             Sql = sql,
         };
+
+        private Task EnsureOpenAsync() => state != ConnectionState.Open ? OpenAsync() : Task.CompletedTask;
     }
 }
