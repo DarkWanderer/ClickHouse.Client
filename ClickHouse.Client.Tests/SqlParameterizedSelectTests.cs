@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
@@ -21,9 +22,8 @@ namespace ClickHouse.Client.Tests
         }
 
         public static IEnumerable<TestCaseData> TypedQueryParameters => TestUtilities.GetDataTypeSamples()
-            .Where(sample => sample.ExampleValue != DBNull.Value) // null value should be handled by writing "is null" statement
-                                                                  //.Where(sample => !sample.ClickHouseType.StartsWith("Tuple")) // Bug in Tuple(Nullable(...))
-            .Where(sample => sample.ClickHouseType != "UUID") // https://github.com/ClickHouse/ClickHouse/issues/7463
+            //.Where(sample => sample.ClickHouseType != "UUID") // https://github.com/ClickHouse/ClickHouse/issues/7463
+            .Where(sample => sample.ClickHouseType != "Nothing") // Code: 48, e.displayText() = DB::Exception: Serialization is not implemented
             .Select(sample => new TestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));
 
         [Test]
@@ -36,8 +36,10 @@ namespace ClickHouse.Client.Tests
             if (clickHouseType.StartsWith("Enum"))
                 clickHouseType = "String";
 
+            var predicate = value is null || value is DBNull ? "IS NULL" : $"= {{var:{clickHouseType}}}";
+
             using var command = connection.CreateCommand();
-            command.CommandText = $"SELECT res FROM (SELECT {exampleExpression} AS res) WHERE res = {{var:{clickHouseType}}}";
+            command.CommandText = $"SELECT res FROM (SELECT {exampleExpression} AS res) WHERE res {predicate}";
             command.AddParameter("var", value);
 
             var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow().Single();
@@ -47,7 +49,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         [Parallelizable]
         [TestCaseSource(typeof(SqlParameterizedSelectTests), nameof(TypedQueryParameters))]
-        public async Task ShouldExecuteParameterizedSelectWithExplicitType(string exampleExpression, string clickHouseType, object value)
+        public async Task ShouldExecuteParameterizedSelectWithExplicitType(string _, string clickHouseType, object value)
         {
             if (clickHouseType.StartsWith("Enum"))
                 clickHouseType = "String";
