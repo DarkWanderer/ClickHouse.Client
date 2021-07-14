@@ -10,5 +10,6 @@ namespace ClickHouse.Client.ADO
         SupportsDateTime64 = 4,
         SupportsDecimal = 8,
         SupportsIPv6 = 16,
+        SupportsUUIDParameters = 32,
     }
 }
