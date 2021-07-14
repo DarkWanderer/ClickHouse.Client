@@ -125,7 +125,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldInsertIntoTableWithLotsOfColumns()
         {
-            if (connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsInlineQuery))
+            if (!connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsInlineQuery))
                 Assert.Inconclusive("This test is only valid for versions which support 'inline' POST body query");
 
             var tblName = "test.bulk_long_columns";

@@ -33,7 +33,11 @@ namespace ClickHouse.Client.Tests
             .Select(sample => new TestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));
 
         [Test]
-        public void EnsureCompatibilityModeIsUsed() => Assert.IsFalse(connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsInlineQuery));
+        public async Task EnsureCompatibilityModeIsUsed()
+        {
+            await connection.OpenAsync();
+            Assert.IsFalse(connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsHttpParameters));
+        }
 
         [Test]
         [Parallelizable]
