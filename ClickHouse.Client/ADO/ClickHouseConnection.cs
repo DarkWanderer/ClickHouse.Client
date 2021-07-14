@@ -46,7 +46,6 @@ namespace ClickHouse.Client.ADO
             {
                 Timeout = timeout,
             };
-            // Connection string has to be initialized after HttpClient, as it may set HttpClient.Timeout
         }
 
         /// <summary>
