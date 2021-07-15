@@ -126,7 +126,7 @@ namespace ClickHouse.Client.Tests
             {
                 DestinationTableName = Table3,
             };
-            var row1 = new object[] { 1, new[] { 1 }, new[] { "v1" }, new[] { new[] { new object[] { 1, "v1" , new[] { new object[] { 2, "sub_v2" } } } } } };
+            var row1 = new object[] { 1, new[] { 1 }, new[] { "v1" }, new[] { new[] { new object[] { 1, "v1" , new[] { new object[] { 2, "sub_v2" }, new object[] { 3, "sub_v3" } } } } } };
             
 
             await bulkCopy.WriteToServerAsync(new[] { row1/*, row2*/ }, CancellationToken.None);
@@ -141,6 +141,8 @@ namespace ClickHouse.Client.Tests
             Assert.AreEqual(((ITuple)((object[])((object[])values[3])[0])[0])[1], "v1");
             Assert.AreEqual(((ITuple)((object[])((ITuple)((object[])((object[])values[3])[0])[0])[2])[0])[0], 2);
             Assert.AreEqual(((ITuple)((object[])((ITuple)((object[])((object[])values[3])[0])[0])[2])[0])[1], "sub_v2");
+            Assert.AreEqual(((ITuple)((object[])((ITuple)((object[])((object[])values[3])[0])[0])[2])[1])[0], 3);
+            Assert.AreEqual(((ITuple)((object[])((ITuple)((object[])((object[])values[3])[0])[0])[2])[1])[1], "sub_v3");
         }
 
         [Test]
