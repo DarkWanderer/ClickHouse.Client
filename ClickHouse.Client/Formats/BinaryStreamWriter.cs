@@ -202,7 +202,7 @@ namespace ClickHouse.Client.Formats
             // => throw new NotSupportedException("Writing Nested values directly is not supported, see documentation");
             var items = (IEnumerable)value;
             uint i = 0;
-            foreach(var item in items)
+            foreach (var item in items)
             {
                 Write(nestedType.UnderlyingTypes[i], item);
                 i++;
