@@ -19,11 +19,20 @@ namespace ClickHouse.Client.Copy
     public class ClickHouseBulkCopy : IDisposable
     {
         private readonly ClickHouseConnection connection;
+        private bool ownsConnection = false;
         private long rowsWritten = 0;
 
         public ClickHouseBulkCopy(ClickHouseConnection connection)
         {
             this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
+        }
+
+        public ClickHouseBulkCopy(string connectionString)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new ArgumentNullException(nameof(connectionString));
+            connection = new ClickHouseConnection(connectionString);
+            ownsConnection = true;
         }
 
         /// <summary>
@@ -129,8 +138,14 @@ namespace ClickHouse.Client.Copy
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose() => connection?.Dispose();
+        public void Dispose()
+        {
+            if (ownsConnection)
+            {
+                connection?.Dispose();
+                ownsConnection = false;
+            }
+        }
 
         private string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
 
