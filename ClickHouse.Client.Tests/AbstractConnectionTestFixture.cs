@@ -12,6 +12,9 @@ namespace ClickHouse.Client.Tests
         protected AbstractConnectionTestFixture()
         {
             connection = TestUtilities.GetTestClickHouseConnection();
+            using var command = connection.CreateCommand();
+            command.CommandText = "CREATE DATABASE IF NOT EXISTS test;";
+            command.ExecuteScalar();
         }
 
         public void Dispose() => connection?.Dispose();
