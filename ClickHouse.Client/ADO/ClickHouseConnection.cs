@@ -298,7 +298,7 @@ namespace ClickHouse.Client.ADO
             {
                 flags |= FeatureFlags.SupportsUUIDParameters;
             }
-            if(serverVersion > new Version(21, 5))
+            if (serverVersion > new Version(21, 5))
             {
                 flags |= FeatureFlags.SupportsNestedSubColumns;
             }

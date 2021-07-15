@@ -8,7 +8,7 @@ namespace ClickHouse.Client.Types.Grammar
         public static SyntaxTreeNode Parse(string input)
         {
             var tokens = Tokenizer.GetTokens(input).ToList();
-            
+
             var stack = new Stack<SyntaxTreeNode>();
             SyntaxTreeNode current = null;
             uint level = 0;
