@@ -30,7 +30,6 @@ namespace ClickHouse.Client.Tests
         }
 
         public static IEnumerable<TestCaseData> TypedQueryParameters => TestUtilities.GetDataTypeSamples()
-            .Where(sample => sample.ClickHouseType.Contains("UUID") && !TestUtilities.SupportedFeatures.HasFlag(FeatureFlags.SupportsUUIDParameters))
             .Select(sample => new TestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));
 
         [Test]
