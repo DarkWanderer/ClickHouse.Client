@@ -19,11 +19,20 @@ namespace ClickHouse.Client.Copy
     public class ClickHouseBulkCopy : IDisposable
     {
         private readonly ClickHouseConnection connection;
+        private bool ownsConnection = false;
         private long rowsWritten = 0;
 
         public ClickHouseBulkCopy(ClickHouseConnection connection)
         {
             this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
+        }
+
+        public ClickHouseBulkCopy(string connectionString)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new ArgumentNullException(nameof(connectionString));
+            connection = new ClickHouseConnection(connectionString);
+            ownsConnection = true;
         }
 
         /// <summary>
@@ -129,15 +138,21 @@ namespace ClickHouse.Client.Copy
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose() => connection?.Dispose();
+        public void Dispose()
+        {
+            if (ownsConnection)
+            {
+                connection?.Dispose();
+                ownsConnection = false;
+            }
+        }
 
         private string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
 
         private async Task PushBatch(ICollection<object[]> rows, ClickHouseType[] columnTypes, string[] columnNames, CancellationToken token)
         {
             var query = $"INSERT INTO {DestinationTableName} ({string.Join(", ", columnNames)}) FORMAT RowBinary";
-            bool useInlineQuery = await connection.SupportsInlineQuery();
+            bool useInlineQuery = connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsInlineQuery);
 
             using var stream = new MemoryStream() { Capacity = 512 * 1024 };
             using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))

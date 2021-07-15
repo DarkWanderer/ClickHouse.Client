@@ -17,7 +17,7 @@ namespace ClickHouse.Client.Tests
         {
             public OldClickHouseVersionConnection(string connectionString) : base(connectionString) { }
 
-            internal override Task<bool> SupportsHttpParameters() => Task.FromResult(false);
+            public override FeatureFlags SupportedFeatures => base.SupportedFeatures & ~FeatureFlags.SupportsHttpParameters;
         }
 
         private readonly ClickHouseConnection connection;
@@ -30,11 +30,14 @@ namespace ClickHouse.Client.Tests
         }
 
         public static IEnumerable<TestCaseData> TypedQueryParameters => TestUtilities.GetDataTypeSamples()
-            .Where(sample => sample.ClickHouseType != "UUID") // https://github.com/ClickHouse/ClickHouse/issues/7463
             .Select(sample => new TestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));
 
         [Test]
-        public async Task EnsureCompatibilityModeIsUsed() => Assert.IsFalse(await connection.SupportsHttpParameters());
+        public async Task EnsureCompatibilityModeIsUsed()
+        {
+            await connection.OpenAsync();
+            Assert.IsFalse(connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsHttpParameters));
+        }
 
         [Test]
         [Parallelizable]

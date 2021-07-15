@@ -11,21 +11,13 @@ namespace ClickHouse.Client.Tests
 {
     public static class TestUtilities
     {
-        public static class FeatureFlags
-        {
-            public static bool DateTime64Supported = true;
-            public static bool IPv6Supported = true;
-            public static bool DecimalSupported = true;
-        }
+        public static FeatureFlags SupportedFeatures;
 
         static TestUtilities()
         {
             using var connection = GetTestClickHouseConnection();
             connection.Open();
-            var serverVersion = Version.Parse(connection.ServerVersion);
-            FeatureFlags.DateTime64Supported = connection.SupportsDateTime64().Result;
-            FeatureFlags.IPv6Supported = serverVersion >= new Version(20, 0);
-            FeatureFlags.DecimalSupported = serverVersion >= new Version(20, 0);
+            SupportedFeatures = connection.SupportedFeatures;
         }
 
         /// <summary>
@@ -118,10 +110,10 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Utc));
             yield return new DataTypeSample("DateTime", typeof(DateTime), "toDateTime('1988-08-28 11:22:33')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Utc));
 
-            if (FeatureFlags.DateTime64Supported)
+            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDateTime64))
                 yield return new DataTypeSample("DateTime64(7)", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9)", new DateTime(644444444444444444, DateTimeKind.Utc));
 
-            if (FeatureFlags.DecimalSupported)
+            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDecimal))
             {
                 yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(123.45, 3)", new decimal(123.45));
                 yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(-123.45, 3)", new decimal(-123.45));
@@ -133,7 +125,7 @@ namespace ClickHouse.Client.Tests
                 yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(-12.34, 9)", new decimal(-12.34));
             }
 
-            if (FeatureFlags.IPv6Supported)
+            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsIPv6))
                 yield return new DataTypeSample("IPv6", typeof(IPAddress), "toIPv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334')", IPAddress.Parse("2001:0db8:85a3:0000:0000:8a2e:0370:7334"));
         }
 

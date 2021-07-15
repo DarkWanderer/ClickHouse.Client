@@ -14,8 +14,8 @@ namespace ClickHouse.Client.Formats
     {
         public static string Format(ClickHouseDbParameter parameter)
         {
-            if (parameter.Value is null)
-                return string.Empty;
+            if (parameter.Value is null || parameter.Value is DBNull)
+                return "NULL";
             var type = string.IsNullOrWhiteSpace(parameter.ClickHouseType)
                 ? TypeConverter.ToClickHouseType(parameter.Value.GetType())
                 : TypeConverter.ParseClickHouseType(parameter.ClickHouseType);
@@ -53,7 +53,7 @@ namespace ClickHouse.Client.Formats
                     return $"toUUID({value.ToString().Escape()})";
 
                 case ClickHouseTypeCode.Nothing:
-                    return "null";
+                    return "NULL";
 
                 case ClickHouseTypeCode.Date when value is DateTime:
                     return $"toDate('{value:yyyy-MM-dd}')";
