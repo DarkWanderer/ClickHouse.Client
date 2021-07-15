@@ -105,15 +105,15 @@ namespace ClickHouse.Client.Types
         {
             if (
                 node.ChildNodes.Count == 0 &&
-                Enum.TryParse<ClickHouseTypeCode>(node.Value, out var chType) &&
+                Enum.TryParse<ClickHouseTypeCode>(node.ParsedValue, out var chType) &&
                 SimpleTypes.TryGetValue(chType, out var typeInfo))
             {
                 return typeInfo;
             }
 
-            if (ParameterizedTypes.ContainsKey(node.Value))
+            if (ParameterizedTypes.TryGetValue(node.ParsedValue, out var subParser))
             {
-                return ParameterizedTypes[node.Value].Parse(node, ParseClickHouseType);
+                return subParser.Parse(node, ParseClickHouseType);
             }
 
             throw new ArgumentException("Unknown type: " + node.ToString());
