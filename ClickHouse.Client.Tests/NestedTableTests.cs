@@ -3,6 +3,7 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using ClickHouse.Client.ADO;
 using ClickHouse.Client.Copy;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
@@ -31,13 +32,9 @@ namespace ClickHouse.Client.Tests
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table}");
             await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table}(id UInt32, params Nested (param_id UInt8, param_val String)) ENGINE = Memory");
 
-            var ver = connection.ServerVersion.Split('.');
-            int major = int.Parse(ver[0]);
-            int minor = int.Parse(ver[1]);
-            if (!(major>21 || (major==21 && minor >= 5)))
-            {
-                isSupported = false;
-            }
+
+            isSupported = connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsNestedSubColumns);
+            
             if (isSupported)
             {
                 await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table2}");
