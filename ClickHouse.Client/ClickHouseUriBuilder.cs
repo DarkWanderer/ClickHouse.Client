@@ -10,7 +10,10 @@ namespace ClickHouse.Client
     {
         private readonly IDictionary<string, string> queryParameters = new Dictionary<string, string>();
 
-        public ClickHouseUriBuilder(Uri baseUri) => BaseUri = baseUri;
+        public ClickHouseUriBuilder(Uri baseUri)
+        {
+            BaseUri = baseUri;
+        }
 
         public Uri BaseUri { get; }
 

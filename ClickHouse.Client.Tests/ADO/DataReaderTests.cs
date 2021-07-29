@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using NUnit.Framework;
-using ClickHouse.Client.Utility;
 using ClickHouse.Client.ADO.Readers;
+using ClickHouse.Client.Utility;
+using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
 {

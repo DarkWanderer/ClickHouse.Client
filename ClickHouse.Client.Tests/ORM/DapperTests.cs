@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using NUnit.Framework;
-using Dapper;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Dapper;
+using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.ORM
 {

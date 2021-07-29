@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Text;
+﻿using System.Data.Common;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Adapters;
 using ClickHouse.Client.ADO.Parameters;

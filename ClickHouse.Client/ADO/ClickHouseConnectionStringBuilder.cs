@@ -10,7 +10,10 @@ namespace ClickHouse.Client.ADO
         {
         }
 
-        public ClickHouseConnectionStringBuilder(string connectionString) => ConnectionString = connectionString;
+        public ClickHouseConnectionStringBuilder(string connectionString)
+        {
+            ConnectionString = connectionString;
+        }
 
         public string Database
         {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ClickHouse.Client.Types.Grammar;
+﻿using ClickHouse.Client.Types.Grammar;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.Syntax
