@@ -157,7 +157,7 @@ namespace ClickHouse.Client.ADO
             await HandleError(response, sql).ConfigureAwait(false);
         }
 
-        internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token, ClickHouseParameterCollection parameters = null)
+        internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token, ClickHouseParameterCollection parameters = null, IDictionary<string, string> queryParamters = null)
         {
             var uriBuilder = CreateUriBuilder();
             if (parameters != null)
@@ -166,7 +166,7 @@ namespace ClickHouse.Client.ADO
                 if (SupportedFeatures.HasFlag(FeatureFlags.SupportsHttpParameters))
                 {
                     foreach (ClickHouseDbParameter parameter in parameters)
-                        uriBuilder.AddQueryParameter(parameter.ParameterName, HttpParameterFormatter.Format(parameter));
+                        uriBuilder.AddCommandParameter(parameter.ParameterName, HttpParameterFormatter.Format(parameter));
                 }
                 else
                 {
@@ -176,6 +176,13 @@ namespace ClickHouse.Client.ADO
                     sqlQuery = SubstituteParameters(sqlQuery, formattedParameters);
                 }
             }
+
+            if (queryParamters != null)
+            {
+                foreach (var parameter in queryParamters)
+                    uriBuilder.AddQueryParameter(parameter.Key, parameter.Value);
+            }
+
             string uri = uriBuilder.ToString();
 
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, uri);

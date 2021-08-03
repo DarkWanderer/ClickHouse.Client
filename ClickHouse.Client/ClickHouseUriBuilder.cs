@@ -10,6 +10,8 @@ namespace ClickHouse.Client
     {
         private readonly IDictionary<string, string> queryParameters = new Dictionary<string, string>();
 
+        private readonly IDictionary<string, string> commandParameters = new Dictionary<string, string>();
+
         public ClickHouseUriBuilder(Uri baseUri)
         {
             BaseUri = baseUri;
@@ -31,6 +33,8 @@ namespace ClickHouse.Client
 
         public bool AddQueryParameter(string name, string value) => DictionaryExtensions.TryAdd(queryParameters, name, value);
 
+        public bool AddCommandParameter(string name, string value) => DictionaryExtensions.TryAdd(commandParameters, name, value);
+
         public override string ToString()
         {
             var parameters = HttpUtility.ParseQueryString(string.Empty); // NameValueCollection but a special one
@@ -40,8 +44,11 @@ namespace ClickHouse.Client
             parameters.SetOrRemove("session_id", SessionId);
             parameters.SetOrRemove("query", Sql);
 
-            foreach (var parameter in queryParameters)
+            foreach (var parameter in commandParameters)
                 parameters.Set("param_" + parameter.Key, parameter.Value);
+
+            foreach (var parameter in queryParameters)
+                parameters.Set(parameter.Key, parameter.Value);
 
             if (CustomParameters != null)
             {
