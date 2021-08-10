@@ -22,6 +22,8 @@ namespace ClickHouse.Client.ADO
         private const string CustomSettingPrefix = "set_";
 
         private readonly HttpClient httpClient;
+        private readonly IHttpClientFactory httpClientFactory;
+        private readonly string httpClientName;
         private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
         private ConnectionState state = ConnectionState.Closed; // Not an autoproperty because of interface implementation
         private Version serverVersion;
@@ -59,6 +61,33 @@ namespace ClickHouse.Client.ADO
         {
             ConnectionString = connectionString;
             this.httpClient = httpClient;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClickHouseConnection"/> class using an HttpClient generated using the provided <paramref name="httpClientFactory"/>.
+        /// </summary>
+        /// <param name="connectionString">The ClickHouse connection string.</param>
+        /// <param name="httpClientFactory">Instance of IHttpClientFactory to be used for creating the clients.</param>
+        /// <param name="httpClientName">
+        /// The name of the HTTP client you want to be created using the provided factory.
+        /// If left empty, the default client will be created.
+        /// </param>
+        /// <remarks>
+        /// <list type="bullet">
+        /// <item>
+        /// The <paramref name="httpClientFactory"/> must have <see cref="HttpClientHandler.AutomaticDecompression"/> enabled for its generated clients,
+        /// only if compression is not disabled in the <paramref name="connectionString"/>.
+        /// </item>
+        /// <item>
+        /// The <paramref name="httpClientFactory"/> must set the timeout for its clients if needed.
+        /// </item>
+        /// </list>
+        /// </remarks>
+        public ClickHouseConnection(string connectionString, IHttpClientFactory httpClientFactory, string httpClientName = "")
+        {
+            ConnectionString = connectionString;
+            this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+            this.httpClientName = httpClientName ?? throw new ArgumentNullException(nameof(httpClientName));
         }
 
         /// <summary>
@@ -153,7 +182,7 @@ namespace ClickHouse.Client.ADO
                 postMessage.Content.Headers.Add("Content-Encoding", "gzip");
             }
 
-            using var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
+            using var response = await this.GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
             await HandleError(response, sql).ConfigureAwait(false);
         }
 
@@ -190,7 +219,7 @@ namespace ClickHouse.Client.ADO
 
             postMessage.Content = content;
 
-            var response = await httpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+            var response = await this.GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }
 
@@ -328,5 +357,7 @@ namespace ClickHouse.Client.ADO
         };
 
         private Task EnsureOpenAsync() => state != ConnectionState.Open ? OpenAsync() : Task.CompletedTask;
+
+        private HttpClient GetHttpClient() => this.httpClientFactory?.CreateClient(this.httpClientName) ?? this.httpClient;
     }
 }
