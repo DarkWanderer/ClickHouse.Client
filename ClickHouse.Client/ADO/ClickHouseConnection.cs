@@ -89,6 +89,12 @@ namespace ClickHouse.Client.ADO
         /// </item>
         /// <item>
         /// The <paramref name="httpClientFactory"/> must set the timeout for its clients if needed.
+        /// <example>
+        /// For example you can do this while registering the HTTP client:
+        /// <code>
+        /// services.AddHttpClient("ClickHouseClient", c => c.Timeout = TimeSpan.FromMinutes(5));
+        /// </code>
+        /// </example>
         /// </item>
         /// </list>
         /// </remarks>
