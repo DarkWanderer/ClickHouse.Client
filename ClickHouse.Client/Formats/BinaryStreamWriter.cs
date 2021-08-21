@@ -28,6 +28,10 @@ namespace ClickHouse.Client.Formats
             var bigInt = new BigInteger(value);
             byte[] bigIntBytes = bigInt.ToByteArray();
             byte[] decimalBytes = new byte[dti.Size];
+
+            if (bigIntBytes.Length > dti.Size)
+                throw new OverflowException();
+
             bigIntBytes.CopyTo(decimalBytes, 0);
 
             // If a negative BigInteger is not long enough to fill the whole buffer, the remainder needs to be filled with 0xFF
@@ -170,18 +174,25 @@ namespace ClickHouse.Client.Formats
 
         public void Write(DecimalType decimalType, object value)
         {
-            decimal multipliedValue = Convert.ToDecimal(value) * decimalType.Exponent;
-            switch (decimalType.Size)
+            try
             {
-                case 4:
-                    writer.Write((int)multipliedValue);
-                    break;
-                case 8:
-                    writer.Write((long)multipliedValue);
-                    break;
-                default:
-                    WriteLargeDecimal(decimalType, multipliedValue);
-                    break;
+                decimal multipliedValue = Convert.ToDecimal(value) * decimalType.Exponent;
+                switch (decimalType.Size)
+                {
+                    case 4:
+                        writer.Write((int)multipliedValue);
+                        break;
+                    case 8:
+                        writer.Write((long)multipliedValue);
+                        break;
+                    default:
+                        WriteLargeDecimal(decimalType, multipliedValue);
+                        break;
+                }
+            }
+            catch (OverflowException)
+            {
+                throw new ArgumentOutOfRangeException("value", value, $"Value cannot be represented as {decimalType}");
             }
         }
 
