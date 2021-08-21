@@ -1,18 +1,24 @@
 ﻿using System;
 using ClickHouse.Client.Types.Grammar;
+using ClickHouse.Client.Utility;
 using NodaTime;
 
 namespace ClickHouse.Client.Types
 {
     internal class DateTime64Type : AbstractDateTimeType
     {
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.DateTime64;
-
-        public override Type FrameworkType => typeof(DateTime);
-
         public int Scale { get; set; }
 
+        public override string Name => "DateTime64";
+
         public override string ToString() => TimeZone == null ? $"DateTime64({Scale})" : $"DateTime64({Scale}, {TimeZone.Id})";
+
+        public DateTime FromClickHouseTicks(long clickHouseTicks)
+        {
+            // Convert ClickHouse variable precision ticks into "standard" .NET 100ns ones
+            var ticks = MathUtils.ShiftDecimalPlaces(clickHouseTicks, 7 - Scale);
+            return FromUnixTimeTicks(ticks);
+        }
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {

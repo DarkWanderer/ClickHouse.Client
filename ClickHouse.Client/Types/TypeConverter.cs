@@ -10,14 +10,13 @@ namespace ClickHouse.Client.Types
 {
     internal static class TypeConverter
     {
-        public static readonly DateTime DateTimeEpochStart = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        private static readonly IDictionary<ClickHouseTypeCode, ClickHouseType> SimpleTypes = new Dictionary<ClickHouseTypeCode, ClickHouseType>();
+        private static readonly IDictionary<string, ClickHouseType> SimpleTypes = new Dictionary<string, ClickHouseType>();
         private static readonly IDictionary<string, ParameterizedType> ParameterizedTypes = new Dictionary<string, ParameterizedType>();
         private static readonly IDictionary<Type, ClickHouseType> ReverseMapping = new Dictionary<Type, ClickHouseType>();
+        public static readonly DateTime DateTimeEpochStart = DateTimeOffset.FromUnixTimeSeconds(0).UtcDateTime;
 
-        public static IEnumerable<ClickHouseTypeCode> RegisteredTypes => SimpleTypes.Keys
-            .Concat(ParameterizedTypes.Values.Select(t => t.TypeCode))
+        public static IEnumerable<string> RegisteredTypes => SimpleTypes.Keys
+            .Concat(ParameterizedTypes.Values.Select(t => t.Name))
             .OrderBy(x => x)
             .ToArray();
 
@@ -70,18 +69,19 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<EnumType>();
             RegisterParameterizedType<Enum8Type>();
             RegisterParameterizedType<Enum16Type>();
+            RegisterParameterizedType<SimpleAggregateFunctionType>();
 
             ReverseMapping.Add(typeof(decimal), new Decimal128Type());
             ReverseMapping[typeof(DateTime)] = new DateTimeType();
-
-            RegisterParameterizedType<SimpleAggregateFunctionType>();
+            ReverseMapping[typeof(DateTimeOffset)] = new DateTimeType();
         }
 
         private static void RegisterPlainType<T>()
             where T : ClickHouseType, new()
         {
             var type = new T();
-            SimpleTypes.Add(type.TypeCode, type);
+            var name = string.Intern(type.ToString()); // There is a limited number of types, interning them will help performance
+            SimpleTypes.Add(name, type);
             if (!ReverseMapping.ContainsKey(type.FrameworkType))
             {
                 ReverseMapping.Add(type.FrameworkType, type);
@@ -92,7 +92,8 @@ namespace ClickHouse.Client.Types
             where T : ParameterizedType, new()
         {
             var t = new T();
-            ParameterizedTypes.Add(t.Name, t);
+            var name = string.Intern(t.Name); // There is a limited number of types, interning them will help performance
+            ParameterizedTypes.Add(name, t);
         }
 
         public static ClickHouseType ParseClickHouseType(string type)
@@ -103,10 +104,7 @@ namespace ClickHouse.Client.Types
 
         internal static ClickHouseType ParseClickHouseType(SyntaxTreeNode node)
         {
-            if (
-                node.ChildNodes.Count == 0 &&
-                Enum.TryParse<ClickHouseTypeCode>(node.Value, out var chType) &&
-                SimpleTypes.TryGetValue(chType, out var typeInfo))
+            if (node.ChildNodes.Count == 0 && SimpleTypes.TryGetValue(node.Value, out var typeInfo))
             {
                 return typeInfo;
             }

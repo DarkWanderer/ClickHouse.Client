@@ -6,7 +6,7 @@ namespace ClickHouse.Client.Types
     {
         public override Type FrameworkType => typeof(Guid);
 
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.UUID;
+        public override string ToString() => "UUID";
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 

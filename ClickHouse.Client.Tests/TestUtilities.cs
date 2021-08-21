@@ -4,7 +4,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Net;
 using ClickHouse.Client.ADO;
-using ClickHouse.Client.Types;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
@@ -128,9 +127,6 @@ namespace ClickHouse.Client.Tests
             if (SupportedFeatures.HasFlag(FeatureFlags.SupportsIPv6))
                 yield return new DataTypeSample("IPv6", typeof(IPAddress), "toIPv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334')", IPAddress.Parse("2001:0db8:85a3:0000:0000:8a2e:0370:7334"));
         }
-
-        [Test]
-        public static void EnsureAllTypesAreMapped() => CollectionAssert.AreEquivalent(Enum.GetValues(typeof(ClickHouseTypeCode)), TypeConverter.RegisteredTypes.Distinct());
 
         public static object[] GetEnsureSingleRow(this DbDataReader reader)
         {
