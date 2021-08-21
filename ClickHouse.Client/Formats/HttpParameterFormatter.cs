@@ -76,6 +76,10 @@ namespace ClickHouse.Client.Formats
                 case TupleType tupleType when value is ITuple tuple:
                     return $"({string.Join(",", tupleType.UnderlyingTypes.Select((x, i) => InlineParameterFormatter.Format(x, tuple[i])))})";
 
+                case MapType mapType when value is IDictionary dict:
+                    var strings = string.Join(",", dict.Keys.Cast<object>().Select(k => $"{InlineParameterFormatter.Format(mapType.KeyType, k)} : {InlineParameterFormatter.Format(mapType.ValueType, dict[k])}"));
+                    return $"{{{string.Join(",", strings)}}}";
+
                 default:
                     throw new Exception($"Cannot convert {value} to {type}");
             }

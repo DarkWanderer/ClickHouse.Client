@@ -55,5 +55,7 @@
         void Write(DecimalType decimalType, object value);
 
         void Write(EnumType enumType, object value);
+
+        void Write(MapType mapType, object value);
     }
 }

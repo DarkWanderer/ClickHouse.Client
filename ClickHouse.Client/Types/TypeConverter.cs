@@ -70,6 +70,7 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<Enum8Type>();
             RegisterParameterizedType<Enum16Type>();
             RegisterParameterizedType<SimpleAggregateFunctionType>();
+            RegisterParameterizedType<MapType>();
 
             ReverseMapping.Add(typeof(decimal), new Decimal128Type());
             ReverseMapping[typeof(DateTime)] = new DateTimeType();
@@ -144,6 +145,12 @@ namespace ClickHouse.Client.Types
             if (type.IsGenericType && type.GetGenericTypeDefinition().FullName.StartsWith("System.Tuple"))
             {
                 return new TupleType { UnderlyingTypes = type.GetGenericArguments().Select(ToClickHouseType).ToArray() };
+            }
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition().FullName.StartsWith("System.Collections.Generic.Dictionary"))
+            {
+                var types = type.GetGenericArguments().Select(ToClickHouseType).ToArray();
+                return new MapType { UnderlyingTypes = Tuple.Create(types[0], types[1]) };
             }
 
             throw new ArgumentOutOfRangeException(nameof(type), "Unknown type: " + type.ToString());

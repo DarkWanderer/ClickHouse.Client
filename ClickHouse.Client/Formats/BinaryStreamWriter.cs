@@ -223,5 +223,16 @@ namespace ClickHouse.Client.Formats
         private static IPAddress ExtractIPAddress(object data) => data is IPAddress a ? a : IPAddress.Parse((string)data);
 
         private static Guid ExtractGuid(object data) => data is Guid g ? g : new Guid((string)data);
+
+        public void Write(MapType mapType, object value)
+        {
+            var dict = (IDictionary)value;
+            writer.Write7BitEncodedInt(dict.Count);
+            foreach (DictionaryEntry kvp in dict)
+            {
+                Write(mapType.KeyType, kvp.Key);
+                Write(mapType.ValueType, kvp.Value);
+            }
+        }
     }
 }
