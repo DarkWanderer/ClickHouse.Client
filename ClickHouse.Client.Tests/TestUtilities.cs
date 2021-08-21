@@ -28,7 +28,6 @@ namespace ClickHouse.Client.Tests
             var builder = GetConnectionStringBuilder();
             builder.Compression = compression;
             builder["set_session_timeout"] = 1; // Expire sessions quickly after test
-            builder["set_allow_experimental_map_type"] = 1; // Allow experimental types like 'map', 'polygon' etc.
             return new ClickHouseConnection(builder.ConnectionString);
         }
 
