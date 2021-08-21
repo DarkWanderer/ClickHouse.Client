@@ -11,7 +11,7 @@ ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra
 
 * High-throughput
 * Fully supports ClickHouse-specific types:
-  * Composite types: `Array`, `Tuple`, `Nullable`, `Nested`, including combinations
+  * Composite types: `Array`, `Tuple`, `Nullable`, `Nested`, `Map`, including combinations
   * Specialized types: `IPv4`, `IPv6`, `UUID`, `DateTime64`, `LowCardinality`, `Enum` etc.
 * Correctly handles `DateTime`, including time zones
 * Uses compressed binary protocol over HTTP(S)

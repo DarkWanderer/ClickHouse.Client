@@ -5,8 +5,6 @@ namespace ClickHouse.Client.Types
 {
     internal class SimpleAggregateFunctionType : ParameterizedType
     {
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.SimpleAggregatedFunction;
-
         public ClickHouseType UnderlyingType { get; set; }
 
         public string AggregateFunction { get; set; }

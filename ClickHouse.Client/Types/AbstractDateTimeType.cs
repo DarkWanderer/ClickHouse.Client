@@ -10,6 +10,10 @@ namespace ClickHouse.Client.Types
 
         public DateTimeZone TimeZone { get; set; }
 
+        public DateTime FromUnixTimeTicks(long ticks) => Instant.FromUnixTimeTicks(ticks).ToDateTimeUtc();
+
+        public DateTime FromUnixTimeSeconds(long seconds) => Instant.FromUnixTimeSeconds(seconds).ToDateTimeUtc();
+
         public DateTimeOffset ToDateTimeOffset(DateTime dateTime)
         {
             switch (dateTime.Kind)

@@ -20,5 +20,20 @@ namespace ClickHouse.Client.Tests
             var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.float_array");
             Assert.AreEqual(1, count);
         }
+
+        [Test]
+        public async Task ShouldInsertEnum8()
+        {
+            await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.insert_enum8");
+            await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.insert_enum8 (enum Enum8('a' = -1, 'b' = 127)) ENGINE Memory");
+
+            var command = connection.CreateCommand();
+            command.AddParameter("value", "a");
+            command.CommandText = "INSERT INTO test.insert_enum8 VALUES ({value:Enum8('a' = -1, 'b' = 127)})";
+            await command.ExecuteNonQueryAsync();
+
+            var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.insert_enum8");
+            Assert.AreEqual(1, count);
+        }
     }
 }

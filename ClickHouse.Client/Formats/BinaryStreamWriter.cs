@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
+using NodaTime;
 
 namespace ClickHouse.Client.Formats
 {
@@ -42,8 +43,6 @@ namespace ClickHouse.Client.Formats
             }
             writer.Write(decimalBytes);
         }
-
-        public void Write(LowCardinalityType lowCardinalityType, object value) => Write(lowCardinalityType.UnderlyingType, value);
 
         public void Write(FixedStringType fixedStringType, object value)
         {
@@ -125,10 +124,22 @@ namespace ClickHouse.Client.Formats
 
         public void Write(DateTime64Type dateTime64Type, object value)
         {
-            var dateTimeOffset = dateTime64Type.ToDateTimeOffset((DateTime)value);
-            var ticks = (dateTimeOffset.UtcDateTime - TypeConverter.DateTimeEpochStart).Ticks;
-            // 7 is a 'magic constant' - Log10 of TimeSpan.TicksInSecond
-            writer.Write(MathUtils.ShiftDecimalPlaces(ticks, dateTime64Type.Scale - 7));
+            Instant instant;
+            if (value is DateTimeOffset dto)
+            {
+                instant = Instant.FromDateTimeOffset(dto);
+            }
+            else if (value is DateTime dt)
+            {
+                var dto2 = dateTime64Type.ToDateTimeOffset(dt);
+                instant = Instant.FromDateTimeOffset(dto2);
+            }
+            else
+            {
+                throw new ArgumentException("Cannot convert value to datetime");
+            }
+
+            writer.Write(instant.ToUnixTimeTicks());
         }
 
         public void Write(NullableType nullableType, object value)
@@ -167,9 +178,8 @@ namespace ClickHouse.Client.Formats
 
         public void Write(DateTimeType dateTimeType, object value)
         {
-            var dateTimeOffset = dateTimeType.ToDateTimeOffset((DateTime)value);
-            var seconds = (uint)(dateTimeOffset.UtcDateTime - TypeConverter.DateTimeEpochStart).TotalSeconds;
-            writer.Write(seconds);
+            var dto = value is DateTimeOffset offset ? offset : dateTimeType.ToDateTimeOffset((DateTime)value);
+            writer.Write(dto.ToUnixTimeSeconds());
         }
 
         public void Write(DecimalType decimalType, object value)
@@ -213,5 +223,16 @@ namespace ClickHouse.Client.Formats
         private static IPAddress ExtractIPAddress(object data) => data is IPAddress a ? a : IPAddress.Parse((string)data);
 
         private static Guid ExtractGuid(object data) => data is Guid g ? g : new Guid((string)data);
+
+        public void Write(MapType mapType, object value)
+        {
+            var dict = (IDictionary)value;
+            writer.Write7BitEncodedInt(dict.Count);
+            foreach (DictionaryEntry kvp in dict)
+            {
+                Write(mapType.KeyType, kvp.Key);
+                Write(mapType.ValueType, kvp.Value);
+            }
+        }
     }
 }
