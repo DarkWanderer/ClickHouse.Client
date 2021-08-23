@@ -2,8 +2,6 @@
 {
     internal interface ISerializationTypeVisitorReader
     {
-        object Read(LowCardinalityType lowCardinalityType);
-
         object Read(FixedStringType fixedStringType);
 
         object Read(Int8Type int8Type);
@@ -57,5 +55,7 @@
         object Read(IPv6Type pv6Type);
 
         object Read(EnumType enumType);
+
+        object Read(MapType mapType);
     }
 }

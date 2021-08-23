@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ClickHouse.Client.ADO.Parameters;
+﻿using ClickHouse.Client.ADO.Parameters;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
@@ -16,8 +13,10 @@ namespace ClickHouse.Client.Tests
             var param3 = new ClickHouseDbParameter() { ParameterName = "param3", ClickHouseType = "String", Value = "ASD" };
             var param4 = new ClickHouseDbParameter() { ParameterName = "param4", ClickHouseType = "Nothing", Value = null };
 
-            var collection = new ClickHouseParameterCollection();
-            collection.Add(param1);
+            var collection = new ClickHouseParameterCollection
+            {
+                param1
+            };
             collection.AddRange(new[] { param2, param3 });
 
             CollectionAssert.AllItemsAreNotNull(collection);

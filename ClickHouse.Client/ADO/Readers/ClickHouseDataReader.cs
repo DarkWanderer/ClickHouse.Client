@@ -44,7 +44,7 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override bool IsClosed => false;
 
-        public override sealed bool HasRows => true;
+        public sealed override bool HasRows => true;
 
         public override int RecordsAffected { get; }
 

@@ -2,11 +2,11 @@
 
 namespace ClickHouse.Client.Types
 {
-    internal class Int8Type : ClickHouseType
+    internal class Int8Type : IntegerType
     {
         public override Type FrameworkType => typeof(sbyte);
 
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Int8;
+        public override string ToString() => "Int8";
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 

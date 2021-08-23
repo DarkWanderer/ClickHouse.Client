@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
-using NUnit.Framework;
-using Dapper;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
-using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Dapper;
+using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.ORM
 {
@@ -16,10 +17,17 @@ namespace ClickHouse.Client.Tests.ORM
             .Where(s => !s.ClickHouseType.StartsWith("Array")) // Dapper issue, see ShouldExecuteSelectWithParameters test
             .Select(sample => new TestCaseData($"SELECT {{value:{sample.ClickHouseType}}}", sample.ExampleValue));
 
+        static DapperTests()
+        {
+            SqlMapper.AddTypeHandler(new DateTimeOffsetHandler());
+        }
+
         // "The member value of type <xxxxxxxx> cannot be used as a parameter value"
         private static bool ShouldBeSupportedByDapper(string clickHouseType)
         {
-            if (clickHouseType.StartsWith("Tuple"))
+            if (clickHouseType.Contains("Tuple"))
+                return false;
+            if (clickHouseType.Contains("Map"))
                 return false;
             switch (clickHouseType)
             {
@@ -32,6 +40,15 @@ namespace ClickHouse.Client.Tests.ORM
                 default:
                     return true;
             }
+
+        }
+
+        private class DateTimeOffsetHandler : SqlMapper.TypeHandler<DateTimeOffset>
+        {
+            public override void SetValue(IDbDataParameter parameter, DateTimeOffset value) => parameter.Value = value;
+
+            public override DateTimeOffset Parse(object value)
+                => DateTimeOffset.Parse((string)value);
         }
 
         [Test]

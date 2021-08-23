@@ -11,6 +11,7 @@ namespace ClickHouse.Client.ADO
         SupportsDecimal = 8,
         SupportsIPv6 = 16,
         SupportsUUIDParameters = 32,
-        SupportsNestedSubColumns = 64,
+        SupportsMap = 64,
+        SupportsNestedSubColumns = 128,
     }
 }

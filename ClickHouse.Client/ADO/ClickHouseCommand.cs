@@ -62,15 +62,9 @@ namespace ClickHouse.Client.ADO
 
             using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
             using var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, commandParameters).ConfigureAwait(false);
-            try
-            {
-                using var reader = new ExtendedBinaryReader(await response.Content.ReadAsStreamAsync());
-                return reader.Read7BitEncodedInt();
-            }
-            catch
-            {
-                return 0;
-            }
+            using var reader = new ExtendedBinaryReader(await response.Content.ReadAsStreamAsync());
+
+            return reader.PeekChar() != -1 ? reader.Read7BitEncodedInt() : 0;
         }
 
         /// <summary>

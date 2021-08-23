@@ -2,11 +2,11 @@
 
 namespace ClickHouse.Client.Types
 {
-    internal class Float64Type : ClickHouseType
+    internal class Float64Type : FloatType
     {
         public override Type FrameworkType => typeof(double);
 
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Float64;
+        public override string ToString() => "Float64";
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 

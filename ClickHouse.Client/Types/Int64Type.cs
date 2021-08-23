@@ -2,11 +2,11 @@
 
 namespace ClickHouse.Client.Types
 {
-    internal class Int64Type : ClickHouseType
+    internal class Int64Type : IntegerType
     {
         public override Type FrameworkType => typeof(long);
 
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Int64;
+        public override string ToString() => "Int64";
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 

@@ -14,8 +14,6 @@ namespace ClickHouse.Client.Formats
     {
         public static string Format(ClickHouseDbParameter parameter)
         {
-            if (parameter.Value is null || parameter.Value is DBNull)
-                return "NULL";
             var type = string.IsNullOrWhiteSpace(parameter.ClickHouseType)
                 ? TypeConverter.ToClickHouseType(parameter.Value.GetType())
                 : TypeConverter.ParseClickHouseType(parameter.ClickHouseType);
@@ -24,71 +22,74 @@ namespace ClickHouse.Client.Formats
 
         internal static string Format(ClickHouseType type, object value)
         {
-            switch (type.TypeCode)
+            switch (type)
             {
-                case ClickHouseTypeCode.UInt8:
-                case ClickHouseTypeCode.UInt16:
-                case ClickHouseTypeCode.UInt32:
-                case ClickHouseTypeCode.UInt64:
-                case ClickHouseTypeCode.Int8:
-                case ClickHouseTypeCode.Int16:
-                case ClickHouseTypeCode.Int32:
-                case ClickHouseTypeCode.Int64:
+                case IntegerType it:
                     return Convert.ToString(value, CultureInfo.InvariantCulture);
 
-                case ClickHouseTypeCode.Float32:
-                case ClickHouseTypeCode.Float64:
+                case FloatType ft:
                     return FormatFloat(value);
 
-                case ClickHouseTypeCode.Decimal:
-                    return FormatDecimal(type, value);
+                case DecimalType dt:
+                    return FormatDecimal(dt, value);
 
-                case ClickHouseTypeCode.String:
-                case ClickHouseTypeCode.FixedString:
-                case ClickHouseTypeCode.LowCardinality:
-                case ClickHouseTypeCode.Enum8:
-                case ClickHouseTypeCode.Enum16:
+                case LowCardinalityType lt:
+                    return Format(lt.UnderlyingType, value);
+
+                case StringType st:
+                case FixedStringType tt:
+                case Enum8Type e8t:
+                case Enum16Type e16t:
                     return value.ToString().Escape();
-                case ClickHouseTypeCode.UUID:
+
+                case UuidType ut:
                     return $"toUUID({value.ToString().Escape()})";
 
-                case ClickHouseTypeCode.Nothing:
+                case NothingType nt:
                     return "NULL";
 
-                case ClickHouseTypeCode.Date when value is DateTime:
-                    return $"toDate('{value:yyyy-MM-dd}')";
+                case DateType dt when value is DateTime dtv:
+                    return $"toDate('{dtv:yyyy-MM-dd}')";
 
-                case ClickHouseTypeCode.DateTime when type is AbstractDateTimeType dateTimeType && value is DateTime dateTime:
-                    if (dateTimeType.TimeZone != null)
-                    {
-                        dateTime = dateTime.ToUniversalTime();
-                    }
-                    return $"toDateTime('{dateTime:yyyy-MM-dd HH:mm:ss}')";
+                case DateTimeType dtt when value is DateTime dtv:
+                    return dtt.TimeZone == null
+                        ? $"toDateTime('{dtv:yyyy-MM-dd HH:mm:ss}')"
+                        : $"toDateTime('{dtv.ToUniversalTime():yyyy-MM-dd HH:mm:ss}')";
 
-                case ClickHouseTypeCode.DateTime64 when type is DateTime64Type dateTimeType && value is DateTime dateTime:
-                    if (dateTimeType.TimeZone != null)
-                        dateTime = dateTime.ToUniversalTime();
-                    return $"toDateTime64('{dateTime:yyyy-MM-dd HH:mm:ss.fffffff}', 7)";
+                case DateTimeType dtt when value is DateTimeOffset dto:
+                    return dtt.TimeZone == null
+                        ? $"toDateTime('{dto:yyyy-MM-dd HH:mm:ss}')"
+                        : $"toDateTime('{dto.ToUniversalTime():yyyy-MM-dd HH:mm:ss}')";
 
-                case ClickHouseTypeCode.IPv4: return $"toIPv4({FormatIPAddress(value)})";
-                case ClickHouseTypeCode.IPv6: return $"toIPv6({FormatIPAddress(value)})";
+                case DateTime64Type dtt when value is DateTime dtv:
+                    return dtt.TimeZone == null
+                        ? $"toDateTime64('{dtv:yyyy-MM-dd HH:mm:ss.fffffff}', 7)"
+                        : $"toDateTime64('{dtv.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fffffff}', 7, '{dtt.TimeZone}')";
 
-                case ClickHouseTypeCode.Nullable:
-                    var nullableType = (NullableType)type;
+                case DateTime64Type dtt when value is DateTimeOffset dto:
+                    return dtt.TimeZone == null
+                        ? $"toDateTime64('{dto:yyyy-MM-dd HH:mm:ss.fffffff}', 7)"
+                        : $"toDateTime64('{dto.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fffffff}', 7, '{dtt.TimeZone}')";
+
+                case IPv4Type it: return $"toIPv4({FormatIPAddress(value)})";
+                case IPv6Type it: return $"toIPv6({FormatIPAddress(value)})";
+
+                case NullableType nullableType:
                     return value is null || value is DBNull ? "null" : $"{Format(nullableType.UnderlyingType, value)}";
 
-                case ClickHouseTypeCode.Array:
-                    var arrayType = (ArrayType)type;
-                    var array = ((IEnumerable)value).Cast<object>().Select(obj => Format(arrayType.UnderlyingType, obj));
+                case ArrayType arrayType when value is IEnumerable enumerable:
+                    var array = enumerable.Cast<object>().Select(obj => Format(arrayType.UnderlyingType, obj));
                     return $"[{string.Join(",", array)}]";
 
-                case ClickHouseTypeCode.Tuple:
-                    var tupleType = (TupleType)type;
-                    var tuple = (ITuple)value;
+                case TupleType tupleType when value is ITuple tuple:
                     return $"({string.Join(",", tupleType.UnderlyingTypes.Select((x, i) => Format(x, tuple[i])))})";
 
+                case MapType mapType when value is IDictionary dict:
+                    var strings = dict.Keys.Cast<object>().Select(k => $"{Format(mapType.KeyType, k)},{Format(mapType.ValueType, dict[k])}");
+                    return $"map({string.Join(",", strings)})";
+
                 default:
-                    throw new NotSupportedException($"Cannot convert value {value} to type {type.TypeCode}");
+                    throw new NotSupportedException($"Cannot convert value {value} to ClickHouse type {type}");
             }
         }
 
@@ -106,7 +107,7 @@ namespace ClickHouse.Client.Formats
             _ => Convert.ToDouble(value).ToString(CultureInfo.InvariantCulture)
         };
 
-        private static string FormatDecimal(ClickHouseType type, object value)
+        private static string FormatDecimal(DecimalType type, object value)
         {
             if (!(value is decimal decimalValue))
                 decimalValue = Convert.ToDecimal(value);

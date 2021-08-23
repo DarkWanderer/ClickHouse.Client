@@ -5,7 +5,7 @@ using ClickHouse.Client.Benchmark.Benchmarks;
 
 namespace ClickHouse.Client.Benchmark
 {
-    class Program
+    internal class Program
     {
         public static async Task Main(string[] args)
         {

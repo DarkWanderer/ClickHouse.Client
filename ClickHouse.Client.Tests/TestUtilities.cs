@@ -4,7 +4,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Net;
 using ClickHouse.Client.ADO;
-using ClickHouse.Client.Types;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
@@ -100,8 +99,8 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("Nullable(Int32)", typeof(int?), "toInt32OrNull('123')", 123);
             yield return new DataTypeSample("Nullable(Int32)", typeof(int?), "toInt32OrNull(NULL)", DBNull.Value);
             yield return new DataTypeSample("Nullable(DateTime)", typeof(int?), "CAST(NULL AS Nullable(DateTime))", DBNull.Value);
-            yield return new DataTypeSample("LowCardinality(Nullable(String))", typeof(string), "CAST(NULL AS LowCardinality(Nullable(String)))", DBNull.Value);
 
+            yield return new DataTypeSample("LowCardinality(Nullable(String))", typeof(string), "CAST(NULL AS LowCardinality(Nullable(String)))", DBNull.Value);
             yield return new DataTypeSample("LowCardinality(String)", typeof(string), "toLowCardinality('lowcardinality')", "lowcardinality");
 
             yield return new DataTypeSample("Tuple(Int8, String, Nullable(Int8))", typeof(Tuple<int, string, int?>), "tuple(1, 'a', 8)", Tuple.Create<int, string, int?>(1, "a", 8));
@@ -127,10 +126,21 @@ namespace ClickHouse.Client.Tests
 
             if (SupportedFeatures.HasFlag(FeatureFlags.SupportsIPv6))
                 yield return new DataTypeSample("IPv6", typeof(IPAddress), "toIPv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334')", IPAddress.Parse("2001:0db8:85a3:0000:0000:8a2e:0370:7334"));
-        }
 
-        [Test]
-        public static void EnsureAllTypesAreMapped() => CollectionAssert.AreEquivalent(Enum.GetValues(typeof(ClickHouseTypeCode)), TypeConverter.RegisteredTypes.Distinct());
+            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsMap))
+            {
+                yield return new DataTypeSample("Map(String, UInt8)", typeof(Dictionary<string, byte>), "map('A',1,'B',2)", new Dictionary<string, byte> { { "A", 1 }, { "B", 2 } });
+                yield return new DataTypeSample("Map(UInt8, String)", typeof(Dictionary<byte, string>), "map(1,'A',2,'B')", new Dictionary<byte, string> { { 1, "A" }, { 2, "B" } });
+
+                yield return new DataTypeSample("Map(String, Nullable(UInt8))",
+                    typeof(Dictionary<string, byte?>),
+                    "map('five', 5, 'null', NULL)",
+                    new Dictionary<string, byte?> {
+                        { "five", 5 },
+                        { "null", null },
+                    });
+            }
+        }
 
         public static object[] GetEnsureSingleRow(this DbDataReader reader)
         {

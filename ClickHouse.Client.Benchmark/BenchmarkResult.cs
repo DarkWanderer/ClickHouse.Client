@@ -2,7 +2,7 @@
 
 namespace ClickHouse.Client.Benchmark
 {
-    struct BenchmarkResult
+    internal struct BenchmarkResult
     {
         public TimeSpan Duration;
         public ulong DataSize;

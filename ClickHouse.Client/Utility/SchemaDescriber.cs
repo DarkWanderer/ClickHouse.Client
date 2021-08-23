@@ -63,8 +63,8 @@ namespace ClickHouse.Client.Utility
             result[4] = null; // NumericScale
             result[5] = chType.FrameworkType; // DataType
             result[6] = chType.ToString(); // ProviderType
-            result[7] = chType.TypeCode == ClickHouseTypeCode.String; // IsLong
-            result[8] = chType.TypeCode == ClickHouseTypeCode.Nullable; // AllowDBNull
+            result[7] = chType is StringType; // IsLong
+            result[8] = chType is NullableType; // AllowDBNull
             result[9] = true; // IsReadOnly
             result[10] = false; // IsRowVersion
             result[11] = false; // IsUnique

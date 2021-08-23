@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Net;
 using System.Numerics;
 using System.Text;
@@ -20,8 +21,6 @@ namespace ClickHouse.Client.Formats
         public void Dispose() => reader.Dispose();
 
         public object Read(ClickHouseType type) => type.AcceptRead(this);
-
-        public object Read(LowCardinalityType lowCardinalityType) => Read(lowCardinalityType.UnderlyingType);
 
         public object Read(FixedStringType fixedStringType) => Encoding.UTF8.GetString(reader.ReadBytes(fixedStringType.Length));
 
@@ -51,8 +50,6 @@ namespace ClickHouse.Client.Formats
             }
             return data;
         }
-
-        public object Read(DateTimeType dateTimeType) => TypeConverter.DateTimeEpochStart.AddSeconds(reader.ReadUInt32());
 
         public object Read(DecimalType decimalType)
         {
@@ -113,7 +110,9 @@ namespace ClickHouse.Client.Formats
 
         public object Read(IPv6Type pv6Type) => new IPAddress(reader.ReadBytes(16));
 
-        public object Read(DateTime64Type dateTimeType) => TypeConverter.DateTimeEpochStart.AddTicks(MathUtils.ShiftDecimalPlaces(reader.ReadInt64(), 7 - dateTimeType.Scale));
+        public object Read(DateTime64Type dateTimeType) => dateTimeType.FromClickHouseTicks(reader.ReadInt64());
+
+        public object Read(DateTimeType dateTimeType) => dateTimeType.FromUnixTimeSeconds(reader.ReadUInt32());
 
         public object Read(DateType dateType) => TypeConverter.DateTimeEpochStart.AddDays(reader.ReadUInt16());
 
@@ -134,6 +133,21 @@ namespace ClickHouse.Client.Formats
                 contents[i] = ClearDBNull(value);
             }
             return tupleType.MakeTuple(contents);
+        }
+
+        public object Read(MapType mapType)
+        {
+            var dict = (IDictionary)Activator.CreateInstance(mapType.FrameworkType);
+
+            var length = reader.Read7BitEncodedInt();
+
+            for (var i = 0; i < length; i++)
+            {
+                var key = Read(mapType.KeyType); // null is not supported as dictionary key in C#
+                var value = ClearDBNull(Read(mapType.ValueType));
+                dict.Add(key, value);
+            }
+            return dict;
         }
 
         private static object ClearDBNull(object value) => value is DBNull ? null : value;

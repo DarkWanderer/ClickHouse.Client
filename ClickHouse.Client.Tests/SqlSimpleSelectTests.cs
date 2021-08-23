@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
@@ -127,9 +126,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldSelectNumericTypes()
         {
-            var types = Enum.GetValues(typeof(ClickHouseTypeCode))
-                .Cast<ClickHouseTypeCode>()
-                .Select(dt => dt.ToString())
+            var types = TypeConverter.RegisteredTypes
                 .Where(dt => dt.Contains("Int") || dt.Contains("Float"))
                 .Select(dt => $"to{dt}(55)")
                 .ToArray();
