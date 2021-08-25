@@ -5,8 +5,6 @@ namespace ClickHouse.Client.Types
 {
     internal class FixedStringType : ParameterizedType
     {
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.FixedString;
-
         public int Length { get; set; }
 
         public override Type FrameworkType => typeof(string);

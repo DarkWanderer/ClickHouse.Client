@@ -6,7 +6,7 @@ namespace ClickHouse.Client.Types
 {
     internal class NestedType : TupleType
     {
-        public override ClickHouseTypeCode TypeCode => ClickHouseTypeCode.Nested;
+        public override string Name => "Nested";
 
         public override Type FrameworkType => base.FrameworkType.MakeArrayType();
 
@@ -18,8 +18,23 @@ namespace ClickHouse.Client.Types
         {
             return new NestedType
             {
-                UnderlyingTypes = node.ChildNodes.Select(parseClickHouseTypeFunc).ToArray(),
+                UnderlyingTypes = node.ChildNodes.Select(ClearFieldName).Select(parseClickHouseTypeFunc).ToArray(),
             };
         }
+
+        // Try to determine if something which is inside a Nested column is a name-type pair
+        // (param_id UInt8) or a more complex structure (another parameterized type)
+        // We do not currently support multi-word types
+        private static SyntaxTreeNode ClearFieldName(SyntaxTreeNode node)
+        {
+            if (node.ChildNodes.Count > 0)
+                return node;
+
+            var name = node.Value;
+
+            var lastSpaceIndex = name.LastIndexOf(' ');
+            return lastSpaceIndex > 0 ? new SyntaxTreeNode { Value = name.Substring(lastSpaceIndex + 1) } : node;
+        }
+
     }
 }
