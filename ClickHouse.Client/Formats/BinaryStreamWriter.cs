@@ -124,22 +124,13 @@ namespace ClickHouse.Client.Formats
 
         public void Write(DateTime64Type dateTime64Type, object value)
         {
-            Instant instant;
-            if (value is DateTimeOffset dto)
+            var instant = value switch
             {
-                instant = Instant.FromDateTimeOffset(dto);
-            }
-            else if (value is DateTime dt)
-            {
-                var dto2 = dateTime64Type.ToDateTimeOffset(dt);
-                instant = Instant.FromDateTimeOffset(dto2);
-            }
-            else
-            {
-                throw new ArgumentException("Cannot convert value to datetime");
-            }
-
-            writer.Write(instant.ToUnixTimeTicks());
+                DateTimeOffset dto => Instant.FromDateTimeOffset(dto),
+                DateTime dt => dateTime64Type.ToZonedDateTime(dt).ToInstant(),
+                _ => throw new ArgumentException("Cannot convert value to datetime"),
+            };
+            writer.Write(dateTime64Type.ToClickHouseTicks(instant));
         }
 
         public void Write(NullableType nullableType, object value)

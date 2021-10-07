@@ -62,14 +62,16 @@ namespace ClickHouse.Client.Formats
                         : $"toDateTime('{dto:yyyy-MM-dd HH:mm:ss}', '{dtt.TimeZone.Id}')";
 
                 case DateTime64Type dtt when value is DateTime dtv:
-                    return dtt.TimeZone == null
-                        ? $"toDateTime64('{dtv:yyyy-MM-dd HH:mm:ss.fffffff}', 7)"
-                        : $"toDateTime64('{dtv.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fffffff}', 7, '{dtt.TimeZone}')";
+                    var @string = dtt.ToZonedDateTime(dtv).ToString("yyyy-MM-dd HH:mm:ss.fffffff", CultureInfo.InvariantCulture);
+                    return dtt.TimeZone != null
+                        ? $"toDateTime64('{@string}', 7, '{dtt.TimeZone}')"
+                        : $"toDateTime64('{@string}', 7)";
 
                 case DateTime64Type dtt when value is DateTimeOffset dto:
-                    return dtt.TimeZone == null
-                        ? $"toDateTime64('{dto:yyyy-MM-dd HH:mm:ss.fffffff}', 7)"
-                        : $"toDateTime64('{dto.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fffffff}', 7, '{dtt.TimeZone}')";
+                    var @str2 = dtt.ToZonedDateTime(dto.DateTime).ToString("yyyy-MM-dd HH:mm:ss.fffffff", CultureInfo.InvariantCulture);
+                    return dtt.TimeZone != null
+                        ? $"toDateTime64('{@str2}', 7, '{dtt.TimeZone}')"
+                        : $"toDateTime64('{@str2}', 7)";
 
                 case IPv4Type it: return $"toIPv4({FormatIPAddress(value)})";
                 case IPv6Type it: return $"toIPv6({FormatIPAddress(value)})";

@@ -56,14 +56,10 @@ namespace ClickHouse.Client.Formats
                     return dto.ToString("s", CultureInfo.InvariantCulture);
 
                 case DateTime64Type dtt when value is DateTime dtv:
-                    return dtt.TimeZone == null
-                        ? $"{dtv:yyyy-MM-dd HH:mm:ss.fffffff}"
-                        : $"{dtv.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fffffff}";
+                    return $"{dtv:yyyy-MM-dd HH:mm:ss.fffffff}";
 
                 case DateTime64Type dtt when value is DateTimeOffset dto:
-                    return dtt.TimeZone == null
-                        ? $"{dto:yyyy-MM-dd HH:mm:ss.fffffff}"
-                        : $"{dto.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fffffff}";
+                    return $"{dto:yyyy-MM-dd HH:mm:ss.fffffff}";
 
                 case NullableType nt:
                     return value is null || value is DBNull ? NullValueString : $"{Format(nt.UnderlyingType, value)}";

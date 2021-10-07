@@ -112,7 +112,11 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("DateTime('Pacific/Fiji')", typeof(DateTime), "toDateTime('1999-01-01 13:00:00', 'Pacific/Fiji')", new DateTime(1999, 01, 01, 13, 00, 00, DateTimeKind.Unspecified));
 
             if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDateTime64))
+            {
+                yield return new DataTypeSample("DateTime64(4, 'UTC')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444', 9, 'UTC')", new DateTime(644444444444444000, DateTimeKind.Utc));
                 yield return new DataTypeSample("DateTime64(7, 'UTC')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'UTC')", new DateTime(644444444444444444, DateTimeKind.Utc));
+                yield return new DataTypeSample("DateTime64(7, 'Pacific/Fiji')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'Pacific/Fiji')", new DateTime(644444444444444444, DateTimeKind.Unspecified));
+            }
 
             if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDecimal))
             {
