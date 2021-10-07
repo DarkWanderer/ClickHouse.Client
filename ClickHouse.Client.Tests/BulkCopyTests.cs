@@ -33,7 +33,7 @@ namespace ClickHouse.Client.Tests
             var targetTable = "test." + SanitizeTableName($"bulk_single_{clickHouseType}");
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE TinyLog");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
