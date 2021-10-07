@@ -15,10 +15,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        clickhouse-version: [19.11.2.7, 20.3.18.10]
+        tag:
+        - 'yandex/clickhouse-server:19.11.2.7'
+        - 'yandex/clickhouse-server:20.3.18.10'
     services:
       clickhouse:
-        image: clickhouse/clickhouse-server:${{matrix.clickhouse-version}}
+        image: ${{ matrix.tag }}
         ports:
           - 8123:8123
     steps:
