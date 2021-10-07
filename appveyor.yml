@@ -34,8 +34,8 @@ build_script:
 
 before_test:
 - docker version
-- docker pull yandex/clickhouse-server
-- docker run -m 3GB -p 8123:8123 -d --name clickhouse-server yandex/clickhouse-server
+- docker pull clickhouse/clickhouse-server
+- docker run -m 3GB -p 8123:8123 -d --name clickhouse-server clickhouse/clickhouse-server
 - sleep 3
 
 test_script:

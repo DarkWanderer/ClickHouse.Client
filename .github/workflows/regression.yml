@@ -18,7 +18,7 @@ jobs:
         clickhouse-version: [19.11.2.7, 20.3.18.10]
     services:
       clickhouse:
-        image: yandex/clickhouse-server:${{matrix.clickhouse-version}}
+        image: clickhouse/clickhouse-server:${{matrix.clickhouse-version}}
         ports:
           - 8123:8123
     steps:
