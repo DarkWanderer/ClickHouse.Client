@@ -21,7 +21,7 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldExecuteAlterTable()
         {
-            await connection.ExecuteScalarAsync($"CREATE TABLE IF NOT EXISTS test.table_delete_from (value Int32) ENGINE Memory");
+            await connection.ExecuteScalarAsync($"CREATE TABLE IF NOT EXISTS test.table_delete_from (value Int32) ENGINE MergeTree");
             await connection.ExecuteScalarAsync($"ALTER TABLE test.table_delete_from DELETE WHERE 1=1");
         }
     }
