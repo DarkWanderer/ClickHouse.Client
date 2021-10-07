@@ -12,7 +12,13 @@ namespace ClickHouse.Client.Types
 
         public DateTime FromUnixTimeTicks(long ticks) => Instant.FromUnixTimeTicks(ticks).ToDateTimeUtc();
 
-        public DateTime FromUnixTimeSeconds(long seconds) => Instant.FromUnixTimeSeconds(seconds).ToDateTimeUtc();
+        public DateTime FromUnixTimeSeconds(long seconds)
+        {
+            if (TimeZone != null)
+                return Instant.FromUnixTimeSeconds(seconds).InZone(TimeZone).ToDateTimeUnspecified();
+            else
+                return Instant.FromUnixTimeSeconds(seconds).ToDateTimeUtc();
+        }
 
         public DateTimeOffset ToDateTimeOffset(DateTime dateTime)
         {

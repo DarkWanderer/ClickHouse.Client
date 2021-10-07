@@ -54,12 +54,12 @@ namespace ClickHouse.Client.Formats
                 case DateTimeType dtt when value is DateTime dtv:
                     return dtt.TimeZone == null
                         ? $"toDateTime('{dtv:yyyy-MM-dd HH:mm:ss}')"
-                        : $"toDateTime('{dtv.ToUniversalTime():yyyy-MM-dd HH:mm:ss}')";
+                        : $"toDateTime('{dtv:yyyy-MM-dd HH:mm:ss}', '{dtt.TimeZone.Id}')";
 
                 case DateTimeType dtt when value is DateTimeOffset dto:
                     return dtt.TimeZone == null
                         ? $"toDateTime('{dto:yyyy-MM-dd HH:mm:ss}')"
-                        : $"toDateTime('{dto.ToUniversalTime():yyyy-MM-dd HH:mm:ss}')";
+                        : $"toDateTime('{dto:yyyy-MM-dd HH:mm:ss}', '{dtt.TimeZone.Id}')";
 
                 case DateTime64Type dtt when value is DateTime dtv:
                     return dtt.TimeZone == null

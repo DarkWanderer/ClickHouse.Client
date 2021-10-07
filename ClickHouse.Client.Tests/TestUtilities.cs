@@ -79,6 +79,7 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("Float64", typeof(double), "toFloat64(-64e6)", -64e6);
 
             yield return new DataTypeSample("String", typeof(string), "'TestString'", "TestString");
+            //yield return new DataTypeSample("String", typeof(string), "'1\t2\n3'", "1\t2\n3");
             yield return new DataTypeSample("FixedString(3)", typeof(string), "toFixedString('ASD',3)", "ASD");
             yield return new DataTypeSample("FixedString(5)", typeof(string), "toFixedString('ASD',5)", "ASD\0\0");
 
@@ -106,11 +107,12 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("Tuple(Int8, String, Nullable(Int8))", typeof(Tuple<int, string, int?>), "tuple(1, 'a', 8)", Tuple.Create<int, string, int?>(1, "a", 8));
             yield return new DataTypeSample("Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))", typeof(Tuple<int, Tuple<byte, string, int?>>), "tuple(123, tuple(5, 'a', 7))", Tuple.Create(123, Tuple.Create((byte)5, "a", 7)));
 
-            yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Utc));
-            yield return new DataTypeSample("DateTime", typeof(DateTime), "toDateTime('1988-08-28 11:22:33')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Utc));
+            yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Unspecified));
+            yield return new DataTypeSample("DateTime('UTC')", typeof(DateTime), "toDateTime('1988-08-28 11:22:33', 'UTC')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Unspecified));
+            yield return new DataTypeSample("DateTime('Pacific/Fiji')", typeof(DateTime), "toDateTime('1999-01-01 13:00:00', 'Pacific/Fiji')", new DateTime(1999, 01, 01, 13, 00, 00, DateTimeKind.Unspecified));
 
             if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDateTime64))
-                yield return new DataTypeSample("DateTime64(7)", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9)", new DateTime(644444444444444444, DateTimeKind.Utc));
+                yield return new DataTypeSample("DateTime64(7, 'UTC')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'UTC')", new DateTime(644444444444444444, DateTimeKind.Utc));
 
             if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDecimal))
             {
