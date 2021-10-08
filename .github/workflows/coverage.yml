@@ -15,7 +15,7 @@ jobs:
 
     services:
       clickhouse:
-        image: yandex/clickhouse-server:latest
+        image: clickhouse/clickhouse-server:latest
         ports:
           - 8123:8123
     steps:
@@ -33,7 +33,7 @@ jobs:
     - name: Build
       run: dotnet build --framework netcoreapp2.2 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
     - name: Run test with coverage
-      run: dotnet test --framework netcoreapp3.0 --configuration Release --no-restore --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
+      run: dotnet test --framework netcoreapp3.1 --configuration Release --no-restore --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
     - name: Upload coverage artifact

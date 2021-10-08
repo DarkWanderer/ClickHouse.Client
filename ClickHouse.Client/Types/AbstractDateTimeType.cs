@@ -10,31 +10,20 @@ namespace ClickHouse.Client.Types
 
         public DateTimeZone TimeZone { get; set; }
 
-        public DateTime FromUnixTimeTicks(long ticks) => Instant.FromUnixTimeTicks(ticks).ToDateTimeUtc();
+        public DateTime FromUnixTimeTicks(long ticks) => ToDateTime(Instant.FromUnixTimeTicks(ticks));
 
-        public DateTime FromUnixTimeSeconds(long seconds) => Instant.FromUnixTimeSeconds(seconds).ToDateTimeUtc();
+        public DateTime FromUnixTimeSeconds(long seconds) => ToDateTime(Instant.FromUnixTimeSeconds(seconds));
 
-        public DateTimeOffset ToDateTimeOffset(DateTime dateTime)
+        public ZonedDateTime ToZonedDateTime(DateTime dateTime)
         {
-            switch (dateTime.Kind)
-            {
-                case DateTimeKind.Local:
-                case DateTimeKind.Utc:
-                    var instant = Instant.FromDateTimeUtc(dateTime.ToUniversalTime());
-                    var offset = TimeZone.GetUtcOffset(instant);
-                    return instant.WithOffset(offset).ToDateTimeOffset();
-                case DateTimeKind.Unspecified:
-                    if (TimeZone == null)
-                    {
-                        return dateTime;
-                    }
-
-                    var zonedDateTime = TimeZone.ResolveLocal(LocalDateTime.FromDateTime(dateTime), Resolvers.LenientResolver);
-                    return zonedDateTime.ToDateTimeOffset();
-            }
-            throw new ArgumentOutOfRangeException("Unknown DateTime kind: " + dateTime.Kind.ToString());
+            var timeZone = TimeZone ?? DateTimeZone.Utc;
+            return TimeZone.ResolveLocal(LocalDateTime.FromDateTime(dateTime), Resolvers.LenientResolver);
         }
 
+        public DateTimeOffset ToDateTimeOffset(DateTime dateTime) => ToZonedDateTime(dateTime).ToDateTimeOffset();
+
         public override string ToString() => TimeZone == null ? $"{Name}" : $"{Name}({TimeZone.Id})";
+
+        private DateTime ToDateTime(Instant instant) => TimeZone != null ? instant.InZone(TimeZone).ToDateTimeUnspecified() : instant.ToDateTimeUtc();
     }
 }

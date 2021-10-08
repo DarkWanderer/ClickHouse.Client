@@ -10,7 +10,7 @@ namespace ClickHouse.Client.Tests
         public async Task ShouldInsertParameterizedArray()
         {
             await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.float_array");
-            await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.float_array (arr Array(Float64)) ENGINE Memory");
+            await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.float_array (arr Array(Float64)) ENGINE TinyLog");
 
             var command = connection.CreateCommand();
             command.AddParameter("values", new[] { 1.0, 2.0, 3.0 });
@@ -25,7 +25,7 @@ namespace ClickHouse.Client.Tests
         public async Task ShouldInsertEnum8()
         {
             await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.insert_enum8");
-            await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.insert_enum8 (enum Enum8('a' = -1, 'b' = 127)) ENGINE Memory");
+            await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.insert_enum8 (enum Enum8('a' = -1, 'b' = 127)) ENGINE TinyLog");
 
             var command = connection.CreateCommand();
             command.AddParameter("value", "a");

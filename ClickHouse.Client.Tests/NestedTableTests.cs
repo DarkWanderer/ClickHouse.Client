@@ -15,7 +15,7 @@ namespace ClickHouse.Client.Tests
         public async Task Setup()
         {
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {Table}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table}(id UInt32, params Nested (param_id UInt8, param_val String)) ENGINE = Memory");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {Table}(id UInt32, params Nested (param_id UInt8, param_val String)) ENGINE TinyLog");
         }
 
         [Test]
