@@ -19,6 +19,7 @@ namespace ClickHouse.Client.Tests
         public SqlParameterizedSelectTests(bool useCompression)
         {
             connection = TestUtilities.GetTestClickHouseConnection(useCompression);
+            connection.Open();
         }
 
         public static IEnumerable<TestCaseData> TypedQueryParameters => TestUtilities.GetDataTypeSamples()
