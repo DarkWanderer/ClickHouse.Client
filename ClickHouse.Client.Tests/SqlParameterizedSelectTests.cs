@@ -33,6 +33,8 @@ namespace ClickHouse.Client.Tests
         [TestCaseSource(typeof(SqlParameterizedSelectTests), nameof(TypedQueryParameters))]
         public async Task ShouldExecuteParameterizedCompareWithTypeDetection(string exampleExpression, string clickHouseType, object value)
         {
+            if (!connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsDateTime64) && clickHouseType.StartsWith("DateTime"))
+                Assert.Pass("ClickHouse 19.x DateTime comparison is bugged");
             if (clickHouseType.StartsWith("DateTime64") || clickHouseType == "Date")
                 Assert.Pass("Automatic type detection does not work for " + clickHouseType);
             if (clickHouseType.StartsWith("Enum"))
@@ -75,6 +77,8 @@ namespace ClickHouse.Client.Tests
         [TestCaseSource(typeof(SqlParameterizedSelectTests), nameof(TypedQueryParameters))]
         public async Task ShouldExecuteParameterizedCompareWithExplicitType(string exampleExpression, string clickHouseType, object value)
         {
+            if (!connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsDateTime64) && clickHouseType.StartsWith("DateTime"))
+                Assert.Pass("ClickHouse 19.x DateTime comparison is bugged");
             if (clickHouseType.StartsWith("Enum"))
                 clickHouseType = "String";
             using var command = connection.CreateCommand();
