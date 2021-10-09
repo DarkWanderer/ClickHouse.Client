@@ -31,21 +31,28 @@ namespace ClickHouse.Client.Tests
         [Test]
         [Parallelizable]
         [TestCaseSource(typeof(SqlParameterizedSelectTests), nameof(TypedQueryParameters))]
-        public async Task ShouldExecuteParameterizedSelectWhereWithTypeDetection(string exampleExpression, string clickHouseType, object value)
+        public async Task ShouldExecuteParameterizedCompareWithTypeDetection(string exampleExpression, string clickHouseType, object value)
         {
             if (clickHouseType.StartsWith("DateTime64") || clickHouseType == "Date")
                 Assert.Pass("Automatic type detection does not work for " + clickHouseType);
             if (clickHouseType.StartsWith("Enum"))
                 clickHouseType = "String";
 
-            var predicate = value is null || value is DBNull ? "IS NULL" : $"= {{var:{clickHouseType}}}";
-
             using var command = connection.CreateCommand();
-            command.CommandText = $"SELECT res FROM (SELECT {exampleExpression} AS res) WHERE res {predicate}";
+            command.CommandText = $"SELECT {exampleExpression} as expected, {{var:{clickHouseType}}} as actual, expected = actual as equals";
             command.AddParameter("var", value);
 
-            var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow().Single();
-            Assert.AreEqual(value, result);
+            var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow();
+            Assert.AreEqual(result[0], result[1]);
+
+            if (value is null || value is DBNull)
+            {
+                Assert.IsInstanceOf<DBNull>(result[2]);
+            }
+            else
+            {
+                Assert.AreEqual(1, result[2], $"Equality check in ClickHouse failed: {result[0]} {result[1]}");
+            }
         }
 
         [Test]
@@ -66,16 +73,25 @@ namespace ClickHouse.Client.Tests
         [Test]
         [Parallelizable]
         [TestCaseSource(typeof(SqlParameterizedSelectTests), nameof(TypedQueryParameters))]
-        public async Task ShouldExecuteParameterizedSelectWhereWithExplicitType(string exampleExpression, string clickHouseType, object value)
+        public async Task ShouldExecuteParameterizedCompareWithExplicitType(string exampleExpression, string clickHouseType, object value)
         {
             if (clickHouseType.StartsWith("Enum"))
                 clickHouseType = "String";
             using var command = connection.CreateCommand();
-            command.CommandText = $"SELECT {exampleExpression} AS expected, ({{var:{clickHouseType}}}) as actual";
+            command.CommandText = $"SELECT {exampleExpression} as expected, {{var:{clickHouseType}}} as actual, expected = actual as equals";
             command.AddParameter("var", clickHouseType, value);
 
             var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow();
             Assert.AreEqual(result[0], result[1]);
+
+            if (value is null || value is DBNull)
+            {
+                Assert.IsInstanceOf<DBNull>(result[2]);
+            }
+            else
+            {
+                Assert.AreEqual(1, result[2], $"Equality check in ClickHouse failed: {result[0]} {result[1]}");
+            }
         }
 
 
