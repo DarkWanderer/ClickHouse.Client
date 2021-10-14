@@ -342,7 +342,7 @@ namespace ClickHouse.Client.ADO
             {
                 flags |= FeatureFlags.SupportsUUIDParameters;
             }
-            if (serverVersion > new Version(21,1,2))
+            if (serverVersion > new Version(21, 1, 2))
             {
                 flags |= FeatureFlags.SupportsMap;
             }

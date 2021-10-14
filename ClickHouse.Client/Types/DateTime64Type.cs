@@ -20,6 +20,8 @@ namespace ClickHouse.Client.Types
             return FromUnixTimeTicks(ticks);
         }
 
+        public long ToClickHouseTicks(Instant instant) => MathUtils.ShiftDecimalPlaces(instant.ToUnixTimeTicks(), Scale - 7);
+
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
             var scale = int.Parse(node.ChildNodes[0].Value);

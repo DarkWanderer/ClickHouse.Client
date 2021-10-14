@@ -27,13 +27,15 @@ namespace ClickHouse.Client.Formats
                 case NothingType nt:
                     return NullValueString;
                 case IntegerType it:
-                    return Convert.ToString(value, CultureInfo.InvariantCulture);
                 case FloatType ft:
-                    return FormatFloat(value);
+                    return Convert.ToString(value, CultureInfo.InvariantCulture);
                 case DecimalType dt:
                     return Convert.ToDecimal(value).ToString(CultureInfo.InvariantCulture);
+
+                case DateType dt when value is DateTimeOffset @do:
+                    return @do.Date.ToString("yyyy-MM-dd");
                 case DateType dt:
-                    return ExtractUtc(value).ToString("yyyy-MM-dd");
+                    return Convert.ToDateTime(value).ToString("yyyy-MM-dd");
 
                 case StringType st:
                 case FixedStringType tt:
@@ -48,24 +50,16 @@ namespace ClickHouse.Client.Formats
                     return Format(lt.UnderlyingType, value);
 
                 case DateTimeType dtt when value is DateTime dt:
-                    return dtt.TimeZone == null
-                        ? $"{dt:yyyy-MM-dd HH:mm:ss}"
-                        : $"{dt.ToUniversalTime():yyyy-MM-dd HH:mm:ss}";
+                    return dt.ToString("s", CultureInfo.InvariantCulture);
 
                 case DateTimeType dtt when value is DateTimeOffset dto:
-                    return dtt.TimeZone == null
-                        ? $"{dto:yyyy-MM-dd HH:mm:ss}"
-                        : $"{dto.ToUniversalTime():yyyy-MM-dd HH:mm:ss}";
+                    return dto.ToString("s", CultureInfo.InvariantCulture);
 
                 case DateTime64Type dtt when value is DateTime dtv:
-                    return dtt.TimeZone == null
-                        ? $"{dtv:yyyy-MM-dd HH:mm:ss.fffffff}"
-                        : $"{dtv.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fffffff}";
+                    return $"{dtv:yyyy-MM-dd HH:mm:ss.fffffff}";
 
                 case DateTime64Type dtt when value is DateTimeOffset dto:
-                    return dtt.TimeZone == null
-                        ? $"{dto:yyyy-MM-dd HH:mm:ss.fffffff}"
-                        : $"{dto.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fffffff}";
+                    return $"{dto:yyyy-MM-dd HH:mm:ss.fffffff}";
 
                 case NullableType nt:
                     return value is null || value is DBNull ? NullValueString : $"{Format(nt.UnderlyingType, value)}";
@@ -84,19 +78,5 @@ namespace ClickHouse.Client.Formats
                     throw new Exception($"Cannot convert {value} to {type}");
             }
         }
-
-        private static DateTime ExtractUtc(object value) => value switch
-        {
-            DateTime dt => dt.ToUniversalTime(),
-            DateTimeOffset dto => dto.ToUniversalTime().DateTime,
-            _ => throw new NotSupportedException($"Cannot convert value {value} to date/time type")
-        };
-
-        private static string FormatFloat(object value) => value switch
-        {
-            float floatValue => floatValue.ToString(CultureInfo.InvariantCulture),
-            double doubleValue => doubleValue.ToString(CultureInfo.InvariantCulture),
-            _ => throw new NotSupportedException($"Cannot convert value {value} to float type")
-        };
     }
 }

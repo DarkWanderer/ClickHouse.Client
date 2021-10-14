@@ -36,7 +36,7 @@ namespace ClickHouse.Client.Formats
 
         public object Read(UInt8Type uInt8Type) => reader.ReadByte();
 
-        public object Read(NothingType nothingType) => null;
+        public object Read(NothingType nothingType) => DBNull.Value;
 
         public object Read(ArrayType arrayType)
         {

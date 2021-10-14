@@ -52,6 +52,5 @@ namespace ClickHouse.Client.Types
             var lastSpaceIndex = name.LastIndexOf(' ');
             return lastSpaceIndex > 0 ? new SyntaxTreeNode { Value = name.Substring(lastSpaceIndex + 1) } : node;
         }
-
     }
 }

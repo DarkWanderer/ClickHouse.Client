@@ -3,7 +3,7 @@
   <PropertyGroup>
     <LangVersion>8.0</LangVersion>
     <TargetFrameworks>net472;netstandard2.1;netcoreapp2.2</TargetFrameworks>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/DarkWanderer/ClickHouse.Client</PackageProjectUrl>
     <RepositoryUrl>https://github.com/DarkWanderer/ClickHouse.Client</RepositoryUrl>
     <PackageTags>clickhouse, ado.net, client</PackageTags>
@@ -22,7 +22,6 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.17" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
-
 
   <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />

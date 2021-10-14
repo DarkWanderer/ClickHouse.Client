@@ -22,7 +22,7 @@ namespace ClickHouse.Client.Tests
                 yield return new TestCaseData(sample.ClickHouseType, sample.ExampleValue);
             }
             yield return new TestCaseData("String", "1\t2\n3");
-            yield return new TestCaseData("DateTime('Asia/Ashkhabad')", new DateTime(2020, 2, 20, 20, 20, 20, DateTimeKind.Utc));
+            yield return new TestCaseData("DateTime('Asia/Ashkhabad')", new DateTime(2020, 2, 20, 20, 20, 20, DateTimeKind.Unspecified));
         }
 
         [Test]
@@ -59,7 +59,7 @@ namespace ClickHouse.Client.Tests
             var targetTable = $"test.multiple_columns";
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Memory");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE TinyLog");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
@@ -77,7 +77,7 @@ namespace ClickHouse.Client.Tests
             var targetTable = $"test.backticked_columns";
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`field.id` Nullable(UInt8), `@value` Nullable(UInt8)) ENGINE Memory");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`field.id` Nullable(UInt8), `@value` Nullable(UInt8)) ENGINE TinyLog");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
@@ -108,7 +108,7 @@ namespace ClickHouse.Client.Tests
             var targetTable = "test." + SanitizeTableName($"bulk_complex_{columnName}");
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`{columnName.Replace("`", "\\`")}` Int32) ENGINE Memory");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`{columnName.Replace("`", "\\`")}` Int32) ENGINE TinyLog");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {
@@ -153,7 +153,7 @@ namespace ClickHouse.Client.Tests
             var targetTable = "test." + SanitizeTableName($"bulk_simple_aggregated_function");
 
             await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value SimpleAggregateFunction(anyLast,Nullable(Float64))) ENGINE Memory");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value SimpleAggregateFunction(anyLast,Nullable(Float64))) ENGINE TinyLog");
 
             using var bulkCopy = new ClickHouseBulkCopy(connection)
             {

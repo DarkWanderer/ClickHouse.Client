@@ -1,4 +1,4 @@
-version: 3.3.0.{build}
+version: 4.0.0.{build}
 image: Visual Studio 2019
 
 skip_branch_with_pr: true
@@ -34,15 +34,13 @@ build_script:
 
 before_test:
 - docker version
-- docker pull yandex/clickhouse-server
-- docker run -m 3GB -p 8123:8123 -d --name clickhouse-server yandex/clickhouse-server
+- docker pull clickhouse/clickhouse-server
+- docker run -m 3GB -p 8123:8123 -d --name clickhouse-server clickhouse/clickhouse-server
 - sleep 3
 
 test_script:
-- dotnet test --no-build --framework netcoreapp3.0 --configuration Release --test-adapter-path:. --logger:Appveyor
+- dotnet test --no-build --framework netcoreapp3.1 --configuration Release --test-adapter-path:. --logger:Appveyor
 
-after_build:
-- dotnet pack ClickHouse.Client/ClickHouse.Client.csproj --no-build --configuration Release --include-symbols --include-source -p:SymbolPackageFormat=snupkg
 artifacts:
 - path: '**/*nupkg'
   name: NuGet
