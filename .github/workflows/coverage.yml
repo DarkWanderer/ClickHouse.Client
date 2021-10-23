@@ -18,6 +18,10 @@ jobs:
         image: clickhouse/clickhouse-server:latest
         ports:
           - 8123:8123
+        volumes:
+          - ${{ github.workspace }}/test/test-config.xml:/etc/clickhouse-server/config.d/test-config.xml
+          - ${{ github.workspace }}/test/test-user.xml:/etc/clickhouse-server/users.d/test-user.xml
+
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core
@@ -31,11 +35,11 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --framework netcoreapp2.2 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
+      run: dotnet build --framework netcoreapp3.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
     - name: Run test with coverage
       run: dotnet test --framework netcoreapp3.1 --configuration Release --no-restore --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
       env:
-        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=default;Password=test1234
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v2
       with:

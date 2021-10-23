@@ -12,7 +12,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		appveyor.yml = appveyor.yml
 		codecov.yml = codecov.yml
+		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
+		.github\workflows\coverage.yml = .github\workflows\coverage.yml
 		README.md = README.md
+		.github\workflows\regression.yml = .github\workflows\regression.yml
+		.github\workflows\release.yml = .github\workflows\release.yml
+		test\test-config.xml = test\test-config.xml
+		test\test-user.xml = test\test-user.xml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClickHouse.Client.Benchmark", "ClickHouse.Client.Benchmark\ClickHouse.Client.Benchmark.csproj", "{6AD028BB-E6AA-454E-B130-67697ED1CE4B}"
