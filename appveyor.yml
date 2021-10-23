@@ -1,4 +1,4 @@
-version: 4.0.0.{build}
+version: 4.0.1.{build}
 image: Visual Studio 2019
 
 skip_branch_with_pr: true
