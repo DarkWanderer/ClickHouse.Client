@@ -62,7 +62,7 @@ namespace ClickHouse.Client.Tests
             if (clickHouseType.StartsWith("Enum"))
                 clickHouseType = "String";
             using var command = connection.CreateCommand();
-            command.CommandText = $"SELECT {exampleExpression} AS expected, ({{var:{clickHouseType}}}) as actual";
+            command.CommandText = $"SELECT {exampleExpression} AS expected, {{var:{clickHouseType}}} as actual";
             command.AddParameter("var", clickHouseType, value);
 
             var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow();
