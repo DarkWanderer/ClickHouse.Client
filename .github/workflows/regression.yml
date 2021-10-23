@@ -22,6 +22,10 @@ jobs:
         image: ${{ matrix.tag }}
         ports:
           - 8123:8123
+        volumes:
+          - ${{ github.workspace }}/test/test-config.xml:/etc/clickhouse-server/config.d/test-config.xml
+          - ${{ github.workspace }}/test/test-user.xml:/etc/clickhouse-server/users.d/test-user.xml
+
     steps:
     - uses: actions/checkout@v2
 
@@ -42,4 +46,4 @@ jobs:
     - name: Test
       run: dotnet test --framework netcoreapp3.1 --configuration Release --no-restore --verbosity normal --logger GitHubActions
       env:
-        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=default;Password=test1234
