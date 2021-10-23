@@ -170,7 +170,7 @@ namespace ClickHouse.Client.Formats
         public void Write(DateTimeType dateTimeType, object value)
         {
             var dto = value is DateTimeOffset offset ? offset : dateTimeType.ToDateTimeOffset((DateTime)value);
-            writer.Write(dto.ToUnixTimeSeconds());
+            writer.Write((int)dto.ToUnixTimeSeconds());
         }
 
         public void Write(DecimalType decimalType, object value)

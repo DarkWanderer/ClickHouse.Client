@@ -28,7 +28,8 @@ namespace ClickHouse.Client.Tests
             writer.Write(type, written);
             stream.Seek(0, SeekOrigin.Begin);
             var read = reader.Read(type);
-            Assert.AreEqual(written, read);
+            Assert.AreEqual(written, read, "Value read differs from value written");
+            Assert.AreEqual(stream.Length, stream.Position, "Read underflow");
         }
     }
 }
