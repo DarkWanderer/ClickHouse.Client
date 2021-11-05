@@ -58,6 +58,14 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
+        [TestCase("1.2.3.4.altinity")]
+        [TestCase("1.2.3.4")]
+        [TestCase("20")]
+        [TestCase("20.1")]
+        [TestCase("20.1.2")]
+        public void ShoulParseVersion(string version) => _ = ClickHouseConnection.ParseVersion(version);
+
+        [Test]
         public async Task ShouldPostQueryAsync()
         {
             using var response = await connection.PostSqlQueryAsync("SELECT 1 FORMAT TabSeparated", CancellationToken.None);
