@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -305,7 +306,7 @@ namespace ClickHouse.Client.ADO
                 if (data.Length == 0)
                     throw new InvalidOperationException("ClickHouse server did not return version, check if the server is functional");
 
-                serverVersion = Version.Parse(Encoding.UTF8.GetString(data).Trim());
+                serverVersion = ParseVersion(Encoding.UTF8.GetString(data).Trim());
                 SupportedFeatures = GetFeatureFlags(serverVersion);
                 state = ConnectionState.Open;
             }
@@ -317,6 +318,16 @@ namespace ClickHouse.Client.ADO
         }
 
         public new ClickHouseCommand CreateCommand() => new ClickHouseCommand(this);
+
+        internal static Version ParseVersion(string versionString)
+        {
+            if (string.IsNullOrWhiteSpace(versionString))
+                throw new ArgumentException($"'{nameof(versionString)}' cannot be null or whitespace.", nameof(versionString));
+            var parts = versionString.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : 0)
+                .ToArray();
+            return new Version(parts.ElementAtOrDefault(0), parts.ElementAtOrDefault(1), parts.ElementAtOrDefault(2), parts.ElementAtOrDefault(3));
+        }
 
         internal static FeatureFlags GetFeatureFlags(Version serverVersion)
         {
