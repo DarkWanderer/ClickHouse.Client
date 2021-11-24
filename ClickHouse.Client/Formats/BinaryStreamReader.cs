@@ -4,7 +4,6 @@ using System.Net;
 using System.Numerics;
 using System.Text;
 using ClickHouse.Client.Types;
-using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Formats
 {

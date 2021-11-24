@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types;
 using NUnit.Framework;

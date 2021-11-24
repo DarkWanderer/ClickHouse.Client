@@ -61,7 +61,7 @@ namespace ClickHouse.Client
                 }
             }
 
-            return int.TryParse(error.Substring(start, end - start), out int result) ? result : (int?)null;
+            return int.TryParse(error.Substring(start, end - start), out int result) ? result : null;
         }
     }
 }

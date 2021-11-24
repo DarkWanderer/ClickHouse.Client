@@ -198,7 +198,7 @@ namespace ClickHouse.Client.ADO
                 postMessage.Content.Headers.Add("Content-Encoding", "gzip");
             }
 
-            using var response = await this.GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
+            using var response = await GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
             await HandleError(response, sql).ConfigureAwait(false);
         }
 
@@ -235,7 +235,7 @@ namespace ClickHouse.Client.ADO
 
             postMessage.Content = content;
 
-            var response = await this.GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+            var response = await GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }
 
@@ -389,6 +389,6 @@ namespace ClickHouse.Client.ADO
 
         private Task EnsureOpenAsync() => state != ConnectionState.Open ? OpenAsync() : Task.CompletedTask;
 
-        private HttpClient GetHttpClient() => this.httpClientFactory?.CreateClient(this.httpClientName) ?? this.httpClient;
+        private HttpClient GetHttpClient() => httpClientFactory?.CreateClient(httpClientName) ?? httpClient;
     }
 }

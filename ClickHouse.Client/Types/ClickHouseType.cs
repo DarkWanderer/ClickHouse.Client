@@ -10,6 +10,6 @@ namespace ClickHouse.Client.Types
 
         public abstract void AcceptWrite(ISerializationTypeVisitorWriter writer, object value);
 
-        public override abstract string ToString();
+        public abstract override string ToString();
     }
 }

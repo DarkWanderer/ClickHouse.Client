@@ -6,7 +6,6 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using ClickHouse.Client.Types;
-using ClickHouse.Client.Utility;
 using NodaTime;
 
 namespace ClickHouse.Client.Formats
