@@ -357,8 +357,10 @@ namespace ClickHouse.Client.ADO
             {
                 flags |= FeatureFlags.SupportsMap;
             }
-
-            return flags;
+            if (serverVersion > new Version(21, 5))
+            {
+                flags |= FeatureFlags.SupportsNestedSubColumns;
+            }            return flags;
         }
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();

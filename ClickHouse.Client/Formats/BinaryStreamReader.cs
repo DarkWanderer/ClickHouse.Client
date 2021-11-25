@@ -3,6 +3,7 @@ using System.Collections;
 using System.Net;
 using System.Numerics;
 using System.Text;
+
 using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.Formats
@@ -40,9 +41,11 @@ namespace ClickHouse.Client.Formats
         {
             var length = reader.Read7BitEncodedInt();
             var data = arrayType.MakeArray(length);
+
             for (var i = 0; i < length; i++)
             {
-                data.SetValue(ClearDBNull(Read(arrayType.UnderlyingType)), i);
+                var val = ClearDBNull(Read(arrayType.UnderlyingType));
+                data.SetValue(val, i);
             }
             return data;
         }
@@ -118,7 +121,18 @@ namespace ClickHouse.Client.Formats
 
         public object Read(EnumType enumType) => enumType.Lookup(reader.ReadSByte());
 
-        public object Read(NestedType tupleType) => throw new NotSupportedException();
+        public object Read(NestedType tupleType)
+        {
+            // => throw new NotSupportedException();
+            var count = tupleType.UnderlyingTypes.Length;
+            var contents = new object[count];
+            for (var i = 0; i < count; i++)
+            {
+                var value = Read(tupleType.UnderlyingTypes[i]);
+                contents[i] = ClearDBNull(value);
+            }
+            return tupleType.MakeTuple(contents);
+        }
 
         public object Read(MapType mapType)
         {

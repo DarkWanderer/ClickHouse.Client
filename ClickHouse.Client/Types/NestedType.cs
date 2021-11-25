@@ -8,7 +8,20 @@ namespace ClickHouse.Client.Types
     {
         public override string Name => "Nested";
 
-        public override Type FrameworkType => base.FrameworkType.MakeArrayType();
+        public override Type FrameworkType
+        {
+            get
+            {
+                if (base.FrameworkType.BaseType.IsAssignableFrom(typeof(Array)))
+                {
+                    return base.FrameworkType;
+                }
+                else
+                {
+                    return base.FrameworkType.MakeArrayType();
+                }
+            }
+        }
 
         public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
 
@@ -16,6 +29,10 @@ namespace ClickHouse.Client.Types
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
+            foreach (SyntaxTreeNode childNode in node.ChildNodes)
+            {
+                childNode.NestedChild = true;
+            }
             return new NestedType
             {
                 UnderlyingTypes = node.ChildNodes.Select(ClearFieldName).Select(parseClickHouseTypeFunc).ToArray(),

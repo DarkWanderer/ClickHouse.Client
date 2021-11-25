@@ -18,6 +18,7 @@ jobs:
         tag:
         - 'yandex/clickhouse-server:19.11.2.7'
         - 'yandex/clickhouse-server:20.3.18.10'
+        - 'yandex/clickhouse-server:21.5.5.12'
     services:
       clickhouse:
         image: ${{ matrix.tag }}
