@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
 
 namespace ClickHouse.Client.Types
@@ -40,10 +42,32 @@ namespace ClickHouse.Client.Types
             return result;
         }
 
+        public override object Read(ExtendedBinaryReader reader)
+        {
+            var dict = (IDictionary)Activator.CreateInstance(FrameworkType);
+
+            var length = reader.Read7BitEncodedInt();
+
+            for (var i = 0; i < length; i++)
+            {
+                var key = KeyType.Read(reader); // null is not supported as dictionary key in C#
+                var value = ClearDBNull(ValueType.Read(reader));
+                dict.Add(key, value);
+            }
+            return dict;
+        }
+
         public override string ToString() => $"{Name}({keyType}, {valueType})";
 
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
-
-        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
+        public override void Write(ExtendedBinaryWriter writer, object value)
+        {
+            var dict = (IDictionary)value;
+            writer.Write7BitEncodedInt(dict.Count);
+            foreach (DictionaryEntry kvp in dict)
+            {
+                KeyType.Write(writer, kvp.Key);
+                ValueType.Write(writer, kvp.Value);
+            }
+        }
     }
 }

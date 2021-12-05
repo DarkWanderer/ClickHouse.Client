@@ -16,17 +16,17 @@ namespace ClickHouse.Client.Tests
 
         [Test]
         [TestCaseSource(nameof(TestCases))]
-        public void ShouldRoundtripSerialisation(object written, string clickHouseType)
+        public void ShouldRoundtripSerialisation(object original, string clickHouseType)
         {
             var type = TypeConverter.ParseClickHouseType(clickHouseType);
 
             using var stream = new MemoryStream();
-            using var writer = new BinaryStreamWriter(new ExtendedBinaryWriter(stream));
-            using var reader = new BinaryStreamReader(new ExtendedBinaryReader(stream));
-            writer.Write(type, written);
+            using var writer = new ExtendedBinaryWriter(stream);
+            using var reader = new ExtendedBinaryReader(stream);
+            type.Write(writer, original);
             stream.Seek(0, SeekOrigin.Begin);
-            var read = reader.Read(type);
-            Assert.AreEqual(written, read, "Value read differs from value written");
+            var read = type.Read(reader);
+            Assert.AreEqual(original, read, "Different value read from stream");
             Assert.AreEqual(stream.Length, stream.Position, "Read underflow");
         }
     }

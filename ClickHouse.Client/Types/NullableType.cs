@@ -1,4 +1,5 @@
 ﻿using System;
+using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
 
 namespace ClickHouse.Client.Types
@@ -26,10 +27,21 @@ namespace ClickHouse.Client.Types
             };
         }
 
+        public override object Read(ExtendedBinaryReader reader) => reader.ReadByte() > 0 ? DBNull.Value : UnderlyingType.Read(reader);
+
         public override string ToString() => $"{Name}({UnderlyingType})";
 
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
-
-        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
+        public override void Write(ExtendedBinaryWriter writer, object value)
+        {
+            if (value == null || value is DBNull)
+            {
+                writer.Write((byte)1);
+            }
+            else
+            {
+                writer.Write((byte)0);
+                UnderlyingType.Write(writer, value);
+            }
+        }
     }
 }

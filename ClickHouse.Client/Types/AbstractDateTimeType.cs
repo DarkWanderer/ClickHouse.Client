@@ -6,6 +6,8 @@ namespace ClickHouse.Client.Types
 {
     internal abstract class AbstractDateTimeType : ParameterizedType
     {
+        public static readonly DateTime DateTimeEpochStart = DateTimeOffset.FromUnixTimeSeconds(0).UtcDateTime;
+
         public override Type FrameworkType => typeof(DateTime);
 
         public DateTimeZone TimeZone { get; set; }

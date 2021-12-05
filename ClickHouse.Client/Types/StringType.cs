@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using ClickHouse.Client.Formats;
 
 namespace ClickHouse.Client.Types
 {
@@ -6,10 +8,10 @@ namespace ClickHouse.Client.Types
     {
         public override Type FrameworkType => typeof(string);
 
+        public override object Read(ExtendedBinaryReader reader) => reader.ReadString();
+
         public override string ToString() => "String";
 
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
-
-        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
+        public override void Write(ExtendedBinaryWriter writer, object value) => writer.Write(Convert.ToString(value, CultureInfo.InvariantCulture));
     }
 }

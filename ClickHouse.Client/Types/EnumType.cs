@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
 
 namespace ClickHouse.Client.Types
@@ -37,8 +38,8 @@ namespace ClickHouse.Client.Types
 
         public override string ToString() => $"{Name}({string.Join(",", values.Select(kvp => kvp.Key + "=" + kvp.Value))}";
 
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
+        public override object Read(ExtendedBinaryReader reader) => throw new NotImplementedException();
 
-        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
+        public override void Write(ExtendedBinaryWriter writer, object value) => throw new NotImplementedException();
     }
 }

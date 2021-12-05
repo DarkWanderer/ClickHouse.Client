@@ -1,4 +1,5 @@
 ﻿using System;
+using ClickHouse.Client.Formats;
 
 namespace ClickHouse.Client.Types
 {
@@ -6,10 +7,10 @@ namespace ClickHouse.Client.Types
     {
         public override Type FrameworkType => typeof(DBNull);
 
+        public override object Read(ExtendedBinaryReader reader) => DBNull.Value;
+
         public override string ToString() => "Nothing";
 
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
-
-        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
+        public override void Write(ExtendedBinaryWriter writer, object value) { }
     }
 }
