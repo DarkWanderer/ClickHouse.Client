@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Globalization;
+using System.Text;
+using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
 
 namespace ClickHouse.Client.Types
@@ -11,10 +14,6 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "FixedString";
 
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
-
-        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
-
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
             return new FixedStringType
@@ -24,5 +23,15 @@ namespace ClickHouse.Client.Types
         }
 
         public override string ToString() => $"FixedString{Length}";
+
+        public override object Read(ExtendedBinaryReader reader) => Encoding.UTF8.GetString(reader.ReadBytes(Length));
+
+        public override void Write(ExtendedBinaryWriter writer, object value)
+        {
+            var @string = Convert.ToString(value, CultureInfo.InvariantCulture);
+            var stringBytes = new byte[Length];
+            Encoding.UTF8.GetBytes(@string, 0, @string.Length, stringBytes, 0);
+            writer.Write(stringBytes);
+        }
     }
 }

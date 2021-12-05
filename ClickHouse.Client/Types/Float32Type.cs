@@ -1,4 +1,5 @@
 ﻿using System;
+using ClickHouse.Client.Formats;
 
 namespace ClickHouse.Client.Types
 {
@@ -6,10 +7,10 @@ namespace ClickHouse.Client.Types
     {
         public override Type FrameworkType => typeof(float);
 
+        public override object Read(ExtendedBinaryReader reader) => reader.ReadSingle();
+
         public override string ToString() => "Float32";
 
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
-
-        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
+        public override void Write(ExtendedBinaryWriter writer, object value) => writer.Write(Convert.ToSingle(value));
     }
 }

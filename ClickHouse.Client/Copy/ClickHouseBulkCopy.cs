@@ -165,12 +165,11 @@ namespace ClickHouse.Client.Copy
                 }
 
                 using var writer = new ExtendedBinaryWriter(gzipStream);
-                using var streamer = new BinaryStreamWriter(writer);
                 foreach (var row in rows)
                 {
                     for (var i = 0; i < row.Length; i++)
                     {
-                        streamer.Write(columnTypes[i], row[i]);
+                        columnTypes[i].Write(writer, row[i]);
                     }
                 }
             }

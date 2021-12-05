@@ -1,4 +1,5 @@
 ﻿using System;
+using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 using NodaTime;
@@ -39,8 +40,17 @@ namespace ClickHouse.Client.Types
             };
         }
 
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
+        public override object Read(ExtendedBinaryReader reader) => FromClickHouseTicks(reader.ReadInt64());
 
-        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
+        public override void Write(ExtendedBinaryWriter writer, object value)
+        {
+            var instant = value switch
+            {
+                DateTimeOffset dto => Instant.FromDateTimeOffset(dto),
+                DateTime dt => ToZonedDateTime(dt).ToInstant(),
+                _ => throw new ArgumentException("Cannot convert value to datetime"),
+            };
+            writer.Write(ToClickHouseTicks(instant));
+        }
     }
 }

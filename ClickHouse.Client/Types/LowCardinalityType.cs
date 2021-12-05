@@ -1,4 +1,5 @@
 ﻿using System;
+using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
 
 namespace ClickHouse.Client.Types
@@ -11,10 +12,6 @@ namespace ClickHouse.Client.Types
 
         public override Type FrameworkType => UnderlyingType.FrameworkType;
 
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => UnderlyingType.AcceptRead(reader);
-
-        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => UnderlyingType.AcceptWrite(writer, value);
-
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
             return new LowCardinalityType
@@ -24,5 +21,9 @@ namespace ClickHouse.Client.Types
         }
 
         public override string ToString() => $"{Name}({UnderlyingType})";
+
+        public override object Read(ExtendedBinaryReader reader) => UnderlyingType.Read(reader);
+
+        public override void Write(ExtendedBinaryWriter writer, object value) => UnderlyingType.Write(writer, value);
     }
 }

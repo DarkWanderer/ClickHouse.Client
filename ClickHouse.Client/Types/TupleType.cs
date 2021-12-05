@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
@@ -70,8 +71,25 @@ namespace ClickHouse.Client.Types
 
         public override string ToString() => $"{Name}({string.Join(",", UnderlyingTypes.Select(t => t.ToString()))})";
 
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
+        public override object Read(ExtendedBinaryReader reader)
+        {
+            var count = UnderlyingTypes.Length;
+            var contents = new object[count];
+            for (var i = 0; i < count; i++)
+            {
+                var value = UnderlyingTypes[i].Read(reader);
+                contents[i] = ClearDBNull(value);
+            }
+            return MakeTuple(contents);
+        }
 
-        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
+        public override void Write(ExtendedBinaryWriter writer, object value)
+        {
+            var tuple = (ITuple)value;
+            for (var i = 0; i < tuple.Length; i++)
+            {
+                UnderlyingTypes[i].Write(writer, tuple[i]);
+            }
+        }
     }
 }

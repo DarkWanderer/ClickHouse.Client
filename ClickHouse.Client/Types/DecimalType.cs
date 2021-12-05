@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Numerics;
+using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
@@ -57,7 +59,45 @@ namespace ClickHouse.Client.Types
             }
         }
 
+        public override object Read(ExtendedBinaryReader reader)
+        {
+            switch (Size)
+            {
+                case 4:
+                    return (decimal)reader.ReadInt32() / Exponent;
+                case 8:
+                    return (decimal)reader.ReadInt64() / Exponent;
+                default:
+                    var bigInt = new BigInteger(reader.ReadBytes(Size));
+                    return (decimal)bigInt / Exponent;
+            }
+        }
+
         public override string ToString() => $"{Name}({Precision}, {Scale})";
+
+        public override void Write(ExtendedBinaryWriter writer, object value)
+        {
+            try
+            {
+                decimal multipliedValue = Convert.ToDecimal(value) * Exponent;
+                switch (Size)
+                {
+                    case 4:
+                        writer.Write((int)multipliedValue);
+                        break;
+                    case 8:
+                        writer.Write((long)multipliedValue);
+                        break;
+                    default:
+                        WriteLargeDecimal(writer, multipliedValue);
+                        break;
+                }
+            }
+            catch (OverflowException)
+            {
+                throw new ArgumentOutOfRangeException("value", value, $"Value cannot be represented as {this}");
+            }
+        }
 
         private int GetSizeFromPrecision(int precision) => precision switch
         {
@@ -67,8 +107,24 @@ namespace ClickHouse.Client.Types
             _ => throw new ArgumentOutOfRangeException(nameof(Precision)),
         };
 
-        public override object AcceptRead(ISerializationTypeVisitorReader reader) => reader.Read(this);
+        private void WriteLargeDecimal(ExtendedBinaryWriter writer, decimal value)
+        {
+            var bigInt = new BigInteger(value);
+            byte[] bigIntBytes = bigInt.ToByteArray();
+            byte[] decimalBytes = new byte[Size];
 
-        public override void AcceptWrite(ISerializationTypeVisitorWriter writer, object value) => writer.Write(this, value);
+            if (bigIntBytes.Length > Size)
+                throw new OverflowException();
+
+            bigIntBytes.CopyTo(decimalBytes, 0);
+
+            // If a negative BigInteger is not long enough to fill the whole buffer, the remainder needs to be filled with 0xFF
+            if (bigInt < 0)
+            {
+                for (int i = bigIntBytes.Length; i < Size; i++)
+                    decimalBytes[i] = 0xFF;
+            }
+            writer.Write(decimalBytes);
+        }
     }
 }

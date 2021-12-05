@@ -1,15 +1,18 @@
 ﻿using System;
+using ClickHouse.Client.Formats;
 
 namespace ClickHouse.Client.Types
 {
-    internal abstract class ClickHouseType : ISerializationTypeVisitorAcceptor
+    internal abstract class ClickHouseType
     {
         public abstract Type FrameworkType { get; }
 
-        public abstract object AcceptRead(ISerializationTypeVisitorReader reader);
+        public abstract object Read(ExtendedBinaryReader reader);
 
-        public abstract void AcceptWrite(ISerializationTypeVisitorWriter writer, object value);
+        public abstract void Write(ExtendedBinaryWriter writer, object value);
 
         public abstract override string ToString();
+
+        protected static object ClearDBNull(object value) => value is DBNull ? null : value;
     }
 }
