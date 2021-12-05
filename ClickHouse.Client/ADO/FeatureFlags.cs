@@ -12,5 +12,6 @@ namespace ClickHouse.Client.ADO
         SupportsIPv6 = 16,
         SupportsUUIDParameters = 32,
         SupportsMap = 64,
+        SupportsGeo = 128
     }
 }

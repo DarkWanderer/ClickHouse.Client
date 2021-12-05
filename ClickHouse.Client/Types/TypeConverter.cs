@@ -71,6 +71,13 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<SimpleAggregateFunctionType>();
             RegisterParameterizedType<MapType>();
 
+            // Geo types
+            RegisterPlainType<PointType>();
+            RegisterPlainType<RingType>();
+            RegisterPlainType<PolygonType>();
+            RegisterPlainType<MultiPolygonType>();
+
+            // Mapping fixups
             ReverseMapping.Add(typeof(decimal), new Decimal128Type());
             ReverseMapping[typeof(DateTime)] = new DateTimeType();
             ReverseMapping[typeof(DateTimeOffset)] = new DateTimeType();

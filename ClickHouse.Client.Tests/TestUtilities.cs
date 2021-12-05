@@ -28,6 +28,7 @@ namespace ClickHouse.Client.Tests
             var builder = GetConnectionStringBuilder();
             builder.Compression = compression;
             builder["set_session_timeout"] = 1; // Expire sessions quickly after test
+            builder["set_allow_experimental_geo_types"] = 1; // Allow support for experimental geo types
             return new ClickHouseConnection(builder.ConnectionString);
         }
 
@@ -79,7 +80,7 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("Float64", typeof(double), "toFloat64(-64e6)", -64e6);
 
             yield return new DataTypeSample("String", typeof(string), "'TestString'", "TestString");
-            //yield return new DataTypeSample("String", typeof(string), "'1\t2\n3'", "1\t2\n3");
+            // yield return new DataTypeSample("String", typeof(string), "'1\t2\n3'", "1\t2\n3");
             yield return new DataTypeSample("FixedString(3)", typeof(string), "toFixedString('ASD',3)", "ASD");
             yield return new DataTypeSample("FixedString(5)", typeof(string), "toFixedString('ASD',5)", "ASD\0\0");
 
@@ -145,6 +146,16 @@ namespace ClickHouse.Client.Tests
                         { "five", 5 },
                         { "null", null },
                     });
+            }
+
+            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsGeo))
+            {
+                yield return new DataTypeSample("Point", typeof(Tuple<double, double>), "(10,20)", Tuple.Create(10.0, 20.0));
+                yield return new DataTypeSample("Ring", typeof(Tuple<double, double>[]), "[(0.1,0.2), (0.2,0.3), (0.3,0.4)]", new[] {
+                    Tuple.Create(.1, .2),
+                    Tuple.Create(.2, .3),
+                    Tuple.Create(.3, .4)
+                });
             }
         }
 

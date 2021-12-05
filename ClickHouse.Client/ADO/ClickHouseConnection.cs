@@ -348,6 +348,7 @@ namespace ClickHouse.Client.ADO
             {
                 flags |= FeatureFlags.SupportsDecimal;
                 flags |= FeatureFlags.SupportsIPv6;
+                flags |= FeatureFlags.SupportsGeo;
             }
             if (serverVersion > new Version(21, 0))
             {
