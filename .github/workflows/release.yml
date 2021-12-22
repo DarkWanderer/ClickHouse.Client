@@ -43,6 +43,7 @@ jobs:
 
     - name: List files
       id: dir
+      shell: cmd
       run: dir /S /B
 
     - name: Push package
@@ -69,6 +70,7 @@ jobs:
 
     - name: List files
       id: dir
+      shell: cmd
       run: dir /S /B
       
     - name: Push package
