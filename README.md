@@ -26,3 +26,7 @@ Compared to other existing .NET clients, `ClickHouse.Client` has following advan
 * Is version-agnostic
 * Offers wider support for ClickHouse-specific types
 * Is more compliant to ADO.NET standards (e.g. does not require calling 'NextResult' on `SELECT` queries)
+
+## Documentation
+
+Documentation for the library is available in [repository Wiki](https://github.com/DarkWanderer/ClickHouse.Client/wiki)
