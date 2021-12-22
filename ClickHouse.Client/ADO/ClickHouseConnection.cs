@@ -21,12 +21,11 @@ namespace ClickHouse.Client.ADO
     public class ClickHouseConnection : DbConnection, IClickHouseConnection, ICloneable
     {
         private const string CustomSettingPrefix = "set_";
-        private static readonly HttpClient DefaultHttpClient;
 
-        private readonly IHttpClientFactory httpClientFactory;
         private readonly HttpClient httpClient;
+        private readonly IHttpClientFactory httpClientFactory;
         private readonly string httpClientName;
-        private readonly ConcurrentDictionary<string, object> customSettings = new();
+        private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
         private ConnectionState state = ConnectionState.Closed; // Not an autoproperty because of interface implementation
         private Version serverVersion;
         private string database = "default";
@@ -38,12 +37,6 @@ namespace ClickHouse.Client.ADO
         private Uri serverUri;
         private FeatureFlags supportedFeatures;
 
-        static ClickHouseConnection()
-        {
-            var handler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
-            DefaultHttpClient = new HttpClient(handler, false);
-        }
-
         public ClickHouseConnection()
             : this(string.Empty)
         {
@@ -52,6 +45,11 @@ namespace ClickHouse.Client.ADO
         public ClickHouseConnection(string connectionString)
         {
             ConnectionString = connectionString;
+            var httpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+            httpClient = new HttpClient(httpClientHandler, true)
+            {
+                Timeout = timeout,
+            };
         }
 
         /// <summary>
@@ -226,7 +224,6 @@ namespace ClickHouse.Client.ADO
             string uri = uriBuilder.ToString();
 
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, uri);
-            postMessage.Properties["RequestTimeout"] = timeout;
 
             AddDefaultHttpHeaders(postMessage.Headers);
             HttpContent content = new StringContent(sqlQuery);
@@ -392,6 +389,6 @@ namespace ClickHouse.Client.ADO
 
         private Task EnsureOpenAsync() => state != ConnectionState.Open ? OpenAsync() : Task.CompletedTask;
 
-        private HttpClient GetHttpClient() => httpClientFactory?.CreateClient(httpClientName) ?? httpClient ?? DefaultHttpClient;
+        private HttpClient GetHttpClient() => httpClientFactory?.CreateClient(httpClientName) ?? httpClient;
     }
 }
