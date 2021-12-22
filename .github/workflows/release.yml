@@ -41,14 +41,10 @@ jobs:
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: List files
-      id: dir
-      shell: cmd
-      run: dir
-
     - name: Push package
       id: push
-      run: dotnet nuget push ClickHouse.Client.nupkg
+      shell: cmd
+      run: dotnet nuget push ClickHouse.Client.*.nupkg
 
   push_nuget_org:
     runs-on: windows-latest
@@ -75,7 +71,8 @@ jobs:
       
     - name: Push package
       id: push
-      run: dotnet nuget push ClickHouse.Client.nupkg
+      shell: cmd
+      run: dotnet nuget push ClickHouse.Client.*.nupkg
 
   github_release:
     runs-on: windows-latest
