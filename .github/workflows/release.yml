@@ -33,18 +33,10 @@ jobs:
       with:
         name: package
 
-    - name: Setup NuGet
-      id: setup
-      uses: actions/setup-dotnet@v1
-      with:
-        source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Push package
       id: push
       shell: cmd
-      run: dotnet nuget push ClickHouse.Client.*.nupkg
+      run: dotnet nuget push ClickHouse.Client.*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
 
   push_nuget_org:
     runs-on: windows-latest
@@ -55,28 +47,15 @@ jobs:
       uses: actions/download-artifact@v2.1.0
       with:
         name: package
-
-    - name: Setup NuGet
-      id: setup
-      uses: actions/setup-dotnet@v1
-      with:
-        source-url: https://api.nuget.org/v3/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
-
-    - name: List files
-      id: dir
-      shell: cmd
-      run: dir
       
     - name: Push package
       id: push
       shell: cmd
-      run: dotnet nuget push ClickHouse.Client.*.nupkg
+      run: dotnet nuget push ClickHouse.Client.*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json
 
   github_release:
     runs-on: windows-latest
-    needs: [build, push_github, push_nuget_org]
+    needs: [build]
     name: Create GitHub release
     steps:
     - name: Create Release
