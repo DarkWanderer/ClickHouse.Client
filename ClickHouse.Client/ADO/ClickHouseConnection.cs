@@ -21,9 +21,10 @@ namespace ClickHouse.Client.ADO
     public class ClickHouseConnection : DbConnection, IClickHouseConnection, ICloneable
     {
         private const string CustomSettingPrefix = "set_";
+        private static readonly HttpClient DefaultHttpClient;
 
-        private readonly HttpClient httpClient;
         private readonly IHttpClientFactory httpClientFactory;
+        private readonly HttpClient httpClient;
         private readonly string httpClientName;
         private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
         private ConnectionState state = ConnectionState.Closed; // Not an autoproperty because of interface implementation
@@ -37,6 +38,12 @@ namespace ClickHouse.Client.ADO
         private Uri serverUri;
         private FeatureFlags supportedFeatures;
 
+        static ClickHouseConnection()
+        {
+            var handler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+            DefaultHttpClient = new HttpClient(handler, false) { Timeout = Timeout.InfiniteTimeSpan };
+        }
+
         public ClickHouseConnection()
             : this(string.Empty)
         {
@@ -45,11 +52,6 @@ namespace ClickHouse.Client.ADO
         public ClickHouseConnection(string connectionString)
         {
             ConnectionString = connectionString;
-            var httpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
-            httpClient = new HttpClient(httpClientHandler, true)
-            {
-                Timeout = timeout,
-            };
         }
 
         /// <summary>
@@ -198,7 +200,7 @@ namespace ClickHouse.Client.ADO
                 postMessage.Content.Headers.Add("Content-Encoding", "gzip");
             }
 
-            using var response = await GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
+            using var response = await GetHttpClient().SendAsyncWithTimeout(postMessage, HttpCompletionOption.ResponseContentRead, token, timeout).ConfigureAwait(false);
             await HandleError(response, sql).ConfigureAwait(false);
         }
 
@@ -224,8 +226,8 @@ namespace ClickHouse.Client.ADO
             string uri = uriBuilder.ToString();
 
             using var postMessage = new HttpRequestMessage(HttpMethod.Post, uri);
-
             AddDefaultHttpHeaders(postMessage.Headers);
+
             HttpContent content = new StringContent(sqlQuery);
             content.Headers.ContentType = new MediaTypeHeaderValue("text/sql");
             if (useCompression)
@@ -235,7 +237,7 @@ namespace ClickHouse.Client.ADO
 
             postMessage.Content = content;
 
-            var response = await GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+            var response = await GetHttpClient().SendAsyncWithTimeout(postMessage, HttpCompletionOption.ResponseHeadersRead, token, timeout).ConfigureAwait(false);
             return await HandleError(response, sqlQuery).ConfigureAwait(false);
         }
 
@@ -389,6 +391,6 @@ namespace ClickHouse.Client.ADO
 
         private Task EnsureOpenAsync() => state != ConnectionState.Open ? OpenAsync() : Task.CompletedTask;
 
-        private HttpClient GetHttpClient() => httpClientFactory?.CreateClient(httpClientName) ?? httpClient;
+        private HttpClient GetHttpClient() => httpClientFactory?.CreateClient(httpClientName) ?? httpClient ?? DefaultHttpClient;
     }
 }
