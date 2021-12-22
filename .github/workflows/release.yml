@@ -41,6 +41,10 @@ jobs:
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: List files
+      id: dir
+      run: dir /S /B
+
     - name: Push package
       id: push
       run: dotnet nuget push ClickHouse.Client.nupkg
@@ -63,6 +67,10 @@ jobs:
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
 
+    - name: List files
+      id: dir
+      run: dir /S /B
+      
     - name: Push package
       id: push
       run: dotnet nuget push ClickHouse.Client.nupkg
