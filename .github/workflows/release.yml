@@ -1,4 +1,4 @@
-name: Release NuGet packages
+name: Release from tag
 
 on:
   push:
@@ -36,7 +36,7 @@ jobs:
     - name: Push package
       id: push
       shell: cmd
-      run: dotnet nuget push ClickHouse.Client.*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+      run: dotnet nuget push ClickHouse.Client.*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
 
   push_nuget_org:
     runs-on: windows-latest
@@ -51,7 +51,7 @@ jobs:
     - name: Push package
       id: push
       shell: cmd
-      run: dotnet nuget push ClickHouse.Client.*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ClickHouse.Client.*.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json
 
   github_release:
     runs-on: windows-latest
@@ -71,4 +71,4 @@ jobs:
           * **Fixed**: 
           * **Improved**:
         draft: true
-        prerelease: true
+        prerelease: false
