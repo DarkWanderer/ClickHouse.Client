@@ -1,4 +1,4 @@
-name: Create release
+name: Release NuGet packages
 
 on:
   push:
@@ -9,37 +9,79 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      
-    - name: Checkout
-      uses: actions/checkout@main      
-      
     - name: Setup .NET Core
       id: setup
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.x'
-        source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        
+
+    - name: Checkout
+      uses: actions/checkout@main
+              
     - name: Build & pack
       id: build_pack
-      run: dotnet pack --configuration Release --include-source --include-symbols ClickHouse.Client/ClickHouse.Client.csproj
+      run: dotnet pack --configuration Release --include-source --include-symbols /p:Version=${{ github.ref }}
 
-    - uses: actions/upload-artifact@v2
+    - name: Upload package
+      uses: actions/upload-artifact@v2
       with:
         name: package
         path: ClickHouse.Client/bin/Release/ClickHouse.Client.*nupkg
-    
-    - name: Push NuGet to GitHub
-      id: push_to_github
-      run: dotnet nuget push ClickHouse.Client/bin/Release/ClickHouse.Client.nupkg
-        
+
+  push_github:
+    runs-on: windows-latest
+    needs: [build]    
+    name: Upload to GitHub Packages
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v2.1.0
+      with:
+        name: package
+
+    - name: Setup NuGet
+      id: setup
+      uses: actions/setup-dotnet@v1
+      with:
+        source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Push package
+      id: push
+      run: dotnet nuget push *.*nupkg
+
+  push_nuget_org:
+    runs-on: windows-latest
+    needs: [build]
+    name: Upload to NuGet.org
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v2.1.0
+      with:
+        name: package
+
+    - name: Setup NuGet
+      id: setup
+      uses: actions/setup-dotnet@v1
+      with:
+        source-url: https://api.nuget.org/v3/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
+
+    - name: Push package
+      id: push
+      run: dotnet nuget push *.*nupkg
+
+  github_release:
+    runs-on: windows-latest
+    needs: [build, push_github, push_nuget_org]
+    name: Create GitHub release
+    steps:
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
