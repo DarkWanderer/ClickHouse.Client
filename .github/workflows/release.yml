@@ -7,6 +7,7 @@ on:
 
 jobs:
   build:
+    name: Build
     runs-on: windows-latest
     steps:
     - name: Setup .NET Core
@@ -20,7 +21,7 @@ jobs:
               
     - name: Build & pack
       id: build_pack
-      run: dotnet pack --configuration Release --include-source --include-symbols /p:Version=${{ github.ref }}
+      run: dotnet pack --configuration Release --include-source --include-symbols /p:Version=${{ github.ref_name }}
 
     - name: Upload package
       uses: actions/upload-artifact@v2
@@ -83,8 +84,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
+        tag_name: ${{ github.ref_name }}
+        release_name: ${{ github.ref_name }}
         body: |
           * **Added**: 
           * **Fixed**: 
