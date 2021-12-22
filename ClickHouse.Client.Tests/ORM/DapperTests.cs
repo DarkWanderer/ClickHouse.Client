@@ -83,7 +83,6 @@ namespace ClickHouse.Client.Tests.ORM
         }
 
         [Test]
-        [Ignore("Requires Dapper support, see https://github.com/StackExchange/Dapper/pull/1467")]
         public async Task ShouldExecuteSelectReturningArray()
         {
             string sql = "SELECT array(1,2,3)";
