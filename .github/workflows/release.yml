@@ -10,12 +10,6 @@ jobs:
     name: Build
     runs-on: windows-latest
     steps:
-    - name: Setup .NET Core
-      id: setup
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '3.1.x'
-
     - name: Checkout
       uses: actions/checkout@main
               
