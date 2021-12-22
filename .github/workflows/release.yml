@@ -13,13 +13,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@main
               
-    - name: Build
-      id: build
-      run: dotnet build --configuration Release
-
-    - name: Pack
-      id: pack
-      run: dotnet pack --no-build --configuration Release --include-source --include-symbols /p:Version=${{ github.ref_name }}
+    - name: Build & pack
+      id: build_pack
+      run: dotnet build --configuration Release /p:Version=${{ github.ref_name }}
 
     - name: Upload package
       uses: actions/upload-artifact@v2
