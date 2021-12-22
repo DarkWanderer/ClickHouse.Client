@@ -10,6 +10,11 @@ jobs:
     name: Build
     runs-on: windows-latest
     steps:
+    - name: Set up MSBuild
+      uses: microsoft/setup-msbuild@v1.1
+      with:
+        msbuild-architecture: x64
+      
     - name: Checkout
       uses: actions/checkout@main
               
