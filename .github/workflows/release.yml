@@ -43,7 +43,7 @@ jobs:
 
     - name: Push package
       id: push
-      run: dotnet nuget push *.*nupkg
+      run: dotnet nuget push ClickHouse.Client.nupkg
 
   push_nuget_org:
     runs-on: windows-latest
@@ -65,7 +65,7 @@ jobs:
 
     - name: Push package
       id: push
-      run: dotnet nuget push *.*nupkg
+      run: dotnet nuget push ClickHouse.Client.nupkg
 
   github_release:
     runs-on: windows-latest
