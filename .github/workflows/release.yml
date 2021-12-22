@@ -10,17 +10,16 @@ jobs:
     name: Build
     runs-on: windows-latest
     steps:
-    - name: Set up MSBuild
-      uses: microsoft/setup-msbuild@v1.1
-      with:
-        msbuild-architecture: x64
-      
     - name: Checkout
       uses: actions/checkout@main
               
-    - name: Build & pack
-      id: build_pack
-      run: dotnet pack --configuration Release --include-source --include-symbols /p:Version=${{ github.ref_name }}
+    - name: Build
+      id: build
+      run: dotnet build --configuration Release
+
+    - name: Pack
+      id: pack
+      run: dotnet pack --no-build --configuration Release --include-source --include-symbols /p:Version=${{ github.ref_name }}
 
     - name: Upload package
       uses: actions/upload-artifact@v2
