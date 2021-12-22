@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <LangVersion>8.0</LangVersion>
-    <TargetFrameworks>net472;netstandard2.1;netcoreapp2.2</TargetFrameworks>
+    <TargetFrameworks>net48;netstandard2.1;netcoreapp2.2</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/DarkWanderer/ClickHouse.Client</PackageProjectUrl>
     <RepositoryUrl>https://github.com/DarkWanderer/ClickHouse.Client</RepositoryUrl>
