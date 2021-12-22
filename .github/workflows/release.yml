@@ -44,7 +44,7 @@ jobs:
     - name: List files
       id: dir
       shell: cmd
-      run: dir /S /B
+      run: dir
 
     - name: Push package
       id: push
@@ -71,7 +71,7 @@ jobs:
     - name: List files
       id: dir
       shell: cmd
-      run: dir /S /B
+      run: dir
       
     - name: Push package
       id: push
