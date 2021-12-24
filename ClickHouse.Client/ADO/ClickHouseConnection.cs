@@ -329,6 +329,8 @@ namespace ClickHouse.Client.ADO
             var parts = versionString.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(s => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : 0)
                 .ToArray();
+            if (parts.Length == 0 || parts[0] == 0)
+                throw new InvalidOperationException($"Invalid version: {versionString}");
             return new Version(parts.ElementAtOrDefault(0), parts.ElementAtOrDefault(1), parts.ElementAtOrDefault(2), parts.ElementAtOrDefault(3));
         }
 
