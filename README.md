@@ -19,7 +19,7 @@ ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra
 * Uses HTTP(S), so is compatible with any server version
 * Available for .NET Core/Framework/Standard
 
-## Why another client?
+## Advantages
 
 Compared to other existing .NET clients, `ClickHouse.Client` has following advantages 
 * Does not have to buffer response, reducing memory usage
