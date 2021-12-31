@@ -60,8 +60,6 @@ namespace ClickHouse.Client.Tests
         {
             yield return new DataTypeSample("Nothing", typeof(DBNull), "NULL", DBNull.Value);
 
-            yield return new DataTypeSample("Bool", typeof(bool), "CAST(1, 'Bool')", true);
-
             yield return new DataTypeSample("Int8", typeof(sbyte), "toInt8(-8)", -8);
             yield return new DataTypeSample("UInt8", typeof(byte), "toUInt8(8)", 8);
 
@@ -147,6 +145,11 @@ namespace ClickHouse.Client.Tests
                         { "five", 5 },
                         { "null", null },
                     });
+            }
+
+            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsBool))
+            {
+                yield return new DataTypeSample("Bool", typeof(bool), "CAST(1, 'Bool')", true);
             }
         }
 
