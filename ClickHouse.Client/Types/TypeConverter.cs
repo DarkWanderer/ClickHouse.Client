@@ -21,6 +21,8 @@ namespace ClickHouse.Client.Types
 
         static TypeConverter()
         {
+            RegisterPlainType<BooleanType>();
+
             // Integral types
             RegisterPlainType<Int8Type>();
             RegisterPlainType<Int16Type>();

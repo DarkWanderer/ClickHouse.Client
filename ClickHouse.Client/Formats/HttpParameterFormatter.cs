@@ -26,6 +26,8 @@ namespace ClickHouse.Client.Formats
             {
                 case NothingType nt:
                     return NullValueString;
+                case BooleanType bt:
+                    return (bool)value ? "true" : "false";
                 case IntegerType it:
                 case FloatType ft:
                     return Convert.ToString(value, CultureInfo.InvariantCulture);

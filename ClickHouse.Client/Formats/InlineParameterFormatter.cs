@@ -24,6 +24,9 @@ namespace ClickHouse.Client.Formats
         {
             switch (type)
             {
+                case BooleanType bt:
+                    return $"CAST({((bool)value ? 1 : 0)}, 'Bool')";
+
                 case IntegerType it:
                     return Convert.ToString(value, CultureInfo.InvariantCulture);
 
