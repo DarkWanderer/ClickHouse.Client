@@ -20,22 +20,32 @@ jobs:
           - 8123:8123
     steps:
     - uses: actions/checkout@v2
+
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.x'
+
     - name: Install coverlet-collector
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector
+
     - name: Install coverlet-msbuild
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.msbuild
+
+    - name: Install GitHubActionsTestLogger
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
+
     - name: Install dependencies
       run: dotnet restore
+
     - name: Build
       run: dotnet build --framework netcoreapp2.2 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
+
     - name: Run test with coverage
-      run: dotnet test --framework netcoreapp3.1 --configuration Release --no-restore --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
+      run: dotnet test --framework netcoreapp3.1 --configuration Release --no-restore --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v2
       with:

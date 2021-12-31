@@ -146,6 +146,11 @@ namespace ClickHouse.Client.Tests
                         { "null", null },
                     });
             }
+
+            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsBool))
+            {
+                yield return new DataTypeSample("Bool", typeof(bool), "CAST(1, 'Bool')", true);
+            }
         }
 
         public static object[] GetEnsureSingleRow(this DbDataReader reader)
