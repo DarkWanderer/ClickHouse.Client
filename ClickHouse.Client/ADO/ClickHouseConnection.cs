@@ -362,7 +362,7 @@ namespace ClickHouse.Client.ADO
             {
                 flags |= FeatureFlags.SupportsMap;
             }
-            if (serverVersion > new Version(21,12))
+            if (serverVersion > new Version(21, 12))
             {
                 flags |= FeatureFlags.SupportsBool;
             }
