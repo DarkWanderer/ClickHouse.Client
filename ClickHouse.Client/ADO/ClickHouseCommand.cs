@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Text;
@@ -14,6 +15,7 @@ namespace ClickHouse.Client.ADO
     {
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
         private readonly ClickHouseParameterCollection commandParameters = new ClickHouseParameterCollection();
+        private readonly IDictionary<string, string> queryParameters = new Dictionary<string, string>();
         private ClickHouseConnection connection;
 
         public ClickHouseCommand()
@@ -61,24 +63,20 @@ namespace ClickHouse.Client.ADO
                 throw new InvalidOperationException("Connection is not set");
 
             using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
-            using var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, commandParameters).ConfigureAwait(false);
+            using var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, commandParameters, this.queryParameters).ConfigureAwait(false);
             using var reader = new ExtendedBinaryReader(await response.Content.ReadAsStreamAsync());
 
             return reader.PeekChar() != -1 ? reader.Read7BitEncodedInt() : 0;
         }
 
-        /// <summary>
-        ///  Allows to return raw result from a query (with custom FORMAT)
-        /// </summary>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>ClickHouseRawResult object containing response stream</returns>
+        /// <inheritdoc />
         public async Task<ClickHouseRawResult> ExecuteRawResultAsync(CancellationToken cancellationToken)
         {
             if (connection == null)
                 throw new InvalidOperationException("Connection is not set");
 
             using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
-            var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, commandParameters).ConfigureAwait(false);
+            var response = await connection.PostSqlQueryAsync(CommandText, linkedCancellationTokenSource.Token, commandParameters, this.queryParameters).ConfigureAwait(false);
             return new ClickHouseRawResult(response);
         }
 
@@ -93,7 +91,30 @@ namespace ClickHouse.Client.ADO
 
         public override void Prepare() { /* ClickHouse has no notion of prepared statements */ }
 
+        /// <inheritdoc />
         public new ClickHouseDbParameter CreateParameter() => new ClickHouseDbParameter();
+
+        /// <inheritdoc />
+        public void SetQueryParameter(string name, string value)
+        {
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(value))
+            {
+                throw new ArgumentException($"The '{nameof(name)}' and '{nameof(value)}' parameters should not be null or consisting of white-spaces only.");
+            }
+
+            this.queryParameters[name] = value;
+        }
+
+        /// <inheritdoc />
+        public void RemoveQueryParameter(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException($"The '{nameof(name)}' parameter should not be null or consisting of white-spaces only.");
+            }
+
+            this.queryParameters.Remove(name);
+        }
 
         protected override DbParameter CreateDbParameter() => CreateParameter();
 
@@ -126,7 +147,7 @@ namespace ClickHouse.Client.ADO
                 default:
                     break;
             }
-            var result = await connection.PostSqlQueryAsync(sqlBuilder.ToString(), linkedCancellationTokenSource.Token, commandParameters).ConfigureAwait(false);
+            var result = await connection.PostSqlQueryAsync(sqlBuilder.ToString(), linkedCancellationTokenSource.Token, commandParameters, this.queryParameters).ConfigureAwait(false);
             return new ClickHouseDataReader(result);
         }
     }
