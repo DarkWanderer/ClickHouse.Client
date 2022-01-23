@@ -65,7 +65,7 @@ namespace ClickHouse.Client.Formats
                     return $"{dto:yyyy-MM-dd HH:mm:ss.fffffff}";
 
                 case NullableType nt:
-                    return value is null or DBNull ? quote ? "null" : NullValueString : Format(nt.UnderlyingType, value, quote);
+                    return value is null || value is DBNull ? quote ? "null" : NullValueString : Format(nt.UnderlyingType, value, quote);
 
                 case ArrayType arrayType when value is IEnumerable enumerable:
                     return $"[{string.Join(",", enumerable.Cast<object>().Select(obj => Format(arrayType.UnderlyingType, obj, true)))}]";
