@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
@@ -7,7 +8,7 @@ namespace ClickHouse.Client.Tests
     public class ParameterizedInsertTests : AbstractConnectionTestFixture
     {
         [Test]
-        public async Task ShouldInsertParameterizedArray()
+        public async Task ShouldInsertParameterizedFloat64Array()
         {
             await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.float_array");
             await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.float_array (arr Array(Float64)) ENGINE TinyLog");
@@ -33,6 +34,41 @@ namespace ClickHouse.Client.Tests
             await command.ExecuteNonQueryAsync();
 
             var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.insert_enum8");
+            Assert.AreEqual(1, count);
+        }
+
+        [Test]
+        public async Task ShouldInsertParameterizedUUIDArray()
+        {
+            await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.uuid_array");
+            await connection.ExecuteStatementAsync(
+                "CREATE TABLE IF NOT EXISTS test.uuid_array (arr Array(UUID)) ENGINE TinyLog");
+
+            var command = connection.CreateCommand();
+            command.AddParameter("values", new[] { Guid.NewGuid(), Guid.NewGuid(), });
+            command.CommandText = "INSERT INTO test.uuid_array VALUES ({values:Array(UUID)})";
+            await command.ExecuteNonQueryAsync();
+
+            var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.uuid_array");
+            Assert.AreEqual(1, count);
+        }
+
+        [Test]
+        public async Task ShouldInsertStringWithNewline()
+        {
+            await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.string_with_newline");
+            await connection.ExecuteStatementAsync(
+                "CREATE TABLE IF NOT EXISTS test.string_with_newline (str_value String) ENGINE TinyLog");
+
+            var command = connection.CreateCommand();
+
+            var strValue = "Hello \n ClickHouse";
+
+            command.AddParameter("str_value", strValue);
+            command.CommandText = "INSERT INTO test.string_with_newline VALUES ({str_value:String})";
+            await command.ExecuteNonQueryAsync();
+
+            var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.string_with_newline");
             Assert.AreEqual(1, count);
         }
     }

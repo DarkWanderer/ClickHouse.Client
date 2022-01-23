@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using ClickHouse.Client.ADO.Parameters;
 using ClickHouse.Client.Types;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Formats
 {
@@ -46,7 +47,7 @@ namespace ClickHouse.Client.Formats
                 case IPv4Type ip4:
                 case IPv6Type ip6:
                 case UuidType uuidType:
-                    return value.ToString();
+                    return value.ToString().Escape();
 
                 case LowCardinalityType lt:
                     return Format(lt.UnderlyingType, value);

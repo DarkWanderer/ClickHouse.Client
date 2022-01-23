@@ -43,10 +43,10 @@ namespace ClickHouse.Client.Formats
                 case FixedStringType tt:
                 case Enum8Type e8t:
                 case Enum16Type e16t:
-                    return value.ToString().Escape();
+                    return value.ToString().Escape().QuoteSingle();
 
                 case UuidType ut:
-                    return $"toUUID({value.ToString().Escape()})";
+                    return $"toUUID({value.ToString().Escape().QuoteSingle()})";
 
                 case NothingType nt:
                     return "NULL";
@@ -100,7 +100,7 @@ namespace ClickHouse.Client.Formats
 
         private static object FormatIPAddress(object value) => value switch
         {
-            IPAddress ipAddress => ipAddress.ToString().Escape(),
+            IPAddress ipAddress => ipAddress.ToString().Escape().QuoteSingle(),
             string str => str,
             _ => throw new NotSupportedException($"Cannot convert value {value} to IP address")
         };
