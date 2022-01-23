@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
@@ -40,6 +41,9 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldInsertParameterizedUUIDArray()
         {
+            if (!TestUtilities.SupportedFeatures.HasFlag(FeatureFlags.SupportsUUIDParameters))
+                Assert.Ignore("UUID not supported by database");
+
             await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.uuid_array");
             await connection.ExecuteStatementAsync(
                 "CREATE TABLE IF NOT EXISTS test.uuid_array (arr Array(UUID)) ENGINE TinyLog");
