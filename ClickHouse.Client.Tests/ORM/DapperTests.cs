@@ -29,11 +29,17 @@ namespace ClickHouse.Client.Tests.ORM
                 return false;
             if (clickHouseType.Contains("Map"))
                 return false;
-            return clickHouseType switch
+            switch (clickHouseType)
             {
-                "UUID" or "Date" or "Nothing" or "IPv4" or "IPv6" => false,
-                _ => true,
-            };
+                case "UUID":
+                case "Date":
+                case "Nothing":
+                case "IPv4":
+                case "IPv6":
+                    return false;
+                default:
+                    return true;
+            }
         }
 
         private class DateTimeOffsetHandler : SqlMapper.TypeHandler<DateTimeOffset>
