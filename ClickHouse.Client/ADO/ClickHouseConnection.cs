@@ -12,8 +12,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ClickHouse.Client.ADO.Parameters;
-using ClickHouse.Client.Formats;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO
@@ -27,12 +25,11 @@ namespace ClickHouse.Client.ADO
         private readonly HttpClient httpClient;
         private readonly string httpClientName;
         private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
-        private ConnectionState state = ConnectionState.Closed; // Not an autoproperty because of interface implementation
+        private volatile ConnectionState state = ConnectionState.Closed; // Not an autoproperty because of interface implementation
         private Version serverVersion;
         private string database = "default";
         private string username;
         private string password;
-        private bool useCompression;
         private string session;
         private TimeSpan timeout;
         private Uri serverUri;
@@ -124,7 +121,7 @@ namespace ClickHouse.Client.ADO
                     Password = password,
                     Host = serverUri?.Host,
                     Port = (ushort)serverUri?.Port,
-                    Compression = useCompression,
+                    Compression = UseCompression,
                     UseSession = session != null,
                     Timeout = timeout,
                 };
@@ -142,7 +139,7 @@ namespace ClickHouse.Client.ADO
                 username = builder.Username;
                 password = builder.Password;
                 serverUri = new UriBuilder(builder.Protocol, builder.Host, builder.Port).Uri;
-                useCompression = builder.Compression;
+                UseCompression = builder.Compression;
                 session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
                 timeout = builder.Timeout;
 
@@ -163,6 +160,8 @@ namespace ClickHouse.Client.ADO
 
         public override string ServerVersion => serverVersion?.ToString();
 
+        public bool UseCompression { get; private set; }
+
         /// <summary>
         /// Gets enum describing which ClickHouse features are available on this particular server version
         /// Requires connection to be in Open state
@@ -178,6 +177,55 @@ namespace ClickHouse.Client.ADO
         public override DataTable GetSchema(string type) => GetSchema(type, null);
 
         public override DataTable GetSchema(string type, string[] restrictions) => SchemaDescriber.DescribeSchema(this, type, restrictions);
+
+        internal static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query)
+        {
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                throw ClickHouseServerException.FromServerResponse(error, query);
+            }
+            return response;
+        }
+
+        public override void ChangeDatabase(string databaseName) => database = databaseName;
+
+        public object Clone() => new ClickHouseConnection(ConnectionString);
+
+        public override void Close() => state = ConnectionState.Closed;
+
+        public override void Open() => OpenAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+
+        public override async Task OpenAsync(CancellationToken token)
+        {
+            if (State == ConnectionState.Open)
+                return;
+            const string versionQuery = "SELECT version() FORMAT TSV";
+            try
+            {
+                var uriBuilder = CreateUriBuilder();
+                uriBuilder.CustomParameters.Add("query", versionQuery);
+                var request = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
+                AddDefaultHttpHeaders(request.Headers);
+                var response = await HandleError(await GetHttpClient().SendAsync(request), versionQuery);
+                var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+
+                if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check if response starts with GZip marker
+                    throw new InvalidOperationException("ClickHouse server returned compressed result but HttpClient did not decompress it. Check HttpClient settings");
+
+                if (data.Length == 0)
+                    throw new InvalidOperationException("ClickHouse server did not return version, check if the server is functional");
+
+                serverVersion = ParseVersion(Encoding.UTF8.GetString(data).Trim());
+                SupportedFeatures = GetFeatureFlags(serverVersion);
+                state = ConnectionState.Open;
+            }
+            catch
+            {
+                state = ConnectionState.Broken;
+                throw;
+            }
+        }
 
         /// <summary>
         /// Warning: implementation-specific API. Exposed to allow custom optimizations
@@ -202,122 +250,7 @@ namespace ClickHouse.Client.ADO
             }
 
             using var response = await GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
-            await HandleError(response, sql).ConfigureAwait(false);
-        }
-
-        internal async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token, ClickHouseParameterCollection parameters = null)
-        {
-            var uriBuilder = CreateUriBuilder();
-            if (parameters != null)
-            {
-                await EnsureOpenAsync(); // Preserve old behavior
-                if (SupportedFeatures.HasFlag(FeatureFlags.SupportsHttpParameters))
-                {
-                    foreach (ClickHouseDbParameter parameter in parameters)
-                        uriBuilder.AddQueryParameter(parameter.ParameterName, HttpParameterFormatter.Format(parameter));
-                }
-                else
-                {
-                    var formattedParameters = new Dictionary<string, string>(parameters.Count);
-                    foreach (ClickHouseDbParameter parameter in parameters)
-                        formattedParameters.TryAdd(parameter.ParameterName, InlineParameterFormatter.Format(parameter));
-                    sqlQuery = SubstituteParameters(sqlQuery, formattedParameters);
-                }
-            }
-            string uri = uriBuilder.ToString();
-
-            using var postMessage = new HttpRequestMessage(HttpMethod.Post, uri);
-            AddDefaultHttpHeaders(postMessage.Headers);
-
-            HttpContent content = new StringContent(sqlQuery);
-            content.Headers.ContentType = new MediaTypeHeaderValue("text/sql");
-            if (useCompression)
-            {
-                content = new CompressedContent(content, DecompressionMethods.GZip);
-            }
-
-            postMessage.Content = content;
-
-            var response = await GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
-            return await HandleError(response, sqlQuery).ConfigureAwait(false);
-        }
-
-        private static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query)
-        {
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                throw ClickHouseServerException.FromServerResponse(error, query);
-            }
-            return response;
-        }
-
-        private static string SubstituteParameters(string query, IDictionary<string, string> parameters)
-        {
-            var builder = new StringBuilder(query.Length);
-
-            var paramStartPos = query.IndexOf('{');
-            var paramEndPos = -1;
-
-            while (paramStartPos != -1)
-            {
-                builder.Append(query.Substring(paramEndPos + 1, paramStartPos - paramEndPos - 1));
-
-                paramStartPos += 1;
-                paramEndPos = query.IndexOf('}', paramStartPos);
-                var param = query.Substring(paramStartPos, paramEndPos - paramStartPos);
-                var delimiterPos = param.LastIndexOf(':');
-                if (delimiterPos == -1)
-                    throw new NotSupportedException($"param {param} doesn`t have data type");
-                var name = param.Substring(0, delimiterPos);
-
-                if (!parameters.TryGetValue(name, out var value))
-                    throw new ArgumentOutOfRangeException($"Parameter {name} not found in parameters list");
-
-                builder.Append(value);
-
-                paramStartPos = query.IndexOf('{', paramEndPos);
-            }
-
-            builder.Append(query.Substring(paramEndPos + 1, query.Length - paramEndPos - 1));
-
-            return builder.ToString();
-        }
-
-        public override void ChangeDatabase(string databaseName) => database = databaseName;
-
-        public object Clone() => new ClickHouseConnection(ConnectionString);
-
-        public override void Close() => state = ConnectionState.Closed;
-
-        public override void Open() => OpenAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-
-        public override async Task OpenAsync(CancellationToken token)
-        {
-            if (State == ConnectionState.Open)
-                return;
-            const string versionQuery = "SELECT version() FORMAT TSV";
-            try
-            {
-                var response = await PostSqlQueryAsync(versionQuery, token).ConfigureAwait(false);
-                response = await HandleError(response, versionQuery);
-                var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-
-                if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check if response starts with GZip marker
-                    throw new InvalidOperationException("ClickHouse server returned compressed result but HttpClient did not decompress it. Check HttpClient settings");
-
-                if (data.Length == 0)
-                    throw new InvalidOperationException("ClickHouse server did not return version, check if the server is functional");
-
-                serverVersion = ParseVersion(Encoding.UTF8.GetString(data).Trim());
-                SupportedFeatures = GetFeatureFlags(serverVersion);
-                state = ConnectionState.Open;
-            }
-            catch
-            {
-                state = ConnectionState.Broken;
-                throw;
-            }
+            await ClickHouseConnection.HandleError(response, sql).ConfigureAwait(false);
         }
 
         public new ClickHouseCommand CreateCommand() => new ClickHouseCommand(this);
@@ -374,30 +307,30 @@ namespace ClickHouse.Client.ADO
 
         protected override DbCommand CreateDbCommand() => CreateCommand();
 
-        private void AddDefaultHttpHeaders(HttpRequestHeaders headers)
+        internal HttpClient GetHttpClient() => httpClientFactory?.CreateClient(httpClientName) ?? httpClient;
+
+        internal ClickHouseUriBuilder CreateUriBuilder(string sql = null) => new ClickHouseUriBuilder(serverUri)
+        {
+            Database = database,
+            SessionId = session,
+            UseCompression = UseCompression,
+            CustomParameters = customSettings.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
+            Sql = sql,
+        };
+
+        internal Task EnsureOpenAsync() => state != ConnectionState.Open ? OpenAsync() : Task.CompletedTask;
+
+        internal void AddDefaultHttpHeaders(HttpRequestHeaders headers)
         {
             headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}")));
             headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/csv"));
             headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
-            if (useCompression)
+            if (UseCompression)
             {
                 headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
                 headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
             }
         }
-
-        private ClickHouseUriBuilder CreateUriBuilder(string sql = null) => new ClickHouseUriBuilder(serverUri)
-        {
-            Database = database,
-            SessionId = session,
-            UseCompression = useCompression,
-            CustomParameters = customSettings,
-            Sql = sql,
-        };
-
-        private Task EnsureOpenAsync() => state != ConnectionState.Open ? OpenAsync() : Task.CompletedTask;
-
-        private HttpClient GetHttpClient() => httpClientFactory?.CreateClient(httpClientName) ?? httpClient;
     }
 }

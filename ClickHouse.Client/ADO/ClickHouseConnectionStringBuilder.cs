@@ -47,13 +47,13 @@ namespace ClickHouse.Client.ADO
 
         public bool Compression
         {
-            get => TryGetValue("Compression", out var value) ? "true".Equals(value as string, StringComparison.OrdinalIgnoreCase) : true;
+            get => !TryGetValue("Compression", out var value) || "true".Equals(value as string, StringComparison.OrdinalIgnoreCase);
             set => this["Compression"] = value;
         }
 
         public bool UseSession
         {
-            get => TryGetValue("UseSession", out var value) ? "true".Equals(value as string, StringComparison.OrdinalIgnoreCase) : false;
+            get => TryGetValue("UseSession", out var value) && "true".Equals(value as string, StringComparison.OrdinalIgnoreCase);
             set => this["UseSession"] = value;
         }
 
@@ -67,13 +67,6 @@ namespace ClickHouse.Client.ADO
         {
             get => TryGetValue("Port", out var value) && value is string @string && ushort.TryParse(@string, out var @ushort) ? @ushort : (ushort)8123;
             set => this["Port"] = value;
-        }
-
-        [Obsolete]
-        public string Driver
-        {
-            get => TryGetValue("Driver", out var value) ? value as string : null;
-            set => this["Driver"] = value;
         }
 
         public TimeSpan Timeout

@@ -27,7 +27,7 @@ namespace ClickHouse.Client
 
         public string DefaultFormat => "RowBinaryWithNamesAndTypes";
 
-        public IReadOnlyDictionary<string, object> CustomParameters { get; set; }
+        public IDictionary<string, object> CustomParameters { get; set; }
 
         public bool AddQueryParameter(string name, string value) => DictionaryExtensions.TryAdd(queryParameters, name, value);
 

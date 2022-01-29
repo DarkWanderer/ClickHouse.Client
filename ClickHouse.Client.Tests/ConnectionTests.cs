@@ -66,14 +66,6 @@ namespace ClickHouse.Client.Tests
         public void ShoulParseVersion(string version) => _ = ClickHouseConnection.ParseVersion(version);
 
         [Test]
-        public async Task ShouldPostQueryAsync()
-        {
-            using var response = await connection.PostSqlQueryAsync("SELECT 1 FORMAT TabSeparated", CancellationToken.None);
-            var result = await response.Content.ReadAsStringAsync();
-            Assert.AreEqual("1", result.Trim());
-        }
-
-        [Test]
         public async Task TimeoutShouldCancelConnection()
         {
             var builder = TestUtilities.GetConnectionStringBuilder();
@@ -91,6 +83,58 @@ namespace ClickHouse.Client.Tests
             {
                 /* Expected: task cancelled */
             }
+        }
+
+        [Test]
+        public async Task ServerShouldSetQueryId()
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT 1";
+            var result = await command.ExecuteScalarAsync();
+            Assert.IsFalse(string.IsNullOrWhiteSpace(command.QueryId));
+        }
+
+        [Test]
+        public async Task ClientShouldSetQueryId()
+        {
+            string queryId = "MyQueryId123456";
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT 1";
+            command.QueryId = queryId;
+            var result = await command.ExecuteScalarAsync();
+            Assert.AreEqual(queryId, command.QueryId);
+        }
+
+        [Test]
+        [Explicit("This test takes 3s, and can be flaky on loaded server")]
+        public async Task ReplaceRunningQuerySettingShouldReplace()
+        {
+            using var connection = new ClickHouseConnection(TestUtilities.GetConnectionStringBuilder().ToString());
+            connection.CustomSettings.Add("replace_running_query", 1);
+            string queryId = "MyQueryId123456";
+
+            var command1 = connection.CreateCommand();
+            var command2 = connection.CreateCommand();
+
+            command1.CommandText = "SELECT sleep(3) FROM system.numbers LIMIT 100";
+            command2.CommandText = "SELECT 1";
+
+            command1.QueryId = queryId;
+            command2.QueryId = queryId;
+
+            var asyncResult1 = command1.ExecuteScalarAsync();
+            var asyncResult2 = command2.ExecuteScalarAsync();
+
+            try
+            {
+                await asyncResult1;
+                Assert.Fail("Query was not cancelled as expected");
+            }
+            catch (ClickHouseServerException ex) when (ex.ErrorCode == 394)
+            {
+                // Expected exception as next query replaced this one
+            }
+            await asyncResult2;
         }
 
         [Test]
