@@ -36,7 +36,7 @@ namespace ClickHouse.Client.Tests
         {
             // https://github.com/ClickHouse/ClickHouse/issues/33928
             // TODO: remove
-            if (connection.ServerVersion == "22.1.2.2" && clickHouseType == "IPv6")
+            if (connection.ServerVersion.StartsWith("22.1.") && clickHouseType == "IPv6")
                 Assert.Ignore("IPv6 is broken in ClickHouse 22.1.2.2");
 
             if (clickHouseType.StartsWith("DateTime64") || clickHouseType == "Date")
@@ -68,7 +68,7 @@ namespace ClickHouse.Client.Tests
         {
             // https://github.com/ClickHouse/ClickHouse/issues/33928
             // TODO: remove
-            if (connection.ServerVersion == "22.1.2.2" && clickHouseType == "IPv6")
+            if (connection.ServerVersion.StartsWith("22.1.") && clickHouseType == "IPv6")
                 Assert.Ignore("IPv6 is broken in ClickHouse 22.1.2.2");
 
             if (clickHouseType.StartsWith("Enum"))
@@ -88,7 +88,7 @@ namespace ClickHouse.Client.Tests
         {
             // https://github.com/ClickHouse/ClickHouse/issues/33928
             // TODO: remove
-            if (connection.ServerVersion == "22.1.2.2" && clickHouseType == "IPv6")
+            if (connection.ServerVersion.StartsWith("22.1.") && clickHouseType == "IPv6")
                 Assert.Ignore("IPv6 is broken in ClickHouse 22.1.2.2");
 
             if (clickHouseType.StartsWith("Enum"))
