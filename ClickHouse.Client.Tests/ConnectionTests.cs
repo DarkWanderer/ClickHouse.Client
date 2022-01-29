@@ -90,7 +90,7 @@ namespace ClickHouse.Client.Tests
         {
             var command = connection.CreateCommand();
             command.CommandText = "SELECT 1";
-            var result = await command.ExecuteScalarAsync();
+            await command.ExecuteScalarAsync();
             Assert.IsFalse(string.IsNullOrWhiteSpace(command.QueryId));
         }
 
@@ -101,7 +101,7 @@ namespace ClickHouse.Client.Tests
             var command = connection.CreateCommand();
             command.CommandText = "SELECT 1";
             command.QueryId = queryId;
-            var result = await command.ExecuteScalarAsync();
+            await command.ExecuteScalarAsync();
             Assert.AreEqual(queryId, command.QueryId);
         }
 

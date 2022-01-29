@@ -20,17 +20,17 @@ namespace ClickHouse.Client
             Query = query;
         }
 
+        protected ClickHouseServerException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
+
         public string Query { get; } = null;
 
         public static ClickHouseServerException FromServerResponse(string error, string query)
         {
             var errorCode = ParseErrorCode(error) ?? -1;
             return new ClickHouseServerException(error, query, errorCode);
-        }
-
-        protected ClickHouseServerException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
         }
 
         private static int? ParseErrorCode(string error)

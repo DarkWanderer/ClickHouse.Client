@@ -40,7 +40,6 @@ namespace ClickHouse.Client.Tests.ORM
                 default:
                     return true;
             }
-
         }
 
         private class DateTimeOffsetHandler : SqlMapper.TypeHandler<DateTimeOffset>

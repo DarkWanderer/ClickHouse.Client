@@ -122,7 +122,11 @@ namespace ClickHouse.Client.ADO.Readers
             return CurrentRow.Length;
         }
 
-        public override bool IsDBNull(int ordinal) => GetValue(ordinal) is DBNull || GetValue(ordinal) is null;
+        public override bool IsDBNull(int ordinal)
+        {
+            var value = GetValue(ordinal);
+            return value is DBNull || value is null;
+        }
 
         public override bool NextResult() => false;
 
@@ -178,8 +182,8 @@ namespace ClickHouse.Client.ADO.Readers
             if (reader.PeekChar() == -1)
             {
                 // Empty dataset
-                FieldNames = new string[0];
-                RawTypes = new ClickHouseType[0];
+                FieldNames = Array.Empty<string>();
+                RawTypes = Array.Empty<ClickHouseType>();
                 return;
             }
             var count = reader.Read7BitEncodedInt();

@@ -47,7 +47,6 @@ namespace ClickHouse.Client.Tests
         [Test]
         public async Task ShouldInsertIntoNestedTableViaParameters()
         {
-            var row = new object[] { 1, new[] { 1, 2, 3 } };
             using var command = connection.CreateCommand();
             command.CommandText = "INSERT INTO test.nested VALUES ({id:UInt32}, {key:Array(UInt8)}, {val:Array(String)})";
             command.AddParameter("id", 1);
