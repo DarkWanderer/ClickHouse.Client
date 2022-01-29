@@ -4,7 +4,11 @@ namespace ClickHouse.Client.Utility
 {
     public static class StringExtensions
     {
-        public static string Escape(this string str) => "'" + str.Replace("\\", "\\\\").Replace("\'", "\\\'") + "'";
+        public static string Escape(this string str) => str.Replace("\\", "\\\\").Replace("\'", "\\\'").Replace("\n", "\\n");
+
+        public static string QuoteSingle(this string str) => str.StartsWith("'") && str.EndsWith("'") ? str : $"'{str}'";
+
+        public static string QuoteDouble(this string str) => str.StartsWith("\"") && str.EndsWith("\"") ? str : $"\"{str}\"";
 
         /// <summary>
         /// Encloses column name in backticks (`). Escapes ` symbol if met inside name
