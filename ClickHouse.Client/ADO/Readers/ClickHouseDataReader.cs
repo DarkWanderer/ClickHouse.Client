@@ -122,7 +122,11 @@ namespace ClickHouse.Client.ADO.Readers
             return CurrentRow.Length;
         }
 
-        public override bool IsDBNull(int ordinal) => GetValue(ordinal) is DBNull or null;
+        public override bool IsDBNull(int ordinal)
+        {
+            var value = GetValue(ordinal);
+            return value is DBNull || value is null;
+        }
 
         public override bool NextResult() => false;
 
