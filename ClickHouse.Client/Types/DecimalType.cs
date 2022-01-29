@@ -95,7 +95,7 @@ namespace ClickHouse.Client.Types
             }
             catch (OverflowException)
             {
-                throw new ArgumentOutOfRangeException("value", value, $"Value cannot be represented as {this}");
+                throw new ArgumentOutOfRangeException(nameof(value), value, $"Value cannot be represented as {this}");
             }
         }
 

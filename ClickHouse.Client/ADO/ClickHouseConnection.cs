@@ -48,8 +48,10 @@ namespace ClickHouse.Client.ADO
         public ClickHouseConnection(string connectionString)
         {
             ConnectionString = connectionString;
-            httpClient = new HttpClient(DefaultHttpClientHandler, disposeHandler: false);
-            httpClient.Timeout = timeout;
+            httpClient = new HttpClient(DefaultHttpClientHandler, disposeHandler: false)
+            {
+                Timeout = timeout,
+            };
         }
 
         /// <summary>
@@ -207,7 +209,7 @@ namespace ClickHouse.Client.ADO
                 uriBuilder.CustomParameters.Add("query", versionQuery);
                 var request = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
                 AddDefaultHttpHeaders(request.Headers);
-                var response = await HandleError(await GetHttpClient().SendAsync(request), versionQuery);
+                var response = await HandleError(await GetHttpClient().SendAsync(request, token), versionQuery);
                 var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
                 if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check if response starts with GZip marker
@@ -303,10 +305,6 @@ namespace ClickHouse.Client.ADO
             return flags;
         }
 
-        protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
-
-        protected override DbCommand CreateDbCommand() => CreateCommand();
-
         internal HttpClient GetHttpClient() => httpClientFactory?.CreateClient(httpClientName) ?? httpClient;
 
         internal ClickHouseUriBuilder CreateUriBuilder(string sql = null) => new ClickHouseUriBuilder(serverUri)
@@ -332,5 +330,9 @@ namespace ClickHouse.Client.ADO
                 headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
             }
         }
+
+        protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
+
+        protected override DbCommand CreateDbCommand() => CreateCommand();
     }
 }
