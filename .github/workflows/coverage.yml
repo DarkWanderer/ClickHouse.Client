@@ -24,7 +24,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '6.x'
+        dotnet-version: '6.0.x'
 
     - name: Install coverlet-collector
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector
@@ -39,10 +39,10 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --framework netcoreapp2.2 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
+      run: dotnet build --framework netcoreapp6.0 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
 
     - name: Run test with coverage
-      run: dotnet test --framework netcoreapp3.1 --configuration Release --no-restore --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
+      run: dotnet test --framework netcoreapp6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
