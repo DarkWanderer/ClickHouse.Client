@@ -126,6 +126,8 @@ namespace ClickHouse.Client.Tests
                 yield return new DataTypeSample("Decimal64(7)", typeof(decimal), "toDecimal64(1.2345, 7)", new decimal(1.2345));
                 yield return new DataTypeSample("Decimal64(7)", typeof(decimal), "toDecimal64(-1.2345, 7)", new decimal(-1.2345));
 
+                yield return new DataTypeSample("Decimal128(25)", typeof(decimal), "toDecimal128(1e-23, 25)", new decimal(1e-23));
+
                 yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(12.34, 9)", new decimal(12.34));
                 yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(-12.34, 9)", new decimal(-12.34));
             }

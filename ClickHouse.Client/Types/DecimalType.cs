@@ -21,14 +21,14 @@ namespace ClickHouse.Client.Types
             set
             {
                 scale = value;
-                Exponent = MathUtils.ToPower(10, value);
+                Exponent = MathUtils.ToPower(10m, value);
             }
         }
 
         /// <summary>
         /// Gets decimal exponent value based on Scale
         /// </summary>
-        public long Exponent { get; private set; }
+        public decimal Exponent { get; private set; }
 
         public override string Name => "Decimal";
 
