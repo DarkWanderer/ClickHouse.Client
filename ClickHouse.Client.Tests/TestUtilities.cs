@@ -128,6 +128,8 @@ namespace ClickHouse.Client.Tests
 
                 yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(12.34, 9)", new decimal(12.34));
                 yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(-12.34, 9)", new decimal(-12.34));
+
+                yield return new DataTypeSample("Decimal128(25)", typeof(decimal), "toDecimal128(1e-24, 25)", new decimal(1e-24));
             }
 
             if (SupportedFeatures.HasFlag(FeatureFlags.SupportsIPv6))

@@ -21,14 +21,14 @@ namespace ClickHouse.Client.Types
             set
             {
                 scale = value;
-                Exponent = MathUtils.ToPower(10, value);
+                Exponent = MathUtils.ToPower(10m, value);
             }
         }
 
         /// <summary>
         /// Gets decimal exponent value based on Scale
         /// </summary>
-        public long Exponent { get; private set; }
+        public decimal Exponent { get; private set; }
 
         public override string Name => "Decimal";
 
@@ -61,16 +61,23 @@ namespace ClickHouse.Client.Types
 
         public override object Read(ExtendedBinaryReader reader)
         {
+            // ClickHouse value represented as decimal
+            // Needs to be divided by Exponent to get actual value
+            decimal intermediate;
             switch (Size)
             {
                 case 4:
-                    return (decimal)reader.ReadInt32() / Exponent;
+                    intermediate = reader.ReadInt32();
+                    break;
                 case 8:
-                    return (decimal)reader.ReadInt64() / Exponent;
+                    intermediate = reader.ReadInt64();
+                    break;
                 default:
                     var bigInt = new BigInteger(reader.ReadBytes(Size));
-                    return (decimal)bigInt / Exponent;
+                    intermediate = (decimal)bigInt;
+                    break;
             }
+            return intermediate / Exponent;
         }
 
         public override string ToString() => $"{Name}({Precision}, {Scale})";
