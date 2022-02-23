@@ -70,7 +70,6 @@ jobs:
         draft: true
         prerelease: false
         generate_release_notes: true
-        target_commitish: ${{ github.ref }}
         tag_name: ${{ github.ref_name }}
         name: ${{ github.ref_name }}
         files: |
