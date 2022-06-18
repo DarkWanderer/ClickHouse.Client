@@ -33,6 +33,7 @@ namespace ClickHouse.Client.Tests.ORM
             {
                 case "UUID":
                 case "Date":
+                case "Date32":
                 case "Nothing":
                 case "IPv4":
                 case "IPv6":

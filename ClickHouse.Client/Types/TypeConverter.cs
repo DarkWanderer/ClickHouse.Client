@@ -49,6 +49,7 @@ namespace ClickHouse.Client.Types
 
             // DateTime types
             RegisterPlainType<DateType>();
+            RegisterPlainType<Date32Type>();
             RegisterParameterizedType<DateTimeType>();
             RegisterParameterizedType<DateTime64Type>();
 

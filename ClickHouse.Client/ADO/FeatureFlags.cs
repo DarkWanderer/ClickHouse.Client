@@ -13,5 +13,6 @@ namespace ClickHouse.Client.ADO
         SupportsUUIDParameters = 32,
         SupportsMap = 64,
         SupportsBool = 128,
+        SupportsDate32 = 256,
     }
 }
