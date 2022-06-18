@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29318.209
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClickHouse.Client", "ClickHouse.Client\ClickHouse.Client.csproj", "{8AF494DB-67AD-4A3D-8B54-513A968AFAD2}"
 EndProject
@@ -11,7 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		codecov.yml = codecov.yml
+		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
+		.github\workflows\coverage.yml = .github\workflows\coverage.yml
 		README.md = README.md
+		.github\workflows\regression.yml = .github\workflows\regression.yml
+		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClickHouse.Client.Benchmark", "ClickHouse.Client.Benchmark\ClickHouse.Client.Benchmark.csproj", "{6AD028BB-E6AA-454E-B130-67697ED1CE4B}"
