@@ -51,8 +51,14 @@ namespace ClickHouse.Client.Formats
                 case NothingType nt:
                     return "NULL";
 
+                case DateType dt when value is DateTimeOffset dto:
+                    return $"toDate('{@dto:yyyy-MM-dd}')";
                 case DateType dt when value is DateTime dtv:
                     return $"toDate('{dtv:yyyy-MM-dd}')";
+                case Date32Type dt when value is DateTimeOffset dto:
+                    return $"toDate('{@dto:yyyy-MM-dd}')";
+                case Date32Type dt when value is DateTime dtv:
+                    return $"toDate32('{dtv:yyyy-MM-dd}')";
 
                 case DateTimeType dtt when value is DateTime dtv:
                     return dtt.TimeZone == null

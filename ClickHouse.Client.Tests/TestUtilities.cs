@@ -153,6 +153,11 @@ namespace ClickHouse.Client.Tests
             {
                 yield return new DataTypeSample("Bool", typeof(bool), "CAST(1, 'Bool')", true);
             }
+
+            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDate32))
+            {
+                yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('2001-02-03')", new DateTime(2001, 02, 03));
+            }
         }
 
         public static object[] GetEnsureSingleRow(this DbDataReader reader)

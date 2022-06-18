@@ -39,6 +39,10 @@ namespace ClickHouse.Client.Formats
                     return @do.Date.ToString("yyyy-MM-dd");
                 case DateType dt:
                     return Convert.ToDateTime(value).ToString("yyyy-MM-dd");
+                case Date32Type dt when value is DateTimeOffset @do:
+                    return @do.Date.ToString("yyyy-MM-dd");
+                case Date32Type dt:
+                    return Convert.ToDateTime(value).ToString("yyyy-MM-dd");
 
                 case StringType st:
                 case FixedStringType tt:
