@@ -22,7 +22,6 @@ namespace ClickHouse.Client.ADO
         private static readonly HttpClientHandler DefaultHttpClientHandler;
 
         private readonly IHttpClientFactory httpClientFactory;
-        private readonly HttpClient httpClient;
         private readonly string httpClientName;
         private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
         private volatile ConnectionState state = ConnectionState.Closed; // Not an autoproperty because of interface implementation
@@ -48,10 +47,12 @@ namespace ClickHouse.Client.ADO
         public ClickHouseConnection(string connectionString)
         {
             ConnectionString = connectionString;
-            httpClient = new HttpClient(DefaultHttpClientHandler, disposeHandler: false)
+            var httpClient = new HttpClient(DefaultHttpClientHandler, disposeHandler: false)
             {
                 Timeout = timeout,
             };
+
+            httpClientFactory = new CannedHttpClientFactory(httpClient);
         }
 
         /// <summary>
@@ -63,7 +64,7 @@ namespace ClickHouse.Client.ADO
         public ClickHouseConnection(string connectionString, HttpClient httpClient)
         {
             ConnectionString = connectionString;
-            this.httpClient = httpClient;
+            httpClientFactory = new CannedHttpClientFactory(httpClient);
         }
 
         /// <summary>
@@ -305,7 +306,7 @@ namespace ClickHouse.Client.ADO
             return flags;
         }
 
-        internal HttpClient GetHttpClient() => httpClientFactory?.CreateClient(httpClientName) ?? httpClient;
+        internal HttpClient GetHttpClient() => httpClientFactory.CreateClient(httpClientName);
 
         internal ClickHouseUriBuilder CreateUriBuilder(string sql = null) => new ClickHouseUriBuilder(serverUri)
         {
