@@ -302,6 +302,10 @@ namespace ClickHouse.Client.ADO
             {
                 flags |= FeatureFlags.SupportsBool;
             }
+            if (serverVersion >= new Version(21, 9))
+            {
+                flags |= FeatureFlags.SupportsDate32;
+            }
 
             return flags;
         }
