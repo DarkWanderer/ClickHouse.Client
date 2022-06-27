@@ -73,12 +73,6 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("Int64", typeof(long), "toInt64(-64)", -64);
             yield return new DataTypeSample("UInt64", typeof(ulong), "toUInt64(64)", 64);
 
-            yield return new DataTypeSample("Int128", typeof(BigInteger), "toInt128(concat('-1', repeat('0', 30)))", -BigInteger.Pow(new BigInteger(10), 30));
-            yield return new DataTypeSample("UInt128", typeof(BigInteger), "toInt128(concat('1', repeat('0', 30)))", BigInteger.Pow(new BigInteger(10), 30));
-
-            yield return new DataTypeSample("Int256", typeof(BigInteger), "toInt256(concat('-1', repeat('0', 50)))", -BigInteger.Pow(new BigInteger(10), 50));
-            yield return new DataTypeSample("UInt256", typeof(BigInteger), "toInt256(concat('1', repeat('0', 50)))", BigInteger.Pow(new BigInteger(10), 50));
-
             yield return new DataTypeSample("Float32", typeof(float), "toFloat32(32e6)", 32e6);
             yield return new DataTypeSample("Float32", typeof(float), "toFloat32(-32e6)", -32e6);
 
@@ -165,6 +159,15 @@ namespace ClickHouse.Client.Tests
             {
                 yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('2001-02-03')", new DateTime(2001, 02, 03));
                 yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('1925-01-02')", new DateTime(1925, 01, 02));
+            }
+
+            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsIntDecimal256))
+            {
+                yield return new DataTypeSample("Int128", typeof(BigInteger), "toInt128(concat('-1', repeat('0', 30)))", -BigInteger.Pow(new BigInteger(10), 30));
+                yield return new DataTypeSample("UInt128", typeof(BigInteger), "toInt128(concat('1', repeat('0', 30)))", BigInteger.Pow(new BigInteger(10), 30));
+
+                yield return new DataTypeSample("Int256", typeof(BigInteger), "toInt256(concat('-1', repeat('0', 50)))", -BigInteger.Pow(new BigInteger(10), 50));
+                yield return new DataTypeSample("UInt256", typeof(BigInteger), "toInt256(concat('1', repeat('0', 50)))", BigInteger.Pow(new BigInteger(10), 50));
             }
         }
 
