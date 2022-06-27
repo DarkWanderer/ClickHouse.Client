@@ -29,6 +29,10 @@ namespace ClickHouse.Client.Tests.ORM
                 return false;
             if (clickHouseType.Contains("Map"))
                 return false;
+            if (clickHouseType.Contains("Int128"))
+                return false;
+            if (clickHouseType.Contains("Int256"))
+                return false;
             switch (clickHouseType)
             {
                 case "UUID":

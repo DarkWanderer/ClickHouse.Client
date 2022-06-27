@@ -22,7 +22,7 @@ namespace ClickHouse.Client.Types
             };
         }
 
-        public override string ToString() => $"FixedString{Length}";
+        public override string ToString() => $"FixedString({Length})";
 
         public override object Read(ExtendedBinaryReader reader) => Encoding.UTF8.GetString(reader.ReadBytes(Length));
 

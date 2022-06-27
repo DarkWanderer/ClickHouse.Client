@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Net;
+using System.Numerics;
 using ClickHouse.Client.ADO;
 using NUnit.Framework;
 
@@ -71,6 +72,12 @@ namespace ClickHouse.Client.Tests
 
             yield return new DataTypeSample("Int64", typeof(long), "toInt64(-64)", -64);
             yield return new DataTypeSample("UInt64", typeof(ulong), "toUInt64(64)", 64);
+
+            yield return new DataTypeSample("Int128", typeof(BigInteger), "toInt128(concat('-1', repeat('0', 30)))", -BigInteger.Pow(new BigInteger(10), 30));
+            yield return new DataTypeSample("UInt128", typeof(BigInteger), "toInt128(concat('1', repeat('0', 30)))", BigInteger.Pow(new BigInteger(10), 30));
+
+            yield return new DataTypeSample("Int256", typeof(BigInteger), "toInt256(concat('-1', repeat('0', 50)))", -BigInteger.Pow(new BigInteger(10), 50));
+            yield return new DataTypeSample("UInt256", typeof(BigInteger), "toInt256(concat('1', repeat('0', 50)))", BigInteger.Pow(new BigInteger(10), 50));
 
             yield return new DataTypeSample("Float32", typeof(float), "toFloat32(32e6)", 32e6);
             yield return new DataTypeSample("Float32", typeof(float), "toFloat32(-32e6)", -32e6);

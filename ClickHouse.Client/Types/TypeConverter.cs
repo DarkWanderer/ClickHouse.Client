@@ -28,11 +28,15 @@ namespace ClickHouse.Client.Types
             RegisterPlainType<Int16Type>();
             RegisterPlainType<Int32Type>();
             RegisterPlainType<Int64Type>();
+            RegisterPlainType<Int128Type>();
+            RegisterPlainType<Int256Type>();
 
             RegisterPlainType<UInt8Type>();
             RegisterPlainType<UInt16Type>();
             RegisterPlainType<UInt32Type>();
             RegisterPlainType<UInt64Type>();
+            RegisterPlainType<UInt128Type>();
+            RegisterPlainType<UInt256Type>();
 
             // Floating point types
             RegisterPlainType<Float32Type>();
