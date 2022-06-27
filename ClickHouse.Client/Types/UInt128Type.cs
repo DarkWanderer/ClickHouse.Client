@@ -4,7 +4,6 @@ using ClickHouse.Client.Formats;
 
 namespace ClickHouse.Client.Types
 {
-
     internal class UInt128Type : AbstractBigIntegerType
     {
         public override int Size => 16;
