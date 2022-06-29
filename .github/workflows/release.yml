@@ -3,7 +3,7 @@ name: Release from tag
 on:
   push:
     tags:
-      - '*' # SemVer version, e.g. 1.2.3
+      - '*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
 jobs:
   build:
@@ -29,7 +29,7 @@ jobs:
     name: Upload to GitHub Packages
     steps:
     - name: Download Artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v2.1.0
       with:
         name: package
 
@@ -44,7 +44,7 @@ jobs:
     name: Upload to NuGet.org
     steps:
     - name: Download Artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v2.1.0
       with:
         name: package
       
@@ -58,20 +58,17 @@ jobs:
     needs: [build]
     name: Create GitHub release
     steps:
-    - name: Download Artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: package
-
     - name: Create Release
       id: create_release
-      uses: softprops/action-gh-release@v1
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+        tag_name: ${{ github.ref_name }}
+        release_name: ${{ github.ref_name }}
+        body: |
+          * **Added**: 
+          * **Fixed**: 
+          * **Improved**:
         draft: true
         prerelease: false
-        generate_release_notes: true
-        tag_name: ${{ github.ref_name }}
-        name: ${{ github.ref_name }}
-        files: |
-          ClickHouse.Client.*.nupkg
-          ClickHouse.Client.*.snupkg
