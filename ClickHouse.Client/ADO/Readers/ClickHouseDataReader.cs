@@ -30,6 +30,12 @@ namespace ClickHouse.Client.ADO.Readers
             ReadHeaders();
         }
 
+        internal ClickHouseType GetEffectiveClickHouseType(int ordinal)
+        {
+            var type = RawTypes[ordinal];
+            return type is NullableType nt ? nt.UnderlyingType : type;
+        }
+
         internal ClickHouseType GetClickHouseType(int ordinal) => RawTypes[ordinal];
 
         public override object this[int ordinal] => GetValue(ordinal);
@@ -62,15 +68,12 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => throw new NotImplementedException();
 
-        public override string GetDataTypeName(int ordinal) => RawTypes[ordinal].ToString();
+        public override string GetDataTypeName(int ordinal) => GetClickHouseType(ordinal).ToString();
 
         public override DateTime GetDateTime(int ordinal) => (DateTime)GetValue(ordinal);
 
-        public virtual DateTimeOffset GetDateTimeOffset(int ordinal)
-        {
-            var dt = GetDateTime(ordinal);
-            return ((AbstractDateTimeType)RawTypes[ordinal]).ToDateTimeOffset(dt);
-        }
+        public virtual DateTimeOffset GetDateTimeOffset(int ordinal) => GetEffectiveClickHouseType(ordinal) is AbstractDateTimeType adt ?
+            adt.ToDateTimeOffset(GetDateTime(ordinal)) : throw new InvalidCastException();
 
         public override decimal GetDecimal(int ordinal) => (decimal)GetValue(ordinal);
 
