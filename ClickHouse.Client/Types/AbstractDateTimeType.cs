@@ -6,6 +6,7 @@ namespace ClickHouse.Client.Types
 {
     internal abstract class AbstractDateTimeType : ParameterizedType
     {
+        // DateTime.UnixEpoch is not available on .NET 4.8
         public static readonly DateTime DateTimeEpochStart = DateTimeOffset.FromUnixTimeSeconds(0).UtcDateTime;
 
         public override Type FrameworkType => typeof(DateTime);
