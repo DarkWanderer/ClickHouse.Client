@@ -157,6 +157,7 @@ namespace ClickHouse.Client.Tests
             if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDate32))
             {
                 yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('2001-02-03')", new DateTime(2001, 02, 03));
+                yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('1925-01-02')", new DateTime(1925, 01, 02));
             }
         }
 

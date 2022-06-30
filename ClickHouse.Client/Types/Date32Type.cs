@@ -12,7 +12,7 @@ namespace ClickHouse.Client.Types
 
         public override object Read(ExtendedBinaryReader reader)
         {
-            var days = reader.ReadUInt32();
+            var days = reader.ReadInt32();
             return DateTimeEpochStart.AddDays(days);
         }
 
@@ -21,7 +21,7 @@ namespace ClickHouse.Client.Types
         public override void Write(ExtendedBinaryWriter writer, object value)
         {
             var sinceEpoch = ((DateTime)value).Date - DateTimeEpochStart;
-            writer.Write(Convert.ToUInt32(sinceEpoch.TotalDays));
+            writer.Write(Convert.ToInt32(sinceEpoch.TotalDays));
         }
     }
 }
