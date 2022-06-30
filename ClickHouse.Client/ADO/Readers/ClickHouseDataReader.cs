@@ -104,7 +104,7 @@ namespace ClickHouse.Client.ADO.Readers
             var index = Array.FindIndex(FieldNames, (fn) => fn == name);
             if (index == -1)
             {
-                throw new IndexOutOfRangeException();
+                throw new ArgumentException("Column does not exist", nameof(name));
             }
 
             return index;

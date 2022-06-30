@@ -17,7 +17,7 @@ namespace ClickHouse.Client.Utility
 
         public CompressedContent(HttpContent content, DecompressionMethods compressionMethod)
         {
-            originalContent = content ?? throw new ArgumentNullException("content");
+            originalContent = content ?? throw new ArgumentNullException(nameof(content));
             this.compressionMethod = compressionMethod;
 
             if (this.compressionMethod != DecompressionMethods.GZip && this.compressionMethod != DecompressionMethods.Deflate)

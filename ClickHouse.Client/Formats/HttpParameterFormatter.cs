@@ -82,7 +82,7 @@ namespace ClickHouse.Client.Formats
                     return $"{{{string.Join(",", strings)}}}";
 
                 default:
-                    throw new Exception($"Cannot convert {value} to {type}");
+                    throw new ArgumentException($"Cannot convert {value} to {type}");
             }
         }
     }
