@@ -70,7 +70,7 @@ namespace ClickHouse.Client.ADO
 
             using var lcts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
             using var response = await PostSqlQueryAsync(CommandText, lcts.Token).ConfigureAwait(false);
-            using var reader = new ExtendedBinaryReader(await response.Content.ReadAsStreamAsync());
+            using var reader = new ExtendedBinaryReader(await response.Content.ReadAsStreamAsync().ConfigureAwait(false));
 
             return reader.PeekChar() != -1 ? reader.Read7BitEncodedInt() : 0;
         }
@@ -146,7 +146,7 @@ namespace ClickHouse.Client.ADO
             var uriBuilder = connection.CreateUriBuilder();
             if (commandParameters != null)
             {
-                await connection.EnsureOpenAsync(); // Preserve old behavior
+                await connection.EnsureOpenAsync().ConfigureAwait(false); // Preserve old behavior
                 if (connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsHttpParameters))
                 {
                     foreach (ClickHouseDbParameter parameter in commandParameters)

@@ -210,7 +210,7 @@ namespace ClickHouse.Client.ADO
                 uriBuilder.CustomParameters.Add("query", versionQuery);
                 var request = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
                 AddDefaultHttpHeaders(request.Headers);
-                var response = await HandleError(await GetHttpClient().SendAsync(request, token), versionQuery);
+                var response = await HandleError(await GetHttpClient().SendAsync(request, token).ConfigureAwait(false), versionQuery).ConfigureAwait(false);
                 var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
                 if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check if response starts with GZip marker

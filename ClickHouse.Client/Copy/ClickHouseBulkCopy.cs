@@ -100,7 +100,7 @@ namespace ClickHouse.Client.Copy
             ClickHouseType[] columnTypes = null;
             string[] columnNames = columns?.ToArray();
 
-            using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} LIMIT 0"))
+            using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} LIMIT 0").ConfigureAwait(false))
             {
                 columnTypes = reader.GetClickHouseColumnTypes();
                 columnNames ??= reader.GetColumnNames();
