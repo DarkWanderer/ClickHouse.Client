@@ -4,12 +4,10 @@
 indent_style = space
 
 [*.cs]
-
 tab_width = 4
 indent_size = 4
 insert_final_newline = true
 end_of_line = crlf
-
 
 dotnet_diagnostic.SA1633.severity = none # SA1633: File should have header
 dotnet_diagnostic.SA1200.severity = none # SA1200: Using directives should be placed correctly
@@ -21,8 +19,9 @@ dotnet_diagnostic.SA1629.severity = none # SA1629: Documentation text should end
 dotnet_diagnostic.SA1602.severity = none # SA1602: Enumeration items should be documented
 dotnet_diagnostic.SA1502.severity = none # SA1502: Element should not be on a single line
 
-
 dotnet_diagnostic.SA1201.severity = suggestion # SA1201: Elements should appear in the correct order
 dotnet_diagnostic.SA1202.severity = suggestion # SA1202: Elements should be ordered by access
 dotnet_diagnostic.SA1204.severity = suggestion # SA1204: Static elements should appear before instance elements
 dotnet_diagnostic.SA1515.severity = suggestion # SA1515: Single-line comment should be preceded by blank line
+
+dotnet_diagnostic.CA2007.severity = warning # CA2007: Do not directly await a Task
