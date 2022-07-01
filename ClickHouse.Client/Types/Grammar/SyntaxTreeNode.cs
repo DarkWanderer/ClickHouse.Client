@@ -18,9 +18,9 @@ namespace ClickHouse.Client.Types.Grammar
             builder.Append(Value);
             if (ChildNodes.Count > 0)
             {
-                builder.Append("(");
+                builder.Append('(');
                 builder.Append(string.Join(", ", ChildNodes));
-                builder.Append(")");
+                builder.Append(')');
             }
             return builder.ToString();
         }

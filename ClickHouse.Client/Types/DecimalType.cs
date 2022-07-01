@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Numerics;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
@@ -41,8 +42,8 @@ namespace ClickHouse.Client.Types
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
-            var precision = int.Parse(node.ChildNodes[0].Value);
-            var scale = int.Parse(node.ChildNodes[1].Value);
+            var precision = int.Parse(node.ChildNodes[0].Value, CultureInfo.InvariantCulture);
+            var scale = int.Parse(node.ChildNodes[1].Value, CultureInfo.InvariantCulture);
 
             var size = GetSizeFromPrecision(precision);
 
@@ -86,7 +87,7 @@ namespace ClickHouse.Client.Types
         {
             try
             {
-                decimal multipliedValue = Convert.ToDecimal(value) * Exponent;
+                decimal multipliedValue = Convert.ToDecimal(value, CultureInfo.InvariantCulture) * Exponent;
                 switch (Size)
                 {
                     case 4:
@@ -111,7 +112,7 @@ namespace ClickHouse.Client.Types
             int p when p >= 1 && p < 10 => 4,
             int p when p >= 10 && p < 19 => 8,
             int p when p >= 19 && p < 39 => 16,
-            _ => throw new ArgumentOutOfRangeException(nameof(Precision)),
+            _ => throw new ArgumentOutOfRangeException(nameof(precision)),
         };
 
         private void WriteLargeDecimal(ExtendedBinaryWriter writer, decimal value)

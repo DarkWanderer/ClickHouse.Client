@@ -146,7 +146,7 @@ namespace ClickHouse.Client.ADO
                 session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
                 timeout = builder.Timeout;
 
-                foreach (var key in builder.Keys.Cast<string>().Where(k => k.StartsWith(CustomSettingPrefix)))
+                foreach (var key in builder.Keys.Cast<string>().Where(k => k.StartsWith(CustomSettingPrefix, true, CultureInfo.InvariantCulture)))
                 {
                     CustomSettings.Set(key.Replace(CustomSettingPrefix, string.Empty), builder[key]);
                 }
@@ -177,9 +177,9 @@ namespace ClickHouse.Client.ADO
 
         public override DataTable GetSchema() => GetSchema(null, null);
 
-        public override DataTable GetSchema(string type) => GetSchema(type, null);
+        public override DataTable GetSchema(string collectionName) => GetSchema(collectionName, null);
 
-        public override DataTable GetSchema(string type, string[] restrictions) => SchemaDescriber.DescribeSchema(this, type, restrictions);
+        public override DataTable GetSchema(string collectionName, string[] restrictionValues) => SchemaDescriber.DescribeSchema(this, collectionName, restrictionValues);
 
         internal static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query)
         {
@@ -199,7 +199,7 @@ namespace ClickHouse.Client.ADO
 
         public override void Open() => OpenAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
-        public override async Task OpenAsync(CancellationToken token)
+        public override async Task OpenAsync(CancellationToken cancellationToken)
         {
             if (State == ConnectionState.Open)
                 return;
@@ -210,7 +210,7 @@ namespace ClickHouse.Client.ADO
                 uriBuilder.CustomParameters.Add("query", versionQuery);
                 var request = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
                 AddDefaultHttpHeaders(request.Headers);
-                var response = await HandleError(await GetHttpClient().SendAsync(request, token).ConfigureAwait(false), versionQuery).ConfigureAwait(false);
+                var response = await HandleError(await GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false), versionQuery).ConfigureAwait(false);
                 var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
                 if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check if response starts with GZip marker

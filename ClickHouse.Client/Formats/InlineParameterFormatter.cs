@@ -115,13 +115,13 @@ namespace ClickHouse.Client.Formats
         {
             float floatValue => floatValue.ToString(CultureInfo.InvariantCulture),
             double doubleValue => doubleValue.ToString(CultureInfo.InvariantCulture),
-            _ => Convert.ToDouble(value).ToString(CultureInfo.InvariantCulture)
+            _ => Convert.ToDouble(value, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture)
         };
 
         private static string FormatDecimal(DecimalType type, object value)
         {
             if (!(value is decimal decimalValue))
-                decimalValue = Convert.ToDecimal(value);
+                decimalValue = Convert.ToDecimal(value, CultureInfo.InvariantCulture);
             return type switch
             {
                 Decimal128Type decimal128Type => $"toDecimal128({decimalValue.ToString(CultureInfo.InvariantCulture)},{decimal128Type.Scale})",
