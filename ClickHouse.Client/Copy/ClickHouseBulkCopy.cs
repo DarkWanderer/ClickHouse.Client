@@ -145,6 +145,7 @@ namespace ClickHouse.Client.Copy
                 connection?.Dispose();
                 ownsConnection = false;
             }
+            GC.SuppressFinalize(this);
         }
 
         private string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
