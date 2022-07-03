@@ -1,8 +1,4 @@
-﻿using System;
-using System.Numerics;
-using ClickHouse.Client.Formats;
-
-namespace ClickHouse.Client.Types
+﻿namespace ClickHouse.Client.Types
 {
     internal class Int128Type : AbstractBigIntegerType
     {
