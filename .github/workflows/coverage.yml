@@ -1,3 +1,5 @@
+# Test coverage build
+# Installs additional packages, so artifacts are "Tainted" and cannot be used
 name: Coverage
 
 on:

@@ -1,3 +1,6 @@
+# Release build
+# Needs to be clean
+# Should never install additional packages
 name: Release from tag
 
 on:
@@ -12,7 +15,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@main
-              
+
     - name: Build & pack
       id: build_pack
       run: dotnet build --configuration Release /p:Version=${{ github.ref_name }}
