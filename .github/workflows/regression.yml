@@ -23,8 +23,8 @@ jobs:
         ports:
           - 8123:8123
         volumes:
-          - ${{ github.workspace }}/test/test-config.xml:/etc/clickhouse-server/config.d/test-config.xml
-          - ${{ github.workspace }}/test/test-user.xml:/etc/clickhouse-server/users.d/test-user.xml
+          - ${{ github.workspace }}/tests/config.d:/etc/clickhouse-server/config.d
+          - ${{ github.workspace }}/tests/users.d:/etc/clickhouse-server/users.d
 
     steps:
     - uses: actions/checkout@v2
