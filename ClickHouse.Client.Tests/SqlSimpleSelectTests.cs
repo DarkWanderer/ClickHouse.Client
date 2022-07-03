@@ -129,6 +129,8 @@ namespace ClickHouse.Client.Tests
         {
             var types = TypeConverter.RegisteredTypes
                 .Where(dt => dt.Contains("Int") || dt.Contains("Float"))
+                .Where(dt => !dt.Contains("128") || TestUtilities.SupportedFeatures.HasFlag(FeatureFlags.SupportsWideTypes))
+                .Where(dt => !dt.Contains("256") || TestUtilities.SupportedFeatures.HasFlag(FeatureFlags.SupportsWideTypes))
                 .Select(dt => $"to{dt}(55)")
                 .ToArray();
 

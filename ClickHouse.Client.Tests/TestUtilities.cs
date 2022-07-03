@@ -161,7 +161,7 @@ namespace ClickHouse.Client.Tests
                 yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('1925-01-02')", new DateTime(1925, 01, 02));
             }
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsIntDecimal256))
+            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsWideTypes))
             {
                 yield return new DataTypeSample("Int128", typeof(BigInteger), "toInt128(concat('-1', repeat('0', 30)))", -BigInteger.Pow(new BigInteger(10), 30));
                 yield return new DataTypeSample("UInt128", typeof(BigInteger), "toInt128(concat('1', repeat('0', 30)))", BigInteger.Pow(new BigInteger(10), 30));

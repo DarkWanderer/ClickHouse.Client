@@ -13,6 +13,6 @@ namespace ClickHouse.Client.ADO
         SupportsMap = 64,
         SupportsBool = 128,
         SupportsDate32 = 256,
-        SupportsIntDecimal256 = 512,
+        SupportsWideTypes = 512,
     }
 }

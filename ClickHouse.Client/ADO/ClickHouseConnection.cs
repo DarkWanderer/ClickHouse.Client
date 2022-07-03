@@ -304,7 +304,7 @@ namespace ClickHouse.Client.ADO
             }
             if (serverVersion >= new Version(21, 6))
             {
-                flags |= FeatureFlags.SupportsIntDecimal256;
+                flags |= FeatureFlags.SupportsWideTypes;
             }
 
             return flags;
