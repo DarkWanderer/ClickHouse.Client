@@ -24,7 +24,7 @@ namespace ClickHouse.Client.Tests
 
         public static IEnumerable<TestCaseData> TypedQueryParameters => TestUtilities.GetDataTypeSamples()
             // DB::Exception: There are no UInt128 literals in SQL
-            .Where(sample => !sample.ClickHouseType.Contains("UUID") || TestUtilities.SupportedFeatures.HasFlag(FeatureFlags.SupportsUUIDParameters))
+            .Where(sample => !sample.ClickHouseType.Contains("UUID") || TestUtilities.SupportedFeatures.HasFlag(Feature.UUIDParameters))
             // DB::Exception: Serialization is not implemented
             .Where(sample => sample.ClickHouseType != "Nothing")
             .Select(sample => new TestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));

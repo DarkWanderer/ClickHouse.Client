@@ -32,7 +32,7 @@ namespace ClickHouse.Client.ADO
         private string session;
         private TimeSpan timeout;
         private Uri serverUri;
-        private FeatureFlags supportedFeatures;
+        private Feature supportedFeatures;
 
         static ClickHouseConnection()
         {
@@ -169,7 +169,7 @@ namespace ClickHouse.Client.ADO
         /// Gets enum describing which ClickHouse features are available on this particular server version
         /// Requires connection to be in Open state
         /// </summary>
-        public virtual FeatureFlags SupportedFeatures
+        public virtual Feature SupportedFeatures
         {
             get => state == ConnectionState.Open ? supportedFeatures : throw new InvalidOperationException();
             private set => supportedFeatures = value;
@@ -270,41 +270,41 @@ namespace ClickHouse.Client.ADO
             return new Version(parts.ElementAtOrDefault(0), parts.ElementAtOrDefault(1), parts.ElementAtOrDefault(2), parts.ElementAtOrDefault(3));
         }
 
-        internal static FeatureFlags GetFeatureFlags(Version serverVersion)
+        internal static Feature GetFeatureFlags(Version serverVersion)
         {
-            FeatureFlags flags = 0;
+            Feature flags = 0;
             if (serverVersion > new Version(20, 1, 2, 4))
             {
-                flags |= FeatureFlags.SupportsDateTime64;
+                flags |= Feature.DateTime64;
             }
             if (serverVersion > new Version(20, 5))
             {
-                flags |= FeatureFlags.SupportsInlineQuery;
+                flags |= Feature.InlineQuery;
             }
             if (serverVersion > new Version(20, 0))
             {
-                flags |= FeatureFlags.SupportsDecimal;
-                flags |= FeatureFlags.SupportsIPv6;
+                flags |= Feature.Decimals;
+                flags |= Feature.IPv6;
             }
             if (serverVersion > new Version(21, 0))
             {
-                flags |= FeatureFlags.SupportsUUIDParameters;
+                flags |= Feature.UUIDParameters;
             }
             if (serverVersion > new Version(21, 1, 2))
             {
-                flags |= FeatureFlags.SupportsMap;
+                flags |= Feature.Map;
             }
             if (serverVersion > new Version(21, 12))
             {
-                flags |= FeatureFlags.SupportsBool;
+                flags |= Feature.Bool;
             }
             if (serverVersion >= new Version(21, 9))
             {
-                flags |= FeatureFlags.SupportsDate32;
+                flags |= Feature.Date32;
             }
             if (serverVersion >= new Version(21, 6))
             {
-                flags |= FeatureFlags.SupportsWideTypes;
+                flags |= Feature.WideTypes;
             }
 
             return flags;

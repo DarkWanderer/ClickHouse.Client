@@ -39,10 +39,10 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        [RequiredFeature(FeatureFlags.SupportsUUIDParameters)]
+        [RequiredFeature(Feature.UUIDParameters)]
         public async Task ShouldInsertParameterizedUUIDArray()
         {
-            if (!TestUtilities.SupportedFeatures.HasFlag(FeatureFlags.SupportsUUIDParameters))
+            if (!TestUtilities.SupportedFeatures.HasFlag(Feature.UUIDParameters))
                 Assert.Ignore("UUID not supported by database");
 
             await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.uuid_array");

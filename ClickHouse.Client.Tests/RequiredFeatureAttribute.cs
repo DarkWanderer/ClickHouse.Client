@@ -9,9 +9,9 @@ namespace ClickHouse.Client.Tests
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public class RequiredFeatureAttribute : NUnitAttribute, IApplyToTest
     {
-        private readonly FeatureFlags feature;
+        private readonly Feature feature;
 
-        public RequiredFeatureAttribute(FeatureFlags feature)
+        public RequiredFeatureAttribute(Feature feature)
         {
             this.feature = feature;
         }

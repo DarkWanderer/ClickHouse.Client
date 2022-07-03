@@ -93,7 +93,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        [RequiredFeature(FeatureFlags.SupportsDateTime64)]
+        [RequiredFeature(Feature.DateTime64)]
         public async Task DateTime64SelectShouldHaveCorrectTimezone()
         {
             using var reader = await connection.ExecuteReaderAsync("SELECT toDateTime64(1577836800, 3, 'Asia/Sakhalin')");
@@ -127,8 +127,8 @@ namespace ClickHouse.Client.Tests
         {
             var types = TypeConverter.RegisteredTypes
                 .Where(dt => dt.Contains("Int") || dt.Contains("Float"))
-                .Where(dt => !dt.Contains("128") || TestUtilities.SupportedFeatures.HasFlag(FeatureFlags.SupportsWideTypes))
-                .Where(dt => !dt.Contains("256") || TestUtilities.SupportedFeatures.HasFlag(FeatureFlags.SupportsWideTypes))
+                .Where(dt => !dt.Contains("128") || TestUtilities.SupportedFeatures.HasFlag(Feature.WideTypes))
+                .Where(dt => !dt.Contains("256") || TestUtilities.SupportedFeatures.HasFlag(Feature.WideTypes))
                 .Select(dt => $"to{dt}(55)")
                 .ToArray();
 

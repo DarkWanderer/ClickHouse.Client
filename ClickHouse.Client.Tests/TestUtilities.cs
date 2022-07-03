@@ -11,7 +11,7 @@ namespace ClickHouse.Client.Tests
 {
     public static class TestUtilities
     {
-        public static FeatureFlags SupportedFeatures;
+        public static Feature SupportedFeatures;
 
         static TestUtilities()
         {
@@ -112,14 +112,14 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("DateTime('UTC')", typeof(DateTime), "toDateTime('1988-08-28 11:22:33', 'UTC')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Unspecified));
             yield return new DataTypeSample("DateTime('Pacific/Fiji')", typeof(DateTime), "toDateTime('1999-01-01 13:00:00', 'Pacific/Fiji')", new DateTime(1999, 01, 01, 13, 00, 00, DateTimeKind.Unspecified));
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDateTime64))
+            if (SupportedFeatures.HasFlag(Feature.DateTime64))
             {
                 yield return new DataTypeSample("DateTime64(4, 'UTC')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444', 9, 'UTC')", new DateTime(644444444444444000, DateTimeKind.Utc));
                 yield return new DataTypeSample("DateTime64(7, 'UTC')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'UTC')", new DateTime(644444444444444444, DateTimeKind.Utc));
                 yield return new DataTypeSample("DateTime64(7, 'Pacific/Fiji')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'Pacific/Fiji')", new DateTime(644444444444444444, DateTimeKind.Unspecified));
             }
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDecimal))
+            if (SupportedFeatures.HasFlag(Feature.Decimals))
             {
                 yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(123.45, 3)", new decimal(123.45));
                 yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(-123.45, 3)", new decimal(-123.45));
@@ -133,10 +133,10 @@ namespace ClickHouse.Client.Tests
                 yield return new DataTypeSample("Decimal128(25)", typeof(decimal), "toDecimal128(1e-24, 25)", new decimal(1e-24));
             }
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsIPv6))
+            if (SupportedFeatures.HasFlag(Feature.IPv6))
                 yield return new DataTypeSample("IPv6", typeof(IPAddress), "toIPv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334')", IPAddress.Parse("2001:0db8:85a3:0000:0000:8a2e:0370:7334"));
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsMap))
+            if (SupportedFeatures.HasFlag(Feature.Map))
             {
                 yield return new DataTypeSample("Map(String, UInt8)", typeof(Dictionary<string, byte>), "map('A',1,'B',2)", new Dictionary<string, byte> { { "A", 1 }, { "B", 2 } });
                 yield return new DataTypeSample("Map(UInt8, String)", typeof(Dictionary<byte, string>), "map(1,'A',2,'B')", new Dictionary<byte, string> { { 1, "A" }, { 2, "B" } });
@@ -150,18 +150,18 @@ namespace ClickHouse.Client.Tests
                     });
             }
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsBool))
+            if (SupportedFeatures.HasFlag(Feature.Bool))
             {
                 yield return new DataTypeSample("Bool", typeof(bool), "CAST(1, 'Bool')", true);
             }
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDate32))
+            if (SupportedFeatures.HasFlag(Feature.Date32))
             {
                 yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('2001-02-03')", new DateTime(2001, 02, 03));
                 yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('1925-01-02')", new DateTime(1925, 01, 02));
             }
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsWideTypes))
+            if (SupportedFeatures.HasFlag(Feature.WideTypes))
             {
                 yield return new DataTypeSample("Int128", typeof(BigInteger), "toInt128(concat('-1', repeat('0', 30)))", -BigInteger.Pow(new BigInteger(10), 30));
                 yield return new DataTypeSample("UInt128", typeof(BigInteger), "toInt128(concat('1', repeat('0', 30)))", BigInteger.Pow(new BigInteger(10), 30));

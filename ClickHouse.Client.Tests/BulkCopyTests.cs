@@ -123,7 +123,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        [RequiredFeature(FeatureFlags.SupportsInlineQuery)]
+        [RequiredFeature(Feature.InlineQuery)]
         public async Task ShouldInsertIntoTableWithLotsOfColumns()
         {
             var tblName = "test.bulk_long_columns";
