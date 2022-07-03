@@ -10,7 +10,7 @@
     <Authors>Oleg Kozlyuk</Authors>
     <Description>Fast binary-over-HTTP ADO.NET provider for ClickHouse</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <!-- PackageReadmeFile>README.md</PackageReadmeFile -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -19,6 +19,10 @@
     <AnalysisMode>Recommended</AnalysisMode>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+        
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.17" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
