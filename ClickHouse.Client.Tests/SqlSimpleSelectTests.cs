@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Readers;
@@ -128,15 +129,18 @@ namespace ClickHouse.Client.Tests
         {
             var types = TypeConverter.RegisteredTypes
                 .Where(dt => dt.Contains("Int") || dt.Contains("Float"))
+                .Where(dt => !dt.Contains("128") || TestUtilities.SupportedFeatures.HasFlag(FeatureFlags.SupportsWideTypes))
+                .Where(dt => !dt.Contains("256") || TestUtilities.SupportedFeatures.HasFlag(FeatureFlags.SupportsWideTypes))
                 .Select(dt => $"to{dt}(55)")
                 .ToArray();
+
             var sql = $"select {string.Join(',', types)}";
 
             using var reader = await connection.ExecuteReaderAsync(sql);
             Assert.AreEqual(types.Length, reader.FieldCount);
 
             var data = reader.GetEnsureSingleRow();
-            Assert.AreEqual(Enumerable.Repeat(55.0d, data.Length), data);
+            Assert.That(data, Is.All.EqualTo(55).Or.EqualTo(new BigInteger(55)));
         }
 
         [Test]

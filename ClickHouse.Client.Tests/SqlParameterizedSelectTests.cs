@@ -98,7 +98,7 @@ namespace ClickHouse.Client.Tests
             command.AddParameter("var", clickHouseType, value);
 
             var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow();
-            Assert.AreEqual(result[0], result[1]);
+            Assert.AreEqual(result[1], result[0]);
 
             if (value is null || value is DBNull)
             {

@@ -126,7 +126,8 @@ namespace ClickHouse.Client.Types
 
             bigIntBytes.CopyTo(decimalBytes, 0);
 
-            // If a negative BigInteger is not long enough to fill the whole buffer, the remainder needs to be filled with 0xFF
+            // If a negative BigInteger is not long enough to fill the whole buffer,
+            // the remainder needs to be filled with 0xFF
             if (bigInt < 0)
             {
                 for (int i = bigIntBytes.Length; i < Size; i++)
