@@ -80,7 +80,6 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override double GetDouble(int ordinal) => (double)GetValue(ordinal);
 
-
         public override Type GetFieldType(int ordinal)
         {
             var rawType = RawTypes[ordinal];
