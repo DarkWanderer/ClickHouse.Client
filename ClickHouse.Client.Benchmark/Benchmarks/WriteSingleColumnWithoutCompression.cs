@@ -30,7 +30,7 @@ namespace ClickHouse.Client.Benchmark.Benchmarks
             using var targetConnection = GetConnection();
             await targetConnection.ExecuteStatementAsync($"CREATE DATABASE IF NOT EXISTS {targetDatabase}");
             await targetConnection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await targetConnection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE Memory");
+            await targetConnection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE TinyLog");
 
             targetConnection.ChangeDatabase(targetDatabase);
 
