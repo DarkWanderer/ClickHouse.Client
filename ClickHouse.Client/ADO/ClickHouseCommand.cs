@@ -183,37 +183,5 @@ namespace ClickHouse.Client.ADO
             else
                 return null;
         }
-
-        private static string SubstituteParameters(string query, IDictionary<string, string> parameters)
-        {
-            var builder = new StringBuilder(query.Length);
-
-            var paramStartPos = query.IndexOf('{');
-            var paramEndPos = -1;
-
-            while (paramStartPos != -1)
-            {
-                builder.Append(query.Substring(paramEndPos + 1, paramStartPos - paramEndPos - 1));
-
-                paramStartPos += 1;
-                paramEndPos = query.IndexOf('}', paramStartPos);
-                var param = query.Substring(paramStartPos, paramEndPos - paramStartPos);
-                var delimiterPos = param.LastIndexOf(':');
-                if (delimiterPos == -1)
-                    throw new NotSupportedException($"param {param} doesn`t have data type");
-                var name = param.Substring(0, delimiterPos);
-
-                if (!parameters.TryGetValue(name, out var value))
-                    throw new ArgumentOutOfRangeException($"Parameter {name} not found in parameters list");
-
-                builder.Append(value);
-
-                paramStartPos = query.IndexOf('{', paramEndPos);
-            }
-
-            builder.Append(query.Substring(paramEndPos + 1, query.Length - paramEndPos - 1));
-
-            return builder.ToString();
-        }
     }
 }
