@@ -23,7 +23,6 @@ ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra
 
 Compared to other existing .NET clients, `ClickHouse.Client` has following advantages 
 * Does not have to buffer response, reducing memory usage
-* Is version-agnostic
 * Offers wider support for ClickHouse-specific types
 * Is more compliant to ADO.NET standards (e.g. does not require calling 'NextResult' on `SELECT` queries)
 
