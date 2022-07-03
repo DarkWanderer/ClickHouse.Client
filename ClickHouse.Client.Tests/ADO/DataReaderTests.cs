@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Data;
+using System.Linq;
+using System.Threading.Tasks;
 using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
@@ -179,11 +181,11 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        public async Task ShouldEnumerateCurrentRowValues()
+        public async Task ShouldEnumerateRows()
         {
-            using var reader = await connection.ExecuteReaderAsync("SELECT 1,2,3");
-            Assert.IsTrue(reader.Read());
-            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, reader);
+            using var reader = await connection.ExecuteReaderAsync("SELECT * FROM system.numbers LIMIT 100");
+            var rows = reader.Cast<IDataRecord>().Select(row => row[0]).ToList();
+            CollectionAssert.AreEqual(Enumerable.Range(0, 100), rows);
             Assert.IsFalse(reader.Read());
         }
     }

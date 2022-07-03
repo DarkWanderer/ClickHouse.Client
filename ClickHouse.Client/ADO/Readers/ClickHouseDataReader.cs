@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
@@ -15,7 +16,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO.Readers
 {
-    public class ClickHouseDataReader : DbDataReader
+    public class ClickHouseDataReader : DbDataReader, IEnumerator<IDataReader>, IEnumerable<IDataReader>, IDataRecord
     {
         private const int BufferSize = 512 * 1024;
 
@@ -79,7 +80,6 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override double GetDouble(int ordinal) => (double)GetValue(ordinal);
 
-        public override IEnumerator GetEnumerator() => CurrentRow.GetEnumerator();
 
         public override Type GetFieldType(int ordinal)
         {
@@ -171,6 +171,7 @@ namespace ClickHouse.Client.ADO.Readers
             return true;
         }
 
+        #pragma warning disable CA2215 // Dispose methods should call base class dispose
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -179,6 +180,7 @@ namespace ClickHouse.Client.ADO.Readers
                 reader?.Dispose();
             }
         }
+        #pragma warning restore CA2215 // Dispose methods should call base class dispose
 
         private void ReadHeaders()
         {
@@ -205,5 +207,17 @@ namespace ClickHouse.Client.ADO.Readers
                 RawTypes[i] = TypeConverter.ParseClickHouseType(chType);
             }
         }
+
+        public bool MoveNext() => Read();
+
+        public void Reset() => throw new NotSupportedException();
+
+        public override IEnumerator GetEnumerator() => this;
+
+        IEnumerator<IDataReader> IEnumerable<IDataReader>.GetEnumerator() => this;
+
+        public IDataReader Current => this;
+
+        object IEnumerator.Current => this;
     }
 }
