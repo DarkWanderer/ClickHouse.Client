@@ -29,7 +29,7 @@ namespace ClickHouse.Client.Types
                     return new Enum8Type { values = parameters };
                 case "Enum16":
                     return new Enum16Type { values = parameters };
-                default: throw new ArgumentOutOfRangeException();
+                default: throw new ArgumentOutOfRangeException($"Unsupported Enum type: {node.Value}");
             }
         }
 
