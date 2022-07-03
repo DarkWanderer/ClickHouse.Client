@@ -41,7 +41,7 @@ namespace ClickHouse.Client.Tests
             return new ClickHouseConnectionStringBuilder(devConnectionString);
         }
 
-        public struct DataTypeSample
+        public readonly struct DataTypeSample
         {
             public readonly string ClickHouseType;
             public readonly Type FrameworkType;

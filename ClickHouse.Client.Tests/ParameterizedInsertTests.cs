@@ -39,6 +39,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
+        [RequiredFeature(FeatureFlags.SupportsUUIDParameters)]
         public async Task ShouldInsertParameterizedUUIDArray()
         {
             if (!TestUtilities.SupportedFeatures.HasFlag(FeatureFlags.SupportsUUIDParameters))

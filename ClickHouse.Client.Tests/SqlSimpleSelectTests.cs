@@ -93,11 +93,9 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
+        [RequiredFeature(FeatureFlags.SupportsDateTime64)]
         public async Task DateTime64SelectShouldHaveCorrectTimezone()
         {
-            if (!TestUtilities.SupportedFeatures.HasFlag(FeatureFlags.SupportsDateTime64))
-                Assert.Inconclusive("Server does not support DateTime64");
-
             using var reader = await connection.ExecuteReaderAsync("SELECT toDateTime64(1577836800, 3, 'Asia/Sakhalin')");
 
             reader.AssertHasFieldCount(1);
