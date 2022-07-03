@@ -147,17 +147,9 @@ namespace ClickHouse.Client.ADO
             if (commandParameters != null)
             {
                 await connection.EnsureOpenAsync().ConfigureAwait(false); // Preserve old behavior
-                if (connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsHttpParameters))
+                foreach (ClickHouseDbParameter parameter in commandParameters)
                 {
-                    foreach (ClickHouseDbParameter parameter in commandParameters)
-                        uriBuilder.AddQueryParameter(parameter.ParameterName, HttpParameterFormatter.Format(parameter));
-                }
-                else
-                {
-                    var formattedParameters = new Dictionary<string, string>(commandParameters.Count);
-                    foreach (ClickHouseDbParameter parameter in commandParameters)
-                        formattedParameters.TryAdd(parameter.ParameterName, InlineParameterFormatter.Format(parameter));
-                    sqlQuery = SubstituteParameters(sqlQuery, formattedParameters);
+                    uriBuilder.AddQueryParameter(parameter.ParameterName, HttpParameterFormatter.Format(parameter));
                 }
             }
 

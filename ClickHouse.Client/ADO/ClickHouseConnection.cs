@@ -273,10 +273,6 @@ namespace ClickHouse.Client.ADO
         internal static FeatureFlags GetFeatureFlags(Version serverVersion)
         {
             FeatureFlags flags = 0;
-            if (serverVersion > new Version(19, 11, 3, 11))
-            {
-                flags |= FeatureFlags.SupportsHttpParameters;
-            }
             if (serverVersion > new Version(20, 1, 2, 4))
             {
                 flags |= FeatureFlags.SupportsDateTime64;

@@ -16,7 +16,6 @@ jobs:
       fail-fast: false
       matrix:
         tag:
-        - 'yandex/clickhouse-server:19.11.2.7'
         - 'yandex/clickhouse-server:20.3.18.10'
     services:
       clickhouse:
