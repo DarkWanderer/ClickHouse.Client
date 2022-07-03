@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
@@ -19,7 +20,7 @@ namespace ClickHouse.Client.Types
             var parameters = node.ChildNodes
                 .Select(cn => cn.Value)
                 .Select(p => p.Split('='))
-                .ToDictionary(kvp => kvp[0].Trim().Trim('\''), kvp => Convert.ToInt32(kvp[1].Trim()));
+                .ToDictionary(kvp => kvp[0].Trim().Trim('\''), kvp => Convert.ToInt32(kvp[1].Trim(), CultureInfo.InvariantCulture));
 
             switch (node.Value)
             {
