@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using ClickHouse.Client.Formats;
 
 namespace ClickHouse.Client.Types
@@ -11,7 +12,7 @@ namespace ClickHouse.Client.Types
 
         public override void Write(ExtendedBinaryWriter writer, object value)
         {
-            var enumIndex = value is string enumStr ? (sbyte)Lookup(enumStr) : Convert.ToSByte(value);
+            var enumIndex = value is string enumStr ? (sbyte)Lookup(enumStr) : Convert.ToSByte(value, CultureInfo.InvariantCulture);
             writer.Write(enumIndex);
         }
     }

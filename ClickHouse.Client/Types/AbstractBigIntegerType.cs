@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Numerics;
 using ClickHouse.Client.Formats;
 
@@ -26,7 +27,7 @@ namespace ClickHouse.Client.Types
                 uint ui => new BigInteger(ui),
                 long l => new BigInteger(l),
                 ulong ul => new BigInteger(ul),
-                _ => new BigInteger(Convert.ToInt64(value))
+                _ => new BigInteger(Convert.ToInt64(value, CultureInfo.InvariantCulture))
             };
 
             byte[] bigIntBytes = bigInt.ToByteArray();

@@ -18,7 +18,7 @@ namespace ClickHouse.Client.Types
         {
             return new FixedStringType
             {
-                Length = int.Parse(node.SingleChild.Value),
+                Length = int.Parse(node.SingleChild.Value, CultureInfo.InvariantCulture),
             };
         }
 

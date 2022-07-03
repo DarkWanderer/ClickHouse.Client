@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using ClickHouse.Client.Types.Grammar;
 
 namespace ClickHouse.Client.Types
@@ -16,7 +17,7 @@ namespace ClickHouse.Client.Types
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc) => new Decimal64Type
         {
-            Scale = int.Parse(node.SingleChild.Value),
+            Scale = int.Parse(node.SingleChild.Value, CultureInfo.InvariantCulture),
         };
 
         public override string ToString() => $"{Name}({Scale})";

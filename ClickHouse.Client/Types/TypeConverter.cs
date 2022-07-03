@@ -148,12 +148,12 @@ namespace ClickHouse.Client.Types
                 return new NullableType() { UnderlyingType = ToClickHouseType(underlyingType) };
             }
 
-            if (type.IsGenericType && type.GetGenericTypeDefinition().FullName.StartsWith("System.Tuple"))
+            if (type.IsGenericType && type.GetGenericTypeDefinition().FullName.StartsWith("System.Tuple", StringComparison.InvariantCulture))
             {
                 return new TupleType { UnderlyingTypes = type.GetGenericArguments().Select(ToClickHouseType).ToArray() };
             }
 
-            if (type.IsGenericType && type.GetGenericTypeDefinition().FullName.StartsWith("System.Collections.Generic.Dictionary"))
+            if (type.IsGenericType && type.GetGenericTypeDefinition().FullName.StartsWith("System.Collections.Generic.Dictionary", StringComparison.InvariantCulture))
             {
                 var types = type.GetGenericArguments().Select(ToClickHouseType).ToArray();
                 return new MapType { UnderlyingTypes = Tuple.Create(types[0], types[1]) };

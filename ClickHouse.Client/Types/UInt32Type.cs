@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using ClickHouse.Client.Formats;
 
 namespace ClickHouse.Client.Types
@@ -11,6 +12,6 @@ namespace ClickHouse.Client.Types
 
         public override string ToString() => "UInt32";
 
-        public override void Write(ExtendedBinaryWriter writer, object value) => writer.Write(Convert.ToUInt32(value));
+        public override void Write(ExtendedBinaryWriter writer, object value) => writer.Write(Convert.ToUInt32(value, CultureInfo.InvariantCulture));
     }
 }
