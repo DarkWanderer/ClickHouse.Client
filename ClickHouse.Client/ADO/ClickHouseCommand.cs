@@ -168,7 +168,7 @@ namespace ClickHouse.Client.ADO
 
             postMessage.Content = content;
 
-            var response = await connection.GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+            var response = await connection.HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
             QueryId = ExtractQueryId(response);
             return await ClickHouseConnection.HandleError(response, sqlQuery).ConfigureAwait(false);
         }

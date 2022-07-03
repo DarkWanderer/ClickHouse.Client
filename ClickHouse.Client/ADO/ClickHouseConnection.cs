@@ -210,7 +210,7 @@ namespace ClickHouse.Client.ADO
                 uriBuilder.CustomParameters.Add("query", versionQuery);
                 var request = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
                 AddDefaultHttpHeaders(request.Headers);
-                var response = await HandleError(await GetHttpClient().SendAsync(request, cancellationToken).ConfigureAwait(false), versionQuery).ConfigureAwait(false);
+                var response = await HandleError(await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false), versionQuery).ConfigureAwait(false);
                 var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
                 if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check if response starts with GZip marker
@@ -252,7 +252,7 @@ namespace ClickHouse.Client.ADO
                 postMessage.Content.Headers.Add("Content-Encoding", "gzip");
             }
 
-            using var response = await GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
+            using var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
             await ClickHouseConnection.HandleError(response, sql).ConfigureAwait(false);
         }
 
@@ -310,7 +310,7 @@ namespace ClickHouse.Client.ADO
             return flags;
         }
 
-        internal HttpClient GetHttpClient() => httpClientFactory.CreateClient(httpClientName);
+        internal HttpClient HttpClient => httpClientFactory.CreateClient(httpClientName);
 
         internal ClickHouseUriBuilder CreateUriBuilder(string sql = null) => new ClickHouseUriBuilder(serverUri)
         {
