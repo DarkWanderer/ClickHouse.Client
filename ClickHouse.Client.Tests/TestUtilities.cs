@@ -167,7 +167,7 @@ namespace ClickHouse.Client.Tests
                 yield return new DataTypeSample("Int128", typeof(BigInteger), "toInt128('170141183460469231731687303715884105727')", BigInteger.Parse("170141183460469231731687303715884105727"));
                 yield return new DataTypeSample("Int128", typeof(BigInteger), "toInt128('-170141183460469231731687303715884105728')", BigInteger.Parse("-170141183460469231731687303715884105728"));
 
-                yield return new DataTypeSample("UInt128", typeof(BigInteger), "toInt128(concat('1', repeat('0', 30)))", BigInteger.Pow(new BigInteger(10), 30));                
+                yield return new DataTypeSample("UInt128", typeof(BigInteger), "toInt128(concat('1', repeat('0', 30)))", BigInteger.Pow(new BigInteger(10), 30));
                 yield return new DataTypeSample("UInt128", typeof(BigInteger), "toUInt128('340282366920938463463374607431768211455')", BigInteger.Parse("340282366920938463463374607431768211455"));
 
                 yield return new DataTypeSample("Int256", typeof(BigInteger), "toInt256(concat('-1', repeat('0', 50)))", -BigInteger.Pow(new BigInteger(10), 50));

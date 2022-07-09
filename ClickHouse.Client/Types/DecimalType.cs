@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Numerics;
 using ClickHouse.Client.Formats;
+using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
@@ -38,7 +39,7 @@ namespace ClickHouse.Client.Types
         /// </summary>
         public virtual int Size => GetSizeFromPrecision(Precision);
 
-        public override Type FrameworkType => typeof(decimal);
+        public override Type FrameworkType => typeof(ClickHouseDecimal);
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
@@ -64,21 +65,20 @@ namespace ClickHouse.Client.Types
         {
             // ClickHouse value represented as decimal
             // Needs to be divided by Exponent to get actual value
-            decimal intermediate;
+            BigInteger mantissa;
             switch (Size)
             {
                 case 4:
-                    intermediate = reader.ReadInt32();
+                    mantissa = reader.ReadInt32();
                     break;
                 case 8:
-                    intermediate = reader.ReadInt64();
+                    mantissa = reader.ReadInt64();
                     break;
                 default:
-                    var bigInt = new BigInteger(reader.ReadBytes(Size));
-                    intermediate = (decimal)bigInt;
+                    mantissa = new BigInteger(reader.ReadBytes(Size));
                     break;
             }
-            return intermediate / Exponent;
+            return new ClickHouseDecimal(mantissa, -Scale);
         }
 
         public override string ToString() => $"{Name}({Precision}, {Scale})";
