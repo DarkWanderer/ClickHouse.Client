@@ -78,7 +78,7 @@ namespace ClickHouse.Client.Types
                     mantissa = new BigInteger(reader.ReadBytes(Size));
                     break;
             }
-            return new ClickHouseDecimal(mantissa, -Scale);
+            return new ClickHouseDecimal(mantissa, (ushort)Scale);
         }
 
         public override string ToString() => $"{Name}({Precision}, {Scale})";

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 using System.Text;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Numerics
 {
@@ -23,44 +25,65 @@ namespace ClickHouse.Client.Numerics
 
         public readonly BigInteger Mantissa { get; }
 
-        public readonly int Exponent { get; }
+        public readonly ushort Scale { get; }
 
-        public ClickHouseDecimal(BigInteger mantissa, int exponent)
+        public ClickHouseDecimal(decimal value)
+            : this()
+        {
+            // Slightly wasteful, but seems to be the cheapest way to get scale
+            var parts = decimal.GetBits(value);
+            ushort scale = (ushort)((parts[3] >> 16) & 0x7F);
+
+            value *= MathUtils.ToPower(10m, scale);
+
+            var mantissa = new BigInteger(value);
+
+            if (MaxPrecision > 0)
+            {
+                // Normalize() is called as part of Truncate()
+                Truncate(ref mantissa, ref scale, MaxPrecision);
+            }
+
+            Mantissa = mantissa;
+            Scale = scale;
+        }
+
+        public ClickHouseDecimal(BigInteger mantissa, ushort scale)
             : this()
         {
             if (MaxPrecision > 0)
             {
                 // Normalize() is called as part of Truncate()
-                Truncate(ref mantissa, ref exponent, MaxPrecision);
+                Truncate(ref mantissa, ref scale, MaxPrecision);
             }
             else
             {
-                Normalize(ref mantissa, ref exponent);
+                Normalize(ref mantissa, ref scale);
             }
 
             Mantissa = mantissa;
-            Exponent = exponent;
+            Scale = scale;
         }
 
         /// <summary>
         /// Removes trailing zeros on the mantissa
         /// </summary>
-        private static void Normalize(ref BigInteger mantissa, ref int exponent)
+        private static void Normalize(ref BigInteger mantissa, ref ushort scale)
         {
             if (mantissa.IsZero)
             {
-                exponent = 0;
+                scale = 0;
             }
             else
             {
                 BigInteger remainder = 0;
-                while (remainder == 0)
+                while (remainder == 0 && scale > 0)
                 {
                     var shortened = BigInteger.DivRem(mantissa, 10, out remainder);
                     if (remainder == 0)
                     {
                         mantissa = shortened;
-                        exponent++;
+                        scale--;
                     }
                 }
             }
@@ -69,41 +92,31 @@ namespace ClickHouse.Client.Numerics
         /// <summary>
         /// Truncate the number to the given precision by removing the least significant digits.
         /// </summary>
-        private static void Truncate(ref BigInteger mantissa, ref int exponent, int precision)
+        private static void Truncate(ref BigInteger mantissa, ref ushort scale, int precision)
         {
-            // save some time because the number of digits is not needed to remove trailing zeros
-            Normalize(ref mantissa, ref exponent);
-
-            if (precision > -exponent)
-                return;
-
             // remove the least significant digits, as long as the number of digits is higher than the given Precision
             int digits = NumberOfDigits(mantissa);
-            int digitsToRemove = Math.Max(digits - precision, 0);
+            ushort digitsToRemove = (ushort)Math.Max(digits - precision, 0);
+            digitsToRemove = Math.Min(digitsToRemove, scale);
             mantissa /= BigInteger.Pow(10, digitsToRemove);
-            exponent += digitsToRemove;
-
-            // normalize again to make sure there are no trailing zeros left
-            Normalize(ref mantissa, ref exponent);
+            scale -= digitsToRemove;
         }
 
         public ClickHouseDecimal Truncate(int precision = 0)
         {
             var mantissa = Mantissa;
-            var exponent = Exponent;
-            Truncate(ref mantissa, ref exponent, precision);
-            return new ClickHouseDecimal(mantissa, exponent);
+            var scale = Scale;
+            Truncate(ref mantissa, ref scale, precision);
+            return new ClickHouseDecimal(mantissa, scale);
         }
 
         public ClickHouseDecimal Floor()
         {
-            return Truncate(NumberOfDigits(Mantissa) + Exponent);
+            return Truncate(NumberOfDigits(Mantissa) - Scale);
         }
 
         public static int NumberOfDigits(BigInteger value)
         {
-            // do not count the sign
-            //return (value * value.Sign).ToString().Length;
             // faster version
             return (int)Math.Ceiling(BigInteger.Log10(value * value.Sign));
         }
@@ -116,34 +129,25 @@ namespace ClickHouse.Client.Numerics
         public static implicit operator ClickHouseDecimal(double value)
         {
             var mantissa = (BigInteger)value;
-            var exponent = 0;
+            ushort scale = 0;
             double scaleFactor = 1;
-            while (Math.Abs(value * scaleFactor - (double)mantissa) > 0)
+            while (Math.Abs((value * scaleFactor) - (double)mantissa) > 0)
             {
-                exponent -= 1;
+                scale += 1;
                 scaleFactor *= 10;
                 mantissa = (BigInteger)(value * scaleFactor);
             }
-            return new ClickHouseDecimal(mantissa, exponent);
+            return new ClickHouseDecimal(mantissa, scale);
         }
 
         public static implicit operator ClickHouseDecimal(decimal value)
         {
-            var mantissa = (BigInteger)value;
-            var exponent = 0;
-            decimal scaleFactor = 1;
-            while ((decimal)mantissa != value * scaleFactor)
-            {
-                exponent -= 1;
-                scaleFactor *= 10;
-                mantissa = (BigInteger)(value * scaleFactor);
-            }
-            return new ClickHouseDecimal(mantissa, exponent);
+            return new ClickHouseDecimal(value);
         }
 
         public static explicit operator double(ClickHouseDecimal value)
         {
-            return (double)value.Mantissa * Math.Pow(10, value.Exponent);
+            return (double)value.Mantissa * Math.Pow(10, value.Scale);
         }
 
         public static explicit operator float(ClickHouseDecimal value)
@@ -153,27 +157,45 @@ namespace ClickHouse.Client.Numerics
 
         public static explicit operator decimal(ClickHouseDecimal value)
         {
-            return (decimal)value.Mantissa * (decimal)Math.Pow(10, value.Exponent);
+            var mantissa = value.Mantissa;
+            var scale = value.Scale;
+
+            Truncate(ref mantissa, ref scale, 28);
+
+            bool sign = mantissa < 0;
+            if (sign)
+            {
+                mantissa = -mantissa;
+            }
+
+            var data = new byte[3 * sizeof(int)];
+            mantissa.ToByteArray().CopyTo(data, 0);
+            int part0 = BitConverter.ToInt32(data, 0);
+            int part1 = BitConverter.ToInt32(data, 4);
+            int part2 = BitConverter.ToInt32(data, 8);
+
+            var result = new decimal(part0, part1, part2, sign, (byte)scale);
+            return result;
         }
 
         public static explicit operator int(ClickHouseDecimal value)
         {
-            return (int)(value.Mantissa * BigInteger.Pow(10, value.Exponent));
+            return (int)(value.Mantissa * BigInteger.Pow(10, value.Scale));
         }
 
         public static explicit operator uint(ClickHouseDecimal value)
         {
-            return (uint)(value.Mantissa * BigInteger.Pow(10, value.Exponent));
+            return (uint)(value.Mantissa * BigInteger.Pow(10, value.Scale));
         }
 
         public static explicit operator long(ClickHouseDecimal value)
         {
-            return (long)(value.Mantissa * BigInteger.Pow(10, value.Exponent));
+            return (long)(value.Mantissa * BigInteger.Pow(10, value.Scale));
         }
 
         public static explicit operator ulong(ClickHouseDecimal value)
         {
-            return (ulong)(value.Mantissa * BigInteger.Pow(10, value.Exponent));
+            return (ulong)(value.Mantissa * BigInteger.Pow(10, value.Scale));
         }
 
         public static ClickHouseDecimal operator +(ClickHouseDecimal value)
@@ -183,7 +205,7 @@ namespace ClickHouse.Client.Numerics
 
         public static ClickHouseDecimal operator -(ClickHouseDecimal value)
         {
-            return new ClickHouseDecimal(-value.Mantissa, value.Exponent);
+            return new ClickHouseDecimal(-value.Mantissa, value.Scale);
         }
 
         public static ClickHouseDecimal operator ++(ClickHouseDecimal value)
@@ -198,24 +220,25 @@ namespace ClickHouse.Client.Numerics
 
         public static ClickHouseDecimal operator +(ClickHouseDecimal left, ClickHouseDecimal right)
         {
-            return Add(left, right);
+            var scale = Math.Max(left.Scale, right.Scale);
+            var left_mantissa = ToScale(left, scale);
+            var right_mantissa = ToScale(right, scale);
+
+            return new ClickHouseDecimal(left_mantissa + right_mantissa, scale);
         }
 
         public static ClickHouseDecimal operator -(ClickHouseDecimal left, ClickHouseDecimal right)
         {
-            return Add(left, -right);
-        }
+            var scale = Math.Max(left.Scale, right.Scale);
+            var left_mantissa = ToScale(left, scale);
+            var right_mantissa = ToScale(right, scale);
 
-        private static ClickHouseDecimal Add(ClickHouseDecimal left, ClickHouseDecimal right)
-        {
-            return left.Exponent > right.Exponent
-                ? new ClickHouseDecimal(AlignExponent(left, right) + right.Mantissa, right.Exponent)
-                : new ClickHouseDecimal(AlignExponent(right, left) + left.Mantissa, left.Exponent);
+            return new ClickHouseDecimal(left_mantissa - right_mantissa, scale);
         }
 
         public static ClickHouseDecimal operator *(ClickHouseDecimal left, ClickHouseDecimal right)
         {
-            return new ClickHouseDecimal(left.Mantissa * right.Mantissa, left.Exponent + right.Exponent);
+            return new ClickHouseDecimal(left.Mantissa * right.Mantissa, (ushort)(left.Scale + right.Scale));
         }
 
         public static ClickHouseDecimal operator /(ClickHouseDecimal dividend, ClickHouseDecimal divisor)
@@ -225,81 +248,81 @@ namespace ClickHouse.Client.Numerics
             {
                 exponentChange = 0;
             }
-            var dividendMantissa = dividend.Mantissa * BigInteger.Pow(10, exponentChange);
-            return new ClickHouseDecimal(dividendMantissa / divisor.Mantissa, dividend.Exponent - divisor.Exponent - exponentChange);
+            var scale = checked {                (ushort)(dividend.Scale - divisor.Scale + exponentChange);            }
+            return new ClickHouseDecimal(dividendMantissa / divisor.Mantissa, scale);
         }
 
         public static ClickHouseDecimal operator %(ClickHouseDecimal left, ClickHouseDecimal right)
         {
-            return left - right * (left / right).Floor();
+            return left - (right * (left / right).Floor());
         }
 
         public static bool operator ==(ClickHouseDecimal left, ClickHouseDecimal right)
         {
-            return left.Exponent == right.Exponent && left.Mantissa == right.Mantissa;
+            return left.CompareTo(right) == 0;
         }
 
         public static bool operator !=(ClickHouseDecimal left, ClickHouseDecimal right)
         {
-            return left.Exponent != right.Exponent || left.Mantissa != right.Mantissa;
+            return left.CompareTo(right) != 0;
         }
 
         public static bool operator <(ClickHouseDecimal left, ClickHouseDecimal right)
         {
-            return left.Exponent > right.Exponent ? AlignExponent(left, right) < right.Mantissa : left.Mantissa < AlignExponent(right, left);
+            return left.CompareTo(right) < 0;
         }
 
         public static bool operator >(ClickHouseDecimal left, ClickHouseDecimal right)
         {
-            return left.Exponent > right.Exponent ? AlignExponent(left, right) > right.Mantissa : left.Mantissa > AlignExponent(right, left);
+            return left.CompareTo(right) > 0;
         }
 
         public static bool operator <=(ClickHouseDecimal left, ClickHouseDecimal right)
         {
-            return left.Exponent > right.Exponent ? AlignExponent(left, right) <= right.Mantissa : left.Mantissa <= AlignExponent(right, left);
+            return left.CompareTo(right) <= 0;
         }
 
         public static bool operator >=(ClickHouseDecimal left, ClickHouseDecimal right)
         {
-            return left.Exponent > right.Exponent ? AlignExponent(left, right) >= right.Mantissa : left.Mantissa >= AlignExponent(right, left);
+            return left.CompareTo(right) >= 0;
         }
 
-        /// <summary>
-        /// Returns the mantissa of value, aligned to the exponent of reference.
-        /// Assumes the exponent of value is larger than of reference.
-        /// </summary>
-        private static BigInteger AlignExponent(ClickHouseDecimal value, ClickHouseDecimal reference)
+        private static BigInteger ToScale(ClickHouseDecimal value, ushort scale)
         {
-            return value.Mantissa * BigInteger.Pow(10, value.Exponent - reference.Exponent);
+            if (scale == value.Scale)
+                return value.Mantissa;
+            if (scale < value.Scale)
+                throw new ArgumentException("Cannot adjust mantissa to lower scale", nameof(scale));
+            return value.Mantissa * BigInteger.Pow(10, scale - value.Scale);
         }
 
-        public static ClickHouseDecimal Exp(double exponent)
+        public static ClickHouseDecimal Exp(double scale)
         {
             var tmp = (ClickHouseDecimal)1;
-            while (Math.Abs(exponent) > 100)
+            while (Math.Abs(scale) > 100)
             {
-                var diff = exponent > 0 ? 100 : -100;
+                var diff = scale > 0 ? 100 : -100;
                 tmp *= Math.Exp(diff);
-                exponent -= diff;
+                scale -= diff;
             }
-            return tmp * Math.Exp(exponent);
+            return tmp * Math.Exp(scale);
         }
 
-        public static ClickHouseDecimal Pow(double basis, double exponent)
+        public static ClickHouseDecimal Pow(double basis, double scale)
         {
             var tmp = (ClickHouseDecimal)1;
-            while (Math.Abs(exponent) > 100)
+            while (Math.Abs(scale) > 100)
             {
-                var diff = exponent > 0 ? 100 : -100;
+                var diff = scale > 0 ? 100 : -100;
                 tmp *= Math.Pow(basis, diff);
-                exponent -= diff;
+                scale -= diff;
             }
-            return tmp * Math.Pow(basis, exponent);
+            return tmp * Math.Pow(basis, scale);
         }
 
         public bool Equals(ClickHouseDecimal other)
         {
-            return other.Mantissa.Equals(Mantissa) && other.Exponent == Exponent;
+            return other.Mantissa.Equals(Mantissa) && other.Scale == Scale;
         }
 
         public override bool Equals(object obj) => CompareTo(obj) == 0;
@@ -308,7 +331,7 @@ namespace ClickHouse.Client.Numerics
         {
             unchecked
             {
-                return (Mantissa.GetHashCode() * 397) ^ Exponent;
+                return (Mantissa.GetHashCode() * 397) ^ Scale;
             }
         }
 
@@ -319,7 +342,11 @@ namespace ClickHouse.Client.Numerics
 
         public int CompareTo(ClickHouseDecimal other)
         {
-            return this < other ? -1 : (this > other ? 1 : 0);
+            var maxScale = Math.Max(Scale, other.Scale);
+            var left_mantissa = ToScale(this, maxScale);
+            var right_mantissa = ToScale(other, maxScale);
+
+            return left_mantissa.CompareTo(right_mantissa);
         }
 
         public string ToString(string format, IFormatProvider formatProvider) => ToString(formatProvider);
@@ -330,26 +357,25 @@ namespace ClickHouse.Client.Numerics
             var numberFormat = cultureInfo.NumberFormat;
             var builder = new StringBuilder();
 
-
-            if (Exponent < 0)
+            var mantissa = Mantissa;
+            if (mantissa < 0)
             {
-                var mantissa = Mantissa;
-                if (mantissa < 0)
-                {
-                    builder.Append(numberFormat.NegativeSign);
-                    mantissa = -mantissa;
-                }
-                var factor = BigInteger.Pow(10, -Exponent);
+                builder.Append(numberFormat.NegativeSign);
+                mantissa = -mantissa;
+            }
+
+            if (Scale > 0)
+            {
+                var factor = BigInteger.Pow(10, Scale);
                 var wholePart = mantissa / factor;
                 var fractionalPart = mantissa - (wholePart * factor);
-
                 builder.Append(wholePart.ToString(formatProvider));
                 builder.Append(numberFormat.NumberDecimalSeparator);
-                builder.Append(fractionalPart.ToString(formatProvider).PadLeft(-Exponent, '0'));
+                builder.Append(fractionalPart.ToString(formatProvider).PadLeft(Scale, '0'));
             }
             else
             {
-                builder.Append(Mantissa * BigInteger.Pow(10, Exponent));
+                builder.Append(mantissa.ToString(formatProvider));
             }
 
             return builder.ToString();

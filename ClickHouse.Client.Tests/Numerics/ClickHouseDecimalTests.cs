@@ -17,27 +17,24 @@ namespace ClickHouse.Client.Tests.Numerics
 
         public static readonly decimal[] Decimals = new decimal[]
         {
-            -10000000000m,
-            -9876543210m,
+            -1000000000000m,
             -5478689523m,
-            -45979752m,
+            -459m,
             -1.234m,
             -0.7777m,
-            -1.0m,
-            -0.1m,
-            -0.00000001m,
+            -0.00000000001m,
             0,
-            0.000000001m,
+            0.000000000001m,
             0.000003m,
             0.1m,
             0.19374596m,
             1.0m,
+            1.000m,
             2.0m,
             3.14159265359m,
             10,
             1000000,
-            2000000,
-            10000000000m,
+            1000000000000m,
         };
 
         public static readonly decimal[] DecimalsWithoutZero = Decimals.Where(d => d != 0).ToArray();
@@ -52,21 +49,36 @@ namespace ClickHouse.Client.Tests.Numerics
         };
 
         [Test]
-        [TestCase(1, 0, ExpectedResult = 0)]
-        [TestCase(1, -1, ExpectedResult = -1)]
-        [TestCase(1000, 0, ExpectedResult = 3)]
-        [TestCase(1, 6, ExpectedResult = 6)]
-        [TestCase(1000, 6, ExpectedResult = 9)]
-        public int ShouldNormalize(long mantissa, int exponent) => new ClickHouseDecimal(mantissa, exponent).Exponent;
+        [TestCase(0.001, ExpectedResult = 3)]
+        [TestCase(0.01, ExpectedResult = 2)]
+        [TestCase(0.1, ExpectedResult = 1)]
+        [TestCase(1, ExpectedResult = 0)]
+        [TestCase(10, ExpectedResult = 0)]
+        public int ShouldNormalizeScale(decimal @decimal) => new ClickHouseDecimal(@decimal).Scale;
 
         [Test]
+        [TestCase(0.001, ExpectedResult = 1)]
+        [TestCase(0.01, ExpectedResult = 1)]
+        [TestCase(0.1, ExpectedResult = 1)]
         [TestCase(1, ExpectedResult = 1)]
-        [TestCase(1000, ExpectedResult = 1)]
-        [TestCase(3900, ExpectedResult = 39)]
-        [TestCase(1.234d, ExpectedResult = 1234)]
-        public long ShouldConvert(decimal value) => (long)((ClickHouseDecimal)value).Mantissa;
+        [TestCase(10, ExpectedResult = 10)]
+        public long ShouldNormalizeMantissa(decimal value) => (long)((ClickHouseDecimal)value).Mantissa;
 
+        [Test]
+        [TestCase(12.345, 1, ExpectedResult = 12)]
+        [TestCase(12.345, 2, ExpectedResult = 12)]
+        [TestCase(12.345, 3, ExpectedResult = 12.3)]
+        [TestCase(12.345, 4, ExpectedResult = 12.34)]
+        [TestCase(12.345, 5, ExpectedResult = 12.345)]
+        public decimal ShouldTruncate(decimal value, int precision) => (decimal)new ClickHouseDecimal(value).Truncate(precision);
 
+        [Test]
+        public void ShouldRoundtripConversion( [ValueSource(typeof(ClickHouseDecimalTests), nameof(Decimals))] decimal value)
+        {
+            var result = new ClickHouseDecimal(value);
+            Assert.AreEqual(value, (decimal)result);
+        }
+            
         [Test, Combinatorial]
         public void ShouldAdd(
             [ValueSource(typeof(ClickHouseDecimalTests), nameof(Decimals))] decimal left,
@@ -126,9 +138,9 @@ namespace ClickHouse.Client.Tests.Numerics
         public void ShouldCompare([ValueSource(typeof(ClickHouseDecimalTests), nameof(Decimals))] decimal left,
                                     [ValueSource(typeof(ClickHouseDecimalTests), nameof(Decimals))] decimal right)
         {
-            decimal expected = left.CompareTo(right);
-            var actual = ((ClickHouseDecimal)left).CompareTo((ClickHouseDecimal)right);
-            Assert.AreEqual(expected, (decimal)actual);
+            int expected = left.CompareTo(right);
+            int actual = ((ClickHouseDecimal)left).CompareTo((ClickHouseDecimal)right);
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
@@ -145,12 +157,13 @@ namespace ClickHouse.Client.Tests.Numerics
         [TestCase(typeof(decimal))]
         public void ShouldConvertToType(Type type)
         {
-            ClickHouseDecimal source = 0m;
+            ClickHouseDecimal source = 5m;
             var result = Convert.ChangeType(source, type);
             Assert.AreEqual(source.ToString(), result.ToString());
         }
 
-        [Test, Ignore("Cannot get it to work yet")]
+        [Test]
+        [Ignore("Not implemented")]
         [TestCase(typeof(byte))]
         [TestCase(typeof(sbyte))]
         [TestCase(typeof(short))]
