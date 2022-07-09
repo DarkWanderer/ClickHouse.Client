@@ -4,6 +4,7 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using ClickHouse.Client.Numerics;
 using Dapper;
 using NUnit.Framework;
 
@@ -20,6 +21,7 @@ namespace ClickHouse.Client.Tests.ORM
         static DapperTests()
         {
             SqlMapper.AddTypeHandler(new DateTimeOffsetHandler());
+            SqlMapper.AddTypeHandler(new ClickHouseDecimalHandler());
         }
 
         // "The member value of type <xxxxxxxx> cannot be used as a parameter value"
@@ -53,6 +55,13 @@ namespace ClickHouse.Client.Tests.ORM
 
             public override DateTimeOffset Parse(object value)
                 => DateTimeOffset.Parse((string)value);
+        }
+        private class ClickHouseDecimalHandler : SqlMapper.TypeHandler<ClickHouseDecimal>
+        {
+            public override void SetValue(IDbDataParameter parameter, ClickHouseDecimal value) => parameter.Value = (decimal)value;
+
+            public override ClickHouseDecimal Parse(object value)
+                => new ClickHouseDecimal(Convert.ToDecimal(value));
         }
 
         [Test]
