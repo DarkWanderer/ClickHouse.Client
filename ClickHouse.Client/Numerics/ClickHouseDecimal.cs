@@ -243,13 +243,11 @@ namespace ClickHouse.Client.Numerics
 
         public static ClickHouseDecimal operator /(ClickHouseDecimal dividend, ClickHouseDecimal divisor)
         {
-            var exponentChange = MaxPrecision - (NumberOfDigits(dividend.Mantissa) - NumberOfDigits(divisor.Mantissa));
-            if (exponentChange < 0)
-            {
-                exponentChange = 0;
-            }
-            var scale = checked {                (ushort)(dividend.Scale - divisor.Scale + exponentChange);            }
-            return new ClickHouseDecimal(dividendMantissa / divisor.Mantissa, scale);
+            var scale = Math.Max(dividend.Scale, divisor.Scale);
+            var dividend_mantissa = ToScale(dividend, scale);
+            var divisor_mantissa = ToScale(divisor, scale);
+
+            return new ClickHouseDecimal(dividend_mantissa / divisor_mantissa, scale);
         }
 
         public static ClickHouseDecimal operator %(ClickHouseDecimal left, ClickHouseDecimal right)
