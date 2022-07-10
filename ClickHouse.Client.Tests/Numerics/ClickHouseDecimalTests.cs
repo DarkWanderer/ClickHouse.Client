@@ -99,6 +99,14 @@ namespace ClickHouse.Client.Tests.Numerics
         }
 
         [Test, Combinatorial]
+        public void ShouldParse([ValueSource(typeof(ClickHouseDecimalTests), nameof(Decimals))] decimal expected,
+                                    [ValueSource(typeof(ClickHouseDecimalTests), nameof(Cultures))] CultureInfo culture)
+        {
+            var actual = (decimal)ClickHouseDecimal.Parse(expected.ToString(culture), culture);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test, Combinatorial]
         public void ShouldSubtract([ValueSource(typeof(ClickHouseDecimalTests), nameof(Decimals))] decimal left,
                                     [ValueSource(typeof(ClickHouseDecimalTests), nameof(Decimals))] decimal right)
         {

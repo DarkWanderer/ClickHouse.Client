@@ -51,17 +51,15 @@ namespace ClickHouse.Client.Tests.ORM
 
         private class DateTimeOffsetHandler : SqlMapper.TypeHandler<DateTimeOffset>
         {
-            public override void SetValue(IDbDataParameter parameter, DateTimeOffset value) => parameter.Value = value;
+            public override void SetValue(IDbDataParameter parameter, DateTimeOffset value) => parameter.Value = value.UtcDateTime;
 
-            public override DateTimeOffset Parse(object value)
-                => DateTimeOffset.Parse((string)value);
+            public override DateTimeOffset Parse(object value) => DateTimeOffset.Parse((string)value);
         }
         private class ClickHouseDecimalHandler : SqlMapper.TypeHandler<ClickHouseDecimal>
         {
             public override void SetValue(IDbDataParameter parameter, ClickHouseDecimal value) => parameter.Value = (decimal)value;
 
-            public override ClickHouseDecimal Parse(object value)
-                => new ClickHouseDecimal(Convert.ToDecimal(value));
+            public override ClickHouseDecimal Parse(object value) => new(Convert.ToDecimal(value));
         }
 
         [Test]

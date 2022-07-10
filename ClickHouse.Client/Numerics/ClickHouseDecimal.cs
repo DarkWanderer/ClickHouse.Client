@@ -27,6 +27,10 @@ namespace ClickHouse.Client.Numerics
 
         public readonly ushort Scale { get; }
 
+        public static ClickHouseDecimal Zero => new ClickHouseDecimal(0, 0);
+
+        public static ClickHouseDecimal One => new ClickHouseDecimal(1, 0);
+
         public ClickHouseDecimal(decimal value)
             : this()
         {
@@ -165,7 +169,7 @@ namespace ClickHouse.Client.Numerics
             bool sign = mantissa < 0;
             if (sign)
             {
-                mantissa = -mantissa;
+                mantissa = BigInteger.Negate(mantissa);
             }
 
             var data = new byte[3 * sizeof(int)];
@@ -349,17 +353,16 @@ namespace ClickHouse.Client.Numerics
 
         public string ToString(string format, IFormatProvider formatProvider) => ToString(formatProvider);
 
-        public string ToString(IFormatProvider formatProvider)
+        public string ToString(IFormatProvider provider)
         {
-            var cultureInfo = formatProvider is CultureInfo ci ? ci : CultureInfo.InvariantCulture;
-            var numberFormat = cultureInfo.NumberFormat;
+            var numberFormat = (NumberFormatInfo)provider.GetFormat(typeof(NumberFormatInfo));
             var builder = new StringBuilder();
 
             var mantissa = Mantissa;
             if (mantissa < 0)
             {
                 builder.Append(numberFormat.NegativeSign);
-                mantissa = -mantissa;
+                mantissa = BigInteger.Negate(mantissa);
             }
 
             if (Scale > 0)
@@ -367,16 +370,43 @@ namespace ClickHouse.Client.Numerics
                 var factor = BigInteger.Pow(10, Scale);
                 var wholePart = mantissa / factor;
                 var fractionalPart = mantissa - (wholePart * factor);
-                builder.Append(wholePart.ToString(formatProvider));
+                builder.Append(wholePart.ToString(provider));
                 builder.Append(numberFormat.NumberDecimalSeparator);
-                builder.Append(fractionalPart.ToString(formatProvider).PadLeft(Scale, '0'));
+                builder.Append(fractionalPart.ToString(provider).PadLeft(Scale, '0'));
             }
             else
             {
-                builder.Append(mantissa.ToString(formatProvider));
+                builder.Append(mantissa.ToString(provider));
             }
 
             return builder.ToString();
+        }
+
+        public static ClickHouseDecimal Parse(string input) => Parse(input, CultureInfo.CurrentCulture);
+
+        public static ClickHouseDecimal Parse(string input, IFormatProvider provider)
+        {
+            var numberFormat = (NumberFormatInfo)provider.GetFormat(typeof(NumberFormatInfo));
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return Zero;
+            }
+            input = input.Trim();
+
+            string mantissaPart = input;
+            string fractionalPart = string.Empty;
+
+            int separatorIndex = input.IndexOf(numberFormat.NumberDecimalSeparator, StringComparison.InvariantCultureIgnoreCase);
+            if (separatorIndex > 0)
+            {
+                fractionalPart = input.Substring(separatorIndex + 1);
+                mantissaPart = input.Replace(numberFormat.NumberDecimalSeparator, string.Empty);
+            }
+            var mantissa = BigInteger.Parse(mantissaPart, NumberStyles.Any, provider);
+            var scale = (ushort)fractionalPart.Length;
+
+            return new ClickHouseDecimal(mantissa, scale);
         }
 
         public override string ToString() => ToString(null, CultureInfo.CurrentCulture);
