@@ -43,18 +43,26 @@ jobs:
     - name: Build
       run: dotnet build --framework netstandard2.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
 
-    - name: Run test with coverage
+    - name: Test with coverage
       run: dotnet test --framework net6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
-    - name: Upload coverage artifact
+    - name: Upload coverage xml
+      if: always()
       uses: actions/upload-artifact@v2
       with:
         name: coverage
         path: ./ClickHouse.Client.Tests/coverage.cobertura.xml
 
-    - name: Code Coverage Summary Report
+    - name: Generate summary
+      if: always()
       uses: irongut/CodeCoverageSummary@v1.2.0
       with:
+        badge: true
         filename: ./ClickHouse.Client.Tests/coverage.cobertura.xml
+        format: markdown
+        thresholds: '60 80'
+
+    - name: Post summary
+      run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
