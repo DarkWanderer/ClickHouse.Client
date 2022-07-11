@@ -44,7 +44,7 @@ jobs:
       run: dotnet build --framework netstandard2.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
 
     - name: Run test with coverage
-      run: dotnet test --framework net6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
+      run: dotnet test --framework net6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
@@ -52,4 +52,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: coverage
-        path: ./ClickHouse.Client.Tests/coverage.opencover.xml
+        path: ./ClickHouse.Client.Tests/coverage.*.xml
