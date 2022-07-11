@@ -57,7 +57,13 @@ namespace ClickHouse.Client.Tests.ORM
         }
         private class ClickHouseDecimalHandler : SqlMapper.TypeHandler<ClickHouseDecimal>
         {
-            public override void SetValue(IDbDataParameter parameter, ClickHouseDecimal value) => parameter.Value = (decimal)value;
+            public override void SetValue(IDbDataParameter parameter, ClickHouseDecimal value)
+            {
+                if (value is ClickHouseDecimal chd)
+                    parameter.Value = chd.ToString(CultureInfo.InvariantCulture);
+                else 
+                    parameter.Value = Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+            }
 
             public override ClickHouseDecimal Parse(object value) => new(Convert.ToDecimal(value));
         }

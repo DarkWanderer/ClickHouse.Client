@@ -133,7 +133,7 @@ namespace ClickHouse.Client.Tests
                 yield return new DataTypeSample("Decimal128(9)", typeof(ClickHouseDecimal), "toDecimal128(-12.34, 9)", new ClickHouseDecimal(-12.340000000m));
 
                 yield return new DataTypeSample("Decimal128(25)", typeof(ClickHouseDecimal), "toDecimal128(1e-24, 25)", new ClickHouseDecimal(10e-25m));
-                yield return new DataTypeSample("Decimal128(0)", typeof(ClickHouseDecimal), "toDecimal128(repeat('1', 25), 0)", ClickHouseDecimal.Parse(new string('1', 25)));
+                yield return new DataTypeSample("Decimal128(0)", typeof(ClickHouseDecimal), "toDecimal128(repeat('1', 30), 0)", ClickHouseDecimal.Parse(new string('1', 30)));
             }
 
             if (SupportedFeatures.HasFlag(Feature.IPv6))
