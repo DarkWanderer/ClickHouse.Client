@@ -27,9 +27,11 @@ namespace ClickHouse.Client.Numerics
 
         public readonly ushort Scale { get; }
 
-        public static ClickHouseDecimal Zero => new ClickHouseDecimal(0, 0);
+        public static ClickHouseDecimal Zero => new (0, 0);
 
-        public static ClickHouseDecimal One => new ClickHouseDecimal(1, 0);
+        public static ClickHouseDecimal One => new (1, 0);
+
+        public int Sign => Mantissa.Sign;
 
         public ClickHouseDecimal(decimal value)
             : this()
@@ -289,7 +291,7 @@ namespace ClickHouse.Client.Numerics
             return left.CompareTo(right) >= 0;
         }
 
-        private static BigInteger ToScale(ClickHouseDecimal value, ushort scale)
+        public static BigInteger ToScale(ClickHouseDecimal value, ushort scale)
         {
             if (scale == value.Scale)
                 return value.Mantissa;

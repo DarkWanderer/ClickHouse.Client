@@ -169,25 +169,5 @@ namespace ClickHouse.Client.Tests.Numerics
             var result = Convert.ChangeType(source, type);
             Assert.AreEqual(source.ToString(), result.ToString());
         }
-
-        [Test]
-        [Ignore("Not implemented")]
-        [TestCase(typeof(byte))]
-        [TestCase(typeof(sbyte))]
-        [TestCase(typeof(short))]
-        [TestCase(typeof(ushort))]
-        [TestCase(typeof(int))]
-        [TestCase(typeof(uint))]
-        [TestCase(typeof(long))]
-        [TestCase(typeof(ulong))]
-        [TestCase(typeof(float))]
-        [TestCase(typeof(double))]
-        [TestCase(typeof(decimal))]
-        public void ShouldConvertFromType(Type type)
-        {
-            var source = Convert.ChangeType(0, type);
-            var result = Convert.ChangeType(0, typeof(ClickHouseDecimal));
-            Assert.AreEqual(source.ToString(), result.ToString());
-        }
     }
 }

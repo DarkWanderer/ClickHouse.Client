@@ -37,7 +37,7 @@ namespace ClickHouse.Client.Types
         /// <summary>
         /// Gets size of type in bytes
         /// </summary>
-        public virtual int Size => GetSizeFromPrecision(Precision);
+        public virtual int Size => DecimalType.GetSizeFromPrecision(Precision);
 
         public override Type FrameworkType => typeof(ClickHouseDecimal);
 
@@ -46,7 +46,7 @@ namespace ClickHouse.Client.Types
             var precision = int.Parse(node.ChildNodes[0].Value, CultureInfo.InvariantCulture);
             var scale = int.Parse(node.ChildNodes[1].Value, CultureInfo.InvariantCulture);
 
-            var size = GetSizeFromPrecision(precision);
+            var size = DecimalType.GetSizeFromPrecision(precision);
 
             switch (size)
             {
@@ -56,6 +56,8 @@ namespace ClickHouse.Client.Types
                     return new Decimal64Type { Precision = precision, Scale = scale };
                 case 16:
                     return new Decimal128Type { Precision = precision, Scale = scale };
+                case 32:
+                    return new Decimal256Type { Precision = precision, Scale = scale };
                 default:
                     return new DecimalType { Precision = precision, Scale = scale };
             }
@@ -87,48 +89,38 @@ namespace ClickHouse.Client.Types
         {
             try
             {
-                decimal multipliedValue = Convert.ToDecimal(value, CultureInfo.InvariantCulture) * Exponent;
-                switch (Size)
-                {
-                    case 4:
-                        writer.Write((int)multipliedValue);
-                        break;
-                    case 8:
-                        writer.Write((long)multipliedValue);
-                        break;
-                    default:
-                        WriteLargeDecimal(writer, multipliedValue);
-                        break;
-                }
+                ClickHouseDecimal @decimal = value is ClickHouseDecimal chd ? chd : Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+                var mantissa = ClickHouseDecimal.ToScale(@decimal, (ushort)Scale);
+                WriteBigInteger(writer, mantissa);
             }
             catch (OverflowException)
             {
-                throw new ArgumentOutOfRangeException(nameof(value), value, $"Value cannot be represented as {this}");
+                throw new ArgumentOutOfRangeException(nameof(value), value, $"Value cannot be represented");
             }
         }
 
-        private int GetSizeFromPrecision(int precision) => precision switch
+        private static int GetSizeFromPrecision(int precision) => precision switch
         {
-            int p when p >= 1 && p < 10 => 4,
-            int p when p >= 10 && p < 19 => 8,
-            int p when p >= 19 && p < 39 => 16,
+            int p when p >= 1 && p <= 9 => 4,
+            int p when p >= 10 && p <= 18 => 8,
+            int p when p >= 19 && p <= 38 => 16,
+            int p when p >= 39 && p <= 76 => 16,
             _ => throw new ArgumentOutOfRangeException(nameof(precision)),
         };
 
-        private void WriteLargeDecimal(ExtendedBinaryWriter writer, decimal value)
+        private void WriteBigInteger(ExtendedBinaryWriter writer, BigInteger value)
         {
-            var bigInt = new BigInteger(value);
-            byte[] bigIntBytes = bigInt.ToByteArray();
+            byte[] bigIntBytes = value.ToByteArray();
             byte[] decimalBytes = new byte[Size];
 
             if (bigIntBytes.Length > Size)
-                throw new OverflowException();
+                throw new OverflowException($"Trying to write {bigIntBytes.Length} bytes, at most {Size} expected");
 
             bigIntBytes.CopyTo(decimalBytes, 0);
 
             // If a negative BigInteger is not long enough to fill the whole buffer,
             // the remainder needs to be filled with 0xFF
-            if (bigInt < 0)
+            if (value.Sign < 0)
             {
                 for (int i = bigIntBytes.Length; i < Size; i++)
                     decimalBytes[i] = 0xFF;
