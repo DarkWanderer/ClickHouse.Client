@@ -52,4 +52,9 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: coverage
-        path: ./ClickHouse.Client.Tests/coverage.*.xml
+        path: ./ClickHouse.Client.Tests/coverage.cobertura.xml
+
+    - name: Code Coverage Summary Report
+      uses: irongut/CodeCoverageSummary@v1.2.0
+      with:
+        filename: ./ClickHouse.Client.Tests/coverage.cobertura.xml
