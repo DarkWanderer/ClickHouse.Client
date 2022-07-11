@@ -61,6 +61,7 @@ jobs:
       with:
         badge: true
         filename: ./ClickHouse.Client.Tests/coverage.cobertura.xml
+        output: both
         format: markdown
         thresholds: '60 80'
 
