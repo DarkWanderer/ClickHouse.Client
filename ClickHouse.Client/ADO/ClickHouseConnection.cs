@@ -253,7 +253,7 @@ namespace ClickHouse.Client.ADO
             }
 
             using var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
-            await ClickHouseConnection.HandleError(response, sql).ConfigureAwait(false);
+            await HandleError(response, sql).ConfigureAwait(false);
         }
 
         public new ClickHouseCommand CreateCommand() => new ClickHouseCommand(this);

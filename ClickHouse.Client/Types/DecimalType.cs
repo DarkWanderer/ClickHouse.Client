@@ -37,7 +37,7 @@ namespace ClickHouse.Client.Types
         /// <summary>
         /// Gets size of type in bytes
         /// </summary>
-        public virtual int Size => DecimalType.GetSizeFromPrecision(Precision);
+        public virtual int Size => GetSizeFromPrecision(Precision);
 
         public override Type FrameworkType => typeof(ClickHouseDecimal);
 
@@ -46,7 +46,7 @@ namespace ClickHouse.Client.Types
             var precision = int.Parse(node.ChildNodes[0].Value, CultureInfo.InvariantCulture);
             var scale = int.Parse(node.ChildNodes[1].Value, CultureInfo.InvariantCulture);
 
-            var size = DecimalType.GetSizeFromPrecision(precision);
+            var size = GetSizeFromPrecision(precision);
 
             switch (size)
             {
