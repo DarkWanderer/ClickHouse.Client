@@ -256,9 +256,13 @@ namespace ClickHouse.Client.Numerics
             return new ClickHouseDecimal(dividend_mantissa / divisor_mantissa, scale);
         }
 
-        public static ClickHouseDecimal operator %(ClickHouseDecimal left, ClickHouseDecimal right)
+        public static ClickHouseDecimal operator %(ClickHouseDecimal dividend, ClickHouseDecimal divisor)
         {
-            return left - (right * (left / right).Floor());
+            var scale = Math.Max(dividend.Scale, divisor.Scale);
+            var dividend_mantissa = ToScale(dividend, scale);
+            var divisor_mantissa = ToScale(divisor, scale);
+
+            return new ClickHouseDecimal(dividend_mantissa % divisor_mantissa, scale);
         }
 
         public static bool operator ==(ClickHouseDecimal left, ClickHouseDecimal right)
@@ -357,6 +361,7 @@ namespace ClickHouse.Client.Numerics
 
         public string ToString(IFormatProvider provider)
         {
+            provider ??= CultureInfo.CurrentCulture;
             var numberFormat = (NumberFormatInfo)provider.GetFormat(typeof(NumberFormatInfo));
             var builder = new StringBuilder();
 
