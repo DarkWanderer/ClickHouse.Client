@@ -39,6 +39,12 @@ namespace ClickHouse.Client.Tests.Numerics
 
         public static readonly decimal[] DecimalsWithoutZero = Decimals.Where(d => d != 0).ToArray();
 
+        public static readonly string[] LongDecimalStrings = new string[]
+        {
+            new string('1', 100),
+            "3.141592653589793238462643383"
+        };
+
         public static readonly CultureInfo[] Cultures = new CultureInfo[]
         {
             CultureInfo.InvariantCulture,
@@ -104,6 +110,14 @@ namespace ClickHouse.Client.Tests.Numerics
         {
             var actual = (decimal)ClickHouseDecimal.Parse(expected.ToString(culture), culture);
             Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        [TestCaseSource(typeof(ClickHouseDecimalTests), nameof(LongDecimalStrings))]
+        public void ShouldParseLarge(string input)
+        {
+            var actual = ClickHouseDecimal.Parse(input);
+            Assert.AreEqual(input, actual.ToString(CultureInfo.InvariantCulture));
         }
 
         [Test, Combinatorial]

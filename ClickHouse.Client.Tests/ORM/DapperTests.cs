@@ -55,17 +55,17 @@ namespace ClickHouse.Client.Tests.ORM
 
             public override DateTimeOffset Parse(object value) => DateTimeOffset.Parse((string)value);
         }
+
         private class ClickHouseDecimalHandler : SqlMapper.TypeHandler<ClickHouseDecimal>
         {
-            public override void SetValue(IDbDataParameter parameter, ClickHouseDecimal value)
-            {
-                if (value is ClickHouseDecimal chd)
-                    parameter.Value = chd.ToString(CultureInfo.InvariantCulture);
-                else 
-                    parameter.Value = Convert.ToDecimal(value, CultureInfo.InvariantCulture);
-            }
+            public override void SetValue(IDbDataParameter parameter, ClickHouseDecimal value) => parameter.Value = value.ToString(CultureInfo.InvariantCulture);
 
-            public override ClickHouseDecimal Parse(object value) => new(Convert.ToDecimal(value));
+            public override ClickHouseDecimal Parse(object value) => value switch
+            {
+                ClickHouseDecimal chd => chd,
+                IConvertible ic => Convert.ToDecimal(ic),
+                _ => throw new ArgumentException(nameof(value))
+            };
         }
 
         [Test]
@@ -85,7 +85,7 @@ namespace ClickHouse.Client.Tests.ORM
         {
             var parameters = new Dictionary<string, object> { { "value", value } };
             var results = await connection.QueryAsync<string>(sql, parameters);
-            Assert.AreEqual(string.Format(CultureInfo.InvariantCulture, "{0}", value), results.Single());
+            Assert.AreEqual(Convert.ToString(value, CultureInfo.InvariantCulture), results.Single());
         }
 
         [Test]
