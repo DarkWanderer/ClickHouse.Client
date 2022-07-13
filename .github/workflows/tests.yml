@@ -9,6 +9,34 @@ on:
     branches: [ master ]
 
 jobs:
+  test-windows:
+    name: Tests on Windows
+    runs-on: windows-latest
+
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:latest
+        ports:
+          - 8123:8123
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.x'
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --framework netstandard2.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
+
+    - name: Test with coverage
+      run: dotnet test --framework net6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions
+      env:
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
