@@ -1,6 +1,4 @@
-# Test coverage build
-# Installs additional packages, so artifacts are "Tainted" and cannot be used
-name: Coverage
+name: Tests
 
 on:
   push:
@@ -12,7 +10,7 @@ on:
 
 jobs:
   coverage:
-    name: Run coverage
+    name: Coverage
     runs-on: ubuntu-latest
 
     services:
@@ -74,3 +72,38 @@ jobs:
       with:
         recreate: true
         path: code-coverage-results.md
+
+  regress:
+    name: Regression
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tag:
+        - 'yandex/clickhouse-server:20.3.18.10'
+    services:
+      clickhouse:
+        image: ${{ matrix.tag }}
+        ports:
+          - 8123:8123
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.x'
+
+    - name: Install GitHubActionsTestLogger
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --framework netstandard2.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
+
+    - name: Test
+      run: dotnet test --framework net6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions
+      env:
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
