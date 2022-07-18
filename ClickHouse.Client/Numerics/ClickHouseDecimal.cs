@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
@@ -21,11 +20,11 @@ namespace ClickHouse.Client.Numerics
         /// <summary>
         /// Sets the global maximum precision of division operations.
         /// </summary>
-        public static int MaxPrecision = 50;
+        public static int MaxDivisionPrecision = 50;
 
         public readonly BigInteger Mantissa { get; }
 
-        public readonly ushort Scale { get; }
+        public readonly int Scale { get; }
 
         public static ClickHouseDecimal Zero => new (0, 0);
 
@@ -38,34 +37,28 @@ namespace ClickHouse.Client.Numerics
         {
             // Slightly wasteful, but seems to be the cheapest way to get scale
             var parts = decimal.GetBits(value);
-            ushort scale = (ushort)((parts[3] >> 16) & 0x7F);
+            int scale = (parts[3] >> 16) & 0x7F;
+            bool negative = (parts[3] & 0x80000000) != 0;
 
-            value *= MathUtils.ToPower(10m, scale);
+            var data = new byte[(3 * sizeof(int)) + 1];
+            WriteIntToArray(parts[0], data, 0);
+            WriteIntToArray(parts[1], data, sizeof(int));
+            WriteIntToArray(parts[2], data, 2 * sizeof(int));
 
-            var mantissa = new BigInteger(value);
-
-            if (MaxPrecision > 0)
-            {
-                // Normalize() is called as part of Truncate()
-                Truncate(ref mantissa, ref scale, MaxPrecision);
-            }
+            var mantissa = new BigInteger(data);
+            if (negative)
+                mantissa = BigInteger.Negate(mantissa);
 
             Mantissa = mantissa;
             Scale = scale;
         }
 
-        public ClickHouseDecimal(BigInteger mantissa, ushort scale)
+        public ClickHouseDecimal(BigInteger mantissa, int scale)
             : this()
         {
-            if (MaxPrecision > 0)
-            {
-                // Normalize() is called as part of Truncate()
-                Truncate(ref mantissa, ref scale, MaxPrecision);
-            }
-            else
-            {
-                Normalize(ref mantissa, ref scale);
-            }
+            if (scale < 0)
+                throw new ArgumentException("Scale cannot be <0", nameof(scale));
+            // Normalize(ref mantissa, ref scale);
 
             Mantissa = mantissa;
             Scale = scale;
@@ -74,7 +67,7 @@ namespace ClickHouse.Client.Numerics
         /// <summary>
         /// Removes trailing zeros on the mantissa
         /// </summary>
-        private static void Normalize(ref BigInteger mantissa, ref ushort scale)
+        private static void Normalize(ref BigInteger mantissa, ref int scale)
         {
             if (mantissa.IsZero)
             {
@@ -98,14 +91,28 @@ namespace ClickHouse.Client.Numerics
         /// <summary>
         /// Truncate the number to the given precision by removing the least significant digits.
         /// </summary>
-        private static void Truncate(ref BigInteger mantissa, ref ushort scale, int precision)
+        private static void Truncate(ref BigInteger mantissa, ref int scale, int precision)
         {
             // remove the least significant digits, as long as the number of digits is higher than the given Precision
             int digits = NumberOfDigits(mantissa);
-            ushort digitsToRemove = (ushort)Math.Max(digits - precision, 0);
+            int digitsToRemove = Math.Max(digits - precision, 0);
             digitsToRemove = Math.Min(digitsToRemove, scale);
             mantissa /= BigInteger.Pow(10, digitsToRemove);
             scale -= digitsToRemove;
+        }
+
+        /// <summary>
+        /// Round the number to the given number of significant digits after floating point
+        /// </summary>
+        private static void Round(ref BigInteger mantissa, ref int scale, int precision)
+        {
+            int digitsToRemove = Math.Max(scale - precision, 0);
+
+            if (digitsToRemove > 0)
+            {
+                mantissa /= BigInteger.Pow(10, digitsToRemove);
+                scale -= digitsToRemove;
+            }
         }
 
         public ClickHouseDecimal Truncate(int precision = 0)
@@ -121,21 +128,14 @@ namespace ClickHouse.Client.Numerics
             return Truncate(NumberOfDigits(Mantissa) - Scale);
         }
 
-        public static int NumberOfDigits(BigInteger value)
-        {
-            // faster version
-            return (int)Math.Ceiling(BigInteger.Log10(value * value.Sign));
-        }
+        public static int NumberOfDigits(BigInteger value) => value == 0 ? 0 : (int)Math.Ceiling(BigInteger.Log10(value * value.Sign));
 
-        public static implicit operator ClickHouseDecimal(int value)
-        {
-            return new ClickHouseDecimal(value, 0);
-        }
+        public static implicit operator ClickHouseDecimal(int value) => new ClickHouseDecimal(value, 0);
 
         public static implicit operator ClickHouseDecimal(double value)
         {
             var mantissa = (BigInteger)value;
-            ushort scale = 0;
+            int scale = 0;
             double scaleFactor = 1;
             while (Math.Abs((value * scaleFactor) - (double)mantissa) > 0)
             {
@@ -167,6 +167,7 @@ namespace ClickHouse.Client.Numerics
             var scale = value.Scale;
 
             Truncate(ref mantissa, ref scale, 28);
+            Round(ref mantissa, ref scale, 28);
 
             bool sign = mantissa < 0;
             if (sign)
@@ -244,16 +245,23 @@ namespace ClickHouse.Client.Numerics
 
         public static ClickHouseDecimal operator *(ClickHouseDecimal left, ClickHouseDecimal right)
         {
-            return new ClickHouseDecimal(left.Mantissa * right.Mantissa, (ushort)(left.Scale + right.Scale));
+            return new ClickHouseDecimal(left.Mantissa * right.Mantissa, (left.Scale + right.Scale));
         }
 
         public static ClickHouseDecimal operator /(ClickHouseDecimal dividend, ClickHouseDecimal divisor)
         {
-            var scale = Math.Max(dividend.Scale, divisor.Scale);
-            var dividend_mantissa = ToScale(dividend, scale);
-            var divisor_mantissa = ToScale(divisor, scale);
+            var dividend_mantissa = dividend.Mantissa;
+            var divisor_mantissa = divisor.Mantissa;
 
-            return new ClickHouseDecimal(dividend_mantissa / divisor_mantissa, scale);
+            var bias = MaxDivisionPrecision - (NumberOfDigits(dividend_mantissa) - NumberOfDigits(divisor_mantissa));
+            bias = Math.Max(0, bias);
+
+            dividend_mantissa *= BigInteger.Pow(10, bias);
+
+            var result_mantissa = dividend_mantissa / divisor_mantissa;
+            var result_scale = dividend.Scale - divisor.Scale + bias;
+            Normalize(ref result_mantissa, ref result_scale);
+            return new ClickHouseDecimal(result_mantissa, result_scale);
         }
 
         public static ClickHouseDecimal operator %(ClickHouseDecimal dividend, ClickHouseDecimal divisor)
@@ -295,7 +303,7 @@ namespace ClickHouse.Client.Numerics
             return left.CompareTo(right) >= 0;
         }
 
-        public static BigInteger ToScale(ClickHouseDecimal value, ushort scale)
+        public static BigInteger ToScale(ClickHouseDecimal value, int scale)
         {
             if (scale == value.Scale)
                 return value.Mantissa;
@@ -330,7 +338,9 @@ namespace ClickHouse.Client.Numerics
 
         public bool Equals(ClickHouseDecimal other)
         {
-            return other.Mantissa.Equals(Mantissa) && other.Scale == Scale;
+            var maxScale = Math.Max(Scale, other.Scale);
+
+            return ToScale(this, maxScale) == ToScale(other, maxScale);
         }
 
         public override bool Equals(object obj) => CompareTo(obj) == 0;
@@ -411,7 +421,7 @@ namespace ClickHouse.Client.Numerics
                 mantissaPart = input.Replace(numberFormat.NumberDecimalSeparator, string.Empty);
             }
             var mantissa = BigInteger.Parse(mantissaPart, NumberStyles.Any, provider);
-            var scale = (ushort)fractionalPart.Length;
+            var scale = fractionalPart.Length;
 
             return new ClickHouseDecimal(mantissa, scale);
         }
@@ -456,5 +466,13 @@ namespace ClickHouse.Client.Numerics
         }
 
         public int CompareTo(decimal other) => CompareTo((ClickHouseDecimal)other);
+
+        private static void WriteIntToArray(int value, byte[] array, int index)
+        {
+            array[index + 0] = (byte)value;
+            array[index + 1] = (byte)(value >> 8);
+            array[index + 2] = (byte)(value >> 0x10);
+            array[index + 3] = (byte)(value >> 0x18);
+        }
     }
 }

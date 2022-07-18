@@ -80,7 +80,7 @@ namespace ClickHouse.Client.Types
                     mantissa = new BigInteger(reader.ReadBytes(Size));
                     break;
             }
-            return new ClickHouseDecimal(mantissa, (ushort)Scale);
+            return new ClickHouseDecimal(mantissa, Scale);
         }
 
         public override string ToString() => $"{Name}({Precision}, {Scale})";
@@ -90,7 +90,7 @@ namespace ClickHouse.Client.Types
             try
             {
                 ClickHouseDecimal @decimal = value is ClickHouseDecimal chd ? chd : Convert.ToDecimal(value, CultureInfo.InvariantCulture);
-                var mantissa = ClickHouseDecimal.ToScale(@decimal, (ushort)Scale);
+                var mantissa = ClickHouseDecimal.ToScale(@decimal, Scale);
                 WriteBigInteger(writer, mantissa);
             }
             catch (OverflowException)

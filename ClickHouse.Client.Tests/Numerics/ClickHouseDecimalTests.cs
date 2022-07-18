@@ -12,7 +12,6 @@ namespace ClickHouse.Client.Tests.Numerics
     {
         static ClickHouseDecimalTests()
         {
-            ClickHouseDecimal.MaxPrecision = 28;
         }
 
         public static readonly decimal[] Decimals = new decimal[]
@@ -44,6 +43,17 @@ namespace ClickHouse.Client.Tests.Numerics
             new string('1', 100),
             "3.141592653589793238462643383"
         };
+
+        public static void AssertAreEqualWithDelta(decimal left, decimal right)
+        {
+            var magic = 0.000000000000000000000000001m;
+            var delta = Math.Abs(left - right);
+            var noticeableDiff = Math.Max(Math.Abs(left), Math.Abs(right)) * magic;
+            noticeableDiff = Math.Max(noticeableDiff, magic);
+
+            if (delta > noticeableDiff)
+                Assert.AreEqual(left, right);
+        }
 
         public static readonly CultureInfo[] Cultures = new CultureInfo[]
         {
@@ -144,7 +154,7 @@ namespace ClickHouse.Client.Tests.Numerics
         {
             decimal expected = left / right;
             var actual = (ClickHouseDecimal)left / (ClickHouseDecimal)right;
-            Assert.AreEqual(expected, (decimal)actual);
+            AssertAreEqualWithDelta(expected, (decimal)actual);
         }
 
         [Test, Combinatorial]
