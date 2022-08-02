@@ -153,6 +153,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
+        [Ignore("Needs support for named tuple parameters")]
         public void ShouldFetchSchemaDatabaseColumns()
         {
             var schema = connection.GetSchema("Columns", new[] { "system" });
