@@ -1,0 +1,2 @@
+﻿[*.cs]
+dotnet_diagnostic.CA2007.severity = warning # CA2007: Do not directly await a Task

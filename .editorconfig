@@ -23,5 +23,3 @@ dotnet_diagnostic.SA1201.severity = suggestion # SA1201: Elements should appear 
 dotnet_diagnostic.SA1202.severity = suggestion # SA1202: Elements should be ordered by access
 dotnet_diagnostic.SA1204.severity = suggestion # SA1204: Static elements should appear before instance elements
 dotnet_diagnostic.SA1515.severity = suggestion # SA1515: Single-line comment should be preceded by blank line
-
-dotnet_diagnostic.CA2007.severity = warning # CA2007: Do not directly await a Task
