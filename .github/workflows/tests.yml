@@ -55,7 +55,7 @@ jobs:
 
     - name: Generate summary
       if: always()
-      uses: irongut/CodeCoverageSummary@v1.2.0
+      uses: irongut/CodeCoverageSummary@v1.3.0
       with:
         badge: true
         filename: ./ClickHouse.Client.Tests/coverage.cobertura.xml
