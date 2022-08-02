@@ -19,10 +19,10 @@ jobs:
         ports:
           - 8123:8123
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '6.x'
 
@@ -48,14 +48,14 @@ jobs:
 
     - name: Upload coverage xml
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: coverage
         path: ./ClickHouse.Client.Tests/coverage.cobertura.xml
 
     - name: Generate summary
       if: always()
-      uses: irongut/CodeCoverageSummary@v1.2.0
+      uses: irongut/CodeCoverageSummary@v1.3.0
       with:
         badge: true
         filename: ./ClickHouse.Client.Tests/coverage.cobertura.xml
@@ -68,7 +68,7 @@ jobs:
 
     - name: Stick PR comment
       uses: marocchino/sticky-pull-request-comment@v2
-      if: github.event_name == 'pull_request'
+      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
       with:
         recreate: true
         path: code-coverage-results.md
@@ -87,10 +87,10 @@ jobs:
         ports:
           - 8123:8123
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '6.x'
 
