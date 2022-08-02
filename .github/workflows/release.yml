@@ -21,7 +21,7 @@ jobs:
       run: dotnet build --configuration Release /p:Version=${{ github.ref_name }}
 
     - name: Upload package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: package
         path: ClickHouse.Client/bin/Release/ClickHouse.Client.*nupkg
