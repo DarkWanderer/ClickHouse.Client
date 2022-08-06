@@ -103,7 +103,9 @@ namespace ClickHouse.Client.ADO
 
         protected override DbParameter CreateDbParameter() => CreateParameter();
 
+#pragma warning disable CA2215 // Dispose methods should call base class dispose
         protected override void Dispose(bool disposing)
+#pragma warning restore CA2215 // Dispose methods should call base class dispose
         {
             if (disposing)
             {
