@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -154,6 +155,12 @@ namespace ClickHouse.Client.ADO.Readers
 
         // Custom extension
         public ITuple GetTuple(int ordinal) => (ITuple)GetValue(ordinal);
+
+        // Custom extension
+        public sbyte GetSByte(int ordinal) => (sbyte)GetValue(ordinal);
+
+        // Custom extension
+        public BigInteger GetBigInteger(int ordinal) => (BigInteger)GetValue(ordinal);
 
         public override bool Read()
         {
