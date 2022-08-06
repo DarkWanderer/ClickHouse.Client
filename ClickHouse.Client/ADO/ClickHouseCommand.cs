@@ -169,11 +169,11 @@ namespace ClickHouse.Client.ADO
             postMessage.Content = content;
 
             var response = await connection.HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
-            QueryId = ExtractQueryId(response);
+            QueryId = ClickHouseCommand.ExtractQueryId(response);
             return await ClickHouseConnection.HandleError(response, sqlQuery).ConfigureAwait(false);
         }
 
-        private string ExtractQueryId(HttpResponseMessage response)
+        private static string ExtractQueryId(HttpResponseMessage response)
         {
             const string queryIdHeader = "X-ClickHouse-Query-Id";
             if (response.Headers.Contains(queryIdHeader))
