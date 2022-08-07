@@ -105,24 +105,24 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        [Explicit("This test takes 3s, and can be flaky on loaded server")]
+        [NonParallelizable]
         public async Task ReplaceRunningQuerySettingShouldReplace()
         {
             using var connection = new ClickHouseConnection(TestUtilities.GetConnectionStringBuilder().ToString());
             connection.CustomSettings.Add("replace_running_query", 1);
-            string queryId = "MyQueryId123456";
+            string queryId = Guid.NewGuid().ToString();
 
             var command1 = connection.CreateCommand();
             var command2 = connection.CreateCommand();
 
-            command1.CommandText = "SELECT sleep(3) FROM system.numbers LIMIT 100";
+            command1.CommandText = "SELECT sum(number) FROM system.numbers WHERE number < 1000000000";
             command2.CommandText = "SELECT 1";
 
             command1.QueryId = queryId;
             command2.QueryId = queryId;
 
-            var asyncResult1 = command1.ExecuteScalarAsync();
-            var asyncResult2 = command2.ExecuteScalarAsync();
+            var asyncResult1 = command1.ExecuteScalarAsync().ConfigureAwait(false);
+            var asyncResult2 = command2.ExecuteScalarAsync().ConfigureAwait(false);
 
             try
             {
