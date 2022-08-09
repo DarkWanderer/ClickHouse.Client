@@ -40,6 +40,9 @@ namespace ClickHouse.Client.Copy
         /// </summary>
         public int BatchSize { get; set; } = 100000;
 
+        internal ClickHouseType[] ColumnTypes { get; set; }
+
+
         /// <summary>
         /// Gets or sets maximum number of parallel processing tasks.
         /// </summary>
@@ -54,6 +57,8 @@ namespace ClickHouse.Client.Copy
         /// Gets total number of rows written by this instance.
         /// </summary>
         public long RowsWritten => Interlocked.Read(ref rowsWritten);
+
+        public string[] ColumnNames { get; private set; }
 
         public Task WriteToServerAsync(IDataReader reader) => WriteToServerAsync(reader, CancellationToken.None);
 
@@ -97,16 +102,7 @@ namespace ClickHouse.Client.Copy
                 throw new InvalidOperationException(Resources.DestinationTableNotSetMessage);
             }
 
-            ClickHouseType[] columnTypes = null;
-            string[] columnNames = columns?.ToArray();
-
-            using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} WHERE 1=0").ConfigureAwait(false))
-            {
-                columnTypes = reader.GetClickHouseColumnTypes();
-                columnNames ??= reader.GetColumnNames();
-            }
-            for (int i = 0; i < columnNames.Length; i++)
-                columnNames[i] = columnNames[i].EncloseColumnName();
+            await UpdateColumnInfo(columns).ConfigureAwait(false);
 
             var tasks = new Task[MaxDegreeOfParallelism];
             for (var i = 0; i < tasks.Length; i++)
@@ -125,7 +121,7 @@ namespace ClickHouse.Client.Copy
                         // propagate exception if one happens
                         // 'await' instead of 'Wait()' to avoid dealing with AggregateException
                         await tasks[completedTaskIndex].ConfigureAwait(false);
-                        var task = PushBatch(batch, columnTypes, columnNames, token);
+                        var task = PushBatch(batch, ColumnTypes, ColumnNames, token);
                         tasks[completedTaskIndex] = task;
                         break; // while (true); go to next batch
                     }
@@ -136,6 +132,23 @@ namespace ClickHouse.Client.Copy
                 }
             }
             await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        private async Task UpdateColumnInfo(IReadOnlyCollection<string> columns)
+        {
+            if (ColumnTypes == null)
+            {
+                ColumnNames = columns?.ToArray();
+
+                using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} WHERE 1=0").ConfigureAwait(false))
+                {
+                    ColumnTypes = reader.GetClickHouseColumnTypes();
+                    ColumnNames ??= reader.GetColumnNames();
+                }
+
+                for (int i = 0; i < ColumnNames.Length; i++)
+                    ColumnNames[i] = ColumnNames[i].EncloseColumnName();
+            }
         }
 
         public void Dispose()
