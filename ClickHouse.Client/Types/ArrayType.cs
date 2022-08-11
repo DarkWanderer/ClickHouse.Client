@@ -38,7 +38,7 @@ namespace ClickHouse.Client.Types
 
         public override void Write(ExtendedBinaryWriter writer, object value)
         {
-            if(value == DBNull.Value || value == null)
+            if (value == DBNull.Value || value == null)
             {
                 UnderlyingType.Write(writer, 0);
                 return;
