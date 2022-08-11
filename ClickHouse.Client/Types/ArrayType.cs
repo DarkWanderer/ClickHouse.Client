@@ -38,6 +38,11 @@ namespace ClickHouse.Client.Types
 
         public override void Write(ExtendedBinaryWriter writer, object value)
         {
+            if(value == DBNull.Value || value == null)
+            {
+                UnderlyingType.Write(writer, 0);
+                return;
+            }
             var collection = (IList)value;
             writer.Write7BitEncodedInt(collection.Count);
             for (var i = 0; i < collection.Count; i++)
