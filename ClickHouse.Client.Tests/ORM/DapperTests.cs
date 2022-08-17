@@ -29,10 +29,15 @@ namespace ClickHouse.Client.Tests.ORM
                 return false;
             if (clickHouseType.Contains("Map"))
                 return false;
+            if (clickHouseType.Contains("Int128"))
+                return false;
+            if (clickHouseType.Contains("Int256"))
+                return false;
             switch (clickHouseType)
             {
                 case "UUID":
                 case "Date":
+                case "Date32":
                 case "Nothing":
                 case "IPv4":
                 case "IPv6":
@@ -40,7 +45,6 @@ namespace ClickHouse.Client.Tests.ORM
                 default:
                     return true;
             }
-
         }
 
         private class DateTimeOffsetHandler : SqlMapper.TypeHandler<DateTimeOffset>
@@ -83,7 +87,6 @@ namespace ClickHouse.Client.Tests.ORM
         }
 
         [Test]
-        [Ignore("Requires Dapper support, see https://github.com/StackExchange/Dapper/pull/1467")]
         public async Task ShouldExecuteSelectReturningArray()
         {
             string sql = "SELECT array(1,2,3)";

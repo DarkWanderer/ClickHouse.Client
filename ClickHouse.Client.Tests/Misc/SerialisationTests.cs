@@ -12,7 +12,7 @@ namespace ClickHouse.Client.Tests
     {
         public static IEnumerable<TestCaseData> TestCases => TestUtilities.GetDataTypeSamples()
             .Select(sample => new TestCaseData(sample.ExampleValue, sample.ClickHouseType)
-            { TestName = $"ShouldRoundtripSerialisation({sample.ExampleValue}, {sample.ClickHouseType})" });
+            { TestName = $"ShouldRoundtripSerialisation({sample.ExampleExpression}, {sample.ClickHouseType})" });
 
         [Test]
         [TestCaseSource(nameof(TestCases))]

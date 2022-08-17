@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using ClickHouse.Client.ADO.Parameters;
 using ClickHouse.Client.Types;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Formats
 {
@@ -17,25 +18,31 @@ namespace ClickHouse.Client.Formats
             var type = string.IsNullOrWhiteSpace(parameter.ClickHouseType)
                 ? TypeConverter.ToClickHouseType(parameter.Value.GetType())
                 : TypeConverter.ParseClickHouseType(parameter.ClickHouseType);
-            return Format(type, parameter.Value);
+            return Format(type, parameter.Value, false);
         }
 
-        internal static string Format(ClickHouseType type, object value)
+        internal static string Format(ClickHouseType type, object value, bool quote)
         {
             switch (type)
             {
                 case NothingType nt:
                     return NullValueString;
+                case BooleanType bt:
+                    return (bool)value ? "true" : "false";
                 case IntegerType it:
                 case FloatType ft:
                     return Convert.ToString(value, CultureInfo.InvariantCulture);
                 case DecimalType dt:
-                    return Convert.ToDecimal(value).ToString(CultureInfo.InvariantCulture);
+                    return Convert.ToDecimal(value, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
 
                 case DateType dt when value is DateTimeOffset @do:
-                    return @do.Date.ToString("yyyy-MM-dd");
+                    return @do.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                 case DateType dt:
-                    return Convert.ToDateTime(value).ToString("yyyy-MM-dd");
+                    return Convert.ToDateTime(value, CultureInfo.InvariantCulture).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                case Date32Type dt when value is DateTimeOffset @do:
+                    return @do.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                case Date32Type dt:
+                    return Convert.ToDateTime(value, CultureInfo.InvariantCulture).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
                 case StringType st:
                 case FixedStringType tt:
@@ -44,10 +51,10 @@ namespace ClickHouse.Client.Formats
                 case IPv4Type ip4:
                 case IPv6Type ip6:
                 case UuidType uuidType:
-                    return value.ToString();
+                    return quote ? value.ToString().Escape().QuoteSingle() : value.ToString().Escape();
 
                 case LowCardinalityType lt:
-                    return Format(lt.UnderlyingType, value);
+                    return Format(lt.UnderlyingType, value, quote);
 
                 case DateTimeType dtt when value is DateTime dt:
                     return dt.ToString("s", CultureInfo.InvariantCulture);
@@ -62,20 +69,20 @@ namespace ClickHouse.Client.Formats
                     return $"{dto:yyyy-MM-dd HH:mm:ss.fffffff}";
 
                 case NullableType nt:
-                    return value is null || value is DBNull ? NullValueString : $"{Format(nt.UnderlyingType, value)}";
+                    return value is null || value is DBNull ? quote ? "null" : NullValueString : Format(nt.UnderlyingType, value, quote);
 
                 case ArrayType arrayType when value is IEnumerable enumerable:
-                    return $"[{string.Join(",", enumerable.Cast<object>().Select(obj => InlineParameterFormatter.Format(arrayType.UnderlyingType, obj)))}]";
+                    return $"[{string.Join(",", enumerable.Cast<object>().Select(obj => Format(arrayType.UnderlyingType, obj, true)))}]";
 
                 case TupleType tupleType when value is ITuple tuple:
-                    return $"({string.Join(",", tupleType.UnderlyingTypes.Select((x, i) => InlineParameterFormatter.Format(x, tuple[i])))})";
+                    return $"({string.Join(",", tupleType.UnderlyingTypes.Select((x, i) => Format(x, tuple[i], true)))})";
 
                 case MapType mapType when value is IDictionary dict:
-                    var strings = string.Join(",", dict.Keys.Cast<object>().Select(k => $"{InlineParameterFormatter.Format(mapType.KeyType, k)} : {InlineParameterFormatter.Format(mapType.ValueType, dict[k])}"));
+                    var strings = string.Join(",", dict.Keys.Cast<object>().Select(k => $"{Format(mapType.KeyType, k, true)} : {Format(mapType.ValueType, dict[k], true)}"));
                     return $"{{{string.Join(",", strings)}}}";
 
                 default:
-                    throw new Exception($"Cannot convert {value} to {type}");
+                    throw new ArgumentException($"Cannot convert {value} to {type}");
             }
         }
     }

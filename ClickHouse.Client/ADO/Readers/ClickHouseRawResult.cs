@@ -22,6 +22,10 @@ namespace ClickHouse.Client.ADO
 
         public Task CopyToAsync(Stream stream) => response.Content.CopyToAsync(stream);
 
-        public void Dispose() => response?.Dispose();
+        public void Dispose()
+        {
+            response?.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }

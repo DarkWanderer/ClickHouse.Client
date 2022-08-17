@@ -17,12 +17,12 @@ namespace ClickHouse.Client.Utility
 
         public CompressedContent(HttpContent content, DecompressionMethods compressionMethod)
         {
-            originalContent = content ?? throw new ArgumentNullException("content");
+            originalContent = content ?? throw new ArgumentNullException(nameof(content));
             this.compressionMethod = compressionMethod;
 
             if (this.compressionMethod != DecompressionMethods.GZip && this.compressionMethod != DecompressionMethods.Deflate)
             {
-                throw new ArgumentException(string.Format($"Compression '{compressionMethod}' is not supported. Valid types: GZip, Deflate"), nameof(compressionMethod));
+                throw new ArgumentException($"Compression '{compressionMethod}' is not supported. Valid types: GZip, Deflate", nameof(compressionMethod));
             }
 
             foreach (var header in originalContent.Headers)
@@ -54,10 +54,10 @@ namespace ClickHouse.Client.Utility
             {
                 DecompressionMethods.GZip => new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true),
                 DecompressionMethods.Deflate => new DeflateStream(stream, CompressionMode.Compress, leaveOpen: true),
-                _ => throw new ArgumentOutOfRangeException(nameof(compressionMethod))
+                _ => throw new ArgumentOutOfRangeException(nameof(stream))
             };
 
-            await originalContent.CopyToAsync(compressedStream);
+            await originalContent.CopyToAsync(compressedStream).ConfigureAwait(false);
         }
     }
 }

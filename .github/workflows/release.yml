@@ -1,4 +1,7 @@
-name: Create release
+# Release build
+# Needs to be clean
+# Should never install additional packages
+name: Release from tag
 
 on:
   push:
@@ -7,45 +10,66 @@ on:
 
 jobs:
   build:
+    name: Build
     runs-on: windows-latest
     steps:
-      
     - name: Checkout
-      uses: actions/checkout@main      
-      
-    - name: Setup .NET Core
-      id: setup
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '3.1.x'
-        source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        
+      uses: actions/checkout@v3
+
     - name: Build & pack
       id: build_pack
-      run: dotnet pack --configuration Release --include-source --include-symbols ClickHouse.Client/ClickHouse.Client.csproj
+      run: dotnet build --configuration Release /p:Version=${{ github.ref_name }}
 
-    - uses: actions/upload-artifact@v2
+    - name: Upload package
+      uses: actions/upload-artifact@v3
       with:
         name: package
         path: ClickHouse.Client/bin/Release/ClickHouse.Client.*nupkg
-    
-    - name: Push NuGet to GitHub
-      id: push_to_github
-      run: dotnet nuget push ClickHouse.Client/bin/Release/ClickHouse.Client.nupkg
-        
+
+  push_github:
+    runs-on: windows-latest
+    needs: [build]    
+    name: Upload to GitHub Packages
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: package
+
+    - name: Push package
+      id: push
+      shell: cmd
+      run: dotnet nuget push ClickHouse.Client.*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+
+  push_nuget_org:
+    runs-on: windows-latest
+    needs: [build]
+    name: Upload to NuGet.org
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: package
+      
+    - name: Push package
+      id: push
+      shell: cmd
+      run: dotnet nuget push ClickHouse.Client.*.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json
+
+  github_release:
+    runs-on: ubuntu-latest
+    needs: [build]
+    name: Create GitHub release
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: package
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      uses: ncipollo/release-action@v1
       with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
-        body: |
-          * **Added**: 
-          * **Fixed**: 
-          * **Improved**:
-        draft: true
-        prerelease: true
+        artifacts: "*.nupkg,*.snupkg"
+        generateReleaseNotes: true
+        draft: false
+        prerelease: false

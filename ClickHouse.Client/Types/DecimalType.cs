@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Numerics;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
@@ -21,14 +22,14 @@ namespace ClickHouse.Client.Types
             set
             {
                 scale = value;
-                Exponent = MathUtils.ToPower(10, value);
+                Exponent = MathUtils.ToPower(10m, value);
             }
         }
 
         /// <summary>
         /// Gets decimal exponent value based on Scale
         /// </summary>
-        public long Exponent { get; private set; }
+        public decimal Exponent { get; private set; }
 
         public override string Name => "Decimal";
 
@@ -41,8 +42,8 @@ namespace ClickHouse.Client.Types
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
-            var precision = int.Parse(node.ChildNodes[0].Value);
-            var scale = int.Parse(node.ChildNodes[1].Value);
+            var precision = int.Parse(node.ChildNodes[0].Value, CultureInfo.InvariantCulture);
+            var scale = int.Parse(node.ChildNodes[1].Value, CultureInfo.InvariantCulture);
 
             var size = GetSizeFromPrecision(precision);
 
@@ -61,16 +62,23 @@ namespace ClickHouse.Client.Types
 
         public override object Read(ExtendedBinaryReader reader)
         {
+            // ClickHouse value represented as decimal
+            // Needs to be divided by Exponent to get actual value
+            decimal intermediate;
             switch (Size)
             {
                 case 4:
-                    return (decimal)reader.ReadInt32() / Exponent;
+                    intermediate = reader.ReadInt32();
+                    break;
                 case 8:
-                    return (decimal)reader.ReadInt64() / Exponent;
+                    intermediate = reader.ReadInt64();
+                    break;
                 default:
                     var bigInt = new BigInteger(reader.ReadBytes(Size));
-                    return (decimal)bigInt / Exponent;
+                    intermediate = (decimal)bigInt;
+                    break;
             }
+            return intermediate / Exponent;
         }
 
         public override string ToString() => $"{Name}({Precision}, {Scale})";
@@ -79,7 +87,7 @@ namespace ClickHouse.Client.Types
         {
             try
             {
-                decimal multipliedValue = Convert.ToDecimal(value) * Exponent;
+                decimal multipliedValue = Convert.ToDecimal(value, CultureInfo.InvariantCulture) * Exponent;
                 switch (Size)
                 {
                     case 4:
@@ -95,7 +103,7 @@ namespace ClickHouse.Client.Types
             }
             catch (OverflowException)
             {
-                throw new ArgumentOutOfRangeException("value", value, $"Value cannot be represented as {this}");
+                throw new ArgumentOutOfRangeException(nameof(value), value, $"Value cannot be represented as {this}");
             }
         }
 
@@ -104,7 +112,7 @@ namespace ClickHouse.Client.Types
             int p when p >= 1 && p < 10 => 4,
             int p when p >= 10 && p < 19 => 8,
             int p when p >= 19 && p < 39 => 16,
-            _ => throw new ArgumentOutOfRangeException(nameof(Precision)),
+            _ => throw new ArgumentOutOfRangeException(nameof(precision)),
         };
 
         private void WriteLargeDecimal(ExtendedBinaryWriter writer, decimal value)
@@ -118,7 +126,8 @@ namespace ClickHouse.Client.Types
 
             bigIntBytes.CopyTo(decimalBytes, 0);
 
-            // If a negative BigInteger is not long enough to fill the whole buffer, the remainder needs to be filled with 0xFF
+            // If a negative BigInteger is not long enough to fill the whole buffer,
+            // the remainder needs to be filled with 0xFF
             if (bigInt < 0)
             {
                 for (int i = bigIntBytes.Length; i < Size; i++)

@@ -5,7 +5,7 @@ ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra
 [![Latest version](https://img.shields.io/nuget/v/ClickHouse.Client)](https://www.nuget.org/packages/ClickHouse.Client/)
 [![Downloads](https://img.shields.io/nuget/dt/ClickHouse.Client)](https://www.nuget.org/packages/ClickHouse.Client/)
 [![License](https://img.shields.io/github/license/DarkWanderer/ClickHouse.Client)](https://github.com/DarkWanderer/ClickHouse.Client/blob/master/LICENSE)
-![Regression](https://github.com/DarkWanderer/ClickHouse.Client/workflows/Regression/badge.svg)
+[![Tests](https://github.com/DarkWanderer/ClickHouse.Client/actions/workflows/tests.yml/badge.svg)](https://github.com/DarkWanderer/ClickHouse.Client/actions/workflows/tests.yml)
 
 ## Key features
 
@@ -19,10 +19,13 @@ ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra
 * Uses HTTP(S), so is compatible with any server version
 * Available for .NET Core/Framework/Standard
 
-## Why another client?
+## Advantages
 
 Compared to other existing .NET clients, `ClickHouse.Client` has following advantages 
 * Does not have to buffer response, reducing memory usage
-* Is version-agnostic
 * Offers wider support for ClickHouse-specific types
 * Is more compliant to ADO.NET standards (e.g. does not require calling 'NextResult' on `SELECT` queries)
+
+## Documentation
+
+Documentation for the library is available in [repository Wiki](https://github.com/DarkWanderer/ClickHouse.Client/wiki)

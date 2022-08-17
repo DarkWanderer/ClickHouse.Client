@@ -18,11 +18,11 @@ namespace ClickHouse.Client.Types
         {
             return new FixedStringType
             {
-                Length = int.Parse(node.SingleChild.Value),
+                Length = int.Parse(node.SingleChild.Value, CultureInfo.InvariantCulture),
             };
         }
 
-        public override string ToString() => $"FixedString{Length}";
+        public override string ToString() => $"FixedString({Length})";
 
         public override object Read(ExtendedBinaryReader reader) => Encoding.UTF8.GetString(reader.ReadBytes(Length));
 

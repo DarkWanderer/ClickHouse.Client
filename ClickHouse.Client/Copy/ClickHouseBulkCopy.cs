@@ -100,7 +100,7 @@ namespace ClickHouse.Client.Copy
             ClickHouseType[] columnTypes = null;
             string[] columnNames = columns?.ToArray();
 
-            using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} LIMIT 0"))
+            using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} WHERE 1=0").ConfigureAwait(false))
             {
                 columnTypes = reader.GetClickHouseColumnTypes();
                 columnNames ??= reader.GetColumnNames();
@@ -145,6 +145,7 @@ namespace ClickHouse.Client.Copy
                 connection?.Dispose();
                 ownsConnection = false;
             }
+            GC.SuppressFinalize(this);
         }
 
         private string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
@@ -152,7 +153,7 @@ namespace ClickHouse.Client.Copy
         private async Task PushBatch(ICollection<object[]> rows, ClickHouseType[] columnTypes, string[] columnNames, CancellationToken token)
         {
             var query = $"INSERT INTO {DestinationTableName} ({string.Join(", ", columnNames)}) FORMAT RowBinary";
-            bool useInlineQuery = connection.SupportedFeatures.HasFlag(FeatureFlags.SupportsInlineQuery);
+            bool useInlineQuery = connection.SupportedFeatures.HasFlag(Feature.InlineQuery);
 
             using var stream = new MemoryStream() { Capacity = 512 * 1024 };
             using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))

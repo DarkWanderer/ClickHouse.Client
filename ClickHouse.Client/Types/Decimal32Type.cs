@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using ClickHouse.Client.Types.Grammar;
 
 namespace ClickHouse.Client.Types
@@ -18,7 +19,7 @@ namespace ClickHouse.Client.Types
         {
             return new Decimal32Type
             {
-                Scale = int.Parse(node.SingleChild.Value),
+                Scale = int.Parse(node.SingleChild.Value, CultureInfo.InvariantCulture),
             };
         }
 

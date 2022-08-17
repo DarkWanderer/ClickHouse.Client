@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +17,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO.Readers
 {
-    public class ClickHouseDataReader : DbDataReader
+    public class ClickHouseDataReader : DbDataReader, IEnumerator<IDataReader>, IEnumerable<IDataReader>, IDataRecord
     {
         private const int BufferSize = 512 * 1024;
 
@@ -28,6 +30,12 @@ namespace ClickHouse.Client.ADO.Readers
             var stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), BufferSize);
             reader = new ExtendedBinaryReader(stream); // will dispose of stream
             ReadHeaders();
+        }
+
+        internal ClickHouseType GetEffectiveClickHouseType(int ordinal)
+        {
+            var type = RawTypes[ordinal];
+            return type is NullableType nt ? nt.UnderlyingType : type;
         }
 
         internal ClickHouseType GetClickHouseType(int ordinal) => RawTypes[ordinal];
@@ -62,21 +70,16 @@ namespace ClickHouse.Client.ADO.Readers
 
         public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => throw new NotImplementedException();
 
-        public override string GetDataTypeName(int ordinal) => RawTypes[ordinal].ToString();
+        public override string GetDataTypeName(int ordinal) => GetClickHouseType(ordinal).ToString();
 
         public override DateTime GetDateTime(int ordinal) => (DateTime)GetValue(ordinal);
 
-        public virtual DateTimeOffset GetDateTimeOffset(int ordinal)
-        {
-            var dt = GetDateTime(ordinal);
-            return ((AbstractDateTimeType)RawTypes[ordinal]).ToDateTimeOffset(dt);
-        }
+        public virtual DateTimeOffset GetDateTimeOffset(int ordinal) => GetEffectiveClickHouseType(ordinal) is AbstractDateTimeType adt ?
+            adt.ToDateTimeOffset(GetDateTime(ordinal)) : throw new InvalidCastException();
 
         public override decimal GetDecimal(int ordinal) => (decimal)GetValue(ordinal);
 
         public override double GetDouble(int ordinal) => (double)GetValue(ordinal);
-
-        public override IEnumerator GetEnumerator() => CurrentRow.GetEnumerator();
 
         public override Type GetFieldType(int ordinal)
         {
@@ -101,7 +104,7 @@ namespace ClickHouse.Client.ADO.Readers
             var index = Array.FindIndex(FieldNames, (fn) => fn == name);
             if (index == -1)
             {
-                throw new IndexOutOfRangeException();
+                throw new ArgumentException("Column does not exist", nameof(name));
             }
 
             return index;
@@ -122,7 +125,11 @@ namespace ClickHouse.Client.ADO.Readers
             return CurrentRow.Length;
         }
 
-        public override bool IsDBNull(int ordinal) => GetValue(ordinal) is DBNull || GetValue(ordinal) is null;
+        public override bool IsDBNull(int ordinal)
+        {
+            var value = GetValue(ordinal);
+            return value is DBNull || value is null;
+        }
 
         public override bool NextResult() => false;
 
@@ -149,6 +156,12 @@ namespace ClickHouse.Client.ADO.Readers
         // Custom extension
         public ITuple GetTuple(int ordinal) => (ITuple)GetValue(ordinal);
 
+        // Custom extension
+        public sbyte GetSByte(int ordinal) => (sbyte)GetValue(ordinal);
+
+        // Custom extension
+        public BigInteger GetBigInteger(int ordinal) => (BigInteger)GetValue(ordinal);
+
         public override bool Read()
         {
             if (reader.PeekChar() == -1)
@@ -164,6 +177,7 @@ namespace ClickHouse.Client.ADO.Readers
             return true;
         }
 
+        #pragma warning disable CA2215 // Dispose methods should call base class dispose
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -172,14 +186,15 @@ namespace ClickHouse.Client.ADO.Readers
                 reader?.Dispose();
             }
         }
+        #pragma warning restore CA2215 // Dispose methods should call base class dispose
 
         private void ReadHeaders()
         {
             if (reader.PeekChar() == -1)
             {
                 // Empty dataset
-                FieldNames = new string[0];
-                RawTypes = new ClickHouseType[0];
+                FieldNames = Array.Empty<string>();
+                RawTypes = Array.Empty<ClickHouseType>();
                 return;
             }
             var count = reader.Read7BitEncodedInt();
@@ -198,5 +213,17 @@ namespace ClickHouse.Client.ADO.Readers
                 RawTypes[i] = TypeConverter.ParseClickHouseType(chType);
             }
         }
+
+        public bool MoveNext() => Read();
+
+        public void Reset() => throw new NotSupportedException();
+
+        public override IEnumerator GetEnumerator() => this;
+
+        IEnumerator<IDataReader> IEnumerable<IDataReader>.GetEnumerator() => this;
+
+        public IDataReader Current => this;
+
+        object IEnumerator.Current => this;
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Net;
+using System.Numerics;
 using ClickHouse.Client.ADO;
 using NUnit.Framework;
 
@@ -10,7 +11,7 @@ namespace ClickHouse.Client.Tests
 {
     public static class TestUtilities
     {
-        public static FeatureFlags SupportedFeatures;
+        public static Feature SupportedFeatures;
 
         static TestUtilities()
         {
@@ -41,7 +42,7 @@ namespace ClickHouse.Client.Tests
             return new ClickHouseConnectionStringBuilder(devConnectionString);
         }
 
-        public struct DataTypeSample
+        public readonly struct DataTypeSample
         {
             public readonly string ClickHouseType;
             public readonly Type FrameworkType;
@@ -112,14 +113,14 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("DateTime('UTC')", typeof(DateTime), "toDateTime('1988-08-28 11:22:33', 'UTC')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Unspecified));
             yield return new DataTypeSample("DateTime('Pacific/Fiji')", typeof(DateTime), "toDateTime('1999-01-01 13:00:00', 'Pacific/Fiji')", new DateTime(1999, 01, 01, 13, 00, 00, DateTimeKind.Unspecified));
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDateTime64))
+            if (SupportedFeatures.HasFlag(Feature.DateTime64))
             {
                 yield return new DataTypeSample("DateTime64(4, 'UTC')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444', 9, 'UTC')", new DateTime(644444444444444000, DateTimeKind.Utc));
                 yield return new DataTypeSample("DateTime64(7, 'UTC')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'UTC')", new DateTime(644444444444444444, DateTimeKind.Utc));
                 yield return new DataTypeSample("DateTime64(7, 'Pacific/Fiji')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'Pacific/Fiji')", new DateTime(644444444444444444, DateTimeKind.Unspecified));
             }
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsDecimal))
+            if (SupportedFeatures.HasFlag(Feature.Decimals))
             {
                 yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(123.45, 3)", new decimal(123.45));
                 yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(-123.45, 3)", new decimal(-123.45));
@@ -129,12 +130,14 @@ namespace ClickHouse.Client.Tests
 
                 yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(12.34, 9)", new decimal(12.34));
                 yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(-12.34, 9)", new decimal(-12.34));
+
+                yield return new DataTypeSample("Decimal128(25)", typeof(decimal), "toDecimal128(1e-24, 25)", new decimal(1e-24));
             }
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsIPv6))
+            if (SupportedFeatures.HasFlag(Feature.IPv6))
                 yield return new DataTypeSample("IPv6", typeof(IPAddress), "toIPv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334')", IPAddress.Parse("2001:0db8:85a3:0000:0000:8a2e:0370:7334"));
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsMap))
+            if (SupportedFeatures.HasFlag(Feature.Map))
             {
                 yield return new DataTypeSample("Map(String, UInt8)", typeof(Dictionary<string, byte>), "map('A',1,'B',2)", new Dictionary<string, byte> { { "A", 1 }, { "B", 2 } });
                 yield return new DataTypeSample("Map(UInt8, String)", typeof(Dictionary<byte, string>), "map(1,'A',2,'B')", new Dictionary<byte, string> { { 1, "A" }, { 2, "B" } });
@@ -146,6 +149,30 @@ namespace ClickHouse.Client.Tests
                         { "five", 5 },
                         { "null", null },
                     });
+            }
+
+            if (SupportedFeatures.HasFlag(Feature.Bool))
+            {
+                yield return new DataTypeSample("Bool", typeof(bool), "CAST(1, 'Bool')", true);
+            }
+
+            if (SupportedFeatures.HasFlag(Feature.Date32))
+            {
+                yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('2001-02-03')", new DateTime(2001, 02, 03));
+                yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('1925-01-02')", new DateTime(1925, 01, 02));
+            }
+
+            if (SupportedFeatures.HasFlag(Feature.WideTypes))
+            {
+                yield return new DataTypeSample("Int128", typeof(BigInteger), "toInt128(concat('-1', repeat('0', 30)))", -BigInteger.Pow(new BigInteger(10), 30));
+                yield return new DataTypeSample("Int128", typeof(BigInteger), "toInt128('170141183460469231731687303715884105727')", BigInteger.Parse("170141183460469231731687303715884105727"));
+                yield return new DataTypeSample("Int128", typeof(BigInteger), "toInt128('-170141183460469231731687303715884105728')", BigInteger.Parse("-170141183460469231731687303715884105728"));
+
+                yield return new DataTypeSample("UInt128", typeof(BigInteger), "toInt128(concat('1', repeat('0', 30)))", BigInteger.Pow(new BigInteger(10), 30));                
+                yield return new DataTypeSample("UInt128", typeof(BigInteger), "toUInt128('340282366920938463463374607431768211455')", BigInteger.Parse("340282366920938463463374607431768211455"));
+
+                yield return new DataTypeSample("Int256", typeof(BigInteger), "toInt256(concat('-1', repeat('0', 50)))", -BigInteger.Pow(new BigInteger(10), 50));
+                yield return new DataTypeSample("UInt256", typeof(BigInteger), "toInt256(concat('1', repeat('0', 50)))", BigInteger.Pow(new BigInteger(10), 50));
             }
 
             if (SupportedFeatures.HasFlag(FeatureFlags.SupportsGeo))

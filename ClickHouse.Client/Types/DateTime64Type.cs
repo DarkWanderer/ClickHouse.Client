@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
@@ -25,7 +26,7 @@ namespace ClickHouse.Client.Types
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
         {
-            var scale = int.Parse(node.ChildNodes[0].Value);
+            var scale = int.Parse(node.ChildNodes[0].Value, CultureInfo.InvariantCulture);
             var timeZone = DateTimeZone.Utc;
             if (node.ChildNodes.Count > 1)
             {

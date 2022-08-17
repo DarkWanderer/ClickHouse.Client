@@ -1,0 +1,110 @@
+name: Tests
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+    - '**/*.md'
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:latest
+        ports:
+          - 8123:8123
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '6.x'
+
+    - name: Install coverlet-collector
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector
+
+    - name: Install coverlet-msbuild
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.msbuild
+
+    - name: Install GitHubActionsTestLogger
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --framework netstandard2.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
+
+    - name: Test with coverage
+      run: dotnet test --framework net6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
+      env:
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+
+    - name: Upload coverage xml
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage
+        path: ./ClickHouse.Client.Tests/coverage.cobertura.xml
+
+    - name: Generate summary
+      if: always()
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        badge: true
+        filename: ./ClickHouse.Client.Tests/coverage.cobertura.xml
+        output: both
+        format: markdown
+        thresholds: '60 80'
+
+    - name: Post Actions Summary
+      run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+
+    - name: Stick PR comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      continue-on-error: true
+      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+      with:
+        recreate: true
+        path: code-coverage-results.md
+
+  regress:
+    name: Regression
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tag:
+        - 'yandex/clickhouse-server:20.3.18.10'
+    services:
+      clickhouse:
+        image: ${{ matrix.tag }}
+        ports:
+          - 8123:8123
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '6.x'
+
+    - name: Install GitHubActionsTestLogger
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --framework netstandard2.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
+
+    - name: Test
+      run: dotnet test --framework net6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions
+      env:
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
