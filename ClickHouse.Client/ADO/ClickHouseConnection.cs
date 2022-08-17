@@ -287,11 +287,11 @@ namespace ClickHouse.Client.ADO
                 flags |= FeatureFlags.SupportsIPv6;
                 flags |= FeatureFlags.SupportsGeo;
             }
-            if (serverVersion > new Version(21, 0))
+            if (serverVersion > new Version(21, 4))
             {
                 flags |= Feature.UUIDParameters;
             }
-            if (serverVersion > new Version(21, 1, 2))
+            if (serverVersion > new Version(21, 4))
             {
                 flags |= Feature.Map;
             }
