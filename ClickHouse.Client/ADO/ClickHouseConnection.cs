@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.Utility;
+using Microsoft.Extensions.Logging;
 
 namespace ClickHouse.Client.ADO
 {
@@ -112,6 +113,8 @@ namespace ClickHouse.Client.ADO
             this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             this.httpClientName = httpClientName ?? throw new ArgumentNullException(nameof(httpClientName));
         }
+
+        public ILogger Logger { get; set; }
 
         /// <summary>
         /// Gets or sets string defining connection settings for ClickHouse server
@@ -264,7 +267,7 @@ namespace ClickHouse.Client.ADO
             }
 
             using var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
-            await ClickHouseConnection.HandleError(response, sql).ConfigureAwait(false);
+            await HandleError(response, sql).ConfigureAwait(false);
         }
 
         public new ClickHouseCommand CreateCommand() => new ClickHouseCommand(this);

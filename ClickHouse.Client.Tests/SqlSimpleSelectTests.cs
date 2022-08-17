@@ -186,6 +186,15 @@ namespace ClickHouse.Client.Tests
             Assert.AreEqual(1, result);
         }
 
+        [Test]
+        public async Task ShouldGetQueryStats()
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
+            using var reader = await command.ExecuteReaderAsync();
+            Assert.AreEqual(new QueryStats(100, 800, 0, 0, 0), command.QueryStats);
+        }
+
         public void Dispose() => connection?.Dispose();
     }
 }
