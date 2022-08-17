@@ -86,7 +86,6 @@ jobs:
         - 'clickhouse/clickhouse-server:21.3'
         - 'clickhouse/clickhouse-server:21.9'
         - 'clickhouse/clickhouse-server:22.3'
-        - 'clickhouse/clickhouse-server:22.9'
     services:
       clickhouse:
         image: ${{ matrix.tag }}

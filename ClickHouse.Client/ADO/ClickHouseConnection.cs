@@ -286,7 +286,7 @@ namespace ClickHouse.Client.ADO
                 flags |= Feature.Decimals;
                 flags |= Feature.IPv6;
             }
-            if (serverVersion > new Version(21, 0))
+            if (serverVersion > new Version(21, 4))
             {
                 flags |= Feature.UUIDParameters;
             }
