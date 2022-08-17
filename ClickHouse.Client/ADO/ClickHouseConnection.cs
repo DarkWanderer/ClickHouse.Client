@@ -283,9 +283,9 @@ namespace ClickHouse.Client.ADO
             }
             if (serverVersion > new Version(20, 0))
             {
-                flags |= FeatureFlags.SupportsDecimal;
-                flags |= FeatureFlags.SupportsIPv6;
-                flags |= FeatureFlags.SupportsGeo;
+                flags |= Feature.Decimals;
+                flags |= Feature.IPv6;
+                flags |= Feature.Geo;
             }
             if (serverVersion > new Version(21, 4))
             {

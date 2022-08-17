@@ -14,5 +14,6 @@ namespace ClickHouse.Client.ADO
         Bool = 128,
         Date32 = 256,
         WideTypes = 512,
+        Geo = 1024,
     }
 }

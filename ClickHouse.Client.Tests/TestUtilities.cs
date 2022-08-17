@@ -175,7 +175,7 @@ namespace ClickHouse.Client.Tests
                 yield return new DataTypeSample("UInt256", typeof(BigInteger), "toInt256(concat('1', repeat('0', 50)))", BigInteger.Pow(new BigInteger(10), 50));
             }
 
-            if (SupportedFeatures.HasFlag(FeatureFlags.SupportsGeo))
+            if (SupportedFeatures.HasFlag(Feature.Geo))
             {
                 yield return new DataTypeSample("Point", typeof(Tuple<double, double>), "(10,20)", Tuple.Create(10.0, 20.0));
                 yield return new DataTypeSample("Ring", typeof(Tuple<double, double>[]), "[(0.1,0.2), (0.2,0.3), (0.3,0.4)]", new[] {
