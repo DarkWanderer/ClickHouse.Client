@@ -280,12 +280,12 @@ namespace ClickHouse.Client.ADO
             if (serverVersion > new Version(20, 5))
             {
                 flags |= Feature.InlineQuery;
+                flags |= Feature.Geo;
             }
             if (serverVersion > new Version(20, 0))
             {
                 flags |= Feature.Decimals;
                 flags |= Feature.IPv6;
-                flags |= Feature.Geo;
             }
             if (serverVersion > new Version(21, 4))
             {
