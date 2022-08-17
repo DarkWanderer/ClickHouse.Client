@@ -41,6 +41,8 @@ namespace ClickHouse.Client.Tests.ORM
                 case "Nothing":
                 case "IPv4":
                 case "IPv6":
+                case "Point":
+                case "Ring":
                     return false;
                 default:
                     return true;

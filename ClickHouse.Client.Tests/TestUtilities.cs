@@ -29,6 +29,10 @@ namespace ClickHouse.Client.Tests
             var builder = GetConnectionStringBuilder();
             builder.Compression = compression;
             builder["set_session_timeout"] = 1; // Expire sessions quickly after test
+            if (SupportedFeatures.HasFlag(Feature.Geo)) // After we've loaded supported features
+            {
+                builder["set_allow_experimental_geo_types"] = 1; // Allow support for experimental geo types
+            }
             return new ClickHouseConnection(builder.ConnectionString);
         }
 
@@ -80,7 +84,7 @@ namespace ClickHouse.Client.Tests
             yield return new DataTypeSample("Float64", typeof(double), "toFloat64(-64e6)", -64e6);
 
             yield return new DataTypeSample("String", typeof(string), "'TestString'", "TestString");
-            //yield return new DataTypeSample("String", typeof(string), "'1\t2\n3'", "1\t2\n3");
+            // yield return new DataTypeSample("String", typeof(string), "'1\t2\n3'", "1\t2\n3");
             yield return new DataTypeSample("FixedString(3)", typeof(string), "toFixedString('ASD',3)", "ASD");
             yield return new DataTypeSample("FixedString(5)", typeof(string), "toFixedString('ASD',5)", "ASD\0\0");
 
@@ -167,11 +171,21 @@ namespace ClickHouse.Client.Tests
                 yield return new DataTypeSample("Int128", typeof(BigInteger), "toInt128('170141183460469231731687303715884105727')", BigInteger.Parse("170141183460469231731687303715884105727"));
                 yield return new DataTypeSample("Int128", typeof(BigInteger), "toInt128('-170141183460469231731687303715884105728')", BigInteger.Parse("-170141183460469231731687303715884105728"));
 
-                yield return new DataTypeSample("UInt128", typeof(BigInteger), "toInt128(concat('1', repeat('0', 30)))", BigInteger.Pow(new BigInteger(10), 30));                
+                yield return new DataTypeSample("UInt128", typeof(BigInteger), "toInt128(concat('1', repeat('0', 30)))", BigInteger.Pow(new BigInteger(10), 30));
                 yield return new DataTypeSample("UInt128", typeof(BigInteger), "toUInt128('340282366920938463463374607431768211455')", BigInteger.Parse("340282366920938463463374607431768211455"));
 
                 yield return new DataTypeSample("Int256", typeof(BigInteger), "toInt256(concat('-1', repeat('0', 50)))", -BigInteger.Pow(new BigInteger(10), 50));
                 yield return new DataTypeSample("UInt256", typeof(BigInteger), "toInt256(concat('1', repeat('0', 50)))", BigInteger.Pow(new BigInteger(10), 50));
+            }
+
+            if (SupportedFeatures.HasFlag(Feature.Geo))
+            {
+                yield return new DataTypeSample("Point", typeof(Tuple<double, double>), "(10,20)", Tuple.Create(10.0, 20.0));
+                yield return new DataTypeSample("Ring", typeof(Tuple<double, double>[]), "[(0.1,0.2), (0.2,0.3), (0.3,0.4)]", new[] {
+                    Tuple.Create(.1, .2),
+                    Tuple.Create(.2, .3),
+                    Tuple.Create(.3, .4)
+                });
             }
         }
 
