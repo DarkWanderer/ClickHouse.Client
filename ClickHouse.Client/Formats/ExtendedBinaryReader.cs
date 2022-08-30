@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 namespace ClickHouse.Client.Formats
@@ -18,24 +20,25 @@ namespace ClickHouse.Client.Formats
         public override byte[] ReadBytes(int count)
         {
             var buffer = new byte[count];
-            var bytesRead = base.Read(buffer, 0, count);
-            if (bytesRead < count)
-            {
-                throw new EndOfStreamException($"Expected to read {count} bytes, got {bytesRead}");
-            }
-
+            Read(buffer, 0, count);
             return buffer;
         }
 
         public override int Read(byte[] buffer, int index, int count)
         {
-            var bytesRead = base.Read(buffer, index, count);
-            if (bytesRead < count)
+            int read = 0;
+            do
             {
-                throw new EndOfStreamException($"Expected to read {count} bytes, got {bytesRead}");
+                int num2 = base.Read(buffer, index + read, count - read);
+                read += num2;
+                if (read < count && PeekChar() == -1)
+                {
+                    throw new EndOfStreamException($"Expected to read {count} bytes, got {read}");
+                }
             }
+            while (read < count);
 
-            return bytesRead;
+            return read;
         }
 
         public override int PeekChar() => streamWrapper.Peek();
