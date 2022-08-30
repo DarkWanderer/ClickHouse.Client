@@ -30,12 +30,11 @@ namespace ClickHouse.Client.Formats
             do
             {
                 int num2 = base.Read(buffer, index + read, count - read);
+                read += num2;
                 if (read < count && PeekChar() == -1)
                 {
                     throw new EndOfStreamException($"Expected to read {count} bytes, got {read}");
                 }
-
-                read += num2;
             }
             while (read < count);
 
