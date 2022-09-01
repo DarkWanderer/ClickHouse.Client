@@ -177,7 +177,7 @@ namespace ClickHouse.Client.ADO.Readers
             return true;
         }
 
-        #pragma warning disable CA2215 // Dispose methods should call base class dispose
+#pragma warning disable CA2215 // Dispose methods should call base class dispose
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -186,7 +186,7 @@ namespace ClickHouse.Client.ADO.Readers
                 reader?.Dispose();
             }
         }
-        #pragma warning restore CA2215 // Dispose methods should call base class dispose
+#pragma warning restore CA2215 // Dispose methods should call base class dispose
 
         private void ReadHeaders()
         {
