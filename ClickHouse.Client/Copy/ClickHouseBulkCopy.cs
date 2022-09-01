@@ -100,7 +100,7 @@ namespace ClickHouse.Client.Copy
             ClickHouseType[] columnTypes = null;
             string[] columnNames = columns?.ToArray();
 
-            using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} WHERE 1=0").ConfigureAwait(false))
+            using (var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {ClickHouseBulkCopy.GetColumnsExpression(columns)} FROM {DestinationTableName} WHERE 1=0").ConfigureAwait(false))
             {
                 columnTypes = reader.GetClickHouseColumnTypes();
                 columnNames ??= reader.GetColumnNames();
@@ -148,7 +148,7 @@ namespace ClickHouse.Client.Copy
             GC.SuppressFinalize(this);
         }
 
-        private string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
+        private static string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
 
         private async Task PushBatch(ICollection<object[]> rows, ClickHouseType[] columnTypes, string[] columnNames, CancellationToken token)
         {
@@ -166,12 +166,25 @@ namespace ClickHouse.Client.Copy
                 }
 
                 using var writer = new ExtendedBinaryWriter(gzipStream);
-                foreach (var row in rows)
+
+                // Performance optimization: declare vars in advance to use wider `try` block
+                object[] row = null;
+                int i = 0;
+                try
                 {
-                    for (var i = 0; i < row.Length; i++)
+                    using var enumerator = rows.GetEnumerator();
+                    while (enumerator.MoveNext())
                     {
-                        columnTypes[i].Write(writer, row[i]);
+                        row = enumerator.Current;
+                        for (i = 0; i < row.Length; i++)
+                        {
+                            columnTypes[i].Write(writer, row[i]);
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    throw new ClickHouseBulkCopySerializationException(row, i, e);
                 }
             }
             stream.Seek(0, SeekOrigin.Begin);

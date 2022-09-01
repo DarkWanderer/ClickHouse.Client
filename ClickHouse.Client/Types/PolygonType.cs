@@ -3,7 +3,6 @@ using ClickHouse.Client.Formats;
 
 namespace ClickHouse.Client.Types
 {
-
     internal class PolygonType : ArrayType
     {
         public PolygonType()

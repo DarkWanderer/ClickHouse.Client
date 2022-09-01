@@ -17,6 +17,14 @@ namespace ClickHouse.Client.Formats
 
         public new int Read7BitEncodedInt() => base.Read7BitEncodedInt();
 
+        /// <summary>
+        /// Performs guaranteed read of requested number of bytes, or throws an exception
+        /// </summary>
+        /// <param name="buffer">buffer array</param>
+        /// <param name="index">index to write to in the buffer</param>
+        /// <param name="count">number of bytes to read</param>
+        /// <returns>number of bytes read, always equals to count</returns>
+        /// <exception cref="EndOfStreamException">thrown if requested number of bytes is not available</exception>
         public override byte[] ReadBytes(int count)
         {
             var buffer = new byte[count];
@@ -24,21 +32,29 @@ namespace ClickHouse.Client.Formats
             return buffer;
         }
 
+        /// <summary>
+        /// Performs guaranteed read of requested number of bytes, or throws an exception
+        /// </summary>
+        /// <param name="buffer">buffer array</param>
+        /// <param name="index">index to write to in the buffer</param>
+        /// <param name="count">number of bytes to read</param>
+        /// <returns>number of bytes read, always equals to count</returns>
+        /// <exception cref="EndOfStreamException">thrown if requested number of bytes is not available</exception>
         public override int Read(byte[] buffer, int index, int count)
         {
-            int read = 0;
+            int bytesRead = 0;
             do
             {
-                int num2 = base.Read(buffer, index + read, count - read);
-                read += num2;
-                if (read < count && PeekChar() == -1)
+                int read = base.Read(buffer, index + bytesRead, count - bytesRead);
+                bytesRead += read;
+                if (read == 0 && bytesRead < count)
                 {
-                    throw new EndOfStreamException($"Expected to read {count} bytes, got {read}");
+                    throw new EndOfStreamException($"Expected to read {count} bytes, got {bytesRead}");
                 }
             }
-            while (read < count);
+            while (bytesRead < count);
 
-            return read;
+            return bytesRead;
         }
 
         public override int PeekChar() => streamWrapper.Peek();
