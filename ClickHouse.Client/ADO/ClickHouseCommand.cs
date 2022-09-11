@@ -135,7 +135,7 @@ namespace ClickHouse.Client.ADO
                     break;
             }
             var result = await PostSqlQueryAsync(sqlBuilder.ToString(), lcts.Token).ConfigureAwait(false);
-            return new ClickHouseDataReader(result);
+            return new ClickHouseDataReader(result, connection.TypeSettings);
         }
 
         private async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token)
@@ -149,7 +149,7 @@ namespace ClickHouse.Client.ADO
                 await connection.EnsureOpenAsync().ConfigureAwait(false); // Preserve old behavior
                 foreach (ClickHouseDbParameter parameter in commandParameters)
                 {
-                    uriBuilder.AddQueryParameter(parameter.ParameterName, HttpParameterFormatter.Format(parameter));
+                    uriBuilder.AddQueryParameter(parameter.ParameterName, HttpParameterFormatter.Format(parameter, connection.TypeSettings));
                 }
             }
 

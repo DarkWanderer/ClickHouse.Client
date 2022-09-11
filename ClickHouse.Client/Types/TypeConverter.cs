@@ -110,13 +110,13 @@ namespace ClickHouse.Client.Types
             ParameterizedTypes.Add(name, t);
         }
 
-        public static ClickHouseType ParseClickHouseType(string type)
+        public static ClickHouseType ParseClickHouseType(string type, TypeSettings settings)
         {
             var node = Parser.Parse(type);
-            return ParseClickHouseType(node);
+            return ParseClickHouseType(node, settings);
         }
 
-        internal static ClickHouseType ParseClickHouseType(SyntaxTreeNode node)
+        internal static ClickHouseType ParseClickHouseType(SyntaxTreeNode node, TypeSettings settings)
         {
             if (node.ChildNodes.Count == 0 && SimpleTypes.TryGetValue(node.Value, out var typeInfo))
             {
@@ -125,7 +125,7 @@ namespace ClickHouse.Client.Types
 
             if (ParameterizedTypes.ContainsKey(node.Value))
             {
-                return ParameterizedTypes[node.Value].Parse(node, ParseClickHouseType);
+                return ParameterizedTypes[node.Value].Parse(node, (n) => ParseClickHouseType(n, settings), settings);
             }
 
             throw new ArgumentException("Unknown type: " + node.ToString());

@@ -25,11 +25,15 @@ namespace ClickHouse.Client.ADO
         private readonly string httpClientName;
         private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
         private volatile ConnectionState state = ConnectionState.Closed; // Not an autoproperty because of interface implementation
+
         private Version serverVersion;
+        private string serverTimezone;
+
         private string database = "default";
         private string username;
         private string password;
         private string session;
+        private bool useServerTimezone;
         private TimeSpan timeout;
         private Uri serverUri;
         private Feature supportedFeatures;
@@ -127,6 +131,7 @@ namespace ClickHouse.Client.ADO
                     Compression = UseCompression,
                     UseSession = session != null,
                     Timeout = timeout,
+                    UseServerTimezone = useServerTimezone,
                 };
 
                 foreach (var kvp in CustomSettings)
@@ -145,6 +150,7 @@ namespace ClickHouse.Client.ADO
                 UseCompression = builder.Compression;
                 session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
                 timeout = builder.Timeout;
+                useServerTimezone = builder.UseServerTimezone;
 
                 foreach (var key in builder.Keys.Cast<string>().Where(k => k.StartsWith(CustomSettingPrefix, true, CultureInfo.InvariantCulture)))
                 {
@@ -158,6 +164,8 @@ namespace ClickHouse.Client.ADO
         public override ConnectionState State => state;
 
         public override string Database => database;
+
+        public string ServerTimezone => serverTimezone;
 
         public override string DataSource { get; }
 
@@ -203,7 +211,7 @@ namespace ClickHouse.Client.ADO
         {
             if (State == ConnectionState.Open)
                 return;
-            const string versionQuery = "SELECT version() FORMAT TSV";
+            const string versionQuery = "SELECT version(), timezone() FORMAT TSV";
             try
             {
                 var uriBuilder = CreateUriBuilder();
@@ -219,7 +227,10 @@ namespace ClickHouse.Client.ADO
                 if (data.Length == 0)
                     throw new InvalidOperationException("ClickHouse server did not return version, check if the server is functional");
 
-                serverVersion = ParseVersion(Encoding.UTF8.GetString(data).Trim());
+                var serverVersionAndTimezone = Encoding.UTF8.GetString(data).Trim().Split('\t');
+
+                serverVersion = ParseVersion(serverVersionAndTimezone[0]);
+                serverTimezone = serverVersionAndTimezone[1];
                 SupportedFeatures = GetFeatureFlags(serverVersion);
                 state = ConnectionState.Open;
             }
@@ -312,6 +323,8 @@ namespace ClickHouse.Client.ADO
         }
 
         internal HttpClient HttpClient => httpClientFactory.CreateClient(httpClientName);
+
+        internal TypeSettings TypeSettings => new TypeSettings(false, useServerTimezone ? serverTimezone : TypeSettings.DefaultTimezone);
 
         internal ClickHouseUriBuilder CreateUriBuilder(string sql = null) => new ClickHouseUriBuilder(serverUri)
         {

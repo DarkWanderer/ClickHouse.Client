@@ -10,7 +10,7 @@ namespace ClickHouse.Client.Types
 
         public override Type FrameworkType => base.FrameworkType.MakeArrayType();
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
         {
             return new NestedType
             {

@@ -18,7 +18,7 @@ namespace ClickHouse.Client.Tests
         [TestCaseSource(nameof(TestCases))]
         public void ShouldRoundtripSerialisation(object original, string clickHouseType)
         {
-            var type = TypeConverter.ParseClickHouseType(clickHouseType);
+            var type = TypeConverter.ParseClickHouseType(clickHouseType, TypeSettings.Default);
 
             using var stream = new MemoryStream();
             using var writer = new ExtendedBinaryWriter(stream);

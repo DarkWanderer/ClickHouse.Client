@@ -19,8 +19,7 @@ namespace ClickHouse.Client.Types
 
         public ZonedDateTime ToZonedDateTime(DateTime dateTime)
         {
-            var timeZone = TimeZone ?? DateTimeZone.Utc;
-            return TimeZone.ResolveLocal(LocalDateTime.FromDateTime(dateTime), Resolvers.LenientResolver);
+            return TimeZone.AtLeniently(LocalDateTime.FromDateTime(dateTime));
         }
 
         public DateTimeOffset ToDateTimeOffset(DateTime dateTime) => ToZonedDateTime(dateTime).ToDateTimeOffset();

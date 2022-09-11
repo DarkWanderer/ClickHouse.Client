@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ClickHouse.Client.Utility
 {
@@ -36,6 +37,12 @@ namespace ClickHouse.Client.Utility
                 Array.Resize(ref bucket, count);
                 yield return bucket;
             }
+        }
+
+        public static void Deconstruct<T>(this IEnumerable<T> enumerable, out T first, out IEnumerable<T> rest)
+        {
+            first = enumerable.FirstOrDefault();
+            rest = enumerable.Skip(1);
         }
     }
 }
