@@ -24,15 +24,17 @@ namespace ClickHouse.Client.Types
 
         public long ToClickHouseTicks(Instant instant) => MathUtils.ShiftDecimalPlaces(instant.ToUnixTimeTicks(), Scale - 7);
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
         {
             var scale = int.Parse(node.ChildNodes[0].Value, CultureInfo.InvariantCulture);
-            var timeZone = DateTimeZone.Utc;
+
+            DateTimeZone timeZone = null;
             if (node.ChildNodes.Count > 1)
             {
                 var timeZoneName = node.ChildNodes[1].Value.Trim('\'');
-                timeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneName) ?? DateTimeZone.Utc;
+                timeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneName);
             }
+            timeZone ??= DateTimeZoneProviders.Tzdb.GetZoneOrNull(settings.timezone);
 
             return new DateTime64Type
             {

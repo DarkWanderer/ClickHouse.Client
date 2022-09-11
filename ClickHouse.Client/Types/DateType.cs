@@ -12,7 +12,7 @@ namespace ClickHouse.Client.Types
 
         public override object Read(ExtendedBinaryReader reader) => DateTimeEpochStart.AddDays(reader.ReadUInt16());
 
-        public override ParameterizedType Parse(SyntaxTreeNode typeName, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc) => throw new NotImplementedException();
+        public override ParameterizedType Parse(SyntaxTreeNode typeName, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings) => throw new NotImplementedException();
 
         public override void Write(ExtendedBinaryWriter writer, object value)
         {

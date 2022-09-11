@@ -7,6 +7,6 @@ namespace ClickHouse.Client.Types
     {
         public abstract string Name { get; }
 
-        public abstract ParameterizedType Parse(SyntaxTreeNode typeName, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc);
+        public abstract ParameterizedType Parse(SyntaxTreeNode typeName, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings);
     }
 }

@@ -9,10 +9,15 @@ namespace ClickHouse.Client.Types
     {
         public override string Name => "DateTime";
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
         {
-            var timeZoneName = node.ChildNodes.Count > 0 ? node.SingleChild.Value.Trim('\'') : string.Empty;
-            var timeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneName) ?? DateTimeZone.Utc;
+            DateTimeZone timeZone = null;
+            if (node.ChildNodes.Count > 0)
+            {
+                var timeZoneName = node.ChildNodes[0].Value.Trim('\'');
+                timeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneName);
+            }
+            timeZone ??= DateTimeZoneProviders.Tzdb.GetZoneOrNull(settings.timezone);
 
             return new DateTimeType { TimeZone = timeZone };
         }

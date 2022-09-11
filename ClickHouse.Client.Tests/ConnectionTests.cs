@@ -108,7 +108,6 @@ namespace ClickHouse.Client.Tests
         [Explicit("This test takes 3s, and can be flaky on loaded server")]
         public async Task ReplaceRunningQuerySettingShouldReplace()
         {
-            using var connection = new ClickHouseConnection(TestUtilities.GetConnectionStringBuilder().ToString());
             connection.CustomSettings.Add("replace_running_query", 1);
             string queryId = "MyQueryId123456";
 

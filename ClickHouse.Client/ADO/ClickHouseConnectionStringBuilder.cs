@@ -69,6 +69,12 @@ namespace ClickHouse.Client.ADO
             set => this["Port"] = value;
         }
 
+        public bool UseServerTimezone
+        {
+            get => TryGetValue("UseServerTimezone", out var value) && "true".Equals(value as string, StringComparison.OrdinalIgnoreCase);
+            set => this["UseServerTimezone"] = value;
+        }
+
         public TimeSpan Timeout
         {
             get

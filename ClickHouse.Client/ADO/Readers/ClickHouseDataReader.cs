@@ -22,11 +22,13 @@ namespace ClickHouse.Client.ADO.Readers
         private const int BufferSize = 512 * 1024;
 
         private readonly HttpResponseMessage httpResponse; // Used to dispose at the end of reader
+        private readonly TypeSettings settings;
         private readonly ExtendedBinaryReader reader;
 
-        internal ClickHouseDataReader(HttpResponseMessage httpResponse)
+        internal ClickHouseDataReader(HttpResponseMessage httpResponse, TypeSettings settings)
         {
             this.httpResponse = httpResponse ?? throw new ArgumentNullException(nameof(httpResponse));
+            this.settings = settings;
             var stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), BufferSize);
             reader = new ExtendedBinaryReader(stream); // will dispose of stream
             ReadHeaders();
@@ -210,7 +212,7 @@ namespace ClickHouse.Client.ADO.Readers
             for (var i = 0; i < count; i++)
             {
                 var chType = reader.ReadString();
-                RawTypes[i] = TypeConverter.ParseClickHouseType(chType);
+                RawTypes[i] = TypeConverter.ParseClickHouseType(chType, settings);
             }
         }
 
