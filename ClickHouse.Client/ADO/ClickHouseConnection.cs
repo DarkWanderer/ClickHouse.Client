@@ -321,6 +321,10 @@ namespace ClickHouse.Client.ADO
             {
                 flags |= Feature.WideTypes;
             }
+            if (serverVersion >= new Version(22, 6))
+            {
+                flags |= Feature.Stats;
+            }
 
             return flags;
         }

@@ -187,6 +187,7 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
+        [RequiredFeature(Feature.Stats)]
         public async Task ShouldGetQueryStats()
         {
             var command = connection.CreateCommand();
