@@ -17,6 +17,7 @@ namespace ClickHouse.Client.ADO
         Date32 = 256,
         WideTypes = 512,
         Geo = 1024,
+        Stats = 2048,
 
         All = ~None, // Special value
     }
