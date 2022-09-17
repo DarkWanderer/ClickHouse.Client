@@ -12,22 +12,32 @@ namespace ClickHouse.Client.Tests
     public static class TestUtilities
     {
         public static Feature SupportedFeatures;
+        public static Version ServerVersion;
 
         static TestUtilities()
         {
-            using var connection = GetTestClickHouseConnection();
-            connection.Open();
-            SupportedFeatures = connection.SupportedFeatures;
+            var versionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONTAINER_VERSION");
+            if (versionString != null)
+            {
+                ServerVersion = Version.Parse(versionString.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Last());
+                SupportedFeatures = ClickHouseConnection.GetFeatureFlags(ServerVersion);
+            }
+            else
+            {
+                SupportedFeatures = Feature.All;
+                ServerVersion = null;
+            }
         }
 
         /// <summary>
         /// Utility method to allow to redirect ClickHouse connections to different machine, in case of Windows development environment
         /// </summary>
         /// <returns></returns>
-        public static ClickHouseConnection GetTestClickHouseConnection(bool compression = true)
+        public static ClickHouseConnection GetTestClickHouseConnection(bool compression = true, bool session = false)
         {
             var builder = GetConnectionStringBuilder();
             builder.Compression = compression;
+            builder.UseSession = session;
             builder["set_session_timeout"] = 1; // Expire sessions quickly after test
             if (SupportedFeatures.HasFlag(Feature.Geo)) // After we've loaded supported features
             {
