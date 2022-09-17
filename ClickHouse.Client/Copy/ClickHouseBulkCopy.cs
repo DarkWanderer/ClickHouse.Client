@@ -125,8 +125,7 @@ namespace ClickHouse.Client.Copy
                         // propagate exception if one happens
                         // 'await' instead of 'Wait()' to avoid dealing with AggregateException
                         await tasks[completedTaskIndex].ConfigureAwait(false);
-                        var task = PushBatch(batch, columnTypes, columnNames, token);
-                        tasks[completedTaskIndex] = task;
+                        tasks[completedTaskIndex] = PushBatch(batch, columnTypes, columnNames, token);
                         break; // while (true); go to next batch
                     }
                     else
