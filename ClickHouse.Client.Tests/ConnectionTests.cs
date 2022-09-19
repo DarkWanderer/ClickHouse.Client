@@ -105,7 +105,6 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        [Explicit("This test takes 3s, and can be flaky on loaded server")]
         public async Task ReplaceRunningQuerySettingShouldReplace()
         {
             connection.CustomSettings.Add("replace_running_query", 1);
@@ -114,7 +113,7 @@ namespace ClickHouse.Client.Tests
             var command1 = connection.CreateCommand();
             var command2 = connection.CreateCommand();
 
-            command1.CommandText = "SELECT sleep(3) FROM system.numbers LIMIT 100";
+            command1.CommandText = "SELECT sleepEachRow(60) FROM system.numbers LIMIT 1000";
             command2.CommandText = "SELECT 1";
 
             command1.QueryId = queryId;
