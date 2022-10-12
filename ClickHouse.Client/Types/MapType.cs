@@ -35,7 +35,7 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "Map";
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
         {
             var types = node.ChildNodes.Select(parseClickHouseTypeFunc).ToArray();
             var result = new MapType() { UnderlyingTypes = Tuple.Create(types[0], types[1]) };

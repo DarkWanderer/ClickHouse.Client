@@ -14,14 +14,14 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@main
+      uses: actions/checkout@v3
 
     - name: Build & pack
       id: build_pack
       run: dotnet build --configuration Release /p:Version=${{ github.ref_name }}
 
     - name: Upload package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: package
         path: ClickHouse.Client/bin/Release/ClickHouse.Client.*nupkg
@@ -32,7 +32,7 @@ jobs:
     name: Upload to GitHub Packages
     steps:
     - name: Download Artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: package
 
@@ -47,7 +47,7 @@ jobs:
     name: Upload to NuGet.org
     steps:
     - name: Download Artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: package
       
@@ -62,7 +62,7 @@ jobs:
     name: Create GitHub release
     steps:
     - name: Download Artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: package
     - name: Create Release

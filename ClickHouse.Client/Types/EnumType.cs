@@ -15,7 +15,7 @@ namespace ClickHouse.Client.Types
 
         public override Type FrameworkType => typeof(string);
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
         {
             var parameters = node.ChildNodes
                 .Select(cn => cn.Value)

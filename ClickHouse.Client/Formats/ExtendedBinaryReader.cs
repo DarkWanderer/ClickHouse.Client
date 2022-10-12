@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 namespace ClickHouse.Client.Formats
@@ -15,25 +17,42 @@ namespace ClickHouse.Client.Formats
 
         public new int Read7BitEncodedInt() => base.Read7BitEncodedInt();
 
+        /// <summary>
+        /// Performs guaranteed read of requested number of bytes, or throws an exception
+        /// </summary>
+        /// <param name="buffer">buffer array</param>
+        /// <param name="index">index to write to in the buffer</param>
+        /// <param name="count">number of bytes to read</param>
+        /// <returns>number of bytes read, always equals to count</returns>
+        /// <exception cref="EndOfStreamException">thrown if requested number of bytes is not available</exception>
         public override byte[] ReadBytes(int count)
         {
             var buffer = new byte[count];
-            var bytesRead = base.Read(buffer, 0, count);
-            if (bytesRead < count)
-            {
-                throw new EndOfStreamException($"Expected to read {count} bytes, got {bytesRead}");
-            }
-
+            Read(buffer, 0, count);
             return buffer;
         }
 
+        /// <summary>
+        /// Performs guaranteed read of requested number of bytes, or throws an exception
+        /// </summary>
+        /// <param name="buffer">buffer array</param>
+        /// <param name="index">index to write to in the buffer</param>
+        /// <param name="count">number of bytes to read</param>
+        /// <returns>number of bytes read, always equals to count</returns>
+        /// <exception cref="EndOfStreamException">thrown if requested number of bytes is not available</exception>
         public override int Read(byte[] buffer, int index, int count)
         {
-            var bytesRead = base.Read(buffer, index, count);
-            if (bytesRead < count)
+            int bytesRead = 0;
+            do
             {
-                throw new EndOfStreamException($"Expected to read {count} bytes, got {bytesRead}");
+                int read = base.Read(buffer, index + bytesRead, count - bytesRead);
+                bytesRead += read;
+                if (read == 0 && bytesRead < count)
+                {
+                    throw new EndOfStreamException($"Expected to read {count} bytes, got {bytesRead}");
+                }
             }
+            while (bytesRead < count);
 
             return bytesRead;
         }

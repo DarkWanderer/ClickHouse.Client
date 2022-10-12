@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ClickHouse.Client.Numerics;
+using ClickHouse.Client.Utility;
 using Dapper;
 using NUnit.Framework;
 
@@ -22,6 +24,7 @@ namespace ClickHouse.Client.Tests.ORM
         {
             SqlMapper.AddTypeHandler(new DateTimeOffsetHandler());
             SqlMapper.AddTypeHandler(new ClickHouseDecimalHandler());
+            SqlMapper.AddTypeHandler(new ITupleHandler());
         }
 
         // "The member value of type <xxxxxxxx> cannot be used as a parameter value"
@@ -43,9 +46,23 @@ namespace ClickHouse.Client.Tests.ORM
                 case "Nothing":
                 case "IPv4":
                 case "IPv6":
+                case "Point":
+                case "Ring":
                     return false;
                 default:
                     return true;
+            }
+        }
+
+        private class ITupleHandler : SqlMapper.TypeHandler<ITuple>
+        {
+            public override void SetValue(IDbDataParameter parameter, ITuple value) => parameter.Value = value;
+
+            public override ITuple Parse(object value)
+            {
+                if (value is ITuple it)
+                    return it;
+                throw new NotSupportedException();
             }
         }
 
@@ -106,6 +123,15 @@ namespace ClickHouse.Client.Tests.ORM
             var result = (await connection.QueryAsync<int[]>(sql)).Single();
             CollectionAssert.IsNotEmpty(result);
             CollectionAssert.AllItemsAreNotNull(result);
+        }
+
+        [Test]
+        public async Task ShouldExecuteSelectReturningTuple()
+        {
+            string sql = "SELECT tuple(1,2,3)";
+            var result = (await connection.QueryAsync<ITuple>(sql)).Single();
+            Assert.IsInstanceOf<ITuple>(result);
+            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, result.AsEnumerable());
         }
     }
 }

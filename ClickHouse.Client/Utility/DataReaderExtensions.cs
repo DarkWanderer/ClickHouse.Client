@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System.Runtime.CompilerServices;
 using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Types;
 
@@ -38,6 +39,14 @@ namespace ClickHouse.Client.Utility
                 var values = new object[reader.FieldCount];
                 reader.GetValues(values);
                 yield return values;
+            }
+        }
+
+        internal static IEnumerable<object> AsEnumerable(this ITuple tuple)
+        {
+            for (int i = 0; i < tuple.Length; i++)
+            {
+                yield return tuple[i];
             }
         }
     }

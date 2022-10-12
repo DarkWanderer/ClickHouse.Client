@@ -5,6 +5,8 @@ namespace ClickHouse.Client.ADO
     [Flags]
     public enum Feature
     {
+        None = 0, // Special value
+
         InlineQuery = 2,
         DateTime64 = 4,
         Decimals = 8,
@@ -14,5 +16,9 @@ namespace ClickHouse.Client.ADO
         Bool = 128,
         Date32 = 256,
         WideTypes = 512,
+        Geo = 1024,
+        Stats = 2048,
+
+        All = ~None, // Special value
     }
 }

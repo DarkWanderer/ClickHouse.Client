@@ -125,7 +125,7 @@ namespace ClickHouse.Client.Utility
 
             foreach (var row in result.Rows.Cast<DataRow>())
             {
-                var clickHouseType = TypeConverter.ParseClickHouseType((string)row["ProviderType"]);
+                var clickHouseType = TypeConverter.ParseClickHouseType((string)row["ProviderType"], TypeSettings.Default);
                 row["ProviderType"] = clickHouseType.ToString();
                 // TODO: this should return actual framework type like other implementations do
                 row["DataType"] = clickHouseType.FrameworkType.ToString().Replace("System.", string.Empty);

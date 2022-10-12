@@ -126,11 +126,11 @@ namespace ClickHouse.Client.Tests
         [RequiredFeature(Feature.InlineQuery)]
         public async Task ShouldInsertIntoTableWithLotsOfColumns()
         {
-            var tblName = "test.bulk_long_columns";
+            var tableName = "test.bulk_long_columns";
             var columnCount = 3900;
 
             //Generating create tbl statement with a lot of columns 
-            var query = $"CREATE TABLE IF NOT EXISTS {tblName}(\n";
+            var query = $"CREATE TABLE IF NOT EXISTS {tableName}(\n";
             var columns = Enumerable.Range(1, columnCount)
                 .Select(x => $" some_loooooooooooooonnnnnnnnnnnngggggggg_column_name_{x} Int32");
             query += string.Join(",\n", columns);
@@ -139,10 +139,34 @@ namespace ClickHouse.Client.Tests
             //Create tbl in db
             await connection.ExecuteStatementAsync(query);
 
-            var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = tblName };
+            var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = tableName };
 
             var rowToInsert = new[] { Enumerable.Range(1, columnCount).Select(x => (object)x).ToArray() };
             await bulkCopy.WriteToServerAsync(rowToInsert);
+        }
+
+        [Test]
+        public async Task ShouldThrowSpecialExceptionOnSerializationFailure()
+        {
+            var targetTable = "test." + SanitizeTableName($"bulk_exception_uint8");
+
+            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value UInt8) ENGINE Memory");
+
+            var rows = Enumerable.Range(250, 10).Select(n => new object[] { n }).ToArray();
+
+            var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = targetTable };
+            try
+            {
+                await bulkCopy.WriteToServerAsync(rows);
+                Assert.Fail("Bulk copy did not throw exception on failed serialization");
+            }
+            catch (ClickHouseBulkCopySerializationException ex)
+            {
+                CollectionAssert.AreEqual(new object[] { 256 }, ex.Row);
+                Assert.AreEqual(0, ex.Index);
+                Assert.IsInstanceOf<OverflowException>(ex.InnerException);
+            }
         }
 
         [Test]

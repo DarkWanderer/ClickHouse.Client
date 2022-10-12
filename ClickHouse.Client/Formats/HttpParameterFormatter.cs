@@ -10,15 +10,15 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Formats
 {
-    public static class HttpParameterFormatter
+    internal static class HttpParameterFormatter
     {
         private const string NullValueString = "\\N";
 
-        public static string Format(ClickHouseDbParameter parameter)
+        public static string Format(ClickHouseDbParameter parameter, TypeSettings settings)
         {
             var type = string.IsNullOrWhiteSpace(parameter.ClickHouseType)
                 ? TypeConverter.ToClickHouseType(parameter.Value.GetType())
-                : TypeConverter.ParseClickHouseType(parameter.ClickHouseType);
+                : TypeConverter.ParseClickHouseType(parameter.ClickHouseType, settings);
             return Format(type, parameter.Value, false);
         }
 

@@ -12,7 +12,7 @@ namespace ClickHouse.Client.Types
 
         public override Type FrameworkType => UnderlyingType.FrameworkType;
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
         {
             return new LowCardinalityType
             {

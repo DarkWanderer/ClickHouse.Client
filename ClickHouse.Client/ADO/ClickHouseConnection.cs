@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.Utility;
+using Microsoft.Extensions.Logging;
 
 namespace ClickHouse.Client.ADO
 {
@@ -25,11 +26,15 @@ namespace ClickHouse.Client.ADO
         private readonly string httpClientName;
         private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
         private volatile ConnectionState state = ConnectionState.Closed; // Not an autoproperty because of interface implementation
+
         private Version serverVersion;
+        private string serverTimezone;
+
         private string database = "default";
         private string username;
         private string password;
         private string session;
+        private bool useServerTimezone;
         private TimeSpan timeout;
         private Uri serverUri;
         private Feature supportedFeatures;
@@ -109,6 +114,8 @@ namespace ClickHouse.Client.ADO
             this.httpClientName = httpClientName ?? throw new ArgumentNullException(nameof(httpClientName));
         }
 
+        public ILogger Logger { get; set; }
+
         /// <summary>
         /// Gets or sets string defining connection settings for ClickHouse server
         /// Example: Host=localhost;Port=8123;Username=default;Password=123;Compression=true
@@ -127,6 +134,7 @@ namespace ClickHouse.Client.ADO
                     Compression = UseCompression,
                     UseSession = session != null,
                     Timeout = timeout,
+                    UseServerTimezone = useServerTimezone,
                 };
 
                 foreach (var kvp in CustomSettings)
@@ -145,6 +153,7 @@ namespace ClickHouse.Client.ADO
                 UseCompression = builder.Compression;
                 session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
                 timeout = builder.Timeout;
+                useServerTimezone = builder.UseServerTimezone;
 
                 foreach (var key in builder.Keys.Cast<string>().Where(k => k.StartsWith(CustomSettingPrefix, true, CultureInfo.InvariantCulture)))
                 {
@@ -158,6 +167,8 @@ namespace ClickHouse.Client.ADO
         public override ConnectionState State => state;
 
         public override string Database => database;
+
+        public string ServerTimezone => serverTimezone;
 
         public override string DataSource { get; }
 
@@ -203,7 +214,7 @@ namespace ClickHouse.Client.ADO
         {
             if (State == ConnectionState.Open)
                 return;
-            const string versionQuery = "SELECT version() FORMAT TSV";
+            const string versionQuery = "SELECT version(), timezone() FORMAT TSV";
             try
             {
                 var uriBuilder = CreateUriBuilder();
@@ -219,7 +230,10 @@ namespace ClickHouse.Client.ADO
                 if (data.Length == 0)
                     throw new InvalidOperationException("ClickHouse server did not return version, check if the server is functional");
 
-                serverVersion = ParseVersion(Encoding.UTF8.GetString(data).Trim());
+                var serverVersionAndTimezone = Encoding.UTF8.GetString(data).Trim().Split('\t');
+
+                serverVersion = ParseVersion(serverVersionAndTimezone[0]);
+                serverTimezone = serverVersionAndTimezone[1];
                 SupportedFeatures = GetFeatureFlags(serverVersion);
                 state = ConnectionState.Open;
             }
@@ -280,17 +294,18 @@ namespace ClickHouse.Client.ADO
             if (serverVersion > new Version(20, 5))
             {
                 flags |= Feature.InlineQuery;
+                flags |= Feature.Geo;
             }
             if (serverVersion > new Version(20, 0))
             {
                 flags |= Feature.Decimals;
                 flags |= Feature.IPv6;
             }
-            if (serverVersion > new Version(21, 0))
+            if (serverVersion > new Version(21, 4))
             {
                 flags |= Feature.UUIDParameters;
             }
-            if (serverVersion > new Version(21, 1, 2))
+            if (serverVersion > new Version(21, 4))
             {
                 flags |= Feature.Map;
             }
@@ -306,11 +321,17 @@ namespace ClickHouse.Client.ADO
             {
                 flags |= Feature.WideTypes;
             }
+            if (serverVersion >= new Version(22, 6))
+            {
+                flags |= Feature.Stats;
+            }
 
             return flags;
         }
 
         internal HttpClient HttpClient => httpClientFactory.CreateClient(httpClientName);
+
+        internal TypeSettings TypeSettings => new TypeSettings(false, useServerTimezone ? serverTimezone : TypeSettings.DefaultTimezone);
 
         internal ClickHouseUriBuilder CreateUriBuilder(string sql = null) => new ClickHouseUriBuilder(serverUri)
         {

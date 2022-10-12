@@ -62,7 +62,7 @@ namespace ClickHouse.Client.Types
 
         public override string Name => "Tuple";
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc)
+        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
         {
             return new TupleType
             {
@@ -87,6 +87,8 @@ namespace ClickHouse.Client.Types
         public override void Write(ExtendedBinaryWriter writer, object value)
         {
             var tuple = (ITuple)value;
+            if (tuple.Length != UnderlyingTypes.Length)
+                throw new ArgumentException("Wrong number of elements in Tuple", nameof(value));
             for (var i = 0; i < tuple.Length; i++)
             {
                 UnderlyingTypes[i].Write(writer, tuple[i]);
