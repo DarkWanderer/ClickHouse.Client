@@ -23,7 +23,19 @@ namespace ClickHouse.Client.Tests
             connection = TestUtilities.GetTestClickHouseConnection(customDecimals: true);
         }
 
-        public static IEnumerable<string> DecimalTypes => new[] { "Decimal32(3)", "Decimal64(3)", "Decimal128(3)", "Decimal256(3)" };
+        public static IEnumerable<string> DecimalTypes
+        {
+            get
+            {
+                yield return "Decimal32(3)";
+                yield return "Decimal64(3)";
+                yield return "Decimal128(3)";
+                if (TestUtilities.SupportedFeatures.HasFlag(Feature.WideTypes))
+                {
+                    yield return "Decimal256(3)";
+                }
+            }
+        }
 
         public static IEnumerable<TestCaseData> DecimalTestCases { 
             get
