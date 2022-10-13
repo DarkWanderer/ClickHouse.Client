@@ -17,49 +17,49 @@ namespace ClickHouse.Client.ADO
 
         public string Database
         {
-            get => TryGetValue("Database", out var value) ? value as string : "default";
+            get => GetStringOrDefault("Database", "default");
             set => this["Database"] = value;
         }
 
         public string Username
         {
-            get => TryGetValue("Username", out var value) ? value as string : "default";
+            get => GetStringOrDefault("Username", "default");
             set => this["Username"] = value;
         }
 
         public string Password
         {
-            get => TryGetValue("Password", out var value) ? value as string : string.Empty;
+            get => GetStringOrDefault("Password", string.Empty);
             set => this["Password"] = value;
         }
 
         public string Protocol
         {
-            get => TryGetValue("Protocol", out var value) ? value as string : "http";
+            get => GetStringOrDefault("Protocol", "http");
             set => this["Protocol"] = value;
         }
 
         public string Host
         {
-            get => TryGetValue("Host", out var value) ? value as string : "localhost";
+            get => GetStringOrDefault("Host", "localhost");
             set => this["Host"] = value;
         }
 
         public bool Compression
         {
-            get => !TryGetValue("Compression", out var value) || "true".Equals(value as string, StringComparison.OrdinalIgnoreCase);
+            get => GetBooleanOrDefault("Compression", true);
             set => this["Compression"] = value;
         }
 
         public bool UseSession
         {
-            get => TryGetValue("UseSession", out var value) && "true".Equals(value as string, StringComparison.OrdinalIgnoreCase);
+            get => GetBooleanOrDefault("UseSession", false);
             set => this["UseSession"] = value;
         }
 
         public string SessionId
         {
-            get => TryGetValue("SessionId", out var value) ? value as string : null;
+            get => GetStringOrDefault("SessionId", null);
             set => this["SessionId"] = value;
         }
 
@@ -71,13 +71,13 @@ namespace ClickHouse.Client.ADO
 
         public bool UseServerTimezone
         {
-            get => TryGetValue("UseServerTimezone", out var value) && "true".Equals(value as string, StringComparison.OrdinalIgnoreCase);
+            get => GetBooleanOrDefault("UseServerTimezone", false);
             set => this["UseServerTimezone"] = value;
         }
 
         public bool UseCustomDecimals
         {
-            get => TryGetValue("UseCustomDecimals", out var value) && "true".Equals(value as string, StringComparison.OrdinalIgnoreCase);
+            get => GetBooleanOrDefault("UseCustomDecimals", false);
             set => this["UseCustomDecimals"] = value;
         }
 
@@ -90,6 +90,22 @@ namespace ClickHouse.Client.ADO
                     : TimeSpan.FromMinutes(2);
             }
             set => this["Timeout"] = value.TotalSeconds;
+        }
+
+        private bool GetBooleanOrDefault(string name, bool @default)
+        {
+            if (TryGetValue(name, out var value))
+                return "true".Equals(value as string, StringComparison.OrdinalIgnoreCase);
+            else
+                return @default;
+        }
+
+        private string GetStringOrDefault(string name, string @default)
+        {
+            if (TryGetValue(name, out var value))
+                return (string)value;
+            else
+                return @default;
         }
     }
 }
