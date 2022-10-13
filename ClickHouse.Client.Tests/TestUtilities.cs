@@ -35,11 +35,12 @@ namespace ClickHouse.Client.Tests
         /// Utility method to allow to redirect ClickHouse connections to different machine, in case of Windows development environment
         /// </summary>
         /// <returns></returns>
-        public static ClickHouseConnection GetTestClickHouseConnection(bool compression = true, bool session = false)
+        public static ClickHouseConnection GetTestClickHouseConnection(bool compression = true, bool session = false, bool customDecimals = false)
         {
             var builder = GetConnectionStringBuilder();
             builder.Compression = compression;
             builder.UseSession = session;
+            builder.UseCustomDecimals = customDecimals;
             builder["set_session_timeout"] = 1; // Expire sessions quickly after test
             if (SupportedFeatures.HasFlag(Feature.Geo)) // After we've loaded supported features
             {

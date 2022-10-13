@@ -41,6 +41,10 @@ namespace ClickHouse.Client.Types
 
         public override Type FrameworkType => typeof(ClickHouseDecimal);
 
+        public ClickHouseDecimal MaxValue => new(BigInteger.Pow(10, Precision) - 1, Scale);
+
+        public ClickHouseDecimal MinValue => new(1 - BigInteger.Pow(10, Precision), Scale);
+
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
         {
             var precision = int.Parse(node.ChildNodes[0].Value, CultureInfo.InvariantCulture);
@@ -104,7 +108,7 @@ namespace ClickHouse.Client.Types
             int p when p >= 1 && p <= 9 => 4,
             int p when p >= 10 && p <= 18 => 8,
             int p when p >= 19 && p <= 38 => 16,
-            int p when p >= 39 && p <= 76 => 16,
+            int p when p >= 39 && p <= 76 => 32,
             _ => throw new ArgumentOutOfRangeException(nameof(precision)),
         };
 

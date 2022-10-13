@@ -72,6 +72,7 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<Decimal32Type>();
             RegisterParameterizedType<Decimal64Type>();
             RegisterParameterizedType<Decimal128Type>();
+            RegisterParameterizedType<Decimal256Type>();
 
             RegisterParameterizedType<EnumType>();
             RegisterParameterizedType<Enum8Type>();
