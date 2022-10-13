@@ -75,6 +75,12 @@ namespace ClickHouse.Client.ADO
             set => this["UseServerTimezone"] = value;
         }
 
+        public bool UseCustomDecimals
+        {
+            get => TryGetValue("UseCustomDecimals", out var value) && "true".Equals(value as string, StringComparison.OrdinalIgnoreCase);
+            set => this["UseCustomDecimals"] = value;
+        }
+
         public TimeSpan Timeout
         {
             get

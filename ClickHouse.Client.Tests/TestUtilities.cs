@@ -4,7 +4,9 @@ using System.Data.Common;
 using System.Linq;
 using System.Net;
 using System.Numerics;
+using System.Text;
 using ClickHouse.Client.ADO;
+using ClickHouse.Client.Numerics;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests
@@ -33,11 +35,12 @@ namespace ClickHouse.Client.Tests
         /// Utility method to allow to redirect ClickHouse connections to different machine, in case of Windows development environment
         /// </summary>
         /// <returns></returns>
-        public static ClickHouseConnection GetTestClickHouseConnection(bool compression = true, bool session = false)
+        public static ClickHouseConnection GetTestClickHouseConnection(bool compression = true, bool session = false, bool customDecimals = false)
         {
             var builder = GetConnectionStringBuilder();
             builder.Compression = compression;
             builder.UseSession = session;
+            builder.UseCustomDecimals = customDecimals;
             builder["set_session_timeout"] = 1; // Expire sessions quickly after test
             if (SupportedFeatures.HasFlag(Feature.Geo)) // After we've loaded supported features
             {
@@ -135,16 +138,25 @@ namespace ClickHouse.Client.Tests
 
             if (SupportedFeatures.HasFlag(Feature.Decimals))
             {
-                yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(123.45, 3)", new decimal(123.45));
-                yield return new DataTypeSample("Decimal32(3)", typeof(decimal), "toDecimal32(-123.45, 3)", new decimal(-123.45));
+                yield return new DataTypeSample("Decimal32(3)", typeof(ClickHouseDecimal), "toDecimal32(123.45, 3)", new ClickHouseDecimal(123.450m));
+                yield return new DataTypeSample("Decimal32(3)", typeof(ClickHouseDecimal), "toDecimal32(-123.45, 3)", new ClickHouseDecimal(-123.450m));
 
-                yield return new DataTypeSample("Decimal64(7)", typeof(decimal), "toDecimal64(1.2345, 7)", new decimal(1.2345));
-                yield return new DataTypeSample("Decimal64(7)", typeof(decimal), "toDecimal64(-1.2345, 7)", new decimal(-1.2345));
+                yield return new DataTypeSample("Decimal64(7)", typeof(ClickHouseDecimal), "toDecimal64(1.2345, 7)", new ClickHouseDecimal(1.2345000m));
+                yield return new DataTypeSample("Decimal64(7)", typeof(ClickHouseDecimal), "toDecimal64(-1.2345, 7)", new ClickHouseDecimal(-1.2345000m));
 
-                yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(12.34, 9)", new decimal(12.34));
-                yield return new DataTypeSample("Decimal128(9)", typeof(decimal), "toDecimal128(-12.34, 9)", new decimal(-12.34));
+                yield return new DataTypeSample("Decimal128(9)", typeof(ClickHouseDecimal), "toDecimal128(12.34, 9)", new ClickHouseDecimal(12.340000000m));
+                yield return new DataTypeSample("Decimal128(9)", typeof(ClickHouseDecimal), "toDecimal128(-12.34, 9)", new ClickHouseDecimal(-12.340000000m));
 
-                yield return new DataTypeSample("Decimal128(25)", typeof(decimal), "toDecimal128(1e-24, 25)", new decimal(1e-24));
+                yield return new DataTypeSample("Decimal128(25)", typeof(ClickHouseDecimal), "toDecimal128(1e-24, 25)", new ClickHouseDecimal(10e-25m));
+                yield return new DataTypeSample("Decimal128(0)", typeof(ClickHouseDecimal), "toDecimal128(repeat('1', 30), 0)", ClickHouseDecimal.Parse(new string('1', 30)));
+            }
+
+            if (SupportedFeatures.HasFlag(Feature.Decimals) && SupportedFeatures.HasFlag(Feature.WideTypes))
+            {
+                // Code: 53. DB::Exception: Type mismatch in IN or VALUES section. Expected: Decimal(76, 25). Got: Decimal256:
+                // While processing toDecimal256(1e-24, 25) AS expected, _CAST('0.000000000000000000000001', 'Decimal256(25)') AS actual, expected = actual AS equals. (TYPE_MISMATCH) (version 22.9.3.18 (official build))
+                //yield return new DataTypeSample("Decimal256(25)", typeof(ClickHouseDecimal), "toDecimal256(1e-24, 25)", new ClickHouseDecimal(10e-25m));
+                //yield return new DataTypeSample("Decimal256(0)", typeof(ClickHouseDecimal), "toDecimal256(repeat('1', 50), 0)", ClickHouseDecimal.Parse(new string('1', 50)));
             }
 
             if (SupportedFeatures.HasFlag(Feature.IPv6))

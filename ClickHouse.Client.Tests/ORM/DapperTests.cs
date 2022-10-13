@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Utility;
 using Dapper;
 using NUnit.Framework;
@@ -22,6 +23,7 @@ namespace ClickHouse.Client.Tests.ORM
         static DapperTests()
         {
             SqlMapper.AddTypeHandler(new DateTimeOffsetHandler());
+            SqlMapper.AddTypeHandler(new ClickHouseDecimalHandler());
             SqlMapper.AddTypeHandler(new ITupleHandler());
         }
 
@@ -66,10 +68,21 @@ namespace ClickHouse.Client.Tests.ORM
 
         private class DateTimeOffsetHandler : SqlMapper.TypeHandler<DateTimeOffset>
         {
-            public override void SetValue(IDbDataParameter parameter, DateTimeOffset value) => parameter.Value = value;
+            public override void SetValue(IDbDataParameter parameter, DateTimeOffset value) => parameter.Value = value.UtcDateTime;
 
-            public override DateTimeOffset Parse(object value)
-                => DateTimeOffset.Parse((string)value);
+            public override DateTimeOffset Parse(object value) => DateTimeOffset.Parse((string)value);
+        }
+
+        private class ClickHouseDecimalHandler : SqlMapper.TypeHandler<ClickHouseDecimal>
+        {
+            public override void SetValue(IDbDataParameter parameter, ClickHouseDecimal value) => parameter.Value = value.ToString(CultureInfo.InvariantCulture);
+
+            public override ClickHouseDecimal Parse(object value) => value switch
+            {
+                ClickHouseDecimal chd => chd,
+                IConvertible ic => Convert.ToDecimal(ic),
+                _ => throw new ArgumentException(nameof(value))
+            };
         }
 
         [Test]
@@ -89,7 +102,7 @@ namespace ClickHouse.Client.Tests.ORM
         {
             var parameters = new Dictionary<string, object> { { "value", value } };
             var results = await connection.QueryAsync<string>(sql, parameters);
-            Assert.AreEqual(string.Format(CultureInfo.InvariantCulture, "{0}", value), results.Single());
+            Assert.AreEqual(Convert.ToString(value, CultureInfo.InvariantCulture), results.Single());
         }
 
         [Test]

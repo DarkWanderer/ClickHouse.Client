@@ -102,7 +102,7 @@ namespace ClickHouse.Client.Tests
         [TestCase("with(round)brackets")]
         [TestCase("with*star")]
         [TestCase("with?question")]
-        [TestCase("with?exclamation")]
+        [TestCase("with!exclamation")]
         public async Task ShouldExecuteBulkInsertWithComplexColumnName(string columnName)
         {
             var targetTable = "test." + SanitizeTableName($"bulk_complex_{columnName}");

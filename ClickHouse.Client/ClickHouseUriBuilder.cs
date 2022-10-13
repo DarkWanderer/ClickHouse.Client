@@ -25,7 +25,7 @@ namespace ClickHouse.Client
 
         public string SessionId { get; set; }
 
-        public string DefaultFormat => "RowBinaryWithNamesAndTypes";
+        public static string DefaultFormat => "RowBinaryWithNamesAndTypes";
 
         public IDictionary<string, object> CustomParameters { get; set; }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types;
 using NUnit.Framework;
 namespace ClickHouse.Client.Tests
@@ -22,10 +23,10 @@ namespace ClickHouse.Client.Tests
         [TestCase("Float32", ExpectedResult = typeof(float))]
         [TestCase("Float64", ExpectedResult = typeof(double))]
 
-        [TestCase("Decimal(18,3)", ExpectedResult = typeof(decimal))]
-        [TestCase("Decimal32(3)", ExpectedResult = typeof(decimal))]
-        [TestCase("Decimal64(3)", ExpectedResult = typeof(decimal))]
-        [TestCase("Decimal128(3)", ExpectedResult = typeof(decimal))]
+        [TestCase("Decimal(18,3)", ExpectedResult = typeof(ClickHouseDecimal))]
+        [TestCase("Decimal32(3)", ExpectedResult = typeof(ClickHouseDecimal))]
+        [TestCase("Decimal64(3)", ExpectedResult = typeof(ClickHouseDecimal))]
+        [TestCase("Decimal128(3)", ExpectedResult = typeof(ClickHouseDecimal))]
 
         [TestCase("String", ExpectedResult = typeof(string))]
         [TestCase("FixedString(5)", ExpectedResult = typeof(string))]

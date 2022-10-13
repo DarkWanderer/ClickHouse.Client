@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types.Grammar;
 
 [assembly: InternalsVisibleTo("ClickHouse.Client.Tests")] // assembly-level tag to expose below classes to tests
@@ -71,6 +72,7 @@ namespace ClickHouse.Client.Types
             RegisterParameterizedType<Decimal32Type>();
             RegisterParameterizedType<Decimal64Type>();
             RegisterParameterizedType<Decimal128Type>();
+            RegisterParameterizedType<Decimal256Type>();
 
             RegisterParameterizedType<EnumType>();
             RegisterParameterizedType<Enum8Type>();
@@ -85,6 +87,7 @@ namespace ClickHouse.Client.Types
             RegisterPlainType<MultiPolygonType>();
 
             // Mapping fixups
+            ReverseMapping.Add(typeof(ClickHouseDecimal), new Decimal128Type());
             ReverseMapping.Add(typeof(decimal), new Decimal128Type());
             ReverseMapping[typeof(DateTime)] = new DateTimeType();
             ReverseMapping[typeof(DateTimeOffset)] = new DateTimeType();

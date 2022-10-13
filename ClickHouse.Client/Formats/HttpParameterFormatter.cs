@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ClickHouse.Client.ADO.Parameters;
+using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
 
@@ -32,6 +33,8 @@ namespace ClickHouse.Client.Formats
                 case IntegerType it:
                 case FloatType ft:
                     return Convert.ToString(value, CultureInfo.InvariantCulture);
+                case DecimalType dt when value is ClickHouseDecimal chd:
+                    return chd.ToString(CultureInfo.InvariantCulture);
                 case DecimalType dt:
                     return Convert.ToDecimal(value, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
 

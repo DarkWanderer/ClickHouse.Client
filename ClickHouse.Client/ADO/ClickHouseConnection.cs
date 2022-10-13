@@ -35,6 +35,7 @@ namespace ClickHouse.Client.ADO
         private string password;
         private string session;
         private bool useServerTimezone;
+        private bool useCustomDecimals;
         private TimeSpan timeout;
         private Uri serverUri;
         private Feature supportedFeatures;
@@ -135,6 +136,7 @@ namespace ClickHouse.Client.ADO
                     UseSession = session != null,
                     Timeout = timeout,
                     UseServerTimezone = useServerTimezone,
+                    UseCustomDecimals = useCustomDecimals,
                 };
 
                 foreach (var kvp in CustomSettings)
@@ -154,6 +156,7 @@ namespace ClickHouse.Client.ADO
                 session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
                 timeout = builder.Timeout;
                 useServerTimezone = builder.UseServerTimezone;
+                useCustomDecimals = builder.UseCustomDecimals;
 
                 foreach (var key in builder.Keys.Cast<string>().Where(k => k.StartsWith(CustomSettingPrefix, true, CultureInfo.InvariantCulture)))
                 {
@@ -331,7 +334,7 @@ namespace ClickHouse.Client.ADO
 
         internal HttpClient HttpClient => httpClientFactory.CreateClient(httpClientName);
 
-        internal TypeSettings TypeSettings => new TypeSettings(false, useServerTimezone ? serverTimezone : TypeSettings.DefaultTimezone);
+        internal TypeSettings TypeSettings => new TypeSettings(useCustomDecimals, useServerTimezone ? serverTimezone : TypeSettings.DefaultTimezone);
 
         internal ClickHouseUriBuilder CreateUriBuilder(string sql = null) => new ClickHouseUriBuilder(serverUri)
         {

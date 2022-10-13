@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Numerics;
 using ClickHouse.Client.Formats;
+using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 
@@ -38,7 +39,11 @@ namespace ClickHouse.Client.Types
         /// </summary>
         public virtual int Size => GetSizeFromPrecision(Precision);
 
-        public override Type FrameworkType => typeof(decimal);
+        public override Type FrameworkType => typeof(ClickHouseDecimal);
+
+        public ClickHouseDecimal MaxValue => new(BigInteger.Pow(10, Precision) - 1, Scale);
+
+        public ClickHouseDecimal MinValue => new(1 - BigInteger.Pow(10, Precision), Scale);
 
         public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
         {
@@ -55,6 +60,8 @@ namespace ClickHouse.Client.Types
                     return new Decimal64Type { Precision = precision, Scale = scale };
                 case 16:
                     return new Decimal128Type { Precision = precision, Scale = scale };
+                case 32:
+                    return new Decimal256Type { Precision = precision, Scale = scale };
                 default:
                     return new DecimalType { Precision = precision, Scale = scale };
             }
@@ -64,21 +71,20 @@ namespace ClickHouse.Client.Types
         {
             // ClickHouse value represented as decimal
             // Needs to be divided by Exponent to get actual value
-            decimal intermediate;
+            BigInteger mantissa;
             switch (Size)
             {
                 case 4:
-                    intermediate = reader.ReadInt32();
+                    mantissa = reader.ReadInt32();
                     break;
                 case 8:
-                    intermediate = reader.ReadInt64();
+                    mantissa = reader.ReadInt64();
                     break;
                 default:
-                    var bigInt = new BigInteger(reader.ReadBytes(Size));
-                    intermediate = (decimal)bigInt;
+                    mantissa = new BigInteger(reader.ReadBytes(Size));
                     break;
             }
-            return intermediate / Exponent;
+            return new ClickHouseDecimal(mantissa, Scale);
         }
 
         public override string ToString() => $"{Name}({Precision}, {Scale})";
@@ -87,48 +93,38 @@ namespace ClickHouse.Client.Types
         {
             try
             {
-                decimal multipliedValue = Convert.ToDecimal(value, CultureInfo.InvariantCulture) * Exponent;
-                switch (Size)
-                {
-                    case 4:
-                        writer.Write((int)multipliedValue);
-                        break;
-                    case 8:
-                        writer.Write((long)multipliedValue);
-                        break;
-                    default:
-                        WriteLargeDecimal(writer, multipliedValue);
-                        break;
-                }
+                ClickHouseDecimal @decimal = value is ClickHouseDecimal chd ? chd : Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+                var mantissa = ClickHouseDecimal.ToScale(@decimal, Scale);
+                WriteBigInteger(writer, mantissa);
             }
             catch (OverflowException)
             {
-                throw new ArgumentOutOfRangeException(nameof(value), value, $"Value cannot be represented as {this}");
+                throw new ArgumentOutOfRangeException(nameof(value), value, $"Value cannot be represented");
             }
         }
 
-        private int GetSizeFromPrecision(int precision) => precision switch
+        private static int GetSizeFromPrecision(int precision) => precision switch
         {
-            int p when p >= 1 && p < 10 => 4,
-            int p when p >= 10 && p < 19 => 8,
-            int p when p >= 19 && p < 39 => 16,
+            int p when p >= 1 && p <= 9 => 4,
+            int p when p >= 10 && p <= 18 => 8,
+            int p when p >= 19 && p <= 38 => 16,
+            int p when p >= 39 && p <= 76 => 32,
             _ => throw new ArgumentOutOfRangeException(nameof(precision)),
         };
 
-        private void WriteLargeDecimal(ExtendedBinaryWriter writer, decimal value)
+        private void WriteBigInteger(ExtendedBinaryWriter writer, BigInteger value)
         {
-            var bigInt = new BigInteger(value);
-            byte[] bigIntBytes = bigInt.ToByteArray();
+            byte[] bigIntBytes = value.ToByteArray();
             byte[] decimalBytes = new byte[Size];
 
             if (bigIntBytes.Length > Size)
-                throw new OverflowException();
+                throw new OverflowException($"Trying to write {bigIntBytes.Length} bytes, at most {Size} expected");
 
             bigIntBytes.CopyTo(decimalBytes, 0);
 
             // If a negative BigInteger is not long enough to fill the whole buffer,
             // the remainder needs to be filled with 0xFF
-            if (bigInt < 0)
+            if (value.Sign < 0)
             {
                 for (int i = bigIntBytes.Length; i < Size; i++)
                     decimalBytes[i] = 0xFF;
