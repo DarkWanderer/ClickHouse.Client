@@ -71,7 +71,7 @@ namespace ClickHouse.Client.ADO
 
         public bool UseServerTimezone
         {
-            get => GetBooleanOrDefault("UseServerTimezone", false);
+            get => GetBooleanOrDefault("UseServerTimezone", true);
             set => this["UseServerTimezone"] = value;
         }
 
