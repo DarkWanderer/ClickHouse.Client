@@ -53,6 +53,18 @@ jobs:
         name: coverage
         path: ./ClickHouse.Client.Tests/coverage.cobertura.xml
 
+    - name: Download 'master' coverage
+      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+      uses: benday-inc/download-latest-artifact@main
+      with:
+        repository_owner: ${{ github.repository_owner	}}
+        repository_name: 'ClickHouse.Client'
+        workflow_name: 'Coverage'
+        branch_name: 'master'
+        artifact_name: 'coverage'
+        download_path: '${{ github.workspace }}/coverage.master'
+        download_filename: 'coverage.cobertura.xml'
+
     - name: Install pycobertura
       run: pip install pycobertura
       
