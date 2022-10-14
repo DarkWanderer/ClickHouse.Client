@@ -67,8 +67,13 @@ jobs:
         branch_name: master
         artifact_name: coverage
         download_path: '${{ github.workspace }}/coverage.master'
-        download_filename: 'coverage.cobertura.xml'
+        download_filename: coverage.zip
       
+    - name: Unzip 'master' coverage
+      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+      working-directory: coverage.master
+      run: unzip coverage.zip
+
     - name: Report full coverage
       run: pycobertura show ./ClickHouse.Client.Tests/coverage.cobertura.xml --format markdown -o code-coverage-full.md
 
