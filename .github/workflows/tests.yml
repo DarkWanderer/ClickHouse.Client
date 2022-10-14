@@ -53,26 +53,14 @@ jobs:
         name: coverage
         path: ./ClickHouse.Client.Tests/coverage.cobertura.xml
 
-    - name: Generate summary
-      if: always()
-      uses: irongut/CodeCoverageSummary@v1.3.0
-      with:
-        badge: true
-        filename: ./ClickHouse.Client.Tests/coverage.cobertura.xml
-        output: both
-        format: markdown
-        thresholds: '60 80'
+    - name: Install pycobertura
+      run: pip install pycobertura
+      
+    - name: Process coverage report
+      run: pycobertura show ./ClickHouse.Client.Tests/coverage.cobertura.xml --format markdown -o code-coverage-results.md
 
     - name: Post Actions Summary
       run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
-
-    - name: Stick PR comment
-      uses: marocchino/sticky-pull-request-comment@v2
-      continue-on-error: true
-      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
-      with:
-        recreate: true
-        path: code-coverage-results.md
 
   regress:
     name: Regression
