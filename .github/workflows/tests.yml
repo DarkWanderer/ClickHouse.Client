@@ -60,15 +60,11 @@ jobs:
       run: pycobertura show ./ClickHouse.Client.Tests/coverage.cobertura.xml --format markdown -o code-coverage-results.md
 
     - name: Post Actions Summary
-      run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
-
-    - name: Stick PR comment
-      uses: marocchino/sticky-pull-request-comment@v2
-      continue-on-error: true
-      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
-      with:
-        recreate: true
-        path: code-coverage-results.md
+      run: |
+        echo <details> >> $GITHUB_STEP_SUMMARY
+        echo <summary>Coverage report</summary> >> $GITHUB_STEP_SUMMARY
+        cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+        echo </details> >> $GITHUB_STEP_SUMMARY
 
   regress:
     name: Regression
