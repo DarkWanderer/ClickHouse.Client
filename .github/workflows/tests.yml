@@ -19,7 +19,15 @@ jobs:
         ports:
           - 8123:8123
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Checkout master
+      uses: actions/checkout@v3
+      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+      with:
+        ref: master
+        path: master
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v3
@@ -66,12 +74,12 @@ jobs:
         workflow_name: ${{ github.workflow }}
         branch_name: master
         artifact_name: coverage
-        download_path: '${{ github.workspace }}/coverage.master'
+        download_path: '${{ github.workspace }}/master'
         download_filename: coverage.zip
       
     - name: Unzip 'master' coverage
       if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
-      working-directory: coverage.master
+      working-directory: master
       run: unzip coverage.zip
 
     - name: Report full coverage
@@ -82,7 +90,7 @@ jobs:
 
     - name: Report diff coverage
       if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
-      run: pycobertura diff ./coverage.master/coverage.cobertura.xml ./ClickHouse.Client.Tests/coverage.cobertura.xml --source1 ./ClickHouse.Client/ --source2 ./ClickHouse.Client/ --format markdown -o code-coverage-diff.md
+      run: pycobertura diff ./master/coverage.cobertura.xml ./ClickHouse.Client.Tests/coverage.cobertura.xml --source1 ./master/ClickHouse.Client/ --source2 ./ClickHouse.Client/ --format markdown -o code-coverage-diff.md
 
     - name: Post diff Summary
       if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
