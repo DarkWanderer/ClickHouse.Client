@@ -82,7 +82,7 @@ jobs:
 
     - name: Report diff coverage
       if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
-      run: pycobertura diff ./coverage.master/coverage.cobertura.xml ./ClickHouse.Client.Tests/coverage.cobertura.xml --source1 ./ClickHouse.Client --source2 ./ClickHouse.Client --format markdown -o code-coverage-diff.md
+      run: pycobertura diff ./coverage.master/coverage.cobertura.xml ./ClickHouse.Client.Tests/coverage.cobertura.xml --source1 ./ClickHouse.Client/ --source2 ./ClickHouse.Client/ --format markdown -o code-coverage-diff.md
 
     - name: Post diff Summary
       if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
