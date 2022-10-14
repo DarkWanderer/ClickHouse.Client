@@ -46,5 +46,10 @@ namespace ClickHouse.Client.Utility
 
             return result.ToString();
         }
+
+        public static void UncoveredFunction()
+        {
+            int i = 1 + 2;
+        }
     }
 }
