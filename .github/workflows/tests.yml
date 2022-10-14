@@ -19,12 +19,23 @@ jobs:
         ports:
           - 8123:8123
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Checkout master
+      uses: actions/checkout@v3
+      if: ${{ github.event_name == 'pull_request' }}
+      with:
+        ref: master
+        path: master
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '6.x'
+
+    - name: Install pycobertura
+      run: pip install pycobertura
 
     - name: Install coverlet-collector
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector
@@ -53,14 +64,48 @@ jobs:
         name: coverage
         path: ./ClickHouse.Client.Tests/coverage.cobertura.xml
 
-    - name: Install pycobertura
-      run: pip install pycobertura
+    - name: Download 'master' coverage
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: benday-inc/download-latest-artifact@main
+      with:
+        token: ${{ github.token }}
+        repository_owner: ${{ github.repository_owner	}}
+        repository_name: ClickHouse.Client
+        workflow_name: ${{ github.workflow }}
+        branch_name: master
+        artifact_name: coverage
+        download_path: ${{ github.workspace }}/master/ClickHouse.Client
+        download_filename: coverage.zip
       
-    - name: Process coverage report
-      run: pycobertura show ./ClickHouse.Client.Tests/coverage.cobertura.xml --format markdown -o code-coverage-results.md
+    - name: Unzip 'master' coverage
+      if: ${{ github.event_name == 'pull_request' }}
+      working-directory: ${{ github.workspace }}/master/ClickHouse.Client
+      run: unzip coverage.zip
 
-    - name: Post Actions Summary
-      run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+    - run: mv ./ClickHouse.Client.Tests/coverage.cobertura.xml ./ClickHouse.Client/
+
+    - name: Report diff coverage
+      continue-on-error: true
+      if: ${{ github.event_name == 'pull_request' }}
+      run: pycobertura diff ./master/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
+
+    - name: Post diff Summary
+      if: ${{ github.event_name == 'pull_request' }}
+      run: cat code-coverage-diff.md >> $GITHUB_STEP_SUMMARY
+
+    - name: Report full coverage
+      run: pycobertura show ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-full.md
+
+    - name: Post full summary
+      run: cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
+
+    - name: Stick PR comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      continue-on-error: true
+      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+      with:
+        recreate: true
+        path: code-coverage-diff.md
 
   regress:
     name: Regression
