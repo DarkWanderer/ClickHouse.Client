@@ -24,7 +24,7 @@ jobs:
 
     - name: Checkout master
       uses: actions/checkout@v3
-      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+      if: ${{ github.event_name == 'pull_request' }}
       with:
         ref: master
         path: master
@@ -65,7 +65,7 @@ jobs:
         path: ./ClickHouse.Client.Tests/coverage.cobertura.xml
 
     - name: Download 'master' coverage
-      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+      if: ${{ github.event_name == 'pull_request' }}
       uses: benday-inc/download-latest-artifact@main
       with:
         token: ${{ github.token }}
@@ -78,7 +78,7 @@ jobs:
         download_filename: coverage.zip
       
     - name: Unzip 'master' coverage
-      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+      if: ${{ github.event_name == 'pull_request' }}
       working-directory: ${{ github.workspace }}/master/ClickHouse.Client
       run: unzip coverage.zip
 
@@ -91,11 +91,11 @@ jobs:
       run: cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
 
     - name: Report diff coverage
-      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+      if: ${{ github.event_name == 'pull_request' }}
       run: pycobertura diff ./master/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
 
     - name: Post diff Summary
-      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+      if: ${{ github.event_name == 'pull_request' }}
       run: cat code-coverage-diff.md >> $GITHUB_STEP_SUMMARY
 
     - name: Stick PR comment
@@ -105,6 +105,13 @@ jobs:
       with:
         recreate: true
         path: code-coverage-diff.md
+
+    - name: Upload master coverage xml
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-master
+        path: ./master/ClickHouse.Client/coverage.cobertura.xml
 
   regress:
     name: Regression
