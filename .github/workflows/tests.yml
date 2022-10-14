@@ -77,16 +77,16 @@ jobs:
     - name: Report full coverage
       run: pycobertura show ./ClickHouse.Client.Tests/coverage.cobertura.xml --format markdown -o code-coverage-full.md
 
-    - name: Post diff Summary
-      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+    - name: Post full summary
       run: cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
 
     - name: Report diff coverage
       if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
       run: pycobertura diff ./coverage.master/coverage.cobertura.xml ./ClickHouse.Client.Tests/coverage.cobertura.xml --source1 ./ClickHouse.Client --source2 ./ClickHouse.Client --format markdown -o code-coverage-diff.md
 
-    - name: Post full summary
-      run: cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
+    - name: Post diff Summary
+      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
+      run: cat code-coverage-diff.md >> $GITHUB_STEP_SUMMARY
 
     - name: Stick PR comment
       uses: marocchino/sticky-pull-request-comment@v2
