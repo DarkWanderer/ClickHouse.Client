@@ -60,11 +60,7 @@ jobs:
       run: pycobertura show ./ClickHouse.Client.Tests/coverage.cobertura.xml --format markdown -o code-coverage-results.md
 
     - name: Post Actions Summary
-      run: |
-        echo <details> >> $GITHUB_STEP_SUMMARY
-        echo <summary>Coverage report</summary> >> $GITHUB_STEP_SUMMARY
-        cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
-        echo </details> >> $GITHUB_STEP_SUMMARY
+      run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
 
   regress:
     name: Regression
