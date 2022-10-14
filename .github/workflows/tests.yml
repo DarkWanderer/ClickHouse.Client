@@ -107,13 +107,6 @@ jobs:
         recreate: true
         path: code-coverage-diff.md
 
-    - name: Upload master coverage xml
-      if: ${{ github.event_name == 'pull_request' }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage-master
-        path: ./master/ClickHouse.Client/coverage.cobertura.xml
-
   regress:
     name: Regression
     runs-on: ubuntu-latest
