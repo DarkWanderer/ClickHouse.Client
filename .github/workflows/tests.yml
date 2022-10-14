@@ -83,7 +83,7 @@ jobs:
       run: unzip coverage.zip
 
     - name: Report full coverage
-      run: pycobertura show ./ClickHouse.Client.Tests/coverage.cobertura.xml --format markdown -o code-coverage-full.md
+      run: pycobertura show ./ClickHouse.Client.Tests/coverage.cobertura.xml --format markdown -o code-coverage-full.md --source ./ClickHouse.Client/
 
     - name: Post full summary
       run: cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
