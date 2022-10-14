@@ -26,6 +26,9 @@ jobs:
       with:
         dotnet-version: '6.x'
 
+    - name: Install pycobertura
+      run: pip install pycobertura
+
     - name: Install coverlet-collector
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector
 
@@ -57,16 +60,14 @@ jobs:
       if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
       uses: benday-inc/download-latest-artifact@main
       with:
+        token: ${{ github.token }}
         repository_owner: ${{ github.repository_owner	}}
-        repository_name: 'ClickHouse.Client'
-        workflow_name: 'Coverage'
-        branch_name: 'master'
-        artifact_name: 'coverage'
+        repository_name: ClickHouse.Client
+        workflow_name: ${{ github.workflow }}
+        branch_name: master
+        artifact_name: coverage
         download_path: '${{ github.workspace }}/coverage.master'
         download_filename: 'coverage.cobertura.xml'
-
-    - name: Install pycobertura
-      run: pip install pycobertura
       
     - name: Process coverage report
       run: pycobertura show ./ClickHouse.Client.Tests/coverage.cobertura.xml --format markdown -o code-coverage-results.md
