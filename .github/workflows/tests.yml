@@ -91,6 +91,7 @@ jobs:
       run: cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
 
     - name: Report diff coverage
+      continue-on-error: true
       if: ${{ github.event_name == 'pull_request' }}
       run: pycobertura diff ./master/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
 
