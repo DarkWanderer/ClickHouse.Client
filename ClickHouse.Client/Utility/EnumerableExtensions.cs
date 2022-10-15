@@ -13,10 +13,7 @@ namespace ClickHouse.Client.Utility
 
             foreach (var item in source)
             {
-                if (bucket == null)
-                {
-                    bucket = new T[size];
-                }
+                bucket ??= new T[size];
 
                 bucket[count++] = item;
 
@@ -39,10 +36,21 @@ namespace ClickHouse.Client.Utility
             }
         }
 
-        public static void Deconstruct<T>(this IEnumerable<T> enumerable, out T first, out IEnumerable<T> rest)
+        public static void Deconstruct<T>(this IList<T> list, out T first, out T second)
         {
-            first = enumerable.FirstOrDefault();
-            rest = enumerable.Skip(1);
+            if (list.Count != 2)
+                throw new ArgumentException($"Expected 2 elements in list, got {list.Count}");
+            first = list[0];
+            second = list[1];
+        }
+
+        public static void Deconstruct<T>(this IList<T> list, out T first, out T second, out T third)
+        {
+            if (list.Count != 3)
+                throw new ArgumentException($"Expected 3 elements in list, got {list.Count}");
+            first = list[0];
+            second = list[1];
+            third = list[2];
         }
     }
 }
