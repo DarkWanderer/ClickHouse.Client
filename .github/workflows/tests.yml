@@ -88,8 +88,8 @@ jobs:
       if: ${{ github.event_name == 'pull_request' }}
       run: |
         pycobertura diff ./master/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
-        local exitcode=$?
-        if [[ ${exitcode} -eq 3 ]]; then exit 0; fi
+        export EXITCODE=$?
+        if [[ ${EXITCODE} -eq 3 ]]; then exit 0; fi
 
     - name: Post diff Summary
       if: ${{ github.event_name == 'pull_request' }}
