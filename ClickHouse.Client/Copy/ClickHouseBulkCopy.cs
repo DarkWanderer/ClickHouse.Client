@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Formats;
-using ClickHouse.Client.Properties;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
 
@@ -94,7 +93,7 @@ namespace ClickHouse.Client.Copy
 
             if (string.IsNullOrWhiteSpace(DestinationTableName))
             {
-                throw new InvalidOperationException(Resources.DestinationTableNotSetMessage);
+                throw new InvalidOperationException("Destination table not set");
             }
 
             ClickHouseType[] columnTypes = null;
