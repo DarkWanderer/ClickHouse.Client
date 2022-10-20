@@ -13,10 +13,10 @@ ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra
 * Fully supports ClickHouse-specific types:
   * Composite types: `Array`, `Tuple`, `Nullable`, `Nested`, `Map`, including combinations
   * Specialized types: `IPv4`, `IPv6`, `UUID`, `DateTime64`, `LowCardinality`, `Enum` etc.
+  * Large arithmetic types: `(U)Int128`, `(U)Int256`, `Decimal128`, `Decimal256`
 * Correctly handles `DateTime`, including time zones
-* Uses compressed binary protocol over HTTP(S)
 * Supports [bulk insertion](https://github.com/DarkWanderer/ClickHouse.Client/wiki/Bulk-insertion)
-* Uses HTTP(S), so is compatible with any server version
+* Uses compressed binary protocol over HTTP(S)
 * Available for .NET Core/Framework/Standard
 
 ## Advantages
