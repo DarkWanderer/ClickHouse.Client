@@ -85,9 +85,11 @@ jobs:
     - run: mv ./ClickHouse.Client.Tests/coverage.cobertura.xml ./ClickHouse.Client/
 
     - name: Report diff coverage
-      continue-on-error: true
       if: ${{ github.event_name == 'pull_request' }}
-      run: pycobertura diff ./master/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
+      run: |
+        pycobertura diff ./master/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
+        local exitcode=$?
+        if [[ ${exitcode} -eq 3 ]]; then exit 0; fi
 
     - name: Post diff Summary
       if: ${{ github.event_name == 'pull_request' }}
