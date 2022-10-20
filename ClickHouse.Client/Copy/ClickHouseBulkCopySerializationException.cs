@@ -1,18 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using ClickHouse.Client.ADO;
-using ClickHouse.Client.ADO.Readers;
-using ClickHouse.Client.Formats;
-using ClickHouse.Client.Properties;
-using ClickHouse.Client.Types;
-using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Copy
 {
