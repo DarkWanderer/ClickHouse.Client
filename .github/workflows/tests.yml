@@ -99,7 +99,12 @@ jobs:
       run: pycobertura show ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-full.md
 
     - name: Post full summary
-      run: cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
+      run: |
+        cat <<< "<details>
+        <summary>File coverage report</summary> \
+        $(cat code-coverage-full.md) \
+        </details>"> code-coverage-full.md
+        cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
 
     - name: Stick PR comment
       uses: marocchino/sticky-pull-request-comment@v2
