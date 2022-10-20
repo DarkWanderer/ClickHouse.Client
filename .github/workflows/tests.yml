@@ -100,11 +100,11 @@ jobs:
 
     - name: Post full summary
       run: |
-        cat <<< "<details>
-        <summary>File coverage report</summary> \
-        $(cat code-coverage-full.md) \
-        </details>"> code-coverage-full.md
-        cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
+        echo "<details>" > code-coverage-full.md.tmp
+        echo "<summary>File coverage</summary>" > code-coverage-full.md.tmp
+        cat code-coverage-full.md > code-coverage-full.md.tmp
+        echo "</details>" > code-coverage-full.md.tmp
+        cat code-coverage-full.md.tmp >> $GITHUB_STEP_SUMMARY
 
     - name: Stick PR comment
       uses: marocchino/sticky-pull-request-comment@v2
