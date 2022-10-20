@@ -90,8 +90,9 @@ jobs:
     - name: Post full summary
       run: |
         echo "<details>" > code-coverage-full.md.tmp
-        echo "<summary>File coverage</summary>" >> code-coverage-full.md.tmp
+        echo "  <summary>File coverage</summary>" >> code-coverage-full.md.tmp
         cat code-coverage-full.md >> code-coverage-full.md.tmp
+        echo "" >> code-coverage-full.md.tmp
         echo "</details>" >> code-coverage-full.md.tmp
         cat code-coverage-full.md.tmp >> $GITHUB_STEP_SUMMARY
         
