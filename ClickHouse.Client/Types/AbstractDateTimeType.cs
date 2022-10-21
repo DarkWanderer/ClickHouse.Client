@@ -26,6 +26,12 @@ namespace ClickHouse.Client.Types
 
         public override string ToString() => TimeZone == null ? $"{Name}" : $"{Name}({TimeZone.Id})";
 
-        private DateTime ToDateTime(Instant instant) => TimeZone != null ? instant.InZone(TimeZone).ToDateTimeUnspecified() : instant.ToDateTimeUtc();
+        private DateTime ToDateTime(Instant instant)
+        {
+            if (TimeZone == null || TimeZone.Id == "UTC")
+                return instant.ToDateTimeUtc();
+            else
+                return instant.InZone(TimeZone).ToDateTimeUnspecified();
+        }
     }
 }
