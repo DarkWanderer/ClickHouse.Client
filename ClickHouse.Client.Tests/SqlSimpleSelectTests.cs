@@ -75,21 +75,25 @@ namespace ClickHouse.Client.Tests
         }
 
         [Test]
-        public async Task DateTimeSelectShouldHaveCorrectTimezone()
+        [TestCase("Asia/Sakhalin", ExpectedResult = DateTimeKind.Unspecified)]
+        [TestCase("Etc/UTC", ExpectedResult = DateTimeKind.Utc)]
+        [TestCase("Etc/GMT", ExpectedResult = DateTimeKind.Utc)]
+        //[TestCase("Etc/Universal", ExpectedResult = DateTimeKind.Utc)]
+        //[TestCase("Etc/GMT+0", ExpectedResult = DateTimeKind.Utc)]
+        public async Task<DateTimeKind> DateTimeSelectShouldHaveCorrectTimezone(string timezone)
         {
-            using var reader = await connection.ExecuteReaderAsync("SELECT toDateTime(1577836800, 'Asia/Sakhalin')");
+            using var reader = await connection.ExecuteReaderAsync($"SELECT toDateTime('2020-01-01 00:00:00', '{timezone}')");
 
             reader.AssertHasFieldCount(1);
-            var datetime = (DateTime)reader.GetEnsureSingleRow().Single();
-            if (datetime.Kind == DateTimeKind.Utc)
-            {
-                Assert.AreEqual(new DateTime(2020, 01, 01, 0, 0, 0, DateTimeKind.Utc), datetime.ToUniversalTime());
-            }
-            else
-            {
-                Assert.AreEqual(new DateTime(2020, 01, 01, 11, 0, 0, DateTimeKind.Unspecified), datetime);
-                Assert.AreEqual(DateTimeKind.Unspecified, datetime.Kind);
-            }
+            var res = (DateTime)reader.GetEnsureSingleRow().Single();
+            Assert.AreEqual(2020, res.Year);
+            Assert.AreEqual(1, res.Month);
+            Assert.AreEqual(1, res.Day);
+            Assert.AreEqual(0, res.Hour);
+            Assert.AreEqual(0, res.Minute);
+            Assert.AreEqual(0, res.Second);
+
+            return res.Kind;
         }
 
         [Test]

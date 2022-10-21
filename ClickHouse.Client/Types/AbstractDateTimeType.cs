@@ -28,10 +28,15 @@ namespace ClickHouse.Client.Types
 
         private DateTime ToDateTime(Instant instant)
         {
-            if (TimeZone == null || TimeZone.Id == "UTC")
+            // Special case for ETC/GMT timezone. TODO: support other aliases like Etc/Universal
+            if (TimeZone == null || TimeZone.Id == "Etc/GMT" || TimeZone.Id == "Etc/UTC")
+            {
                 return instant.ToDateTimeUtc();
+            }
             else
+            {
                 return instant.InZone(TimeZone).ToDateTimeUnspecified();
+            }
         }
     }
 }
