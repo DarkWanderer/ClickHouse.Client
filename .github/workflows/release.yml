@@ -71,5 +71,5 @@ jobs:
       with:
         artifacts: "*.nupkg,*.snupkg"
         generateReleaseNotes: true
-        draft: false
+        draft: true
         prerelease: false
