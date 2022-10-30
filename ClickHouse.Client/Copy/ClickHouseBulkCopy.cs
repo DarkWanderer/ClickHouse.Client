@@ -138,7 +138,7 @@ namespace ClickHouse.Client.Copy
 
                         using var writer = new ExtendedBinaryWriter(gzipStream);
 
-                        while ((hasMore = enumerator.MoveNext()) && counter < BatchSize)
+                        while (hasMore = enumerator.MoveNext())
                         {
                             row = enumerator.Current;
                             for (col = 0; col < row.Length; col++)
@@ -146,6 +146,9 @@ namespace ClickHouse.Client.Copy
                                 columnTypes[col].Write(writer, row[col]);
                             }
                             counter++;
+
+                            if (counter >= BatchSize)
+                                break; // We've reached the batch size
                         }
                     }
 
