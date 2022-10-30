@@ -191,6 +191,31 @@ namespace ClickHouse.Client.Tests
             Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT value FROM {targetTable}"));
         }
 
+
+        [Test]
+        public async Task ShouldNotLoseRowsOnMuptipleBatches()
+        {
+            var targetTable = "test.bulk_multiple_batches"; ;
+
+            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value Int32) ENGINE TinyLog");
+
+            using var bulkCopy = new ClickHouseBulkCopy(connection)
+            {
+                DestinationTableName = targetTable,
+                MaxDegreeOfParallelism = 2,
+                BatchSize = 10
+            };
+
+            const int Count = 1000;
+            var data = Enumerable.Repeat(new object[] { 1 }, Count);
+
+            await bulkCopy.WriteToServerAsync(data, CancellationToken.None);
+
+            Assert.AreEqual(Count, bulkCopy.RowsWritten);
+            Assert.AreEqual(Count, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
+        }
+
         private string SanitizeTableName(string input)
         {
             var builder = new StringBuilder();
