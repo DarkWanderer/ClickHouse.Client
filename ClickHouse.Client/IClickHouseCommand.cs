@@ -4,12 +4,11 @@ using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Parameters;
 
-namespace ClickHouse.Client
-{
-    public interface IClickHouseCommand : IDbCommand
-    {
-        new ClickHouseDbParameter CreateParameter();
+namespace ClickHouse.Client;
 
-        Task<ClickHouseRawResult> ExecuteRawResultAsync(CancellationToken cancellationToken);
-    }
+public interface IClickHouseCommand : IDbCommand
+{
+    new ClickHouseDbParameter CreateParameter();
+
+    Task<ClickHouseRawResult> ExecuteRawResultAsync(CancellationToken cancellationToken);
 }

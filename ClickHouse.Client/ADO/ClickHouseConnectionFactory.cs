@@ -2,18 +2,17 @@
 using ClickHouse.Client.ADO.Adapters;
 using ClickHouse.Client.ADO.Parameters;
 
-namespace ClickHouse.Client.ADO
+namespace ClickHouse.Client.ADO;
+
+public class ClickHouseConnectionFactory : DbProviderFactory
 {
-    public class ClickHouseConnectionFactory : DbProviderFactory
-    {
-        public override DbConnection CreateConnection() => new ClickHouseConnection();
+    public override DbConnection CreateConnection() => new ClickHouseConnection();
 
-        public override DbDataAdapter CreateDataAdapter() => new ClickHouseDataAdapter();
+    public override DbDataAdapter CreateDataAdapter() => new ClickHouseDataAdapter();
 
-        public override DbConnectionStringBuilder CreateConnectionStringBuilder() => new ClickHouseConnectionStringBuilder();
+    public override DbConnectionStringBuilder CreateConnectionStringBuilder() => new ClickHouseConnectionStringBuilder();
 
-        public override DbParameter CreateParameter() => new ClickHouseDbParameter();
+    public override DbParameter CreateParameter() => new ClickHouseDbParameter();
 
-        public override DbCommand CreateCommand() => new ClickHouseCommand();
-    }
+    public override DbCommand CreateCommand() => new ClickHouseCommand();
 }

@@ -1,11 +1,10 @@
 ﻿using System.Data.Common;
 
-namespace ClickHouse.Client.ADO.Adapters
+namespace ClickHouse.Client.ADO.Adapters;
+
+/// <summary>
+/// Dummy adapter class - to maintain backward compatibility
+/// </summary>
+public class ClickHouseDataAdapter : DbDataAdapter
 {
-    /// <summary>
-    /// Dummy adapter class - to maintain backward compatibility
-    /// </summary>
-    public class ClickHouseDataAdapter : DbDataAdapter
-    {
-    }
 }

@@ -2,46 +2,45 @@
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types.Grammar;
 
-namespace ClickHouse.Client.Types
+namespace ClickHouse.Client.Types;
+
+internal class NullableType : ParameterizedType
 {
-    internal class NullableType : ParameterizedType
+    public ClickHouseType UnderlyingType { get; set; }
+
+    public override Type FrameworkType
     {
-        public ClickHouseType UnderlyingType { get; set; }
-
-        public override Type FrameworkType
+        get
         {
-            get
-            {
-                var underlyingFrameworkType = UnderlyingType.FrameworkType;
-                return underlyingFrameworkType.IsValueType ? typeof(Nullable<>).MakeGenericType(underlyingFrameworkType) : underlyingFrameworkType;
-            }
+            var underlyingFrameworkType = UnderlyingType.FrameworkType;
+            return underlyingFrameworkType.IsValueType ? typeof(Nullable<>).MakeGenericType(underlyingFrameworkType) : underlyingFrameworkType;
         }
+    }
 
-        public override string Name => "Nullable";
+    public override string Name => "Nullable";
 
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
+    public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
+    {
+        return new NullableType
         {
-            return new NullableType
-            {
-                UnderlyingType = parseClickHouseTypeFunc(node.SingleChild),
-            };
+            UnderlyingType = parseClickHouseTypeFunc(node.SingleChild),
+        };
+    }
+
+    public override object Read(ExtendedBinaryReader reader) => reader.ReadByte() > 0 ? DBNull.Value : UnderlyingType.Read(reader);
+
+    public override string ToString() => $"{Name}({UnderlyingType})";
+
+    public override void Write(ExtendedBinaryWriter writer, object value)
+    {
+        if (value == null || value is DBNull)
+        {
+            writer.Write((byte)1);
         }
-
-        public override object Read(ExtendedBinaryReader reader) => reader.ReadByte() > 0 ? DBNull.Value : UnderlyingType.Read(reader);
-
-        public override string ToString() => $"{Name}({UnderlyingType})";
-
-        public override void Write(ExtendedBinaryWriter writer, object value)
+        else
         {
-            if (value == null || value is DBNull)
-            {
-                writer.Write((byte)1);
-            }
-            else
-            {
-                writer.Write((byte)0);
-                UnderlyingType.Write(writer, value);
-            }
+            writer.Write((byte)0);
+            UnderlyingType.Write(writer, value);
         }
     }
 }

@@ -1,6 +1,5 @@
-﻿namespace ClickHouse.Client.Types
+﻿namespace ClickHouse.Client.Types;
+
+internal abstract class FloatType : ClickHouseType
 {
-    internal abstract class FloatType : ClickHouseType
-    {
-    }
 }

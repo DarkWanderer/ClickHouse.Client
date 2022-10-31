@@ -4,25 +4,24 @@ using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests
+namespace ClickHouse.Client.Tests;
+
+public class SqlAlterTests
 {
-    public class SqlAlterTests
+    private readonly DbConnection connection;
+
+    public SqlAlterTests()
     {
-        private readonly DbConnection connection;
+        var builder = TestUtilities.GetConnectionStringBuilder();
+        builder.UseSession = true;
+        builder.Compression = true;
+        connection = new ClickHouseConnection(builder.ToString());
+    }
 
-        public SqlAlterTests()
-        {
-            var builder = TestUtilities.GetConnectionStringBuilder();
-            builder.UseSession = true;
-            builder.Compression = true;
-            connection = new ClickHouseConnection(builder.ToString());
-        }
-
-        [Test]
-        public async Task ShouldExecuteAlterTable()
-        {
-            await connection.ExecuteScalarAsync($"CREATE TABLE IF NOT EXISTS test.table_delete_from (value Int32) ENGINE MergeTree ORDER BY value");
-            await connection.ExecuteScalarAsync($"ALTER TABLE test.table_delete_from DELETE WHERE 1=1");
-        }
+    [Test]
+    public async Task ShouldExecuteAlterTable()
+    {
+        await connection.ExecuteScalarAsync($"CREATE TABLE IF NOT EXISTS test.table_delete_from (value Int32) ENGINE MergeTree ORDER BY value");
+        await connection.ExecuteScalarAsync($"ALTER TABLE test.table_delete_from DELETE WHERE 1=1");
     }
 }

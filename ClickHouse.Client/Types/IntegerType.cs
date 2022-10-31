@@ -1,7 +1,6 @@
-﻿namespace ClickHouse.Client.Types
+﻿namespace ClickHouse.Client.Types;
+
+internal abstract class IntegerType : ClickHouseType
 {
-    internal abstract class IntegerType : ClickHouseType
-    {
-        public virtual bool Signed => true;
-    }
+    public virtual bool Signed => true;
 }

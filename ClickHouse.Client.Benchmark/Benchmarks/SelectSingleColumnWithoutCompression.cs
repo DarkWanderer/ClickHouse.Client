@@ -3,30 +3,29 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using ClickHouse.Client.Utility;
 
-namespace ClickHouse.Client.Benchmark.Benchmarks
+namespace ClickHouse.Client.Benchmark.Benchmarks;
+
+internal class SelectSingleColumnWithoutCompression : AbstractParameterizedBenchmark, IBenchmark
 {
-    internal class SelectSingleColumnWithoutCompression : AbstractParameterizedBenchmark, IBenchmark
+    public SelectSingleColumnWithoutCompression(string connectionString) : base(connectionString)
     {
-        public SelectSingleColumnWithoutCompression(string connectionString) : base(connectionString)
-        {
-            Compression = false;
-        }
+        Compression = false;
+    }
 
-        public override async Task<BenchmarkResult> Run()
-        {
-            var stopwatch = new Stopwatch();
+    public override async Task<BenchmarkResult> Run()
+    {
+        var stopwatch = new Stopwatch();
 
-            using var connection = GetConnection();
-            using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers");
+        using var connection = GetConnection();
+        using var reader = await connection.ExecuteReaderAsync($"SELECT number FROM system.numbers");
 
-            var totalMilliseconds = Convert.ToInt64(Duration.TotalMilliseconds);
-            ulong counter = 0;
-            stopwatch.Start();
-            while (reader.Read() && stopwatch.ElapsedMilliseconds < totalMilliseconds)
-                counter++;
-            stopwatch.Stop();
+        var totalMilliseconds = Convert.ToInt64(Duration.TotalMilliseconds);
+        ulong counter = 0;
+        stopwatch.Start();
+        while (reader.Read() && stopwatch.ElapsedMilliseconds < totalMilliseconds)
+            counter++;
+        stopwatch.Stop();
 
-            return new BenchmarkResult { RowsCount = counter, DataSize = counter * sizeof(long), Duration = stopwatch.Elapsed };
-        }
+        return new BenchmarkResult { RowsCount = counter, DataSize = counter * sizeof(long), Duration = stopwatch.Elapsed };
     }
 }

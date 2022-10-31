@@ -1,11 +1,9 @@
-﻿namespace ClickHouse.Client.Benchmark.Benchmarks
-{
+﻿namespace ClickHouse.Client.Benchmark.Benchmarks;
 
-    internal class SelectSingleColumnWithCompression : SelectSingleColumnWithoutCompression, IBenchmark
+internal class SelectSingleColumnWithCompression : SelectSingleColumnWithoutCompression, IBenchmark
+{
+    public SelectSingleColumnWithCompression(string connectionString) : base(connectionString)
     {
-        public SelectSingleColumnWithCompression(string connectionString) : base(connectionString)
-        {
-            Compression = true;
-        }
+        Compression = true;
     }
 }

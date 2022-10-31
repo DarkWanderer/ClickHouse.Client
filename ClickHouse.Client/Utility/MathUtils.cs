@@ -1,66 +1,65 @@
 ﻿using System;
 
-namespace ClickHouse.Client.Utility
+namespace ClickHouse.Client.Utility;
+
+public static class MathUtils
 {
-    public static class MathUtils
+    public static long ToPower(int value, int power)
     {
-        public static long ToPower(int value, int power)
+        checked
         {
-            checked
+            long result = 1;
+            while (power > 0)
             {
-                long result = 1;
-                while (power > 0)
+                if ((power & 1) == 1)
                 {
-                    if ((power & 1) == 1)
-                    {
-                        result *= value;
-                    }
-
-                    power >>= 1;
-                    if (power <= 0)
-                    {
-                        break;
-                    }
-
-                    value *= value;
+                    result *= value;
                 }
-                return result;
-            }
-        }
 
-        public static decimal ToPower(decimal value, int power)
-        {
-            checked
-            {
-                decimal result = 1;
-                while (power > 0)
+                power >>= 1;
+                if (power <= 0)
                 {
-                    if ((power & 1) == 1)
-                    {
-                        result *= value;
-                    }
-
-                    power >>= 1;
-                    if (power <= 0)
-                    {
-                        break;
-                    }
-
-                    value *= value;
+                    break;
                 }
-                return result;
-            }
-        }
 
-        public static long ShiftDecimalPlaces(long value, int places)
+                value *= value;
+            }
+            return result;
+        }
+    }
+
+    public static decimal ToPower(decimal value, int power)
+    {
+        checked
         {
-            if (places == 0)
+            decimal result = 1;
+            while (power > 0)
             {
-                return value;
-            }
+                if ((power & 1) == 1)
+                {
+                    result *= value;
+                }
 
-            var factor = ToPower(10, Math.Abs(places));
-            return places < 0 ? value / factor : value * factor;
+                power >>= 1;
+                if (power <= 0)
+                {
+                    break;
+                }
+
+                value *= value;
+            }
+            return result;
         }
+    }
+
+    public static long ShiftDecimalPlaces(long value, int places)
+    {
+        if (places == 0)
+        {
+            return value;
+        }
+
+        var factor = ToPower(10, Math.Abs(places));
+        return places < 0 ? value / factor : value * factor;
     }
 }

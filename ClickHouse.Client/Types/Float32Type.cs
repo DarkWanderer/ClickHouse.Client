@@ -2,16 +2,15 @@
 using System.Globalization;
 using ClickHouse.Client.Formats;
 
-namespace ClickHouse.Client.Types
+namespace ClickHouse.Client.Types;
+
+internal class Float32Type : FloatType
 {
-    internal class Float32Type : FloatType
-    {
-        public override Type FrameworkType => typeof(float);
+    public override Type FrameworkType => typeof(float);
 
-        public override object Read(ExtendedBinaryReader reader) => reader.ReadSingle();
+    public override object Read(ExtendedBinaryReader reader) => reader.ReadSingle();
 
-        public override string ToString() => "Float32";
+    public override string ToString() => "Float32";
 
-        public override void Write(ExtendedBinaryWriter writer, object value) => writer.Write(Convert.ToSingle(value, CultureInfo.InvariantCulture));
-    }
+    public override void Write(ExtendedBinaryWriter writer, object value) => writer.Write(Convert.ToSingle(value, CultureInfo.InvariantCulture));
 }

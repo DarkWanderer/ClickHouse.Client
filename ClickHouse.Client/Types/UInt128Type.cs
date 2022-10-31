@@ -1,14 +1,13 @@
 ﻿using System.Numerics;
 using ClickHouse.Client.Formats;
 
-namespace ClickHouse.Client.Types
+namespace ClickHouse.Client.Types;
+
+internal class UInt128Type : AbstractBigIntegerType
 {
-    internal class UInt128Type : AbstractBigIntegerType
-    {
-        public override int Size => 16;
+    public override int Size => 16;
 
-        public override string ToString() => "UInt128";
+    public override string ToString() => "UInt128";
 
-        public override bool Signed => false;
-    }
+    public override bool Signed => false;
 }

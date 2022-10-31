@@ -9,222 +9,221 @@ using ClickHouse.Client.Copy;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests
+namespace ClickHouse.Client.Tests;
+
+public class BulkCopyTests : AbstractConnectionTestFixture
 {
-    public class BulkCopyTests : AbstractConnectionTestFixture
+    public static IEnumerable<TestCaseData> GetInsertSingleValueTestCases()
     {
-        public static IEnumerable<TestCaseData> GetInsertSingleValueTestCases()
+        foreach (var sample in TestUtilities.GetDataTypeSamples())
         {
-            foreach (var sample in TestUtilities.GetDataTypeSamples())
-            {
-                if (new[] { "Enum8", "Nothing", "Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))" }.Contains(sample.ClickHouseType))
-                    continue;
-                yield return new TestCaseData(sample.ClickHouseType, sample.ExampleValue);
-            }
-            yield return new TestCaseData("String", "1\t2\n3");
-            yield return new TestCaseData("DateTime('Asia/Ashkhabad')", new DateTime(2020, 2, 20, 20, 20, 20, DateTimeKind.Unspecified));
+            if (new[] { "Enum8", "Nothing", "Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))" }.Contains(sample.ClickHouseType))
+                continue;
+            yield return new TestCaseData(sample.ClickHouseType, sample.ExampleValue);
         }
+        yield return new TestCaseData("String", "1\t2\n3");
+        yield return new TestCaseData("DateTime('Asia/Ashkhabad')", new DateTime(2020, 2, 20, 20, 20, 20, DateTimeKind.Unspecified));
+    }
 
-        [Test]
-        [Parallelizable]
-        [TestCaseSource(typeof(BulkCopyTests), nameof(GetInsertSingleValueTestCases))]
-        public async Task ShouldExecuteSingleValueInsertViaBulkCopy(string clickHouseType, object insertedValue)
+    [Test]
+    [Parallelizable]
+    [TestCaseSource(typeof(BulkCopyTests), nameof(GetInsertSingleValueTestCases))]
+    public async Task ShouldExecuteSingleValueInsertViaBulkCopy(string clickHouseType, object insertedValue)
+    {
+        var targetTable = "test." + SanitizeTableName($"bulk_single_{clickHouseType}");
+
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
+
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
-            var targetTable = "test." + SanitizeTableName($"bulk_single_{clickHouseType}");
+            DestinationTableName = targetTable,
+            MaxDegreeOfParallelism = 2,
+            BatchSize = 100
+        };
 
-            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
+        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { insertedValue }, 1));
 
-            using var bulkCopy = new ClickHouseBulkCopy(connection)
-            {
-                DestinationTableName = targetTable,
-                MaxDegreeOfParallelism = 2,
-                BatchSize = 100
-            };
+        Assert.AreEqual(1, bulkCopy.RowsWritten);
 
-            await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { insertedValue }, 1));
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+        Assert.IsTrue(reader.Read(), "Cannot read inserted data");
+        reader.AssertHasFieldCount(1);
+        var data = reader.GetValue(0);
+        Assert.AreEqual(insertedValue, data, "Original and actually inserted values differ");
+    }
 
-            Assert.AreEqual(1, bulkCopy.RowsWritten);
+    [Test]
+    public async Task ShouldExecuteInsertWithLessColumns()
+    {
+        var targetTable = $"test.multiple_columns";
 
-            using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
-            Assert.IsTrue(reader.Read(), "Cannot read inserted data");
-            reader.AssertHasFieldCount(1);
-            var data = reader.GetValue(0);
-            Assert.AreEqual(insertedValue, data, "Original and actually inserted values differ");
-        }
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE TinyLog");
 
-        [Test]
-        public async Task ShouldExecuteInsertWithLessColumns()
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
-            var targetTable = $"test.multiple_columns";
+            DestinationTableName = targetTable,
+        };
 
-            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE TinyLog");
+        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5 }, 5), new[] { "value2" }, CancellationToken.None);
 
-            using var bulkCopy = new ClickHouseBulkCopy(connection)
-            {
-                DestinationTableName = targetTable,
-            };
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+    }
 
-            await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5 }, 5), new[] { "value2" }, CancellationToken.None);
+    [Test]
+    public async Task ShouldExecuteInsertWithBacktickedColumns()
+    {
+        var targetTable = $"test.backticked_columns";
 
-            using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
-        }
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`field.id` Nullable(UInt8), `@value` Nullable(UInt8)) ENGINE TinyLog");
 
-        [Test]
-        public async Task ShouldExecuteInsertWithBacktickedColumns()
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
-            var targetTable = $"test.backticked_columns";
+            DestinationTableName = targetTable,
+        };
 
-            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`field.id` Nullable(UInt8), `@value` Nullable(UInt8)) ENGINE TinyLog");
+        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5, 5 }, 5), new[] { "`field.id`, `@value`" });
 
-            using var bulkCopy = new ClickHouseBulkCopy(connection)
-            {
-                DestinationTableName = targetTable,
-            };
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM {targetTable}");
+    }
 
-            await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5, 5 }, 5), new[] { "`field.id`, `@value`" });
+    [Test]
+    [TestCase("with.dot")]
+    [TestCase("with'quote")]
+    [TestCase("double\"quote")]
+    [TestCase("with space")]
+    [TestCase("with`backtick")]
+    [TestCase("with:colon")]
+    [TestCase("with,comma")]
+    [TestCase("with^caret")]
+    [TestCase("with&ampersand")]
+    [TestCase("with(round)brackets")]
+    [TestCase("with*star")]
+    [TestCase("with?question")]
+    [TestCase("with!exclamation")]
+    public async Task ShouldExecuteBulkInsertWithComplexColumnName(string columnName)
+    {
+        var targetTable = "test." + SanitizeTableName($"bulk_complex_{columnName}");
 
-            using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM {targetTable}");
-        }
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`{columnName.Replace("`", "\\`")}` Int32) ENGINE TinyLog");
 
-        [Test]
-        [TestCase("with.dot")]
-        [TestCase("with'quote")]
-        [TestCase("double\"quote")]
-        [TestCase("with space")]
-        [TestCase("with`backtick")]
-        [TestCase("with:colon")]
-        [TestCase("with,comma")]
-        [TestCase("with^caret")]
-        [TestCase("with&ampersand")]
-        [TestCase("with(round)brackets")]
-        [TestCase("with*star")]
-        [TestCase("with?question")]
-        [TestCase("with!exclamation")]
-        public async Task ShouldExecuteBulkInsertWithComplexColumnName(string columnName)
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
-            var targetTable = "test." + SanitizeTableName($"bulk_complex_{columnName}");
+            DestinationTableName = targetTable,
+            MaxDegreeOfParallelism = 2,
+            BatchSize = 100
+        };
 
-            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`{columnName.Replace("`", "\\`")}` Int32) ENGINE TinyLog");
+        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)1 }, 1), CancellationToken.None);
 
-            using var bulkCopy = new ClickHouseBulkCopy(connection)
-            {
-                DestinationTableName = targetTable,
-                MaxDegreeOfParallelism = 2,
-                BatchSize = 100
-            };
+        Assert.AreEqual(1, bulkCopy.RowsWritten);
+    }
 
-            await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)1 }, 1), CancellationToken.None);
+    [Test]
+    [RequiredFeature(Feature.InlineQuery)]
+    public async Task ShouldInsertIntoTableWithLotsOfColumns()
+    {
+        var tableName = "test.bulk_long_columns";
+        var columnCount = 3900;
 
-            Assert.AreEqual(1, bulkCopy.RowsWritten);
-        }
+        //Generating create tbl statement with a lot of columns 
+        var query = $"CREATE TABLE IF NOT EXISTS {tableName}(\n";
+        var columns = Enumerable.Range(1, columnCount)
+            .Select(x => $" some_loooooooooooooonnnnnnnnnnnngggggggg_column_name_{x} Int32");
+        query += string.Join(",\n", columns);
+        query += ")\n ENGINE = MergeTree()\n ORDER BY (some_loooooooooooooonnnnnnnnnnnngggggggg_column_name_1)";
 
-        [Test]
-        [RequiredFeature(Feature.InlineQuery)]
-        public async Task ShouldInsertIntoTableWithLotsOfColumns()
+        //Create tbl in db
+        await connection.ExecuteStatementAsync(query);
+
+        var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = tableName };
+
+        var rowToInsert = new[] { Enumerable.Range(1, columnCount).Select(x => (object)x).ToArray() };
+        await bulkCopy.WriteToServerAsync(rowToInsert);
+    }
+
+    [Test]
+    public async Task ShouldThrowSpecialExceptionOnSerializationFailure()
+    {
+        var targetTable = "test." + SanitizeTableName($"bulk_exception_uint8");
+
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value UInt8) ENGINE Memory");
+
+        var rows = Enumerable.Range(250, 10).Select(n => new object[] { n }).ToArray();
+
+        var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = targetTable };
+        try
         {
-            var tableName = "test.bulk_long_columns";
-            var columnCount = 3900;
-
-            //Generating create tbl statement with a lot of columns 
-            var query = $"CREATE TABLE IF NOT EXISTS {tableName}(\n";
-            var columns = Enumerable.Range(1, columnCount)
-                .Select(x => $" some_loooooooooooooonnnnnnnnnnnngggggggg_column_name_{x} Int32");
-            query += string.Join(",\n", columns);
-            query += ")\n ENGINE = MergeTree()\n ORDER BY (some_loooooooooooooonnnnnnnnnnnngggggggg_column_name_1)";
-
-            //Create tbl in db
-            await connection.ExecuteStatementAsync(query);
-
-            var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = tableName };
-
-            var rowToInsert = new[] { Enumerable.Range(1, columnCount).Select(x => (object)x).ToArray() };
-            await bulkCopy.WriteToServerAsync(rowToInsert);
+            await bulkCopy.WriteToServerAsync(rows);
+            Assert.Fail("Bulk copy did not throw exception on failed serialization");
         }
-
-        [Test]
-        public async Task ShouldThrowSpecialExceptionOnSerializationFailure()
+        catch (ClickHouseBulkCopySerializationException ex)
         {
-            var targetTable = "test." + SanitizeTableName($"bulk_exception_uint8");
-
-            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value UInt8) ENGINE Memory");
-
-            var rows = Enumerable.Range(250, 10).Select(n => new object[] { n }).ToArray();
-
-            var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = targetTable };
-            try
-            {
-                await bulkCopy.WriteToServerAsync(rows);
-                Assert.Fail("Bulk copy did not throw exception on failed serialization");
-            }
-            catch (ClickHouseBulkCopySerializationException ex)
-            {
-                CollectionAssert.AreEqual(new object[] { 256 }, ex.Row);
-                Assert.AreEqual(0, ex.Index);
-                Assert.IsInstanceOf<OverflowException>(ex.InnerException);
-            }
+            CollectionAssert.AreEqual(new object[] { 256 }, ex.Row);
+            Assert.AreEqual(0, ex.Index);
+            Assert.IsInstanceOf<OverflowException>(ex.InnerException);
         }
+    }
 
-        [Test]
-        public async Task ShouldExecuteBulkInsertIntoSimpleAggregatedFunctionColumn()
+    [Test]
+    public async Task ShouldExecuteBulkInsertIntoSimpleAggregatedFunctionColumn()
+    {
+        var targetTable = "test." + SanitizeTableName($"bulk_simple_aggregated_function");
+
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value SimpleAggregateFunction(anyLast,Nullable(Float64))) ENGINE TinyLog");
+
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
-            var targetTable = "test." + SanitizeTableName($"bulk_simple_aggregated_function");
+            DestinationTableName = targetTable,
+            MaxDegreeOfParallelism = 2,
+            BatchSize = 100
+        };
 
-            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value SimpleAggregateFunction(anyLast,Nullable(Float64))) ENGINE TinyLog");
+        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)1 }, 1), CancellationToken.None);
 
-            using var bulkCopy = new ClickHouseBulkCopy(connection)
-            {
-                DestinationTableName = targetTable,
-                MaxDegreeOfParallelism = 2,
-                BatchSize = 100
-            };
-
-            await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)1 }, 1), CancellationToken.None);
-
-            Assert.AreEqual(1, bulkCopy.RowsWritten);
-            // Verify we can read back
-            Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT value FROM {targetTable}"));
-        }
+        Assert.AreEqual(1, bulkCopy.RowsWritten);
+        // Verify we can read back
+        Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT value FROM {targetTable}"));
+    }
 
 
-        [Test]
-        public async Task ShouldNotLoseRowsOnMuptipleBatches()
+    [Test]
+    public async Task ShouldNotLoseRowsOnMuptipleBatches()
+    {
+        var targetTable = "test.bulk_multiple_batches"; ;
+
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value Int32) ENGINE TinyLog");
+
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
-            var targetTable = "test.bulk_multiple_batches"; ;
+            DestinationTableName = targetTable,
+            MaxDegreeOfParallelism = 2,
+            BatchSize = 10
+        };
 
-            await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value Int32) ENGINE TinyLog");
+        const int Count = 1000;
+        var data = Enumerable.Repeat(new object[] { 1 }, Count);
 
-            using var bulkCopy = new ClickHouseBulkCopy(connection)
-            {
-                DestinationTableName = targetTable,
-                MaxDegreeOfParallelism = 2,
-                BatchSize = 10
-            };
+        await bulkCopy.WriteToServerAsync(data, CancellationToken.None);
 
-            const int Count = 1000;
-            var data = Enumerable.Repeat(new object[] { 1 }, Count);
+        Assert.AreEqual(Count, bulkCopy.RowsWritten);
+        Assert.AreEqual(Count, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
+    }
 
-            await bulkCopy.WriteToServerAsync(data, CancellationToken.None);
-
-            Assert.AreEqual(Count, bulkCopy.RowsWritten);
-            Assert.AreEqual(Count, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
-        }
-
-        private string SanitizeTableName(string input)
+    private static string SanitizeTableName(string input)
+    {
+        var builder = new StringBuilder();
+        foreach (var c in input)
         {
-            var builder = new StringBuilder();
-            foreach (var c in input)
-            {
-                if (char.IsLetterOrDigit(c) || c == '_')
-                    builder.Append(c);
-            }
-            return builder.ToString();
+            if (char.IsLetterOrDigit(c) || c == '_')
+                builder.Append(c);
         }
+        return builder.ToString();
     }
 }

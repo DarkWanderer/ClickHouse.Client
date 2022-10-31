@@ -5,55 +5,54 @@ using ClickHouse.Client.Types.Grammar;
 using ClickHouse.Client.Utility;
 using NodaTime;
 
-namespace ClickHouse.Client.Types
+namespace ClickHouse.Client.Types;
+
+internal class DateTime64Type : AbstractDateTimeType
 {
-    internal class DateTime64Type : AbstractDateTimeType
+    public int Scale { get; set; }
+
+    public override string Name => "DateTime64";
+
+    public override string ToString() => TimeZone == null ? $"DateTime64({Scale})" : $"DateTime64({Scale}, {TimeZone.Id})";
+
+    public DateTime FromClickHouseTicks(long clickHouseTicks)
     {
-        public int Scale { get; set; }
+        // Convert ClickHouse variable precision ticks into "standard" .NET 100ns ones
+        var ticks = MathUtils.ShiftDecimalPlaces(clickHouseTicks, 7 - Scale);
+        return FromUnixTimeTicks(ticks);
+    }
 
-        public override string Name => "DateTime64";
+    public long ToClickHouseTicks(Instant instant) => MathUtils.ShiftDecimalPlaces(instant.ToUnixTimeTicks(), Scale - 7);
 
-        public override string ToString() => TimeZone == null ? $"DateTime64({Scale})" : $"DateTime64({Scale}, {TimeZone.Id})";
+    public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
+    {
+        var scale = int.Parse(node.ChildNodes[0].Value, CultureInfo.InvariantCulture);
 
-        public DateTime FromClickHouseTicks(long clickHouseTicks)
+        DateTimeZone timeZone = null;
+        if (node.ChildNodes.Count > 1)
         {
-            // Convert ClickHouse variable precision ticks into "standard" .NET 100ns ones
-            var ticks = MathUtils.ShiftDecimalPlaces(clickHouseTicks, 7 - Scale);
-            return FromUnixTimeTicks(ticks);
+            var timeZoneName = node.ChildNodes[1].Value.Trim('\'');
+            timeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneName);
         }
+        timeZone ??= DateTimeZoneProviders.Tzdb.GetZoneOrNull(settings.timezone);
 
-        public long ToClickHouseTicks(Instant instant) => MathUtils.ShiftDecimalPlaces(instant.ToUnixTimeTicks(), Scale - 7);
-
-        public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)
+        return new DateTime64Type
         {
-            var scale = int.Parse(node.ChildNodes[0].Value, CultureInfo.InvariantCulture);
+            TimeZone = timeZone,
+            Scale = scale,
+        };
+    }
 
-            DateTimeZone timeZone = null;
-            if (node.ChildNodes.Count > 1)
-            {
-                var timeZoneName = node.ChildNodes[1].Value.Trim('\'');
-                timeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneName);
-            }
-            timeZone ??= DateTimeZoneProviders.Tzdb.GetZoneOrNull(settings.timezone);
+    public override object Read(ExtendedBinaryReader reader) => FromClickHouseTicks(reader.ReadInt64());
 
-            return new DateTime64Type
-            {
-                TimeZone = timeZone,
-                Scale = scale,
-            };
-        }
-
-        public override object Read(ExtendedBinaryReader reader) => FromClickHouseTicks(reader.ReadInt64());
-
-        public override void Write(ExtendedBinaryWriter writer, object value)
+    public override void Write(ExtendedBinaryWriter writer, object value)
+    {
+        var instant = value switch
         {
-            var instant = value switch
-            {
-                DateTimeOffset dto => Instant.FromDateTimeOffset(dto),
-                DateTime dt => ToZonedDateTime(dt).ToInstant(),
-                _ => throw new ArgumentException("Cannot convert value to datetime"),
-            };
-            writer.Write(ToClickHouseTicks(instant));
-        }
+            DateTimeOffset dto => Instant.FromDateTimeOffset(dto),
+            DateTime dt => ToZonedDateTime(dt).ToInstant(),
+            _ => throw new ArgumentException("Cannot convert value to datetime"),
+        };
+        writer.Write(ToClickHouseTicks(instant));
     }
 }

@@ -8,56 +8,55 @@ using System.Threading.Tasks;
 /// <summary>
 /// Originally sourced from https://stackoverflow.com/questions/16673714/how-to-compress-http-request-on-the-fly-and-without-loading-compressed-buffer-in
 /// </summary>
-namespace ClickHouse.Client.Utility
+namespace ClickHouse.Client.Utility;
+
+public class CompressedContent : HttpContent
 {
-    public class CompressedContent : HttpContent
+    private readonly HttpContent originalContent;
+    private readonly DecompressionMethods compressionMethod;
+
+    public CompressedContent(HttpContent content, DecompressionMethods compressionMethod)
     {
-        private readonly HttpContent originalContent;
-        private readonly DecompressionMethods compressionMethod;
+        originalContent = content ?? throw new ArgumentNullException(nameof(content));
+        this.compressionMethod = compressionMethod;
 
-        public CompressedContent(HttpContent content, DecompressionMethods compressionMethod)
+        if (this.compressionMethod != DecompressionMethods.GZip && this.compressionMethod != DecompressionMethods.Deflate)
         {
-            originalContent = content ?? throw new ArgumentNullException(nameof(content));
-            this.compressionMethod = compressionMethod;
-
-            if (this.compressionMethod != DecompressionMethods.GZip && this.compressionMethod != DecompressionMethods.Deflate)
-            {
-                throw new ArgumentException($"Compression '{compressionMethod}' is not supported. Valid types: GZip, Deflate", nameof(compressionMethod));
-            }
-
-            foreach (var header in originalContent.Headers)
-            {
-                Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
-
-            Headers.ContentEncoding.Add(this.compressionMethod.ToString().ToLowerInvariant());
+            throw new ArgumentException($"Compression '{compressionMethod}' is not supported. Valid types: GZip, Deflate", nameof(compressionMethod));
         }
 
-        protected override void Dispose(bool disposing)
+        foreach (var header in originalContent.Headers)
         {
-            if (disposing)
-            {
-                originalContent?.Dispose();
-            }
-            base.Dispose(disposing);
+            Headers.TryAddWithoutValidation(header.Key, header.Value);
         }
 
-        protected override bool TryComputeLength(out long length)
-        {
-            length = -1;
-            return false;
-        }
+        Headers.ContentEncoding.Add(this.compressionMethod.ToString().ToLowerInvariant());
+    }
 
-        protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
         {
-            using Stream compressedStream = compressionMethod switch
-            {
-                DecompressionMethods.GZip => new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true),
-                DecompressionMethods.Deflate => new DeflateStream(stream, CompressionMode.Compress, leaveOpen: true),
-                _ => throw new ArgumentOutOfRangeException(nameof(stream))
-            };
-
-            await originalContent.CopyToAsync(compressedStream).ConfigureAwait(false);
+            originalContent?.Dispose();
         }
+        base.Dispose(disposing);
+    }
+
+    protected override bool TryComputeLength(out long length)
+    {
+        length = -1;
+        return false;
+    }
+
+    protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
+    {
+        using Stream compressedStream = compressionMethod switch
+        {
+            DecompressionMethods.GZip => new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true),
+            DecompressionMethods.Deflate => new DeflateStream(stream, CompressionMode.Compress, leaveOpen: true),
+            _ => throw new ArgumentOutOfRangeException(nameof(stream))
+        };
+
+        await originalContent.CopyToAsync(compressedStream).ConfigureAwait(false);
     }
 }

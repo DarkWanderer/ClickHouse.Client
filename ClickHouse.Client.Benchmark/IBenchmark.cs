@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace ClickHouse.Client.Benchmark
+namespace ClickHouse.Client.Benchmark;
+
+internal interface IBenchmark
 {
-    internal interface IBenchmark
-    {
-        Task<BenchmarkResult> Run();
-    }
+    Task<BenchmarkResult> Run();
 }
