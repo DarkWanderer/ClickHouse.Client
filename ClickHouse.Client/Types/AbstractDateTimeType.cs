@@ -29,13 +29,12 @@ internal abstract class AbstractDateTimeType : ParameterizedType
     private DateTime ToDateTime(Instant instant)
     {
         // Special case for ETC/GMT timezone. TODO: support other aliases like Etc/Universal
-        if (TimeZone == null || TimeZone.Id == "Etc/GMT" || TimeZone.Id == "Etc/UTC")
-        {
+        if (TimeZone == null)
             return instant.ToDateTimeUtc();
-        }
+        var zonedDateTime = instant.InZone(TimeZone);
+        if (zonedDateTime.Offset.Ticks == 0)
+            return zonedDateTime.ToDateTimeUtc();
         else
-        {
-            return instant.InZone(TimeZone).ToDateTimeUnspecified();
-        }
+            return zonedDateTime.ToDateTimeUnspecified();
     }
 }
