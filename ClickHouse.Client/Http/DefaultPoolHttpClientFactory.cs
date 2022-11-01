@@ -11,9 +11,9 @@ namespace ClickHouse.Client.Http
 {
     internal class DefaultPoolHttpClientFactory : IHttpClientFactory
     {
-        public TimeSpan Timeout { get; init; }
-
         private static readonly HttpClientHandler DefaultHttpClientHandler = new() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+
+        public TimeSpan Timeout { get; init; }
 
         public HttpClient CreateClient(string name) => new(DefaultHttpClientHandler, false) { Timeout = Timeout };
     }

@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.Http;
 using ClickHouse.Client.Utility;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
 namespace ClickHouse.Client.ADO;
@@ -51,8 +52,9 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         ConnectionString = connectionString;
         if (!string.IsNullOrEmpty(session))
         {
-            httpClientFactory = new SingleHttpClientFactory(timeout);
-            disposables.Add((IDisposable)httpClientFactory);
+            var factory = new SingleConnectionHttpClientFactory() { Timeout = timeout };
+            httpClientFactory = factory;
+            disposables.Add(factory);
         }
         else
         {
@@ -69,7 +71,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     public ClickHouseConnection(string connectionString, HttpClient httpClient)
     {
         ConnectionString = connectionString;
-        httpClientFactory = new SingleHttpClientFactory(httpClient);
+        httpClientFactory = new CannedHttpClientFactory(httpClient);
     }
 
     /// <summary>
