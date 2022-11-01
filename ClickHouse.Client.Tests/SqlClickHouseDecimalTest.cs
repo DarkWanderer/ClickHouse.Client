@@ -37,7 +37,8 @@ public class SqlClickHouseDecimalTest
         }
     }
 
-    public static IEnumerable<TestCaseData> DecimalTestCases { 
+    public static IEnumerable<TestCaseData> DecimalTestCases
+    {
         get
         {
             var values = Enumerable.Range(0, 50).Select(i => $"1{new string('0', i)}").Select(ClickHouseDecimal.Parse).ToList();
@@ -47,7 +48,7 @@ public class SqlClickHouseDecimalTest
                    let type = (DecimalType)TypeConverter.ParseClickHouseType(typeName, TypeSettings.Default)
                    where v < type.MaxValue && v > type.MinValue
                    select new TestCaseData(v, $"SELECT to{typeName}('{v}', {type.Scale})");
-        } 
+        }
     }
 
     [Test]

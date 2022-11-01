@@ -89,12 +89,12 @@ public class ClickHouseDecimalTests
     public decimal ShouldTruncate(decimal value, int precision) => (decimal)new ClickHouseDecimal(value).Truncate(precision);
 
     [Test]
-    public void ShouldRoundtripConversion( [ValueSource(typeof(ClickHouseDecimalTests), nameof(Decimals))] decimal value)
+    public void ShouldRoundtripConversion([ValueSource(typeof(ClickHouseDecimalTests), nameof(Decimals))] decimal value)
     {
         var result = new ClickHouseDecimal(value);
         Assert.AreEqual(value, (decimal)result);
     }
-        
+
     [Test, Combinatorial]
     public void ShouldAdd(
         [ValueSource(typeof(ClickHouseDecimalTests), nameof(Decimals))] decimal left,

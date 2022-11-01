@@ -26,9 +26,9 @@ public readonly struct ClickHouseDecimal
 
     public readonly int Scale { get; }
 
-    public static ClickHouseDecimal Zero => new (0, 0);
+    public static ClickHouseDecimal Zero => new(0, 0);
 
-    public static ClickHouseDecimal One => new (1, 0);
+    public static ClickHouseDecimal One => new(1, 0);
 
     public int Sign => Mantissa.Sign;
 
@@ -245,7 +245,7 @@ public readonly struct ClickHouseDecimal
 
     public static ClickHouseDecimal operator *(ClickHouseDecimal left, ClickHouseDecimal right)
     {
-        return new ClickHouseDecimal(left.Mantissa * right.Mantissa, (left.Scale + right.Scale));
+        return new ClickHouseDecimal(left.Mantissa * right.Mantissa, left.Scale + right.Scale);
     }
 
     public static ClickHouseDecimal operator /(ClickHouseDecimal dividend, ClickHouseDecimal divisor)

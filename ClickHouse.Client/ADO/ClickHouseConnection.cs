@@ -12,17 +12,18 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ClickHouse.Client.Http;
 using ClickHouse.Client.Utility;
 using Microsoft.Extensions.Logging;
 
 namespace ClickHouse.Client.ADO;
 
-public class ClickHouseConnection : DbConnection, IClickHouseConnection, ICloneable
+public class ClickHouseConnection : DbConnection, IClickHouseConnection, ICloneable, IDisposable
 {
     private const string CustomSettingPrefix = "set_";
-    private static readonly HttpClientHandler DefaultHttpClientHandler;
 
     private readonly IHttpClientFactory httpClientFactory;
+    private readonly List<IDisposable> disposables = new();
     private readonly string httpClientName;
     private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
     private volatile ConnectionState state = ConnectionState.Closed; // Not an autoproperty because of interface implementation
@@ -40,11 +41,6 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     private Uri serverUri;
     private Feature supportedFeatures;
 
-    static ClickHouseConnection()
-    {
-        DefaultHttpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
-    }
-
     public ClickHouseConnection()
         : this(string.Empty)
     {
@@ -53,12 +49,15 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     public ClickHouseConnection(string connectionString)
     {
         ConnectionString = connectionString;
-        var httpClient = new HttpClient(DefaultHttpClientHandler, disposeHandler: false)
+        if (!string.IsNullOrEmpty(session))
         {
-            Timeout = timeout,
-        };
-
-        httpClientFactory = new CannedHttpClientFactory(httpClient);
+            httpClientFactory = new SingleHttpClientFactory(timeout);
+            disposables.Add((IDisposable)httpClientFactory);
+        }
+        else
+        {
+            httpClientFactory = new DefaultPoolHttpClientFactory() { Timeout = timeout };
+        }
     }
 
     /// <summary>
@@ -70,7 +69,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     public ClickHouseConnection(string connectionString, HttpClient httpClient)
     {
         ConnectionString = connectionString;
-        httpClientFactory = new CannedHttpClientFactory(httpClient);
+        httpClientFactory = new SingleHttpClientFactory(httpClient);
     }
 
     /// <summary>
@@ -274,6 +273,13 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     }
 
     public new ClickHouseCommand CreateCommand() => new ClickHouseCommand(this);
+
+    void IDisposable.Dispose()
+    {
+        GC.SuppressFinalize(this);
+        foreach (var d in disposables)
+            d.Dispose();
+    }
 
     internal static Version ParseVersion(string versionString)
     {

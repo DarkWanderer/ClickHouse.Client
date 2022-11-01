@@ -13,7 +13,7 @@ public class ExtensionsTests
     [Test]
     public void ShouldDeconstruct2()
     {
-        var (a1,a2) = new[] { 1, 2 };
+        var (a1, a2) = new[] { 1, 2 };
         Assert.AreEqual(1, a1);
         Assert.AreEqual(2, a2);
     }
