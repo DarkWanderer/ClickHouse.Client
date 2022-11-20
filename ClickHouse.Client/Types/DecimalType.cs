@@ -23,14 +23,8 @@ internal class DecimalType : ParameterizedType
         set
         {
             scale = value;
-            Exponent = MathUtils.ToPower(10m, value);
         }
     }
-
-    /// <summary>
-    /// Gets decimal exponent value based on Scale
-    /// </summary>
-    public decimal Exponent { get; private set; }
 
     public override string Name => "Decimal";
 
