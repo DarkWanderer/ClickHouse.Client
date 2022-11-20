@@ -28,30 +28,6 @@ public static class MathUtils
         }
     }
 
-    public static decimal ToPower(decimal value, int power)
-    {
-        checked
-        {
-            decimal result = 1;
-            while (power > 0)
-            {
-                if ((power & 1) == 1)
-                {
-                    result *= value;
-                }
-
-                power >>= 1;
-                if (power <= 0)
-                {
-                    break;
-                }
-
-                value *= value;
-            }
-            return result;
-        }
-    }
-
     public static long ShiftDecimalPlaces(long value, int places)
     {
         if (places == 0)
