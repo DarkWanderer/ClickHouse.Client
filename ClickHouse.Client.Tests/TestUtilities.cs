@@ -149,6 +149,8 @@ public static class TestUtilities
 
             yield return new DataTypeSample("Decimal128(25)", typeof(ClickHouseDecimal), "toDecimal128(1e-24, 25)", new ClickHouseDecimal(10e-25m));
             yield return new DataTypeSample("Decimal128(0)", typeof(ClickHouseDecimal), "toDecimal128(repeat('1', 30), 0)", ClickHouseDecimal.Parse(new string('1', 30)));
+
+            yield return new DataTypeSample("Decimal128(30)", typeof(ClickHouseDecimal), "toDecimal128(1, 30)", new ClickHouseDecimal(BigInteger.Pow(10, 30), 30));
         }
 
         if (SupportedFeatures.HasFlag(Feature.Decimals) && SupportedFeatures.HasFlag(Feature.WideTypes))
