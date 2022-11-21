@@ -17,7 +17,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO;
 
-public partial class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
+public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
 {
     private readonly CancellationTokenSource cts = new CancellationTokenSource();
     private readonly ClickHouseParameterCollection commandParameters = new ClickHouseParameterCollection();

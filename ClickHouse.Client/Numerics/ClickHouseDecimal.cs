@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 using System.Text;
-using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Numerics;
 
@@ -153,7 +151,7 @@ public readonly struct ClickHouseDecimal
 
     public static explicit operator double(ClickHouseDecimal value)
     {
-        return (double)value.Mantissa * Math.Pow(10, value.Scale);
+        return (double)value.Mantissa / Math.Pow(10, value.Scale);
     }
 
     public static explicit operator float(ClickHouseDecimal value)

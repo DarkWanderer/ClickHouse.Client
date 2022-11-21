@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
-using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;

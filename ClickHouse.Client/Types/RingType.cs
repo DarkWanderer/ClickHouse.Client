@@ -1,7 +1,4 @@
-﻿using System;
-using ClickHouse.Client.Formats;
-
-namespace ClickHouse.Client.Types;
+﻿namespace ClickHouse.Client.Types;
 
 internal class RingType : ArrayType
 {

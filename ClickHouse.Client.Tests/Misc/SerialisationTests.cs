@@ -29,4 +29,16 @@ public class SerialisationTests
         Assert.AreEqual(original, read, "Different value read from stream");
         Assert.AreEqual(stream.Length, stream.Position, "Read underflow");
     }
+
+    [Test]
+    public void BinaryReaderShouldThrowOnUnderflow()
+    {
+        using var stream = new MemoryStream();
+        using var writer = new ExtendedBinaryWriter(stream);
+        using var reader = new ExtendedBinaryReader(stream);
+
+        writer.Write((short)1);
+        stream.Seek(0, SeekOrigin.Begin);
+        Assert.Throws<EndOfStreamException>(() => reader.ReadInt64());
+    }
 }
