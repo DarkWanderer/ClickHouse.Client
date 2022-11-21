@@ -20,16 +20,6 @@ public readonly struct ClickHouseDecimal
     /// </summary>
     public static int MaxDivisionPrecision = 50;
 
-    public readonly BigInteger Mantissa { get; }
-
-    public readonly int Scale { get; }
-
-    public static ClickHouseDecimal Zero => new(0, 0);
-
-    public static ClickHouseDecimal One => new(1, 0);
-
-    public int Sign => Mantissa.Sign;
-
     public ClickHouseDecimal(decimal value)
         : this()
     {
@@ -61,6 +51,16 @@ public readonly struct ClickHouseDecimal
         Mantissa = mantissa;
         Scale = scale;
     }
+
+    public readonly BigInteger Mantissa { get; }
+
+    public readonly int Scale { get; }
+
+    public static ClickHouseDecimal Zero => new(0, 0);
+
+    public static ClickHouseDecimal One => new(1, 0);
+
+    public int Sign => Mantissa.Sign;
 
     /// <summary>
     /// Removes trailing zeros on the mantissa
@@ -164,22 +164,32 @@ public readonly struct ClickHouseDecimal
         var mantissa = value.Mantissa;
         var scale = value.Scale;
 
-        Truncate(ref mantissa, ref scale, 28);
-        Round(ref mantissa, ref scale, 28);
-
-        bool sign = mantissa < 0;
-        if (sign)
+        bool negative = mantissa < 0;
+        if (negative)
         {
             mantissa = BigInteger.Negate(mantissa);
         }
 
+        var numberBytes = mantissa.ToByteArray();
+        switch (numberBytes.Length)
+        {
+            case 13 when numberBytes[12] == 0:
+                break;
+            case (> 12):
+                ThrowDecimalOverflowException();
+                break;
+            default:
+                break;
+        }
+
         var data = new byte[3 * sizeof(int)];
-        mantissa.ToByteArray().CopyTo(data, 0);
+        Buffer.BlockCopy(numberBytes, 0, data, 0, Math.Min(numberBytes.Length, 12));
+
         int part0 = BitConverter.ToInt32(data, 0);
         int part1 = BitConverter.ToInt32(data, 4);
         int part2 = BitConverter.ToInt32(data, 8);
 
-        var result = new decimal(part0, part1, part2, sign, (byte)scale);
+        var result = new decimal(part0, part1, part2, negative, (byte)scale);
         return result;
     }
 
@@ -226,8 +236,8 @@ public readonly struct ClickHouseDecimal
     public static ClickHouseDecimal operator +(ClickHouseDecimal left, ClickHouseDecimal right)
     {
         var scale = Math.Max(left.Scale, right.Scale);
-        var left_mantissa = ToScale(left, scale);
-        var right_mantissa = ToScale(right, scale);
+        var left_mantissa = ScaleMantissa(left, scale);
+        var right_mantissa = ScaleMantissa(right, scale);
 
         return new ClickHouseDecimal(left_mantissa + right_mantissa, scale);
     }
@@ -235,8 +245,8 @@ public readonly struct ClickHouseDecimal
     public static ClickHouseDecimal operator -(ClickHouseDecimal left, ClickHouseDecimal right)
     {
         var scale = Math.Max(left.Scale, right.Scale);
-        var left_mantissa = ToScale(left, scale);
-        var right_mantissa = ToScale(right, scale);
+        var left_mantissa = ScaleMantissa(left, scale);
+        var right_mantissa = ScaleMantissa(right, scale);
 
         return new ClickHouseDecimal(left_mantissa - right_mantissa, scale);
     }
@@ -265,8 +275,8 @@ public readonly struct ClickHouseDecimal
     public static ClickHouseDecimal operator %(ClickHouseDecimal dividend, ClickHouseDecimal divisor)
     {
         var scale = Math.Max(dividend.Scale, divisor.Scale);
-        var dividend_mantissa = ToScale(dividend, scale);
-        var divisor_mantissa = ToScale(divisor, scale);
+        var dividend_mantissa = ScaleMantissa(dividend, scale);
+        var divisor_mantissa = ScaleMantissa(divisor, scale);
 
         return new ClickHouseDecimal(dividend_mantissa % divisor_mantissa, scale);
     }
@@ -301,15 +311,6 @@ public readonly struct ClickHouseDecimal
         return left.CompareTo(right) >= 0;
     }
 
-    public static BigInteger ToScale(ClickHouseDecimal value, int scale)
-    {
-        if (scale == value.Scale)
-            return value.Mantissa;
-        if (scale < value.Scale)
-            throw new ArgumentException("Cannot adjust mantissa to lower scale", nameof(scale));
-        return value.Mantissa * BigInteger.Pow(10, scale - value.Scale);
-    }
-
     public static ClickHouseDecimal Exp(double scale)
     {
         var tmp = (ClickHouseDecimal)1;
@@ -338,7 +339,7 @@ public readonly struct ClickHouseDecimal
     {
         var maxScale = Math.Max(Scale, other.Scale);
 
-        return ToScale(this, maxScale) == ToScale(other, maxScale);
+        return ScaleMantissa(this, maxScale) == ScaleMantissa(other, maxScale);
     }
 
     public override bool Equals(object obj) => CompareTo(obj) == 0;
@@ -359,8 +360,8 @@ public readonly struct ClickHouseDecimal
     public int CompareTo(ClickHouseDecimal other)
     {
         var maxScale = Math.Max(Scale, other.Scale);
-        var left_mantissa = ToScale(this, maxScale);
-        var right_mantissa = ToScale(other, maxScale);
+        var left_mantissa = ScaleMantissa(this, maxScale);
+        var right_mantissa = ScaleMantissa(other, maxScale);
 
         return left_mantissa.CompareTo(right_mantissa);
     }
@@ -465,11 +466,26 @@ public readonly struct ClickHouseDecimal
 
     public int CompareTo(decimal other) => CompareTo((ClickHouseDecimal)other);
 
+    internal static BigInteger ScaleMantissa(ClickHouseDecimal value, int scale)
+    {
+        if (scale == value.Scale)
+            return value.Mantissa;
+        if (scale < value.Scale)
+            return value.Mantissa / BigInteger.Pow(10, value.Scale - scale);
+        return value.Mantissa * BigInteger.Pow(10, scale - value.Scale);
+    }
+
     private static void WriteIntToArray(int value, byte[] array, int index)
     {
         array[index + 0] = (byte)value;
         array[index + 1] = (byte)(value >> 8);
         array[index + 2] = (byte)(value >> 0x10);
         array[index + 3] = (byte)(value >> 0x18);
+    }
+
+    // [DoesNotReturn]
+    private static void ThrowDecimalOverflowException()
+    {
+        throw new OverflowException("Value cannot be represented as System.Decimal");
     }
 }
