@@ -140,7 +140,7 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --framework netstandard2.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
+      run: dotnet build --framework netstandard2.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj /clp:ErrorsOnly
 
     - name: Test
       run: dotnet test --framework net6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions
