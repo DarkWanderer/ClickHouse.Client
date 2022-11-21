@@ -4,7 +4,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Net;
 using System.Numerics;
-using System.Text;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Numerics;
 using NUnit.Framework;

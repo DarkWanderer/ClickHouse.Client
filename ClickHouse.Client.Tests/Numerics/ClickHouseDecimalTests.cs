@@ -193,4 +193,20 @@ public class ClickHouseDecimalTests
         var result = Convert.ChangeType(source, type);
         Assert.AreEqual(source.ToString(), result.ToString());
     }
+
+    [Test]
+    [TestCase(-5e20)]
+    [TestCase(-1000.0)]
+    [TestCase(-Math.E)]
+    [TestCase(-1.0)]
+    [TestCase(-0.0)]
+    [TestCase(0.0)]
+    [TestCase(Math.PI)]
+    [TestCase(1000)]
+    [TestCase(5e20)]
+    public void ShouldRoundtripIntoDouble(double @double)
+    {
+        ClickHouseDecimal @decimal = @double;
+        Assert.AreEqual(@double, @decimal.ToDouble(CultureInfo.InvariantCulture));
+    }
 }

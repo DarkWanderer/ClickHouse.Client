@@ -1,6 +1,5 @@
 ﻿using System;
 using NodaTime;
-using NodaTime.TimeZones;
 
 namespace ClickHouse.Client.Types;
 

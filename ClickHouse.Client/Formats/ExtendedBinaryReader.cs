@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Runtime.InteropServices.ComTypes;
+﻿using System.IO;
 using System.Text;
 
 namespace ClickHouse.Client.Formats;

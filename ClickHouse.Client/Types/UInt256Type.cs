@@ -1,7 +1,4 @@
-﻿using System.Numerics;
-using ClickHouse.Client.Formats;
-
-namespace ClickHouse.Client.Types;
+﻿namespace ClickHouse.Client.Types;
 
 internal class UInt256Type : AbstractBigIntegerType
 {
