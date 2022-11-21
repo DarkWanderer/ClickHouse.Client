@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
+using ClickHouse.Client.ADO;
 using ClickHouse.Client.Numerics;
+using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.Numerics;
@@ -37,6 +40,8 @@ public class ClickHouseDecimalTests
     };
 
     public static readonly decimal[] DecimalsWithoutZero = Decimals.Where(d => d != 0).ToArray();
+
+    public static readonly decimal[] DecimalsWithExtremeValues = Decimals.Append(decimal.MinValue).Append(decimal.MinValue / 100000m).Append(decimal.MaxValue).Append(decimal.MaxValue / 100000m).ToArray();
 
     public static readonly string[] LongDecimalStrings = new string[]
     {
@@ -89,7 +94,7 @@ public class ClickHouseDecimalTests
     public decimal ShouldTruncate(decimal value, int precision) => (decimal)new ClickHouseDecimal(value).Truncate(precision);
 
     [Test]
-    public void ShouldRoundtripConversion([ValueSource(typeof(ClickHouseDecimalTests), nameof(Decimals))] decimal value)
+    public void ShouldRoundtripConversion([ValueSource(typeof(ClickHouseDecimalTests), nameof(DecimalsWithExtremeValues))] decimal value)
     {
         var result = new ClickHouseDecimal(value);
         Assert.AreEqual(value, (decimal)result);
@@ -152,8 +157,13 @@ public class ClickHouseDecimalTests
     public void ShouldDivide([ValueSource(typeof(ClickHouseDecimalTests), nameof(Decimals))] decimal left,
                                 [ValueSource(typeof(ClickHouseDecimalTests), nameof(DecimalsWithoutZero))] decimal right)
     {
+
         decimal expected = left / right;
+        var scale = GetScale(expected);
+
         var actual = (ClickHouseDecimal)left / (ClickHouseDecimal)right;
+        actual = new ClickHouseDecimal(ClickHouseDecimal.ScaleMantissa(actual, GetScale(expected)), scale);
+
         AssertAreEqualWithDelta(expected, (decimal)actual);
     }
 
@@ -176,6 +186,22 @@ public class ClickHouseDecimalTests
     }
 
     [Test]
+    [TestCase(-5e20)]
+    [TestCase(-1000.0)]
+    [TestCase(-Math.E)]
+    [TestCase(-1.0)]
+    [TestCase(-0.0)]
+    [TestCase(0.0)]
+    [TestCase(Math.PI)]
+    [TestCase(1000)]
+    [TestCase(5e20)]
+    public void ShouldRoundtripIntoDouble(double @double)
+    {
+        ClickHouseDecimal @decimal = @double;
+        Assert.AreEqual(@double, @decimal.ToDouble(CultureInfo.InvariantCulture));
+    }
+
+    [Test]
     [TestCase(typeof(byte))]
     [TestCase(typeof(sbyte))]
     [TestCase(typeof(short))]
@@ -195,18 +221,19 @@ public class ClickHouseDecimalTests
     }
 
     [Test]
-    [TestCase(-5e20)]
-    [TestCase(-1000.0)]
-    [TestCase(-Math.E)]
-    [TestCase(-1.0)]
-    [TestCase(-0.0)]
-    [TestCase(0.0)]
-    [TestCase(Math.PI)]
-    [TestCase(1000)]
-    [TestCase(5e20)]
-    public void ShouldRoundtripIntoDouble(double @double)
+    [RequiredFeature(Feature.WideTypes)]
+    public async Task ValuesFromClickHouseShouldMatch([ValueSource(typeof(ClickHouseDecimalTests), nameof(DecimalsWithExtremeValues))] decimal value)
     {
-        ClickHouseDecimal @decimal = @double;
-        Assert.AreEqual(@double, @decimal.ToDouble(CultureInfo.InvariantCulture));
+        var scale = GetScale(value);
+
+        using var connection = TestUtilities.GetTestClickHouseConnection();
+        var result = (ClickHouseDecimal)await connection.ExecuteScalarAsync($"SELECT toDecimal256('{value.ToString(CultureInfo.InvariantCulture)}', {scale})");
+        Assert.AreEqual(value, (decimal)result);
+    }
+
+    private static int GetScale(decimal value)
+    {
+        var parts = decimal.GetBits(value);
+        return (parts[3] >> 16) & 0x7F;
     }
 }

@@ -87,7 +87,7 @@ internal class DecimalType : ParameterizedType
         try
         {
             ClickHouseDecimal @decimal = value is ClickHouseDecimal chd ? chd : Convert.ToDecimal(value, CultureInfo.InvariantCulture);
-            var mantissa = ClickHouseDecimal.ToScale(@decimal, Scale);
+            var mantissa = ClickHouseDecimal.ScaleMantissa(@decimal, Scale);
             WriteBigInteger(writer, mantissa);
         }
         catch (OverflowException)

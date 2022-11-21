@@ -118,6 +118,15 @@ public class DataReaderTests : AbstractConnectionTestFixture
     }
 
     [Test]
+    public async Task ShouldReadDecimal()
+    {
+        using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync("SELECT toDecimal64(1,3) as value");
+        Assert.IsTrue(reader.Read());
+        Assert.AreEqual(1.000m, reader.GetDecimal(0));
+        Assert.IsFalse(reader.Read());
+    }
+
+    [Test]
     public async Task ShouldReadString()
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT 'ASD' as value");
