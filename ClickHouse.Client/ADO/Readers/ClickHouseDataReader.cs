@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.Formats;
+using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
 
@@ -79,7 +80,11 @@ public class ClickHouseDataReader : DbDataReader, IEnumerator<IDataReader>, IEnu
     public virtual DateTimeOffset GetDateTimeOffset(int ordinal) => GetEffectiveClickHouseType(ordinal) is AbstractDateTimeType adt ?
         adt.ToDateTimeOffset(GetDateTime(ordinal)) : throw new InvalidCastException();
 
-    public override decimal GetDecimal(int ordinal) => (decimal)GetValue(ordinal);
+    public override decimal GetDecimal(int ordinal)
+    {
+        var value = GetValue(ordinal);
+        return value is ClickHouseDecimal clickHouseDecimal ? clickHouseDecimal.ToDecimal(CultureInfo.InvariantCulture) : (decimal)value;
+    }
 
     public override double GetDouble(int ordinal) => (double)GetValue(ordinal);
 
