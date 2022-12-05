@@ -46,6 +46,9 @@ jobs:
     - name: Install GitHubActionsTestLogger
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
 
+    - name: Check dotnet version
+      run: dotnet --version
+      
     - name: Install dependencies
       run: dotnet restore
 
