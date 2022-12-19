@@ -94,6 +94,13 @@ public class ClickHouseDecimalTests
     public decimal ShouldTruncate(decimal value, int precision) => (decimal)new ClickHouseDecimal(value).Truncate(precision);
 
     [Test]
+    public void ShouldValidateBuiltinValues()
+    {
+        Assert.AreEqual(new ClickHouseDecimal(0m), ClickHouseDecimal.Zero);
+        Assert.AreEqual(new ClickHouseDecimal(1m), ClickHouseDecimal.One);
+    }
+
+    [Test]
     public void ShouldRoundtripConversion([ValueSource(typeof(ClickHouseDecimalTests), nameof(DecimalsWithExtremeValues))] decimal value)
     {
         var result = new ClickHouseDecimal(value);

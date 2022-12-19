@@ -99,20 +99,6 @@ public readonly struct ClickHouseDecimal
         scale -= digitsToRemove;
     }
 
-    /// <summary>
-    /// Round the number to the given number of significant digits after floating point
-    /// </summary>
-    private static void Round(ref BigInteger mantissa, ref int scale, int precision)
-    {
-        int digitsToRemove = Math.Max(scale - precision, 0);
-
-        if (digitsToRemove > 0)
-        {
-            mantissa /= BigInteger.Pow(10, digitsToRemove);
-            scale -= digitsToRemove;
-        }
-    }
-
     public ClickHouseDecimal Truncate(int precision = 0)
     {
         var mantissa = Mantissa;
