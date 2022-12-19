@@ -199,26 +199,6 @@ public readonly struct ClickHouseDecimal
         return (ulong)(value.Mantissa * BigInteger.Pow(10, value.Scale));
     }
 
-    public static ClickHouseDecimal operator +(ClickHouseDecimal value)
-    {
-        return value;
-    }
-
-    public static ClickHouseDecimal operator -(ClickHouseDecimal value)
-    {
-        return new ClickHouseDecimal(-value.Mantissa, value.Scale);
-    }
-
-    public static ClickHouseDecimal operator ++(ClickHouseDecimal value)
-    {
-        return value + 1;
-    }
-
-    public static ClickHouseDecimal operator --(ClickHouseDecimal value)
-    {
-        return value - 1;
-    }
-
     public static ClickHouseDecimal operator +(ClickHouseDecimal left, ClickHouseDecimal right)
     {
         var scale = Math.Max(left.Scale, right.Scale);
@@ -295,30 +275,6 @@ public readonly struct ClickHouseDecimal
     public static bool operator >=(ClickHouseDecimal left, ClickHouseDecimal right)
     {
         return left.CompareTo(right) >= 0;
-    }
-
-    public static ClickHouseDecimal Exp(double scale)
-    {
-        var tmp = (ClickHouseDecimal)1;
-        while (Math.Abs(scale) > 100)
-        {
-            var diff = scale > 0 ? 100 : -100;
-            tmp *= Math.Exp(diff);
-            scale -= diff;
-        }
-        return tmp * Math.Exp(scale);
-    }
-
-    public static ClickHouseDecimal Pow(double basis, double scale)
-    {
-        var tmp = (ClickHouseDecimal)1;
-        while (Math.Abs(scale) > 100)
-        {
-            var diff = scale > 0 ? 100 : -100;
-            tmp *= Math.Pow(basis, diff);
-            scale -= diff;
-        }
-        return tmp * Math.Pow(basis, scale);
     }
 
     public bool Equals(ClickHouseDecimal other)
