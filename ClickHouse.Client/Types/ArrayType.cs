@@ -21,14 +21,12 @@ internal class ArrayType : ParameterizedType
         };
     }
 
-    public Array MakeArray(int length) => Array.CreateInstance(UnderlyingType.FrameworkType, length);
-
     public override string ToString() => $"{Name}({UnderlyingType})";
 
     public override object Read(ExtendedBinaryReader reader)
     {
         var length = reader.Read7BitEncodedInt();
-        var data = MakeArray(length);
+        var data = Array.CreateInstance(UnderlyingType.FrameworkType, length);
         for (var i = 0; i < length; i++)
         {
             data.SetValue(ClearDBNull(UnderlyingType.Read(reader)), i);

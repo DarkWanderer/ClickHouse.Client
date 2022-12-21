@@ -18,6 +18,7 @@ public enum Feature
     WideTypes = 512,
     Geo = 1024,
     Stats = 2048,
+    Json = 4096,
 
     All = ~None, // Special value
 }

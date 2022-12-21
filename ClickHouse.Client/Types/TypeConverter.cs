@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types.Grammar;
 
@@ -14,6 +15,84 @@ internal static class TypeConverter
     private static readonly IDictionary<string, ClickHouseType> SimpleTypes = new Dictionary<string, ClickHouseType>();
     private static readonly IDictionary<string, ParameterizedType> ParameterizedTypes = new Dictionary<string, ParameterizedType>();
     private static readonly IDictionary<Type, ClickHouseType> ReverseMapping = new Dictionary<Type, ClickHouseType>();
+
+    private static readonly IDictionary<string, string> Aliases = new Dictionary<string, string>()
+    {
+        { "BIGINT", "Int64" },
+        { "BIGINT SIGNED", "Int64" },
+        { "BIGINT UNSIGNED", "UInt64" },
+        { "BINARY", "FixedString" },
+        { "BINARY LARGE OBJECT", "String" },
+        { "BINARY VARYING", "String" },
+        { "BIT", "UInt64" },
+        { "BLOB", "String" },
+        { "BYTE", "Int8" },
+        { "BYTEA", "String" },
+        { "CHAR", "String" },
+        { "CHAR LARGE OBJECT", "String" },
+        { "CHAR VARYING", "String" },
+        { "CHARACTER", "String" },
+        { "CHARACTER LARGE OBJECT", "String" },
+        { "CHARACTER VARYING", "String" },
+        { "CLOB", "String" },
+        { "DEC", "Decimal" },
+        { "DOUBLE", "Float64" },
+        { "DOUBLE PRECISION", "Float64" },
+        { "ENUM", "Enum" },
+        { "FIXED", "Decimal" },
+        { "FLOAT", "Float32" },
+        { "GEOMETRY", "String" },
+        { "INET4", "IPv4" },
+        { "INET6", "IPv6" },
+        { "INT", "Int32" },
+        { "INT SIGNED", "Int32" },
+        { "INT UNSIGNED", "UInt32" },
+        { "INT1", "Int8" },
+        { "INT1 SIGNED", "Int8" },
+        { "INT1 UNSIGNED", "UInt8" },
+        { "INTEGER", "Int32" },
+        { "INTEGER SIGNED", "Int32" },
+        { "INTEGER UNSIGNED", "UInt32" },
+        { "LONGBLOB", "String" },
+        { "LONGTEXT", "String" },
+        { "MEDIUMBLOB", "String" },
+        { "MEDIUMINT", "Int32" },
+        { "MEDIUMINT SIGNED", "Int32" },
+        { "MEDIUMINT UNSIGNED", "UInt32" },
+        { "MEDIUMTEXT", "String" },
+        { "NATIONAL CHAR", "String" },
+        { "NATIONAL CHAR VARYING", "String" },
+        { "NATIONAL CHARACTER", "String" },
+        { "NATIONAL CHARACTER LARGE OBJECT", "String" },
+        { "NATIONAL CHARACTER VARYING", "String" },
+        { "NCHAR", "String" },
+        { "NCHAR LARGE OBJECT", "String" },
+        { "NCHAR VARYING", "String" },
+        { "NUMERIC", "Decimal" },
+        { "NVARCHAR", "String" },
+        { "REAL", "Float32" },
+        { "SET", "UInt64" },
+        { "SINGLE", "Float32" },
+        { "SMALLINT", "Int16" },
+        { "SMALLINT SIGNED", "Int16" },
+        { "SMALLINT UNSIGNED", "UInt16" },
+        { "TEXT", "String" },
+        { "TIME", "Int64" },
+        { "TIMESTAMP", "DateTime" },
+        { "TINYBLOB", "String" },
+        { "TINYINT", "Int8" },
+        { "TINYINT SIGNED", "Int8" },
+        { "TINYINT UNSIGNED", "UInt8" },
+        { "TINYTEXT", "String" },
+        { "VARBINARY", "String" },
+        { "VARCHAR", "String" },
+        { "VARCHAR2", "String" },
+        { "YEAR", "UInt16" },
+        { "BOOL", "Bool" },
+        { "BOOLEAN", "Bool" },
+        { "OBJECT('JSON')", "Json" },
+        { "JSON", "Json" },
+    };
 
     public static IEnumerable<string> RegisteredTypes => SimpleTypes.Keys
         .Concat(ParameterizedTypes.Values.Select(t => t.Name))
@@ -86,6 +165,9 @@ internal static class TypeConverter
         RegisterPlainType<PolygonType>();
         RegisterPlainType<MultiPolygonType>();
 
+        // JSON/Object
+        RegisterPlainType<JsonType>();
+
         // Mapping fixups
         ReverseMapping.Add(typeof(ClickHouseDecimal), new Decimal128Type());
         ReverseMapping.Add(typeof(decimal), new Decimal128Type());
@@ -122,6 +204,10 @@ internal static class TypeConverter
     internal static ClickHouseType ParseClickHouseType(SyntaxTreeNode node, TypeSettings settings)
     {
         var typeName = node.Value.Trim();
+
+        if (Aliases.TryGetValue(typeName.ToUpperInvariant(), out var alias))
+            typeName = alias;
+
         if (typeName.Contains(' '))
         {
             var parts = typeName.Split(new[] { " " }, 2, StringSplitOptions.RemoveEmptyEntries);

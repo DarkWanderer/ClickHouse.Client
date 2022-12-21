@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Net;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types;
+using Dapper;
 using NUnit.Framework;
 namespace ClickHouse.Client.Tests;
 
@@ -79,4 +82,23 @@ public class TypeMappingTests
     [TestCase(typeof(string[][]), ExpectedResult = "Array(Array(String))")]
     [TestCase(typeof(Tuple<int, byte, float?, string[]>), ExpectedResult = "Tuple(Int32,UInt8,Nullable(Float32),Array(String))")]
     public string ShouldConvertToClickHouseType(Type type) => TypeConverter.ToClickHouseType(type).ToString();
+
+    [Test, Explicit, TestCaseSource(nameof(GetClickHouseRegisteredTypes))]
+    public void ShouldConvertClickHouseType(string clickHouseType)
+    {
+        try
+        {
+            TypeConverter.ParseClickHouseType(clickHouseType, TypeSettings.Default);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            Assert.Pass("Expected failure (no arguments provided");
+        }
+    }
+
+    private static IList<string> GetClickHouseRegisteredTypes()
+    {
+        using var connection = TestUtilities.GetTestClickHouseConnection();
+        return connection.Query<string>("SELECT name FROM system.data_type_families") as IList<string>;
+    }
 }
