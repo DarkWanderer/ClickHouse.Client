@@ -401,6 +401,13 @@ public readonly struct ClickHouseDecimal
 
     public object ToType(Type conversionType, IFormatProvider provider)
     {
+        if (conversionType == typeof(BigInteger))
+        {
+            var mantissa = this.Mantissa;
+            var scale = this.Scale;
+            Truncate(ref mantissa, ref scale, 0);
+            return mantissa;
+        }
         return Convert.ChangeType(this, conversionType);
     }
 
