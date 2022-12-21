@@ -33,7 +33,9 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '6.x'
+        dotnet-version: |
+          '6.x'
+          '7.x'
 
     - name: Install pycobertura
       run: pip install pycobertura
@@ -135,7 +137,9 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '6.x'
+        dotnet-version: |
+          '6.x'
+          '7.x'
 
     - name: Install GitHubActionsTestLogger
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
