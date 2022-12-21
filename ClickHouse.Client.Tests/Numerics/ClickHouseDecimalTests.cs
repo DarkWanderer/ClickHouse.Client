@@ -220,6 +220,7 @@ public class ClickHouseDecimalTests
     [TestCase(typeof(float))]
     [TestCase(typeof(double))]
     [TestCase(typeof(decimal))]
+    [TestCase(typeof(string))]
     public void ShouldConvertToType(Type type)
     {
         ClickHouseDecimal source = 5m;

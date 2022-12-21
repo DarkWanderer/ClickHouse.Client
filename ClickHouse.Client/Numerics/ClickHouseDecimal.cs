@@ -401,11 +401,7 @@ public readonly struct ClickHouseDecimal
 
     public object ToType(Type conversionType, IFormatProvider provider)
     {
-        if (conversionType == typeof(int))
-            return ToInt32(provider);
-        if (conversionType == typeof(string))
-            return ToString(provider);
-        throw new NotSupportedException();
+        return Convert.ChangeType(this, conversionType);
     }
 
     public int CompareTo(decimal other) => CompareTo((ClickHouseDecimal)other);
