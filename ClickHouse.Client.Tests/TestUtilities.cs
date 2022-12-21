@@ -45,6 +45,11 @@ public static class TestUtilities
         {
             builder["set_allow_experimental_geo_types"] = 1; // Allow support for experimental geo types
         }
+        if (SupportedFeatures.HasFlag(Feature.Json))
+        {
+            builder["set_allow_experimental_object_type"] = 1; // Allow support for JSON
+            builder["set_output_format_json_named_tuples_as_objects"] = 1;
+        }
         return new ClickHouseConnection(builder.ConnectionString);
     }
 
@@ -158,7 +163,9 @@ public static class TestUtilities
             // Code: 53. DB::Exception: Type mismatch in IN or VALUES section. Expected: Decimal(76, 25). Got: Decimal256:
             // While processing toDecimal256(1e-24, 25) AS expected, _CAST('0.000000000000000000000001', 'Decimal256(25)') AS actual, expected = actual AS equals. (TYPE_MISMATCH) (version 22.9.3.18 (official build))
             //yield return new DataTypeSample("Decimal256(25)", typeof(ClickHouseDecimal), "toDecimal256(1e-24, 25)", new ClickHouseDecimal(10e-25m));
-            //yield return new DataTypeSample("Decimal256(0)", typeof(ClickHouseDecimal), "toDecimal256(repeat('1', 50), 0)", ClickHouseDecimal.Parse(new string('1', 50)));
+            //yield return new DataTypeSample("Decimal256(0)", typeof(ClickHouseDecimal),
+            //
+            //"toDecimal256(repeat('1', 50), 0)", ClickHouseDecimal.Parse(new string('1', 50)));
         }
 
         if (SupportedFeatures.HasFlag(Feature.IPv6))
@@ -210,6 +217,11 @@ public static class TestUtilities
                 Tuple.Create(.2, .3),
                 Tuple.Create(.3, .4)
             });
+        }
+
+        if (SupportedFeatures.HasFlag(Feature.Json))
+        {
+            //yield return new DataTypeSample("Json", typeof(string), "'{\"a\": \"b\", \"c\": 3}'", "{\"a\": \"b\", \"c\": 3}");
         }
     }
 

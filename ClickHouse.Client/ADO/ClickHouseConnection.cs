@@ -334,6 +334,10 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         {
             flags |= Feature.Stats;
         }
+        if (serverVersion >= new Version(22, 6))
+        {
+            flags |= Feature.Json;
+        }
 
         return flags;
     }
