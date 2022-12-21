@@ -403,6 +403,8 @@ public readonly struct ClickHouseDecimal
     {
         if (conversionType == typeof(int))
             return ToInt32(provider);
+        if (conversionType == typeof(string))
+            return ToString(provider);
         throw new NotSupportedException();
     }
 
