@@ -167,6 +167,7 @@ internal static class TypeConverter
 
         // JSON/Object
         RegisterPlainType<JsonType>();
+        RegisterParameterizedType<ObjectType>();
 
         // Mapping fixups
         ReverseMapping.Add(typeof(ClickHouseDecimal), new Decimal128Type());
@@ -203,7 +204,7 @@ internal static class TypeConverter
 
     internal static ClickHouseType ParseClickHouseType(SyntaxTreeNode node, TypeSettings settings)
     {
-        var typeName = node.Value.Trim();
+        var typeName = node.Value.Trim().Trim('\'');
 
         if (Aliases.TryGetValue(typeName.ToUpperInvariant(), out var alias))
             typeName = alias;

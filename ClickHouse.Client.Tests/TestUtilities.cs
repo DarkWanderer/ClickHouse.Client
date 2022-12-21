@@ -221,7 +221,7 @@ public static class TestUtilities
 
         if (SupportedFeatures.HasFlag(Feature.Json))
         {
-            yield return new DataTypeSample("Json", typeof(string), "'{\"a\": \"b\", \"c\": 3}'", "{\"a\": \"b\", \"c\": 3}");
+            //yield return new DataTypeSample("Json", typeof(string), "'{\"a\": \"b\", \"c\": 3}'", "{\"a\": \"b\", \"c\": 3}");
         }
     }
 
