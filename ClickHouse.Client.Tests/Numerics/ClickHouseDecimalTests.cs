@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Numerics;
@@ -209,6 +210,7 @@ public class ClickHouseDecimalTests
     }
 
     [Test]
+    [TestCase(typeof(bool))]
     [TestCase(typeof(byte))]
     [TestCase(typeof(sbyte))]
     [TestCase(typeof(short))]
@@ -220,11 +222,20 @@ public class ClickHouseDecimalTests
     [TestCase(typeof(float))]
     [TestCase(typeof(double))]
     [TestCase(typeof(decimal))]
+    [TestCase(typeof(string))]
     public void ShouldConvertToType(Type type)
     {
-        ClickHouseDecimal source = 5m;
-        var result = Convert.ChangeType(source, type);
-        Assert.AreEqual(source.ToString(), result.ToString());
+        var expected = Convert.ChangeType(5m, type);
+        var actual = Convert.ChangeType(new ClickHouseDecimal(5m), type);
+        Assert.AreEqual(expected, actual);
+    }
+
+    [Test]
+    public void ShouldConvertToBigInteger()
+    {
+        var expected = new BigInteger(123);
+        var actual = new ClickHouseDecimal(123.45m).ToType(typeof(BigInteger), CultureInfo.InvariantCulture);
+        Assert.AreEqual(expected, actual);
     }
 
     [Test]
