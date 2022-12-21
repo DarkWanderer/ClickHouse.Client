@@ -123,6 +123,7 @@ public static class TestUtilities
 
         yield return new DataTypeSample("Tuple(Int8, String, Nullable(Int8))", typeof(Tuple<int, string, int?>), "tuple(1, 'a', 8)", Tuple.Create<int, string, int?>(1, "a", 8));
         yield return new DataTypeSample("Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))", typeof(Tuple<int, Tuple<byte, string, int?>>), "tuple(123, tuple(5, 'a', 7))", Tuple.Create(123, Tuple.Create((byte)5, "a", 7)));
+        yield return new DataTypeSample("Tuple(a Int32, b Int32)", typeof(Tuple<int, ushort>), "tuple(123, 456)", Tuple.Create(123, 456));
 
         yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Unspecified));
         yield return new DataTypeSample("DateTime('UTC')", typeof(DateTime), "toDateTime('1988-08-28 11:22:33', 'UTC')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Unspecified));

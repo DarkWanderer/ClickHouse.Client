@@ -121,14 +121,28 @@ internal static class TypeConverter
 
     internal static ClickHouseType ParseClickHouseType(SyntaxTreeNode node, TypeSettings settings)
     {
-        if (node.ChildNodes.Count == 0 && SimpleTypes.TryGetValue(node.Value, out var typeInfo))
+        var typeName = node.Value.Trim();
+        if (typeName.Contains(' '))
+        {
+            var parts = typeName.Split(new[] { " " }, 2, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 2)
+            {
+                typeName = parts[1].Trim();
+            }
+            else
+            {
+                throw new ArgumentException($"Cannot parse {node.Value} as type", nameof(node));
+            }
+        }
+
+        if (node.ChildNodes.Count == 0 && SimpleTypes.TryGetValue(typeName, out var typeInfo))
         {
             return typeInfo;
         }
 
-        if (ParameterizedTypes.ContainsKey(node.Value))
+        if (ParameterizedTypes.ContainsKey(typeName))
         {
-            return ParameterizedTypes[node.Value].Parse(node, (n) => ParseClickHouseType(n, settings), settings);
+            return ParameterizedTypes[typeName].Parse(node, (n) => ParseClickHouseType(n, settings), settings);
         }
 
         throw new ArgumentException("Unknown type: " + node.ToString());
