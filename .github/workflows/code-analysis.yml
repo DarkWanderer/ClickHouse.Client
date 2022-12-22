@@ -9,7 +9,10 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
+      security-events: write
+      
     steps:
     - uses: actions/checkout@v3
 
@@ -21,7 +24,7 @@ jobs:
           7.x
 
     - name: Run .NET Code Analysis
-      uses: dotnet/code-analysis@v1
+      uses: dotnet/code-analysis@main
       id: code-analysis
       with:
         project: ClickHouse.Client\ClickHouse.Client.csproj
