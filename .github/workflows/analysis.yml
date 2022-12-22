@@ -28,7 +28,7 @@ jobs:
       id: code-analysis
       with:
         project: ClickHouse.Client\ClickHouse.Client.csproj
-        build-breaking: true
+        build-breaking: false
         all-categories: all
 
     - name: Upload analysis results to GitHub
