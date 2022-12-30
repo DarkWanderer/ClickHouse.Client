@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.Json;
 using ClickHouse.Client.Formats;
 
 namespace ClickHouse.Client.Types
@@ -19,8 +18,6 @@ namespace ClickHouse.Client.Types
             {
                 case string s:
                     writer.Write(s); break;
-                case JsonElement e:
-                    writer.Write(e.ToString()); break;
                 default:
                     throw new NotImplementedException($"Cannot convert {value.GetType()} to Json");
             }

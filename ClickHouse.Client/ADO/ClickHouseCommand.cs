@@ -6,14 +6,13 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO.Parameters;
 using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Formats;
-using ClickHouse.Client.Json;
 using ClickHouse.Client.Utility;
+using Newtonsoft.Json;
 
 namespace ClickHouse.Client.ADO;
 
@@ -174,17 +173,11 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
 
         postMessage.Content = content;
 
-        var response = await connection.HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+        var response = await connection.GetHttpClient().SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
         QueryId = ExtractQueryId(response);
         QueryStats = ExtractQueryStats(response);
         return await ClickHouseConnection.HandleError(response, sqlQuery).ConfigureAwait(false);
     }
-
-    private static readonly JsonSerializerOptions SummarySerializerOptions = new JsonSerializerOptions
-    {
-        PropertyNamingPolicy = new SnakeCaseNamingPolicy(),
-        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString,
-    };
 
     private static QueryStats ExtractQueryStats(HttpResponseMessage response)
     {
@@ -194,8 +187,7 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
             if (response.Headers.Contains(summaryHeader))
             {
                 var value = response.Headers.GetValues(summaryHeader).FirstOrDefault();
-                var jsonDoc = JsonDocument.Parse(value);
-                return JsonSerializer.Deserialize<QueryStats>(value, SummarySerializerOptions);
+                return JsonConvert.DeserializeObject<QueryStats>(value, JsonSettings.SnakeCaseSerializerSettings);
             }
         }
         catch
