@@ -5,7 +5,7 @@ using System.Linq;
 using ClickHouse.Client.ADO.Adapters;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.ADO;
 
 public class DataAdapterTests : AbstractConnectionTestFixture
 {

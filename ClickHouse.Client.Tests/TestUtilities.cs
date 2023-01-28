@@ -34,7 +34,7 @@ public static class TestUtilities
     /// Utility method to allow to redirect ClickHouse connections to different machine, in case of Windows development environment
     /// </summary>
     /// <returns></returns>
-    public static ClickHouseConnection GetTestClickHouseConnection(bool compression = true, bool session = false, bool customDecimals = false)
+    public static ClickHouseConnection GetTestClickHouseConnection(bool compression = true, bool session = false, bool customDecimals = true)
     {
         var builder = GetConnectionStringBuilder();
         builder.Compression = compression;

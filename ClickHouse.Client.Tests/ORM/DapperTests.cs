@@ -133,4 +133,13 @@ public class DapperTests : AbstractConnectionTestFixture
         Assert.IsInstanceOf<ITuple>(result);
         CollectionAssert.AreEqual(new[] { 1, 2, 3 }, result.AsEnumerable());
     }
+
+    [Test]
+    public async Task ShouldExecuteSelectReturningDecimal()
+    {
+        string sql = "SELECT toDecimal128(0.0001, 8)";
+        var result = (await connection.QueryAsync<decimal>(sql)).Single();
+        Assert.IsInstanceOf<decimal>(result);
+        Assert.AreEqual(0.0001m, result);
+    }
 }

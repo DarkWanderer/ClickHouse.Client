@@ -77,7 +77,7 @@ public class ClickHouseConnectionStringBuilder : DbConnectionStringBuilder
 
     public bool UseCustomDecimals
     {
-        get => GetBooleanOrDefault("UseCustomDecimals", false);
+        get => GetBooleanOrDefault("UseCustomDecimals", true);
         set => this["UseCustomDecimals"] = value;
     }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Web;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.Misc;
 
 public class UriBuilderTests
 {

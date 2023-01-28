@@ -5,7 +5,7 @@ using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.Misc;
 
 [TestFixture]
 public class SerialisationTests

@@ -3,7 +3,7 @@ using System.Linq;
 using ClickHouse.Client.Types.Grammar;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests.Syntax;
+namespace ClickHouse.Client.Tests.Types;
 
 public class TypeGrammarParsingTests
 {

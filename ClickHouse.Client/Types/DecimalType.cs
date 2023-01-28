@@ -11,7 +11,7 @@ internal class DecimalType : ParameterizedType
 {
     private int scale;
 
-    public virtual int Precision { get; set; }
+    public virtual int Precision { get; init; }
 
     /// <summary>
     /// Gets or sets the decimal 'scale' (precision) in ClickHouse
@@ -22,8 +22,14 @@ internal class DecimalType : ParameterizedType
         set
         {
             scale = value;
+            Exponent = BigInteger.Pow(10, value);
         }
     }
+
+    /// <summary>
+    /// Gets decimal exponent value based on Scale
+    /// </summary>
+    public BigInteger Exponent { get; private set; }
 
     public override string Name => "Decimal";
 
@@ -32,7 +38,7 @@ internal class DecimalType : ParameterizedType
     /// </summary>
     public virtual int Size => GetSizeFromPrecision(Precision);
 
-    public override Type FrameworkType => typeof(ClickHouseDecimal);
+    public override Type FrameworkType => UseBigDecimal ? typeof(ClickHouseDecimal) : typeof(decimal);
 
     public ClickHouseDecimal MaxValue => new(BigInteger.Pow(10, Precision) - 1, Scale);
 
@@ -45,19 +51,14 @@ internal class DecimalType : ParameterizedType
 
         var size = GetSizeFromPrecision(precision);
 
-        switch (size)
+        return size switch
         {
-            case 4:
-                return new Decimal32Type { Precision = precision, Scale = scale };
-            case 8:
-                return new Decimal64Type { Precision = precision, Scale = scale };
-            case 16:
-                return new Decimal128Type { Precision = precision, Scale = scale };
-            case 32:
-                return new Decimal256Type { Precision = precision, Scale = scale };
-            default:
-                return new DecimalType { Precision = precision, Scale = scale };
-        }
+            4 => new Decimal32Type { Precision = precision, Scale = scale, UseBigDecimal = settings.useBigDecimal },
+            8 => new Decimal64Type { Precision = precision, Scale = scale, UseBigDecimal = settings.useBigDecimal },
+            16 => new Decimal128Type { Precision = precision, Scale = scale, UseBigDecimal = settings.useBigDecimal },
+            32 => new Decimal256Type { Precision = precision, Scale = scale, UseBigDecimal = settings.useBigDecimal },
+            _ => new DecimalType { Precision = precision, Scale = scale, UseBigDecimal = settings.useBigDecimal },
+        };
     }
 
     public override object Read(ExtendedBinaryReader reader)
@@ -77,7 +78,7 @@ internal class DecimalType : ParameterizedType
                 mantissa = new BigInteger(reader.ReadBytes(Size));
                 break;
         }
-        return new ClickHouseDecimal(mantissa, Scale);
+        return UseBigDecimal ? new ClickHouseDecimal(mantissa, Scale) : (object)((decimal)mantissa / (decimal)Exponent);
     }
 
     public override string ToString() => $"{Name}({Precision}, {Scale})";
@@ -95,6 +96,8 @@ internal class DecimalType : ParameterizedType
             throw new ArgumentOutOfRangeException(nameof(value), value, $"Value cannot be represented");
         }
     }
+
+    protected virtual bool UseBigDecimal { get; init; }
 
     private static int GetSizeFromPrecision(int precision) => precision switch
     {

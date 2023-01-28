@@ -20,6 +20,7 @@ internal class Decimal32Type : DecimalType
         return new Decimal32Type
         {
             Scale = int.Parse(node.SingleChild.Value, CultureInfo.InvariantCulture),
+            UseBigDecimal = settings.useBigDecimal,
         };
     }
 
