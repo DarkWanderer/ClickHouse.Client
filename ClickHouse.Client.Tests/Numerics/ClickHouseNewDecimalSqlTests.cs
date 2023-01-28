@@ -7,14 +7,14 @@ using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.Numerics;
 
 [Parallelizable]
-public class SqlClickHouseDecimalTest
+public class ClickHouseNewDecimalSqlTests
 {
     private readonly ClickHouseConnection connection;
 
-    public SqlClickHouseDecimalTest()
+    public ClickHouseNewDecimalSqlTests()
     {
         connection = TestUtilities.GetTestClickHouseConnection(customDecimals: true);
     }
@@ -48,7 +48,7 @@ public class SqlClickHouseDecimalTest
     }
 
     [Test]
-    [TestCaseSource(typeof(SqlClickHouseDecimalTest), nameof(DecimalTypes))]
+    [TestCaseSource(typeof(ClickHouseNewDecimalSqlTests), nameof(DecimalTypes))]
     [Parallelizable]
     public async Task SelectMaxValue(string typeName)
     {
@@ -61,7 +61,7 @@ public class SqlClickHouseDecimalTest
     }
 
     [Test]
-    [TestCaseSource(typeof(SqlClickHouseDecimalTest), nameof(DecimalTypes))]
+    [TestCaseSource(typeof(ClickHouseNewDecimalSqlTests), nameof(DecimalTypes))]
     [Parallelizable]
     public async Task SelectMinValue(string typeName)
     {
@@ -75,7 +75,7 @@ public class SqlClickHouseDecimalTest
 
     [Test]
     [Parallelizable]
-    [TestCaseSource(typeof(SqlClickHouseDecimalTest), nameof(DecimalTestCases))]
+    [TestCaseSource(typeof(ClickHouseNewDecimalSqlTests), nameof(DecimalTestCases))]
     public async Task Select(ClickHouseDecimal expected, string sql)
     {
         using var reader = await connection.ExecuteReaderAsync(sql);

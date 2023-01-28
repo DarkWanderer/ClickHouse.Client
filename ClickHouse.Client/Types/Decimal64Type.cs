@@ -18,6 +18,7 @@ internal class Decimal64Type : DecimalType
     public override ParameterizedType Parse(SyntaxTreeNode node, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings) => new Decimal64Type
     {
         Scale = int.Parse(node.SingleChild.Value, CultureInfo.InvariantCulture),
+        UseBigDecimal = settings.useBigDecimal,
     };
 
     public override string ToString() => $"{Name}({Scale})";

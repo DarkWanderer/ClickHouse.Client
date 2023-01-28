@@ -150,7 +150,7 @@ public class SqlSimpleSelectTests : IDisposable
         Assert.AreEqual(typeof(short), reader.GetFieldType(0));
 
         while (reader.Read())
-            results.Add(reader.GetInt16(0)); // Intentional conversion to int32
+            results.Add(reader.GetInt16(0)); // Intentional conversion
 
         CollectionAssert.AreEqual(Enumerable.Range(0, count), results);
     }

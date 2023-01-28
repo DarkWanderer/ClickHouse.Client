@@ -336,7 +336,6 @@ public readonly struct ClickHouseDecimal
         {
             builder.Append(mantissa.ToString(provider));
         }
-
         return builder.ToString();
     }
 
