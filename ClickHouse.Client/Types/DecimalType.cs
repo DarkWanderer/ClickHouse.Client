@@ -63,22 +63,26 @@ internal class DecimalType : ParameterizedType
 
     public override object Read(ExtendedBinaryReader reader)
     {
-        // ClickHouse value represented as decimal
-        // Needs to be divided by Exponent to get actual value
-        BigInteger mantissa;
-        switch (Size)
+        if (UseBigDecimal)
         {
-            case 4:
-                mantissa = reader.ReadInt32();
-                break;
-            case 8:
-                mantissa = reader.ReadInt64();
-                break;
-            default:
-                mantissa = new BigInteger(reader.ReadBytes(Size));
-                break;
+            var mantissa = Size switch
+            {
+                4 => (BigInteger)reader.ReadInt32(),
+                8 => (BigInteger)reader.ReadInt64(),
+                _ => new BigInteger(reader.ReadBytes(Size)),
+            };
+            return new ClickHouseDecimal(mantissa, Scale);
         }
-        return UseBigDecimal ? new ClickHouseDecimal(mantissa, Scale) : (object)((decimal)mantissa / (decimal)Exponent);
+        else
+        {
+            var mantissa = Size switch
+            {
+                4 => reader.ReadInt32(),
+                8 => reader.ReadInt64(),
+                _ => (decimal)new BigInteger(reader.ReadBytes(Size)),
+            };
+            return mantissa / (decimal)Exponent;
+        }
     }
 
     public override string ToString() => $"{Name}({Precision}, {Scale})";
