@@ -2,6 +2,7 @@
 using System.Data.Common;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
+using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
@@ -37,7 +38,7 @@ public class SessionConnectionTest
     }
 
     [Test]
-    [Ignore("Broken in v23+")]
+    [IgnoreInVersion(23)]
     public async Task TempTableShouldFailIfSessionDisabled()
     {
         using var connection = CreateConnection(false);
@@ -52,7 +53,7 @@ public class SessionConnectionTest
     }
 
     [Test]
-    [Ignore("Broken in v23+")]
+    [IgnoreInVersion(23)]
     public async Task TempTableShouldFailIfSessionDisabledAndSessionIdPassed()
     {
         using var connection = CreateConnection(false, "ASD");

@@ -11,11 +11,17 @@ namespace ClickHouse.Client.Tests.Attributes;
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
 public class IgnoreInVersionAttribute : NUnitAttribute, IApplyToTest
 {
-    private readonly Version version;
+    int major;
+    int minor;
+    int build;
+    int revision;
 
-    public IgnoreInVersionAttribute(string version)
+    public IgnoreInVersionAttribute(int major, int minor = -1, int build = -1, int revision = -1)
     {
-        this.version = Version.Parse(version);
+        this.major = major;
+        this.minor = minor;
+        this.build = build;
+        this.revision = revision;
     }
 
     public void ApplyToTest(Test test)
@@ -25,19 +31,19 @@ public class IgnoreInVersionAttribute : NUnitAttribute, IApplyToTest
 
         var server = TestUtilities.ServerVersion;
 
-        if (version.Major != server.Major)
+        if (server == null)
+            return; // 'latest' version
+
+        if (major != server.Major)
             return;
-        if (version.Minor != -1 && version.Minor != server.Minor)
+        if (minor != -1 && minor != server.Minor)
             return;
-        if (version.Build != -1 && version.Minor != server.Minor)
+        if (build != -1 && minor != server.Minor)
             return;
-        if (version.Revision != -1 && version.Revision != server.Revision)
+        if (revision != -1 && revision != server.Revision)
             return;
 
-        if (TestUtilities.ServerVersion == version)
-        {
-            test.RunState = RunState.Ignored;
-            test.MakeTestResult().RecordAssertion(new AssertionResult(AssertionStatus.Inconclusive, $"Test ignored in ClickHouse version {version}", null));
-        }
+        test.RunState = RunState.Ignored;
+        test.MakeTestResult().RecordAssertion(new AssertionResult(AssertionStatus.Inconclusive, $"Test ignored in ClickHouse version {server}", null));
     }
 }
