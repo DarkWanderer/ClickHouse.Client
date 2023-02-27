@@ -41,6 +41,12 @@ public static class TestUtilities
         builder.UseSession = session;
         builder.UseCustomDecimals = customDecimals;
         builder["set_session_timeout"] = 1; // Expire sessions quickly after test
+        
+        // Version 21.7 requires this flag for Map type
+        if (ServerVersion?.Major == 21 && ServerVersion?.Minor == 7)
+        {
+            builder["set_allow_experimental_map_type"] = 1;
+        }
         if (SupportedFeatures.HasFlag(Feature.Geo)) // After we've loaded supported features
         {
             builder["set_allow_experimental_geo_types"] = 1; // Allow support for experimental geo types
