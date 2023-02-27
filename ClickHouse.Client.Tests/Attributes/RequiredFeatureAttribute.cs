@@ -4,7 +4,7 @@ using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.Attributes;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 public class RequiredFeatureAttribute : NUnitAttribute, IApplyToTest
@@ -19,9 +19,7 @@ public class RequiredFeatureAttribute : NUnitAttribute, IApplyToTest
     public void ApplyToTest(Test test)
     {
         if (test.RunState == RunState.NotRunnable)
-        {
             return;
-        }
 
         if (!TestUtilities.SupportedFeatures.HasFlag(feature))
         {

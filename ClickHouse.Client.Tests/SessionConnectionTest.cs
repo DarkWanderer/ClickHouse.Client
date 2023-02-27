@@ -9,7 +9,7 @@ namespace ClickHouse.Client.Tests;
 
 public class SessionConnectionTest
 {
-    private DbConnection CreateConnection(bool useSession, string sessionId = null)
+    private static DbConnection CreateConnection(bool useSession, string sessionId = null)
     {
         var builder = TestUtilities.GetConnectionStringBuilder();
         builder.UseSession = useSession;

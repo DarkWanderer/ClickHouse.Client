@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Readers;
+using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;

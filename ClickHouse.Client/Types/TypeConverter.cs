@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types.Grammar;
 

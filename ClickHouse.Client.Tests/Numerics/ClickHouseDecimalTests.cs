@@ -7,6 +7,7 @@ using NUnit.Framework;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Utility;
+using ClickHouse.Client.Tests.Attributes;
 
 namespace ClickHouse.Client.Tests.Numerics;
 
