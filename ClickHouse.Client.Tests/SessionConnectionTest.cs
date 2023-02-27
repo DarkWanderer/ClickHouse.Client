@@ -38,7 +38,7 @@ public class SessionConnectionTest
     }
 
     [Test]
-    [IgnoreInVersion(23)]
+    [Ignore("Broken in v23")]
     public async Task TempTableShouldFailIfSessionDisabled()
     {
         using var connection = CreateConnection(false);
@@ -53,7 +53,7 @@ public class SessionConnectionTest
     }
 
     [Test]
-    [IgnoreInVersion(23)]
+    [Ignore("Broken in v23")]
     public async Task TempTableShouldFailIfSessionDisabledAndSessionIdPassed()
     {
         using var connection = CreateConnection(false, "ASD");

@@ -125,7 +125,7 @@ jobs:
         - 'yandex/clickhouse-server:20.9'
         - 'yandex/clickhouse-server:20.12'
         - 'clickhouse/clickhouse-server:21.3'
-        - 'clickhouse/clickhouse-server:21.6'
+        - 'clickhouse/clickhouse-server:21.7'
         - 'clickhouse/clickhouse-server:21.9'
         - 'clickhouse/clickhouse-server:21.12'
         - 'clickhouse/clickhouse-server:22.3'
