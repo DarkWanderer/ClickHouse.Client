@@ -65,7 +65,7 @@ public class ClickHouseConnectionStringBuilder : DbConnectionStringBuilder
 
     public ushort Port
     {
-        get => TryGetValue("Port", out var value) && value is string @string && ushort.TryParse(@string, out var @ushort) ? @ushort : (ushort)8123;
+        get => (ushort)GetIntOrDefault("Port", Protocol == "https" ? 8443 : 8123);
         set => this["Port"] = value;
     }
 
@@ -104,6 +104,14 @@ public class ClickHouseConnectionStringBuilder : DbConnectionStringBuilder
     {
         if (TryGetValue(name, out var value))
             return (string)value;
+        else
+            return @default;
+    }
+
+    private int GetIntOrDefault(string name, int @default)
+    {
+        if (TryGetValue(name, out object o) && o is string s && int.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out int @int))
+            return @int;
         else
             return @default;
     }
