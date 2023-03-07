@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ClickHouse.Client.Tests.Attributes;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.Attributes;
 
+/// <summary>
+/// IgnoreInVersionAttribute tests
+/// Designed to work across 'regression' runs under different versions
+/// </summary>
 public class IgnoreInVersionAttributeTests : AbstractConnectionTestFixture
 {
     [Test]

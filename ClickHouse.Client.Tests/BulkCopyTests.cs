@@ -56,7 +56,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
     }
 
         [Test]
-        [Explicit]
+        [Explicit("Infinite loop test")]
         public async Task ShouldExecuteMultipleBulkInsertions()
         {
             var sw = new Stopwatch();
