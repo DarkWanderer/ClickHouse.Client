@@ -107,6 +107,7 @@ public static class TestUtilities
         yield return new DataTypeSample("Float64", typeof(double), "toFloat64(-64e6)", -64e6);
 
         yield return new DataTypeSample("String", typeof(string), "'TestString'", "TestString");
+        yield return new DataTypeSample("String", typeof(string), "'\t\r\n'", "\t\r\n");
         // yield return new DataTypeSample("String", typeof(string), "'1\t2\n3'", "1\t2\n3");
         yield return new DataTypeSample("FixedString(3)", typeof(string), "toFixedString('ASD',3)", "ASD");
         yield return new DataTypeSample("FixedString(5)", typeof(string), "toFixedString('ASD',5)", "ASD\0\0");
