@@ -21,7 +21,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 {
     private const string CustomSettingPrefix = "set_";
 
-    private readonly IHttpClientFactory httpClientFactory;
+    private IHttpClientFactory httpClientFactory;
     private readonly List<IDisposable> disposables = new();
     private readonly string httpClientName;
     private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
@@ -48,16 +48,6 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     public ClickHouseConnection(string connectionString)
     {
         ConnectionString = connectionString;
-        if (!string.IsNullOrEmpty(session))
-        {
-            var factory = new SingleConnectionHttpClientFactory() { Timeout = timeout };
-            httpClientFactory = factory;
-            disposables.Add(factory);
-        }
-        else
-        {
-            httpClientFactory = new DefaultPoolHttpClientFactory() { Timeout = timeout };
-        }
     }
 
     /// <summary>
@@ -68,8 +58,8 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     /// <param name="httpClient">instance of HttpClient</param>
     public ClickHouseConnection(string connectionString, HttpClient httpClient)
     {
+        providedHttpClient = httpClient;
         ConnectionString = connectionString;
-        httpClientFactory = new CannedHttpClientFactory(httpClient);
     }
 
     /// <summary>
@@ -109,9 +99,9 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     /// </remarks>
     public ClickHouseConnection(string connectionString, IHttpClientFactory httpClientFactory, string httpClientName = "")
     {
-        ConnectionString = connectionString;
-        this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+        this.providedHttpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         this.httpClientName = httpClientName ?? throw new ArgumentNullException(nameof(httpClientName));
+        ConnectionString = connectionString;
     }
 
     public ILogger Logger { get; set; }
@@ -161,6 +151,8 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
             {
                 CustomSettings.Set(key.Replace(CustomSettingPrefix, string.Empty), builder[key]);
             }
+
+            SetHttpClientFactory();
         }
     }
 
@@ -186,6 +178,33 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     {
         get => state == ConnectionState.Open ? supportedFeatures : throw new InvalidOperationException();
         private set => supportedFeatures = value;
+    }
+
+    private HttpClient providedHttpClient;
+    private IHttpClientFactory providedHttpClientFactory;
+    private void SetHttpClientFactory() {
+        var currentClientFactory = httpClientFactory as IDisposable;
+        if(currentClientFactory != null) {
+            currentClientFactory.Dispose();
+            disposables.Remove(currentClientFactory);
+        }
+
+        if(providedHttpClient != null) {
+            httpClientFactory = new CannedHttpClientFactory(providedHttpClient);
+        }
+        else if(providedHttpClientFactory != null) {
+            httpClientFactory = providedHttpClientFactory;
+        }
+        else if (!string.IsNullOrEmpty(session))
+        {
+            var factory = new SingleConnectionHttpClientFactory() { Timeout = timeout };
+            disposables.Add(factory);
+            httpClientFactory = factory;
+        }
+        else
+        {
+            httpClientFactory = new DefaultPoolHttpClientFactory() { Timeout = timeout };
+        }
     }
 
     public override DataTable GetSchema() => GetSchema(null, null);
