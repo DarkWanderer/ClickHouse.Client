@@ -16,6 +16,14 @@ internal class DateType : AbstractDateTimeType
 
     public override void Write(ExtendedBinaryWriter writer, object value)
     {
+#if NET6_0_OR_GREATER
+        if (value is DateOnly @do)
+        {
+            var delta = @do.DayNumber - DateOnlyEpochStart.DayNumber;
+            writer.Write((ushort)delta);
+            return;
+        }
+#endif
         var sinceEpoch = ((DateTime)value).Date - DateTimeEpochStart;
         writer.Write(Convert.ToUInt16(sinceEpoch.TotalDays));
     }

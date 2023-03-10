@@ -8,6 +8,10 @@ internal abstract class AbstractDateTimeType : ParameterizedType
     // DateTime.UnixEpoch is not available on .NET 4.8
     public static readonly DateTime DateTimeEpochStart = DateTimeOffset.FromUnixTimeSeconds(0).UtcDateTime;
 
+#if NET6_0_OR_GREATER
+    public static readonly DateOnly DateOnlyEpochStart = new DateOnly(1970,1,1);
+#endif
+
     public override Type FrameworkType => typeof(DateTime);
 
     public DateTimeZone TimeZone { get; set; }
