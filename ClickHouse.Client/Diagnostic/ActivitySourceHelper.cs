@@ -6,22 +6,22 @@ using System.Reflection;
 
 namespace ClickHouse.Client.Diagnostic
 {
-    public static class ActivitySourceHelper
+    internal static class ActivitySourceHelper
     {
-        public const string ActivitySourceName = "ClickHouse.Client";
+        internal const string ActivitySourceName = "ClickHouse.Client";
 
-        public const string Tag_DbConnectionString = "db.connection_string";
-        public const string Tag_DbName = "db.name";
-        public const string Tag_DbStatement = "db.statement";
-        public const string Tag_DbSystem = "db.system";
-        public const string Tag_StatusCode = "otel.status_code";
-        public const string Tag_User = "db.user";
-        public const string Tag_Service = "peer.service";
-        public const string Tag_ThreadId = "thread.id";
+        internal const string Tag_DbConnectionString = "db.connection_string";
+        internal const string Tag_DbName = "db.name";
+        internal const string Tag_DbStatement = "db.statement";
+        internal const string Tag_DbSystem = "db.system";
+        internal const string Tag_StatusCode = "otel.status_code";
+        internal const string Tag_User = "db.user";
+        internal const string Tag_Service = "peer.service";
+        internal const string Tag_ThreadId = "thread.id";
 
-        public const string Value_DbSystem = "clickhouse";
+        internal const string Value_DbSystem = "clickhouse";
 
-        public static Activity? StartActivity(string name)
+        internal static Activity? StartActivity(string name)
         {
             var activity = ActivitySource.StartActivity(name, ActivityKind.Client, default(ActivityContext));
             if (activity is { IsAllDataRequested: true })
@@ -32,7 +32,7 @@ namespace ClickHouse.Client.Diagnostic
             return activity;
         }
 
-        public static void SetSuccess(this Activity activity)
+        internal static void SetSuccess(this Activity activity)
         {
 #if NET6_0_OR_GREATER
 		activity.SetStatus(ActivityStatusCode.Ok);
@@ -40,7 +40,7 @@ namespace ClickHouse.Client.Diagnostic
             activity.SetTag(Tag_StatusCode, "OK");
         }
 
-        public static void SetException(this Activity activity, Exception exception)
+        internal static void SetException(this Activity activity, Exception exception)
         {
             var description = exception.Message;
 #if NET6_0_OR_GREATER
