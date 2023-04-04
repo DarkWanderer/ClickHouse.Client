@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO.Parameters;
 using ClickHouse.Client.ADO.Readers;
+using ClickHouse.Client.Diagnostic;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Json;
 using ClickHouse.Client.Utility;
@@ -146,6 +147,8 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
     {
         if (connection == null)
             throw new InvalidOperationException("Connection not set");
+        using var activity = ActivitySourceHelper.StartActivity("ClickHouse PostSqlQueryAsync");
+        activity.SetConnectionTags(connection.ConnectionString, sqlQuery);
 
         var uriBuilder = connection.CreateUriBuilder();
         if (commandParameters != null)
@@ -177,7 +180,7 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
         var response = await connection.HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
         QueryId = ExtractQueryId(response);
         QueryStats = ExtractQueryStats(response);
-        return await ClickHouseConnection.HandleError(response, sqlQuery).ConfigureAwait(false);
+        return await ClickHouseConnection.HandleError(response, sqlQuery, activity).ConfigureAwait(false);
     }
 
     private static readonly JsonSerializerOptions SummarySerializerOptions = new JsonSerializerOptions

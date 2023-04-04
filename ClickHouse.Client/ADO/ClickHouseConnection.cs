@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ClickHouse.Client.Diagnostic;
 using ClickHouse.Client.Http;
 using ClickHouse.Client.Utility;
 using Microsoft.Extensions.Logging;
@@ -194,13 +196,16 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 
     public override DataTable GetSchema(string collectionName, string[] restrictionValues) => SchemaDescriber.DescribeSchema(this, collectionName, restrictionValues);
 
-    internal static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query)
+    internal static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query, Activity? activity)
     {
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw ClickHouseServerException.FromServerResponse(error, query);
+            var ex = ClickHouseServerException.FromServerResponse(error, query);
+            activity.SetException(ex);
+            throw ex;
         }
+        activity.SetSuccess();
         return response;
     }
 
@@ -216,14 +221,17 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     {
         if (State == ConnectionState.Open)
             return;
+        using var activity = ActivitySourceHelper.StartActivity("ClickHouse OpenAsync");
         const string versionQuery = "SELECT version(), timezone() FORMAT TSV";
         try
         {
+            activity.SetConnectionTags(ConnectionString, versionQuery);
+
             var uriBuilder = CreateUriBuilder();
             uriBuilder.CustomParameters.Add("query", versionQuery);
             var request = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
             AddDefaultHttpHeaders(request.Headers);
-            var response = await HandleError(await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false), versionQuery).ConfigureAwait(false);
+            var response = await HandleError(await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false), versionQuery, activity).ConfigureAwait(false);
             var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
             if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check if response starts with GZip marker
@@ -239,9 +247,10 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
             SupportedFeatures = GetFeatureFlags(serverVersion);
             state = ConnectionState.Open;
         }
-        catch
+        catch (Exception ex)
         {
             state = ConnectionState.Broken;
+            activity.SetException(ex);
             throw;
         }
     }
@@ -257,6 +266,9 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     /// <returns>Task-wrapped HttpResponseMessage object</returns>
     public async Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
     {
+        using var activity = ActivitySourceHelper.StartActivity("ClickHouse PostStreamAsync");
+        activity.SetConnectionTags(ConnectionString, sql);
+
         var builder = CreateUriBuilder(sql);
         using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());
         AddDefaultHttpHeaders(postMessage.Headers);
@@ -269,7 +281,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         }
 
         using var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
-        await HandleError(response, sql).ConfigureAwait(false);
+        await HandleError(response, sql, activity).ConfigureAwait(false);
     }
 
     public new ClickHouseCommand CreateCommand() => new ClickHouseCommand(this);
