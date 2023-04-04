@@ -50,6 +50,7 @@ namespace ClickHouse.Client.Diagnostic
             activity?.SetStatus(ActivityStatusCode.Ok);
 #endif
             activity?.SetTag(Tag_StatusCode, "OK");
+            activity?.Stop();
         }
 
         internal static void SetException(this Activity? activity, Exception exception)
@@ -65,6 +66,7 @@ namespace ClickHouse.Client.Diagnostic
                 { "exception.type", exception.GetType().FullName },
                 { "exception.message", exception.Message },
             }));
+            activity?.Stop();
         }
 
         private static ActivitySource ActivitySource { get; } = CreateActivitySource();

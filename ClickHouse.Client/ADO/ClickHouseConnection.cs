@@ -202,10 +202,10 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         {
             var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var ex = ClickHouseServerException.FromServerResponse(error, query);
-            activity?.SetException(ex);
+            activity.SetException(ex);
             throw ex;
         }
-        activity?.SetSuccess();
+        activity.SetSuccess();
         return response;
     }
 
@@ -246,8 +246,6 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
             serverTimezone = serverVersionAndTimezone[1];
             SupportedFeatures = GetFeatureFlags(serverVersion);
             state = ConnectionState.Open;
-
-            activity.SetSuccess();
         }
         catch (Exception ex)
         {
