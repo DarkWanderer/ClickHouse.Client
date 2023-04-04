@@ -147,47 +147,40 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
     {
         if (connection == null)
             throw new InvalidOperationException("Connection not set");
-        using (var executeActivity = ActivitySourceHelper.StartActivity("ClickHouse PostSqlQueryAsync"))
+        using var activity = ActivitySourceHelper.StartActivity("ClickHouse PostSqlQueryAsync");
+        activity.SetConnectionTags(connection.ConnectionString, sqlQuery);
+
+        var uriBuilder = connection.CreateUriBuilder();
+        if (commandParameters != null)
         {
-            var builder = new ClickHouseConnectionStringBuilder() { ConnectionString = this.connection.ConnectionString };
-            executeActivity?.SetTag(ActivitySourceHelper.Tag_DbConnectionString, this.connection.ConnectionString);
-            executeActivity?.SetTag(ActivitySourceHelper.Tag_DbName, builder.Database);
-            executeActivity?.SetTag(ActivitySourceHelper.Tag_DbStatement, sqlQuery);
-            executeActivity?.SetTag(ActivitySourceHelper.Tag_User, builder.Username);
-            executeActivity?.SetTag(ActivitySourceHelper.Tag_Service, new UriBuilder(builder.Protocol, builder.Host, builder.Port).Uri.ToString());
-
-            var uriBuilder = connection.CreateUriBuilder();
-            if (commandParameters != null)
+            await connection.EnsureOpenAsync().ConfigureAwait(false); // Preserve old behavior
+            foreach (ClickHouseDbParameter parameter in commandParameters)
             {
-                await connection.EnsureOpenAsync().ConfigureAwait(false); // Preserve old behavior
-                foreach (ClickHouseDbParameter parameter in commandParameters)
-                {
-                    uriBuilder.AddQueryParameter(parameter.ParameterName, HttpParameterFormatter.Format(parameter, connection.TypeSettings));
-                }
+                uriBuilder.AddQueryParameter(parameter.ParameterName, HttpParameterFormatter.Format(parameter, connection.TypeSettings));
             }
-
-            if (!string.IsNullOrEmpty(QueryId))
-                uriBuilder.CustomParameters.Add("query_id", QueryId);
-
-            string uri = uriBuilder.ToString();
-
-            using var postMessage = new HttpRequestMessage(HttpMethod.Post, uri);
-
-            connection.AddDefaultHttpHeaders(postMessage.Headers);
-            HttpContent content = new StringContent(sqlQuery);
-            content.Headers.ContentType = new MediaTypeHeaderValue("text/sql");
-            if (connection.UseCompression)
-            {
-                content = new CompressedContent(content, DecompressionMethods.GZip);
-            }
-
-            postMessage.Content = content;
-
-            var response = await connection.HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
-            QueryId = ExtractQueryId(response);
-            QueryStats = ExtractQueryStats(response);
-            return await ClickHouseConnection.HandleError(response, sqlQuery).ConfigureAwait(false);
         }
+
+        if (!string.IsNullOrEmpty(QueryId))
+            uriBuilder.CustomParameters.Add("query_id", QueryId);
+
+        string uri = uriBuilder.ToString();
+
+        using var postMessage = new HttpRequestMessage(HttpMethod.Post, uri);
+
+        connection.AddDefaultHttpHeaders(postMessage.Headers);
+        HttpContent content = new StringContent(sqlQuery);
+        content.Headers.ContentType = new MediaTypeHeaderValue("text/sql");
+        if (connection.UseCompression)
+        {
+            content = new CompressedContent(content, DecompressionMethods.GZip);
+        }
+
+        postMessage.Content = content;
+
+        var response = await connection.HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+        QueryId = ExtractQueryId(response);
+        QueryStats = ExtractQueryStats(response);
+        return await ClickHouseConnection.HandleError(response, sqlQuery, activity).ConfigureAwait(false);
     }
 
     private static readonly JsonSerializerOptions SummarySerializerOptions = new JsonSerializerOptions

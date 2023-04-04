@@ -196,16 +196,16 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 
     public override DataTable GetSchema(string collectionName, string[] restrictionValues) => SchemaDescriber.DescribeSchema(this, collectionName, restrictionValues);
 
-    internal static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query)
+    internal static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query, Activity? activity)
     {
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var ex = ClickHouseServerException.FromServerResponse(error, query);
-            Activity.Current?.SetException(ex);
+            activity?.SetException(ex);
             throw ex;
         }
-        Activity.Current?.SetSuccess();
+        activity?.SetSuccess();
         return response;
     }
 
@@ -221,45 +221,39 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     {
         if (State == ConnectionState.Open)
             return;
-        using (var openActivity = ActivitySourceHelper.StartActivity("ClickHouse OpenAsync"))
+        using var activity = ActivitySourceHelper.StartActivity("ClickHouse OpenAsync");
+        const string versionQuery = "SELECT version(), timezone() FORMAT TSV";
+        try
         {
-            const string versionQuery = "SELECT version(), timezone() FORMAT TSV";
-            try
-            {
-                openActivity?.SetTag(ActivitySourceHelper.Tag_DbConnectionString, ConnectionString);
-                openActivity?.SetTag(ActivitySourceHelper.Tag_DbName, database);
-                openActivity?.SetTag(ActivitySourceHelper.Tag_DbStatement, versionQuery);
-                openActivity?.SetTag(ActivitySourceHelper.Tag_User, username);
-                openActivity?.SetTag(ActivitySourceHelper.Tag_Service, serverUri.ToString());
+            activity.SetConnectionTags(ConnectionString, versionQuery);
 
-                var uriBuilder = CreateUriBuilder();
-                uriBuilder.CustomParameters.Add("query", versionQuery);
-                var request = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
-                AddDefaultHttpHeaders(request.Headers);
-                var response = await HandleError(await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false), versionQuery).ConfigureAwait(false);
-                var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            var uriBuilder = CreateUriBuilder();
+            uriBuilder.CustomParameters.Add("query", versionQuery);
+            var request = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
+            AddDefaultHttpHeaders(request.Headers);
+            var response = await HandleError(await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false), versionQuery, activity).ConfigureAwait(false);
+            var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
-                if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check if response starts with GZip marker
-                    throw new InvalidOperationException("ClickHouse server returned compressed result but HttpClient did not decompress it. Check HttpClient settings");
+            if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check if response starts with GZip marker
+                throw new InvalidOperationException("ClickHouse server returned compressed result but HttpClient did not decompress it. Check HttpClient settings");
 
-                if (data.Length == 0)
-                    throw new InvalidOperationException("ClickHouse server did not return version, check if the server is functional");
+            if (data.Length == 0)
+                throw new InvalidOperationException("ClickHouse server did not return version, check if the server is functional");
 
-                var serverVersionAndTimezone = Encoding.UTF8.GetString(data).Trim().Split('\t');
+            var serverVersionAndTimezone = Encoding.UTF8.GetString(data).Trim().Split('\t');
 
-                serverVersion = ParseVersion(serverVersionAndTimezone[0]);
-                serverTimezone = serverVersionAndTimezone[1];
-                SupportedFeatures = GetFeatureFlags(serverVersion);
-                state = ConnectionState.Open;
+            serverVersion = ParseVersion(serverVersionAndTimezone[0]);
+            serverTimezone = serverVersionAndTimezone[1];
+            SupportedFeatures = GetFeatureFlags(serverVersion);
+            state = ConnectionState.Open;
 
-                Activity.Current?.SetSuccess();
-            }
-            catch(Exception ex)
-            {
-                state = ConnectionState.Broken;
-                Activity.Current?.SetException(ex);
-                throw;
-            }
+            activity.SetSuccess();
+        }
+        catch (Exception ex)
+        {
+            state = ConnectionState.Broken;
+            activity.SetException(ex);
+            throw;
         }
     }
 
@@ -274,28 +268,22 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     /// <returns>Task-wrapped HttpResponseMessage object</returns>
     public async Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
     {
-        using (var openActivity = ActivitySourceHelper.StartActivity("ClickHouse PostStreamAsync"))
+        using var activity = ActivitySourceHelper.StartActivity("ClickHouse PostStreamAsync");
+        activity.SetConnectionTags(ConnectionString, sql);
+
+        var builder = CreateUriBuilder(sql);
+        using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());
+        AddDefaultHttpHeaders(postMessage.Headers);
+
+        postMessage.Content = new StreamContent(data);
+        postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        if (isCompressed)
         {
-            openActivity?.SetTag(ActivitySourceHelper.Tag_DbConnectionString, ConnectionString);
-            openActivity?.SetTag(ActivitySourceHelper.Tag_DbName, database);
-            openActivity?.SetTag(ActivitySourceHelper.Tag_DbStatement, sql);
-            openActivity?.SetTag(ActivitySourceHelper.Tag_User, username);
-            openActivity?.SetTag(ActivitySourceHelper.Tag_Service, serverUri.ToString());
-
-            var builder = CreateUriBuilder(sql);
-            using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());
-            AddDefaultHttpHeaders(postMessage.Headers);
-
-            postMessage.Content = new StreamContent(data);
-            postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-            if (isCompressed)
-            {
-                postMessage.Content.Headers.Add("Content-Encoding", "gzip");
-            }
-
-            using var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
-            await HandleError(response, sql).ConfigureAwait(false);
+            postMessage.Content.Headers.Add("Content-Encoding", "gzip");
         }
+
+        using var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
+        await HandleError(response, sql, activity).ConfigureAwait(false);
     }
 
     public new ClickHouseCommand CreateCommand() => new ClickHouseCommand(this);

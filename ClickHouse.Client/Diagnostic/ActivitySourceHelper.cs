@@ -1,3 +1,4 @@
+using ClickHouse.Client.ADO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,6 +21,7 @@ namespace ClickHouse.Client.Diagnostic
         internal const string Tag_ThreadId = "thread.id";
 
         internal const string Value_DbSystem = "clickhouse";
+        internal const int StatementMaxLen = 300;
 
         internal static Activity? StartActivity(string name)
         {
@@ -32,27 +34,37 @@ namespace ClickHouse.Client.Diagnostic
             return activity;
         }
 
-        internal static void SetSuccess(this Activity activity)
+        internal static void SetConnectionTags(this Activity? activity, string connectionString, string sql)
         {
-#if NET6_0_OR_GREATER
-		activity.SetStatus(ActivityStatusCode.Ok);
-#endif
-            activity.SetTag(Tag_StatusCode, "OK");
+            var builder = new ClickHouseConnectionStringBuilder() { ConnectionString = connectionString };
+            activity?.SetTag(Tag_DbConnectionString, connectionString);
+            activity?.SetTag(Tag_DbName, builder.Database);
+            activity?.SetTag(Tag_User, builder.Username);
+            activity?.SetTag(Tag_Service, new UriBuilder(builder.Protocol, builder.Host, builder.Port).Uri.ToString());
+            activity?.SetTag(Tag_DbStatement, sql.Length > StatementMaxLen ? sql.Substring(0, StatementMaxLen) : sql);
         }
 
-        internal static void SetException(this Activity activity, Exception exception)
+        internal static void SetSuccess(this Activity? activity)
+        {
+#if NET6_0_OR_GREATER
+            activity?.SetStatus(ActivityStatusCode.Ok);
+#endif
+            activity?.SetTag(Tag_StatusCode, "OK");
+        }
+
+        internal static void SetException(this Activity? activity, Exception exception)
         {
             var description = exception.Message;
 #if NET6_0_OR_GREATER
-		activity.SetStatus(ActivityStatusCode.Error, description);
+            activity?.SetStatus(ActivityStatusCode.Error, description);
 #endif
-            activity.SetTag(Tag_StatusCode, "ERROR");
-            activity.SetTag("otel.status_description", description);
-            activity.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
-        {
-            { "exception.type", exception.GetType().FullName },
-            { "exception.message", exception.Message },
-        }));
+            activity?.SetTag(Tag_StatusCode, "ERROR");
+            activity?.SetTag("otel.status_description", description);
+            activity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+            {
+                { "exception.type", exception.GetType().FullName },
+                { "exception.message", exception.Message },
+            }));
         }
 
         private static ActivitySource ActivitySource { get; } = CreateActivitySource();
