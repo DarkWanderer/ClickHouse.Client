@@ -48,9 +48,6 @@ jobs:
 
     - name: Install GitHubActionsTestLogger
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
-
-    - name: Check dotnet version
-      run: dotnet --version
       
     - name: Install dependencies
       run: dotnet restore
@@ -112,6 +109,16 @@ jobs:
       with:
         recreate: true
         path: code-coverage-diff.md
+
+  windows:
+    name: Build on Windows
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Build
+      run: dotnet build
 
   regress:
     name: Regression
