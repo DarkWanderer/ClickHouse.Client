@@ -10,7 +10,7 @@ on:
 
 jobs:
   coverage:
-    name: Test with coverage
+    name: Coverage
     runs-on: ubuntu-latest
 
     services:
@@ -119,7 +119,7 @@ jobs:
         path: code-coverage-diff.md
 
   windows:
-    name: Build on Windows
+    name: Windows Build
     runs-on: windows-latest
     steps:
     - name: Checkout
@@ -137,7 +137,7 @@ jobs:
       run: dotnet build
 
   regress:
-    name: Regress
+    name: Regression
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
