@@ -10,7 +10,7 @@ on:
 
 jobs:
   coverage:
-    name: Coverage
+    name: Test with coverage
     runs-on: ubuntu-latest
 
     services:
@@ -121,7 +121,7 @@ jobs:
       run: dotnet build
 
   regress:
-    name: Regression
+    name: Regress
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
