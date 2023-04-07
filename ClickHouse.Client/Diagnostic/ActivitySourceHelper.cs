@@ -34,14 +34,14 @@ namespace ClickHouse.Client.Diagnostic
             return activity;
         }
 
-        internal static void SetConnectionTags(this Activity? activity, string connectionString, string sql)
+        internal static void SetConnectionTags(this Activity? activity, string connectionString, string? sql)
         {
             var builder = new ClickHouseConnectionStringBuilder() { ConnectionString = connectionString };
             activity?.SetTag(Tag_DbConnectionString, connectionString);
             activity?.SetTag(Tag_DbName, builder.Database);
             activity?.SetTag(Tag_User, builder.Username);
             activity?.SetTag(Tag_Service, new UriBuilder(builder.Protocol, builder.Host, builder.Port).Uri.ToString());
-            activity?.SetTag(Tag_DbStatement, sql.Length > StatementMaxLen ? sql.Substring(0, StatementMaxLen) : sql);
+            activity?.SetTag(Tag_DbStatement, sql is not null && sql.Length > StatementMaxLen ? sql.Substring(0, StatementMaxLen) : sql);
         }
 
         internal static void SetSuccess(this Activity? activity)
@@ -53,7 +53,7 @@ namespace ClickHouse.Client.Diagnostic
             activity?.Stop();
         }
 
-        internal static void SetException(this Activity? activity, Exception exception)
+        internal static void SetException(this Activity? activity, Exception? exception)
         {
             var description = exception.Message;
 #if NET6_0_OR_GREATER
@@ -63,8 +63,8 @@ namespace ClickHouse.Client.Diagnostic
             activity?.SetTag("otel.status_description", description);
             activity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
             {
-                { "exception.type", exception.GetType().FullName },
-                { "exception.message", exception.Message },
+                { "exception.type", exception?.GetType().FullName },
+                { "exception.message", exception?.Message },
             }));
             activity?.Stop();
         }
