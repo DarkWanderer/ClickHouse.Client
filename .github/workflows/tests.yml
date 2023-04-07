@@ -22,6 +22,14 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+    
+    - uses: actions/cache@v3
+      name: Cache NuGet
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
 
     - name: Checkout master
       uses: actions/checkout@v3
@@ -48,9 +56,6 @@ jobs:
 
     - name: Install GitHubActionsTestLogger
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
-
-    - name: Check dotnet version
-      run: dotnet --version
       
     - name: Install dependencies
       run: dotnet restore
@@ -113,6 +118,24 @@ jobs:
         recreate: true
         path: code-coverage-diff.md
 
+  windows:
+    name: Windows Build
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - uses: actions/cache@v3
+      name: Cache NuGet
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Build
+      run: dotnet build
+
   regress:
     name: Regression
     runs-on: ubuntu-latest
@@ -139,6 +162,15 @@ jobs:
           - 8123:8123
     steps:
     - uses: actions/checkout@v3
+      name: Checkout
+    
+    - uses: actions/cache@v3
+      name: Cache NuGet
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v3
