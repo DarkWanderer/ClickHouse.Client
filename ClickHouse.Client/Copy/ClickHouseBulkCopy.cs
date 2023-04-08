@@ -18,8 +18,8 @@ namespace ClickHouse.Client.Copy;
 public class ClickHouseBulkCopy : IDisposable
 {
     private readonly ClickHouseConnection connection;
-    private bool ownsConnection = false;
-    private long rowsWritten = 0;
+    private bool ownsConnection;
+    private long rowsWritten;
 
     public ClickHouseBulkCopy(ClickHouseConnection connection)
     {

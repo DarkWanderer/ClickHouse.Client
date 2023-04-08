@@ -1,9 +1,8 @@
-using ClickHouse.Client.ADO;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
+using ClickHouse.Client.ADO;
 
 namespace ClickHouse.Client.Diagnostic
 {
@@ -11,55 +10,67 @@ namespace ClickHouse.Client.Diagnostic
     {
         internal const string ActivitySourceName = "ClickHouse.Client";
 
-        internal const string Tag_DbConnectionString = "db.connection_string";
-        internal const string Tag_DbName = "db.name";
-        internal const string Tag_DbStatement = "db.statement";
-        internal const string Tag_DbSystem = "db.system";
-        internal const string Tag_StatusCode = "otel.status_code";
-        internal const string Tag_User = "db.user";
-        internal const string Tag_Service = "peer.service";
-        internal const string Tag_ThreadId = "thread.id";
+        private const string TagDbConnectionString = "db.connection_string";
+        private const string TagDbName = "db.name";
+        private const string TagDbStatement = "db.statement";
+        private const string TagDbSystem = "db.system";
+        private const string TagStatusCode = "otel.status_code";
+        private const string TagUser = "db.user";
+        private const string TagService = "peer.service";
+        private const string TagThreadId = "thread.id";
 
-        internal const string Value_DbSystem = "clickhouse";
         internal const int StatementMaxLen = 300;
 
-        internal static Activity? StartActivity(string name)
+        internal static ActivitySource ActivitySource { get; } = CreateActivitySource();
+
+        internal static Activity StartActivity(this ClickHouseConnection connection, string name)
         {
+            if (connection is null) throw new ArgumentNullException(nameof(connection));
+            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+
             var activity = ActivitySource.StartActivity(name, ActivityKind.Client, default(ActivityContext));
-            if (activity is { IsAllDataRequested: true })
+
+            if (activity is null)
+                return null;
+
+            if (activity.IsAllDataRequested)
             {
-                activity.SetTag(Tag_ThreadId, Environment.CurrentManagedThreadId.ToString(CultureInfo.InvariantCulture));
-                activity.SetTag(Tag_DbSystem, Value_DbSystem);
+                activity.SetTag(TagThreadId, Environment.CurrentManagedThreadId.ToString(CultureInfo.InvariantCulture));
+                activity.SetTag(TagDbSystem, "clickhouse");
             }
+            activity.SetTag(TagDbConnectionString, connection.ConnectionString);
+            activity.SetTag(TagDbName, connection.Database);
+            activity.SetTag(TagUser, connection.Username);
+            activity.SetTag(TagService, connection.ServerUri);
             return activity;
         }
 
-        internal static void SetConnectionTags(this Activity? activity, string connectionString, string? sql)
+        internal static void SetQuery(this Activity activity, string sql)
         {
-            var builder = new ClickHouseConnectionStringBuilder() { ConnectionString = connectionString };
-            activity?.SetTag(Tag_DbConnectionString, connectionString);
-            activity?.SetTag(Tag_DbName, builder.Database);
-            activity?.SetTag(Tag_User, builder.Username);
-            activity?.SetTag(Tag_Service, new UriBuilder(builder.Protocol, builder.Host, builder.Port).Uri.ToString());
-            activity?.SetTag(Tag_DbStatement, sql is not null && sql.Length > StatementMaxLen ? sql.Substring(0, StatementMaxLen) : sql);
+            if (activity is null || sql is null)
+                return;
+            sql = sql.Substring(0, StatementMaxLen);
+            activity.SetTag(TagDbStatement, sql);
         }
 
-        internal static void SetSuccess(this Activity? activity)
+        internal static void SetSuccess(this Activity activity)
         {
 #if NET6_0_OR_GREATER
             activity?.SetStatus(ActivityStatusCode.Ok);
 #endif
-            activity?.SetTag(Tag_StatusCode, "OK");
+            activity?.SetTag(TagStatusCode, "OK");
             activity?.Stop();
         }
 
-        internal static void SetException(this Activity? activity, Exception? exception)
+        internal static void SetException(this Activity activity, Exception exception)
         {
+            if (exception is null) throw new ArgumentNullException(nameof(exception));
+
             var description = exception.Message;
 #if NET6_0_OR_GREATER
             activity?.SetStatus(ActivityStatusCode.Error, description);
 #endif
-            activity?.SetTag(Tag_StatusCode, "ERROR");
+            activity?.SetTag(TagStatusCode, "ERROR");
             activity?.SetTag("otel.status_description", description);
             activity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
             {
@@ -69,12 +80,10 @@ namespace ClickHouse.Client.Diagnostic
             activity?.Stop();
         }
 
-        private static ActivitySource ActivitySource { get; } = CreateActivitySource();
-
         private static ActivitySource CreateActivitySource()
         {
             var assembly = typeof(ActivitySourceHelper).Assembly;
-            var version = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version;
+            var version = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
             return new ActivitySource(ActivitySourceName, version);
         }
     }

@@ -172,6 +172,10 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 
     public override string Database => database;
 
+    internal string Username => username;
+
+    internal Uri ServerUri => serverUri;
+
     public string ServerTimezone => serverTimezone;
 
     public override string DataSource { get; }
@@ -196,17 +200,17 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 
     public override DataTable GetSchema(string collectionName, string[] restrictionValues) => SchemaDescriber.DescribeSchema(this, collectionName, restrictionValues);
 
-    internal static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query, Activity? activity)
+    internal static async Task<HttpResponseMessage> HandleError(HttpResponseMessage response, string query, Activity activity)
     {
-        if (!response.IsSuccessStatusCode)
+        if (response.IsSuccessStatusCode)
         {
-            var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var ex = ClickHouseServerException.FromServerResponse(error, query);
-            activity.SetException(ex);
-            throw ex;
+            activity.SetSuccess();
+            return response;
         }
-        activity.SetSuccess();
-        return response;
+        var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var ex = ClickHouseServerException.FromServerResponse(error, query);
+        activity.SetException(ex);
+        throw ex;
     }
 
     public override void ChangeDatabase(string databaseName) => database = databaseName;
@@ -219,20 +223,25 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 
     public override async Task OpenAsync(CancellationToken cancellationToken)
     {
+        const string versionQuery = "SELECT version(), timezone() FORMAT TSV";
+
         if (State == ConnectionState.Open)
             return;
-        using var activity = ActivitySourceHelper.StartActivity("ClickHouse OpenAsync");
-        const string versionQuery = "SELECT version(), timezone() FORMAT TSV";
+        using var activity = this.StartActivity("OpenAsync");
+        activity.SetQuery(versionQuery);
+
         try
         {
-            activity.SetConnectionTags(ConnectionString, versionQuery);
-
             var uriBuilder = CreateUriBuilder();
             uriBuilder.CustomParameters.Add("query", versionQuery);
             var request = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
             AddDefaultHttpHeaders(request.Headers);
             var response = await HandleError(await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false), versionQuery, activity).ConfigureAwait(false);
+#if NET5_0_OR_GREATER
+            var data = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+#else
             var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+#endif
 
             if (data.Length > 2 && data[0] == 0x1F && data[1] == 0x8B) // Check if response starts with GZip marker
                 throw new InvalidOperationException("ClickHouse server returned compressed result but HttpClient did not decompress it. Check HttpClient settings");
@@ -250,7 +259,6 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         catch (Exception ex)
         {
             state = ConnectionState.Broken;
-            activity.SetException(ex);
             throw;
         }
     }
@@ -266,8 +274,8 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     /// <returns>Task-wrapped HttpResponseMessage object</returns>
     public async Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
     {
-        using var activity = ActivitySourceHelper.StartActivity("ClickHouse PostStreamAsync");
-        activity.SetConnectionTags(ConnectionString, sql);
+        using var activity = this.StartActivity("PostStreamAsync");
+        activity.SetQuery(sql);
 
         var builder = CreateUriBuilder(sql);
         using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());

@@ -20,7 +20,7 @@ internal class Decimal256Type : DecimalType
         return new Decimal256Type
         {
             Scale = int.Parse(node.SingleChild.Value, CultureInfo.InvariantCulture),
-            UseBigDecimal = settings.useBigDecimal
+            UseBigDecimal = settings.useBigDecimal,
         };
     }
 
