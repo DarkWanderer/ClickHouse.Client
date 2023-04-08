@@ -25,7 +25,7 @@ public class ClickHouseServerException : DbException
     {
     }
 
-    public string Query { get; } = null;
+    public string Query { get; }
 
     public static ClickHouseServerException FromServerResponse(string error, string query)
     {

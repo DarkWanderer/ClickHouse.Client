@@ -73,7 +73,11 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
 
         using var lcts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
         using var response = await PostSqlQueryAsync(CommandText, lcts.Token).ConfigureAwait(false);
+#if NET5_0_OR_GREATER
+        using var reader = new ExtendedBinaryReader(await response.Content.ReadAsStreamAsync(lcts.Token).ConfigureAwait(false));
+#else
         using var reader = new ExtendedBinaryReader(await response.Content.ReadAsStreamAsync().ConfigureAwait(false));
+#endif
 
         return reader.PeekChar() != -1 ? reader.Read7BitEncodedInt() : 0;
     }
@@ -147,8 +151,8 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
     {
         if (connection == null)
             throw new InvalidOperationException("Connection not set");
-        using var activity = ActivitySourceHelper.StartActivity("ClickHouse PostSqlQueryAsync");
-        activity.SetConnectionTags(connection.ConnectionString, sqlQuery);
+        using var activity = connection.StartActivity("PostSqlQueryAsync");
+        activity.SetQuery(sqlQuery);
 
         var uriBuilder = connection.CreateUriBuilder();
         if (commandParameters != null)
