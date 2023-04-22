@@ -18,8 +18,6 @@ internal class ExtendedBinaryReader : BinaryReader
     /// <summary>
     /// Performs guaranteed read of requested number of bytes, or throws an exception
     /// </summary>
-    /// <param name="buffer">buffer array</param>
-    /// <param name="index">index to write to in the buffer</param>
     /// <param name="count">number of bytes to read</param>
     /// <returns>number of bytes read, always equals to count</returns>
     /// <exception cref="EndOfStreamException">thrown if requested number of bytes is not available</exception>

@@ -1,5 +1,7 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Data.Common;
+using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.ADO.Parameters;
 
@@ -26,4 +28,13 @@ public class ClickHouseDbParameter : DbParameter
     public override void ResetDbType() { }
 
     public override string ToString() => $"{ParameterName}:{Value}";
+
+    public string QueryForm
+    {
+        get
+        {
+            var chType = ClickHouseType ?? TypeConverter.ToClickHouseType(Value?.GetType() ?? typeof(DBNull)).ToString();
+            return $"{{{ParameterName}:{chType}}}";
+        }
+    }
 }

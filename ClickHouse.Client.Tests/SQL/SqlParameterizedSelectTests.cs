@@ -7,7 +7,7 @@ using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.SQL;
 
 [Parallelizable]
 [TestFixture(true)]

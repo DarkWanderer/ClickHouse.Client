@@ -152,17 +152,20 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
         if (connection == null)
             throw new InvalidOperationException("Connection not set");
         using var activity = connection.StartActivity("PostSqlQueryAsync");
-        activity.SetQuery(sqlQuery);
 
         var uriBuilder = connection.CreateUriBuilder();
+        await connection.EnsureOpenAsync().ConfigureAwait(false); // Preserve old behavior
+
         if (commandParameters != null)
         {
-            await connection.EnsureOpenAsync().ConfigureAwait(false); // Preserve old behavior
+            sqlQuery = commandParameters.ReplacePlaceholders(sqlQuery);
             foreach (ClickHouseDbParameter parameter in commandParameters)
             {
                 uriBuilder.AddQueryParameter(parameter.ParameterName, HttpParameterFormatter.Format(parameter, connection.TypeSettings));
             }
         }
+
+        activity.SetQuery(sqlQuery);
 
         if (!string.IsNullOrEmpty(QueryId))
             uriBuilder.CustomParameters.Add("query_id", QueryId);

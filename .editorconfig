@@ -9,6 +9,8 @@ indent_size = 4
 insert_final_newline = true
 end_of_line = crlf
 
+csharp_style_namespace_declarations=file_scoped:warning
+
 dotnet_diagnostic.SA1000.severity = none # SA1000: The keyword 'new' should be followed by space
 dotnet_diagnostic.SA1101.severity = none # SA1101: Prefix local calls with this
 dotnet_diagnostic.SA1200.severity = none # SA1200: Using directives should be placed correctly

@@ -58,19 +58,25 @@ public class DapperTests : AbstractConnectionTestFixture
     {
         public override void SetValue(IDbDataParameter parameter, ITuple value) => parameter.Value = value;
 
-        public override ITuple Parse(object value)
-        {
-            if (value is ITuple it)
-                return it;
-            throw new NotSupportedException();
-        }
+        public override ITuple Parse(object value) => value as ITuple ?? throw new NotSupportedException();
     }
 
     private class DateTimeOffsetHandler : SqlMapper.TypeHandler<DateTimeOffset>
     {
         public override void SetValue(IDbDataParameter parameter, DateTimeOffset value) => parameter.Value = value.UtcDateTime;
 
-        public override DateTimeOffset Parse(object value) => DateTimeOffset.Parse((string)value);
+        public override DateTimeOffset Parse(object value)
+        {
+            switch (value)
+            {
+                case DateTimeOffset dt:
+                    return dt;
+                case string s:
+                    return DateTimeOffset.Parse(s);
+                default:
+                    throw new ArgumentException("Cannot convert value to DateTimeOffset", nameof(value));
+            }
+        }
     }
 
     private class ClickHouseDecimalHandler : SqlMapper.TypeHandler<ClickHouseDecimal>

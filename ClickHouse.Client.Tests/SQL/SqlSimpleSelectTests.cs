@@ -10,7 +10,7 @@ using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.SQL;
 
 [Parallelizable]
 [TestFixture(true)]
@@ -78,8 +78,8 @@ public class SqlSimpleSelectTests : IDisposable
     [Test]
     [Combinatorial]
     public async Task DateTimeSelectShouldReturnInOriginalTimeZone(
-        [Values("Asia/Sakhalin", "Etc/UTC", "Etc/GMT", "Etc/Universal")]string timezone,
-        [Values("DateTime","DateTime64")]string type
+        [Values("Asia/Sakhalin", "Etc/UTC", "Etc/GMT", "Etc/Universal")] string timezone,
+        [Values("DateTime", "DateTime64")] string type
         )
     {
         var precision = type.Contains("64") ? "3, " : "";

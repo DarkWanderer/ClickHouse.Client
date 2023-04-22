@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ClickHouse.Client.Utility;
 
@@ -44,5 +46,13 @@ public static class StringExtensions
         }
 
         return result.ToString();
+    }
+
+    public static string ReplaceMultiple(this string input, Dictionary<string, string> replacements)
+    {
+        if (replacements == null || replacements.Count == 0)
+            return input;
+        var regex = "(" + string.Join("|", replacements.Keys) + ")";
+        return Regex.Replace(input, regex, (Match m) => { return replacements[m.Value]; });
     }
 }

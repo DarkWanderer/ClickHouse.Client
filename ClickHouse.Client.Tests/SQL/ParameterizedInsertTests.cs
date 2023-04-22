@@ -5,7 +5,7 @@ using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.SQL;
 
 public class ParameterizedInsertTests : AbstractConnectionTestFixture
 {
