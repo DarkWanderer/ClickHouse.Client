@@ -3,12 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO.Parameters;
 
 internal class ClickHouseParameterCollection : DbParameterCollection
 {
-    private readonly List<ClickHouseDbParameter> parameters = new List<ClickHouseDbParameter>();
+    private readonly List<ClickHouseDbParameter> parameters = new();
 
     public override int Count => parameters.Count;
 
@@ -63,5 +64,20 @@ internal class ClickHouseParameterCollection : DbParameterCollection
             Add(value);
         else
             SetParameter(index, value);
+    }
+
+    public override string ToString() => string.Join(";", parameters);
+
+    internal string ReplacePlaceholders(string sqlQuery)
+    {
+        if (FeatureSwitch.DisableReplacingParameters || parameters.Count == 0)
+            return sqlQuery;
+
+        var replacements = new Dictionary<string, string>();
+        // Using foreach+TryAdd as parameter collection can in theory contain duplicate names
+        foreach (var p in parameters)
+            replacements.TryAdd("@" + p.ParameterName, p.QueryForm);
+
+        return sqlQuery.ReplaceMultiple(replacements);
     }
 }

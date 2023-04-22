@@ -32,6 +32,10 @@ public class ParameterCollectionTests
         collection.Insert(3, param2);
         Assert.AreEqual(param2, collection[3]);
         Assert.AreEqual(param4, collection["param4"]);
+
+        var sql = "SELECT @param1, @param2, @param3, @param4";
+        Assert.AreEqual("SELECT {param1:Int32}, {param2:Int32}, {param3:String}, {param4:Nothing}", collection.ReplacePlaceholders(sql));
+
         collection.RemoveAt("param4");
         collection.RemoveAt(3);
         collection.Remove(param2);
