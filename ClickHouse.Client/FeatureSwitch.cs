@@ -3,14 +3,32 @@ using System.Linq;
 
 namespace ClickHouse.Client;
 
+/// <summary>
+/// Class holding compatibility switches
+/// Switch format is `ClickHouse.Client.[field name]`
+/// </summary>
 internal class FeatureSwitch
 {
-    private const string Prefix = "ClickHouse.Client.";
+    internal const string Prefix = "ClickHouse.Client.";
 
-    // Field names are used as switch
-    public static readonly bool DisableReplacingParameters;
+    /// <summary>
+    /// Disables replacement of @param to {param:DataType}
+    /// ClickHouse.Client.DisableReplacingParameters
+    /// </summary>
+    public static bool DisableReplacingParameters;
+
+    /// <summary>
+    /// Disables usage of ClickHouseDecimal class
+    /// ClickHouse.Client.DisableClickHouseDecimal
+    /// </summary>
+    public static bool DisableClickHouseDecimal;
 
     static FeatureSwitch()
+    {
+        Refresh();
+    }
+
+    public static void Refresh()
     {
         var fields = typeof(FeatureSwitch).GetFields().Where(f => f.FieldType == typeof(bool));
         foreach (var field in fields)
