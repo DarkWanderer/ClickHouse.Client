@@ -43,7 +43,7 @@ public class ClickHouseOldDecimalSqlTests
                    from v in values
                    let type = (DecimalType)TypeConverter.ParseClickHouseType(typeName, TypeSettings.Default)
                    where v < type.MaxValue && v > type.MinValue
-                   select new TestCaseData(v, $"SELECT to{typeName}('{v}', {type.Scale})");
+                   select new TestCaseData(v, $"SELECT CAST('{v}', '{type}')");
         }
     }
 

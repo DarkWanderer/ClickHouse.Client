@@ -43,7 +43,7 @@ public class ClickHouseNewDecimalSqlTests
                    from v in values
                    let type = (DecimalType)TypeConverter.ParseClickHouseType(typeName, TypeSettings.Default)
                    where v < type.MaxValue && v > type.MinValue
-                   select new TestCaseData(v, $"SELECT to{typeName}('{v}', {type.Scale})");
+                   select new TestCaseData(v, $"SELECT CAST('{v}', '{type}')");
         }
     }
 
@@ -53,7 +53,7 @@ public class ClickHouseNewDecimalSqlTests
     public async Task SelectMaxValue(string typeName)
     {
         var type = (DecimalType)TypeConverter.ParseClickHouseType(typeName, TypeSettings.Default);
-        using var reader = await connection.ExecuteReaderAsync($"SELECT to{typeName}('{type.MaxValue}', {type.Scale})");
+        using var reader = await connection.ExecuteReaderAsync($"SELECT CAST('{type.MaxValue}', '{type}')");
         reader.AssertHasFieldCount(1);
         var result = reader.GetEnsureSingleRow().Single();
         Assert.IsInstanceOf<ClickHouseDecimal>(result);
@@ -66,7 +66,7 @@ public class ClickHouseNewDecimalSqlTests
     public async Task SelectMinValue(string typeName)
     {
         var type = (DecimalType)TypeConverter.ParseClickHouseType(typeName, TypeSettings.Default);
-        using var reader = await connection.ExecuteReaderAsync($"SELECT to{typeName}('{type.MinValue}', {type.Scale})");
+        using var reader = await connection.ExecuteReaderAsync($"SELECT CAST('{type.MinValue}', '{type}')");
         reader.AssertHasFieldCount(1);
         var result = reader.GetEnsureSingleRow().Single();
         Assert.IsInstanceOf<ClickHouseDecimal>(result);

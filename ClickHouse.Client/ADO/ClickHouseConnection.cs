@@ -275,7 +275,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
             SupportedFeatures = GetFeatureFlags(serverVersion);
             state = ConnectionState.Open;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             state = ConnectionState.Broken;
             throw;
