@@ -377,6 +377,10 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         {
             flags |= Feature.Json;
         }
+        if (serverVersion >= new Version(22, 8))
+        {
+            flags |= Feature.AsyncInsert;
+        }
 
         return flags;
     }

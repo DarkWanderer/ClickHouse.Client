@@ -19,6 +19,7 @@ public enum Feature
     Geo = 1024,
     Stats = 2048,
     Json = 4096,
+    AsyncInsert = 8192,
 
     All = ~None, // Special value
 }
