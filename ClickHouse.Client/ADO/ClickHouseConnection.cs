@@ -23,11 +23,16 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 {
     private const string CustomSettingPrefix = "set_";
 
-    private IHttpClientFactory httpClientFactory;
     private readonly List<IDisposable> disposables = new();
     private readonly string httpClientName;
     private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
     private volatile ConnectionState state = ConnectionState.Closed; // Not an autoproperty because of interface implementation
+
+    // Values provided by constructor
+    private HttpClient providedHttpClient;
+    private IHttpClientFactory providedHttpClientFactory;
+    // Actually used value
+    private IHttpClientFactory httpClientFactory;
 
     private Version serverVersion;
     private string serverTimezone;
@@ -154,7 +159,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
                 CustomSettings.Set(key.Replace(CustomSettingPrefix, string.Empty), builder[key]);
             }
 
-            SetHttpClientFactory();
+            ResetHttpClientFactory();
         }
     }
 
@@ -186,19 +191,19 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         private set => supportedFeatures = value;
     }
 
-    private HttpClient providedHttpClient;
-    private IHttpClientFactory providedHttpClientFactory;
-    private void SetHttpClientFactory() {
-        var currentClientFactory = httpClientFactory as IDisposable;
-        if(currentClientFactory != null) {
-            currentClientFactory.Dispose();
-            disposables.Remove(currentClientFactory);
+    private void ResetHttpClientFactory()
+    {
+        if (httpClientFactory is IDisposable disposable)
+        {
+            disposable.Dispose();
+            disposables.Remove(disposable);
         }
-
-        if(providedHttpClient != null) {
+        if (providedHttpClient != null)
+        {
             httpClientFactory = new CannedHttpClientFactory(providedHttpClient);
         }
-        else if(providedHttpClientFactory != null) {
+        else if (providedHttpClientFactory != null)
+        {
             httpClientFactory = providedHttpClientFactory;
         }
         else if (!string.IsNullOrEmpty(session))
