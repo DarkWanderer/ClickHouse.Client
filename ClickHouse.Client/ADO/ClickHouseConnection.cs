@@ -275,7 +275,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
             SupportedFeatures = GetFeatureFlags(serverVersion);
             state = ConnectionState.Open;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             state = ConnectionState.Broken;
             throw;
@@ -376,6 +376,10 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         if (serverVersion >= new Version(22, 6))
         {
             flags |= Feature.Json;
+        }
+        if (serverVersion >= new Version(22, 8))
+        {
+            flags |= Feature.AsyncInsert;
         }
 
         return flags;

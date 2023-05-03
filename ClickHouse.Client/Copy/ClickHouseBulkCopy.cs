@@ -119,25 +119,25 @@ public class ClickHouseBulkCopy : IDisposable
         // Variables are outside the loop to capture context in case of exception
         object[] row = null;
         int col = 0;
-        try
+        var enumerator = rows.GetEnumerator();
+        bool hasMore = false;
+        do
         {
-            var enumerator = rows.GetEnumerator();
-            bool hasMore = false;
-            do
+            token.ThrowIfCancellationRequested();
+            var stream = new MemoryStream() { Capacity = 4 * 1024 };
+            int counter = 0;
+            using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))
             {
-                token.ThrowIfCancellationRequested();
-                var stream = new MemoryStream() { Capacity = 4 * 1024 };
-                int counter = 0;
-                using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))
+                if (useInlineQuery)
                 {
-                    if (useInlineQuery)
-                    {
-                        using var textWriter = new StreamWriter(gzipStream, Encoding.UTF8, 4 * 1024, true);
-                        textWriter.WriteLine(query);
-                    }
+                    using var textWriter = new StreamWriter(gzipStream, Encoding.UTF8, 4 * 1024, true);
+                    textWriter.WriteLine(query);
+                }
 
-                    using var writer = new ExtendedBinaryWriter(gzipStream);
+                using var writer = new ExtendedBinaryWriter(gzipStream);
 
+                try
+                {
                     while (hasMore = enumerator.MoveNext())
                     {
                         row = enumerator.Current;
@@ -151,34 +151,34 @@ public class ClickHouseBulkCopy : IDisposable
                             break; // We've reached the batch size
                     }
                 }
-
-                token.ThrowIfCancellationRequested();
-                stream.Seek(0, SeekOrigin.Begin);
-
-                while (true)
+                catch (Exception e)
                 {
-                    var completedTaskIndex = Array.FindIndex(tasks, t => t.IsCompleted);
-                    if (completedTaskIndex >= 0)
-                    {
-                        // propagate exception if one happens
-                        // 'await' instead of 'Wait()' to avoid dealing with AggregateException
-                        await tasks[completedTaskIndex].ConfigureAwait(false);
-                        tasks[completedTaskIndex] = connection.PostStreamAsync(useInlineQuery ? null : query, stream, true, token)
-                            .ContinueWith(t => { stream.Dispose(); Interlocked.Add(ref rowsWritten, counter); }, token);
-                        break; // while (true); go to next batch
-                    }
-                    else
-                    {
-                        await Task.WhenAny(tasks).ConfigureAwait(false);
-                    }
+                    throw new ClickHouseBulkCopySerializationException(row, col, e);
                 }
             }
-            while (hasMore);
+
+            token.ThrowIfCancellationRequested();
+            stream.Seek(0, SeekOrigin.Begin);
+
+            while (true)
+            {
+                var completedTaskIndex = Array.FindIndex(tasks, t => t.IsCompleted);
+                if (completedTaskIndex >= 0)
+                {
+                    // propagate exception if one happens
+                    // 'await' instead of 'Wait()' to avoid dealing with AggregateException
+                    await tasks[completedTaskIndex].ConfigureAwait(false);
+                    tasks[completedTaskIndex] = connection.PostStreamAsync(useInlineQuery ? null : query, stream, true, token)
+                        .ContinueWith(t => { using (stream) Interlocked.Add(ref rowsWritten, counter); }, token);
+                    break; // while (true); go to next batch
+                }
+                else
+                {
+                    await Task.WhenAny(tasks).ConfigureAwait(false);
+                }
+            }
         }
-        catch (Exception e)
-        {
-            throw new ClickHouseBulkCopySerializationException(row, col, e);
-        }
+        while (hasMore);
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
     }
