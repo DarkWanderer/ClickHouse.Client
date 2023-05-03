@@ -193,25 +193,34 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 
     private void ResetHttpClientFactory()
     {
-        if (httpClientFactory is IDisposable disposable)
+        // If current httpClientFactory is owned by this connection, dispose of it
+        if (httpClientFactory is IDisposable d && disposables.Contains(d))
         {
-            disposable.Dispose();
-            disposables.Remove(disposable);
+            d.Dispose();
+            disposables.Remove(d);
         }
+
+        // If we have a HttpClient provided, use it
         if (providedHttpClient != null)
         {
             httpClientFactory = new CannedHttpClientFactory(providedHttpClient);
         }
+
+        // If we have a provided client factory, use that
         else if (providedHttpClientFactory != null)
         {
             httpClientFactory = providedHttpClientFactory;
         }
+
+        // If sessions are enabled, always use single connection
         else if (!string.IsNullOrEmpty(session))
         {
             var factory = new SingleConnectionHttpClientFactory() { Timeout = timeout };
             disposables.Add(factory);
             httpClientFactory = factory;
         }
+
+        // Default case - use default connection pool
         else
         {
             httpClientFactory = new DefaultPoolHttpClientFactory() { Timeout = timeout };
