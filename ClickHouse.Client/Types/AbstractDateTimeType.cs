@@ -9,7 +9,7 @@ internal abstract class AbstractDateTimeType : ParameterizedType
     public static readonly DateTime DateTimeEpochStart = DateTimeOffset.FromUnixTimeSeconds(0).UtcDateTime;
 
 #if NET6_0_OR_GREATER
-    public static readonly DateOnly DateOnlyEpochStart = new DateOnly(1970,1,1);
+    public static readonly DateOnly DateOnlyEpochStart = new DateOnly(1970, 1, 1);
 #endif
 
     public override Type FrameworkType => typeof(DateTime);
