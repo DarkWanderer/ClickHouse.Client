@@ -12,8 +12,8 @@ namespace ClickHouse.Client.Tests;
 
 public static class TestUtilities
 {
-    public static Feature SupportedFeatures;
-    public static Version ServerVersion;
+    public static readonly Feature SupportedFeatures;
+    public static readonly Version ServerVersion;
 
     static TestUtilities()
     {
@@ -41,7 +41,7 @@ public static class TestUtilities
         builder.UseSession = session;
         builder.UseCustomDecimals = customDecimals;
         builder["set_session_timeout"] = 1; // Expire sessions quickly after test
-        
+
         // Version 21.7 requires this flag for Map type
         if (ServerVersion?.Major == 21 && ServerVersion?.Minor == 7)
         {

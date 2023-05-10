@@ -55,49 +55,49 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         Assert.AreEqual(insertedValue, data, "Original and actually inserted values differ");
     }
 
-        [Test]
-        [Explicit("Infinite loop test")]
-        public async Task ShouldExecuteMultipleBulkInsertions()
+    [Test]
+    [Explicit("Infinite loop test")]
+    public async Task ShouldExecuteMultipleBulkInsertions()
+    {
+        var sw = new Stopwatch();
+        var duration = new TimeSpan(0, 5, 0);
+
+        var targetTable = "test." + SanitizeTableName($"bulk_load_test");
+
+        await connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value Int32) ENGINE Null");
+
+        var cb = TestUtilities.GetConnectionStringBuilder();
+        cb.UseSession = true;
+
+        var conn = new ClickHouseConnection(cb.ToString());
+        sw.Start();
+        var i = 0;
+        try
         {
-            var sw = new Stopwatch();
-            var duration = new TimeSpan(0, 5, 0);
-
-            var targetTable = "test." + SanitizeTableName($"bulk_load_test");
-
-            await connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}");
-            await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value Int32) ENGINE Null");
-
-            var cb = TestUtilities.GetConnectionStringBuilder();
-            cb.UseSession = true;
-
-            var conn = new ClickHouseConnection(cb.ToString());
-            sw.Start();
-            var i = 0;
-            try
+            while (sw.Elapsed < duration)
             {
-                while (sw.Elapsed < duration)
+                using var bulkCopy = new ClickHouseBulkCopy(conn)
                 {
-                    using var bulkCopy = new ClickHouseBulkCopy(conn)
-                    {
-                        DestinationTableName = targetTable,
-                        MaxDegreeOfParallelism = 8,
-                        BatchSize = 100
-                    };
+                    DestinationTableName = targetTable,
+                    MaxDegreeOfParallelism = 8,
+                    BatchSize = 100
+                };
 
-                    await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)0 }, 1));
-                    i++;
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Iteration: {i}", e);
+                await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)0 }, 1));
+                i++;
             }
         }
-
-        [Test]
-        public async Task ShouldExecuteInsertWithLessColumns()
+        catch (Exception e)
         {
-            var targetTable = $"test.multiple_columns";
+            throw new Exception($"Iteration: {i}", e);
+        }
+    }
+
+    [Test]
+    public async Task ShouldExecuteInsertWithLessColumns()
+    {
+        var targetTable = $"test.multiple_columns";
 
         await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
         await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE TinyLog");

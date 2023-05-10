@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Numerics;
-using NUnit.Framework;
+using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Numerics;
-using ClickHouse.Client.Utility;
 using ClickHouse.Client.Tests.Attributes;
+using ClickHouse.Client.Utility;
+using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.Numerics;
 
