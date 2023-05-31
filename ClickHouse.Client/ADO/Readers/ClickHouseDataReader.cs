@@ -160,8 +160,10 @@ public class ClickHouseDataReader : DbDataReader, IEnumerator<IDataReader>, IEnu
     // Custom extension
     public IPAddress GetIPAddress(int ordinal) => (IPAddress)GetValue(ordinal);
 
+#if !NET462
     // Custom extension
     public ITuple GetTuple(int ordinal) => (ITuple)GetValue(ordinal);
+#endif
 
     // Custom extension
     public sbyte GetSByte(int ordinal) => (sbyte)GetValue(ordinal);
