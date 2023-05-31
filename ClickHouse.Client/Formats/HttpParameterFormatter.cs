@@ -78,8 +78,13 @@ internal static class HttpParameterFormatter
             case ArrayType arrayType when value is IEnumerable enumerable:
                 return $"[{string.Join(",", enumerable.Cast<object>().Select(obj => Format(arrayType.UnderlyingType, obj, true)))}]";
 
+#if !NET462
             case TupleType tupleType when value is ITuple tuple:
                 return $"({string.Join(",", tupleType.UnderlyingTypes.Select((x, i) => Format(x, tuple[i], true)))})";
+#endif
+
+            case TupleType tupleType when value is IList list:
+                return $"({string.Join(",", tupleType.UnderlyingTypes.Select((x, i) => Format(x, list[i], true)))})";
 
             case MapType mapType when value is IDictionary dict:
                 var strings = string.Join(",", dict.Keys.Cast<object>().Select(k => $"{Format(mapType.KeyType, k, true)} : {Format(mapType.ValueType, dict[k], true)}"));

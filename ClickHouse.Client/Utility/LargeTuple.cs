@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿#if !NET462
+using System.Runtime.CompilerServices;
 
 namespace ClickHouse.Client.Utility;
 
@@ -15,3 +16,4 @@ internal class LargeTuple : ITuple
 
     public int Length => items.Length;
 }
+#endif
