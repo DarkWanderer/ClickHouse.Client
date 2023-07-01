@@ -165,16 +165,21 @@ public class ClickHouseBulkCopy : IDisposable
                 var completedTaskIndex = Array.FindIndex(tasks, t => t.IsCompleted);
                 if (completedTaskIndex >= 0)
                 {
-                    // propagate exception if one happens
-                    // 'await' instead of 'Wait()' to avoid dealing with AggregateException
-                    await tasks[completedTaskIndex].ConfigureAwait(false);
-                    tasks[completedTaskIndex] = connection.PostStreamAsync(useInlineQuery ? null : query, stream, true, token)
-                        .ContinueWith(t => { using (stream) Interlocked.Add(ref rowsWritten, counter); }, token);
+                    async Task SendBatch()
+                    {
+                        using (stream)
+                        {
+                            await connection.PostStreamAsync(useInlineQuery ? null : query, stream, true, token).ConfigureAwait(false);
+                            Interlocked.Add(ref rowsWritten, counter);
+                        }
+                    }
+                    tasks[completedTaskIndex] = SendBatch();
                     break; // while (true); go to next batch
                 }
                 else
                 {
-                    await Task.WhenAny(tasks).ConfigureAwait(false);
+                    var completedTask = await Task.WhenAny(tasks).ConfigureAwait(false);
+                    await completedTask.ConfigureAwait(false);
                 }
             }
         }
@@ -191,6 +196,11 @@ public class ClickHouseBulkCopy : IDisposable
             ownsConnection = false;
         }
         GC.SuppressFinalize(this);
+    }
+
+    // Utility method wrapping sending data to ClickHouse and counter increment as a single task
+    private async Task WriteStreamAndIncrement(Stream stream, string query, bool useInlineQuery, int counter, CancellationToken token)
+    {
     }
 
     private static string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
