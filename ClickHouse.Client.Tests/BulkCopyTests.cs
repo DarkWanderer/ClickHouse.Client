@@ -60,7 +60,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
     public async Task ShouldExecuteMultipleBulkInsertions()
     {
         var sw = new Stopwatch();
-        var duration = new TimeSpan(0, 5, 0);
+        var duration = TimeSpan.FromMinutes(5);
 
         var targetTable = "test." + SanitizeTableName($"bulk_load_test");
 
