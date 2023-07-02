@@ -2,11 +2,11 @@ name: Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
     paths-ignore:
     - '**/*.md'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   coverage:
@@ -31,12 +31,12 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget-
 
-    - name: Checkout master
+    - name: Checkout main
       uses: actions/checkout@v3
       if: ${{ github.event_name == 'pull_request' }}
       with:
-        ref: master
-        path: master
+        ref: main
+        path: main
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v3
@@ -75,7 +75,7 @@ jobs:
         name: coverage
         path: ./ClickHouse.Client.Tests/coverage.cobertura.xml
 
-    - name: Download 'master' coverage
+    - name: Download 'main' coverage
       if: ${{ github.event_name == 'pull_request' }}
       uses: benday-inc/download-latest-artifact@main
       with:
@@ -83,14 +83,14 @@ jobs:
         repository_owner: ${{ github.repository_owner	}}
         repository_name: ClickHouse.Client
         workflow_name: ${{ github.workflow }}
-        branch_name: master
+        branch_name: main
         artifact_name: coverage
-        download_path: ${{ github.workspace }}/master/ClickHouse.Client
+        download_path: ${{ github.workspace }}/main/ClickHouse.Client
         download_filename: coverage.zip
       
-    - name: Unzip 'master' coverage
+    - name: Unzip 'main' coverage
       if: ${{ github.event_name == 'pull_request' }}
-      working-directory: ${{ github.workspace }}/master/ClickHouse.Client
+      working-directory: ${{ github.workspace }}/main/ClickHouse.Client
       run: unzip coverage.zip
 
     - run: mv ./ClickHouse.Client.Tests/coverage.cobertura.xml ./ClickHouse.Client/
@@ -98,7 +98,7 @@ jobs:
     - name: Report diff coverage
       if: ${{ github.event_name == 'pull_request' }}
       continue-on-error: true
-      run: pycobertura diff ./master/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
+      run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
 
     - name: Post diff Summary
       if: ${{ github.event_name == 'pull_request' }}
