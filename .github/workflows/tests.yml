@@ -141,9 +141,10 @@ jobs:
     runs-on: ubuntu-latest
     services:
       clickhouse:
-        image: ${{ matrix.tag }}
+        image: clickhouse/clickhouse-server:latest
         ports:
           - 8123:8123
+
     steps:
     - uses: actions/checkout@v3
       name: Checkout
