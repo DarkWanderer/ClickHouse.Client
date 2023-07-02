@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ClickHouse.Client.Benchmark": {
+      "commandName": "Project",
+      "commandLineArgs": "-f *"
+    }
+  }
+}

@@ -136,6 +136,45 @@ jobs:
     - name: Build
       run: dotnet build
 
+  benchmark:
+    name: Benchmark
+    runs-on: ubuntu-latest
+    services:
+      clickhouse:
+        image: ${{ matrix.tag }}
+        ports:
+          - 8123:8123
+    steps:
+    - uses: actions/checkout@v3
+      name: Checkout
+    
+    - uses: actions/cache@v3
+      name: Cache NuGet
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: |
+          6.x
+          7.x
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --framework net6.0 --configuration Release --no-restore /clp:ErrorsOnly
+
+    - name: Test
+      run: dotnet run --project ClickHouse.Client.Benchmark/ClickHouse.Client.Benchmark.csproj --framework net6.0 --configuration Release --no-restore -- -f *
+      env:
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+        CLICKHOUSE_CONTAINER_VERSION: ${{ matrix.tag }}
+
   regress:
     name: Regression
     runs-on: ubuntu-latest
