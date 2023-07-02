@@ -169,8 +169,8 @@ jobs:
     - name: Build
       run: dotnet build --framework net6.0 --configuration Release --no-restore /clp:ErrorsOnly
 
-    - name: Test
-      run: dotnet run --project ClickHouse.Client.Benchmark/ClickHouse.Client.Benchmark.csproj --framework net6.0 --configuration Release --no-restore -- -f *
+    - name: Run
+      run: dotnet run --project ClickHouse.Client.Benchmark/ClickHouse.Client.Benchmark.csproj --framework net6.0 --configuration Release --no-restore -- -f "*"
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
         CLICKHOUSE_CONTAINER_VERSION: ${{ matrix.tag }}
