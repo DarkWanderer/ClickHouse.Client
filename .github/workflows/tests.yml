@@ -171,9 +171,12 @@ jobs:
       run: dotnet build --framework net6.0 --configuration Release --no-restore /clp:ErrorsOnly
 
     - name: Run
-      run: dotnet run --project ClickHouse.Client.Benchmark/ClickHouse.Client.Benchmark.csproj --framework net6.0 --configuration Release --no-restore -- -f "*"
+      run: dotnet run --project ClickHouse.Client.Benchmark/ClickHouse.Client.Benchmark.csproj --framework net6.0 --configuration Release --no-restore -- --filter "*" --artifacts . --job Short
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+
+    - name: Post results to summary
+      run: cat results/*-report-github.md >> $GITHUB_STEP_SUMMARY
 
   regress:
     name: Regression
