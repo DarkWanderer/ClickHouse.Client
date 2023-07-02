@@ -28,10 +28,10 @@ public class BulkInsertColumnBenchmark
             data.Add(new object[] { random.Next() });
         }
         
-        var targetTable = $"test.bulk_insert_benchmark";
+        var targetTable = $"test.benchmark_bulk_insert_int64";
 
         // Create database and table for benchmark
-        connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}").Wait();
+        connection.ExecuteStatementAsync($"CREATE DATABASE IF NOT EXISTS test").Wait();
         connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (col1 Int64) ENGINE Null").Wait();
 
         bulkCopy = new ClickHouseBulkCopy(connection)
