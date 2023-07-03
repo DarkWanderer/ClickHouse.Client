@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using ClickHouse.Client.ADO;
@@ -11,22 +12,25 @@ namespace ClickHouse.Client.Benchmark.Benchmarks;
 public class BulkInsertColumnBenchmark
 {
     private readonly ClickHouseConnection connection;
-    private readonly List<object[]> data = new();
     private readonly ClickHouseBulkCopy bulkCopy;
-    const int count = 1000000;
+
+    [Params(100000)]
+    public int Count { get; set; }
+
+    private IEnumerable<object[]> Rows
+    {
+        get
+        {
+            int counter = 0;
+            while (counter < int.MaxValue)
+                yield return new object[] { counter++ };
+        }
+    }
 
     public BulkInsertColumnBenchmark()
     {
         var connectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION");
         connection = new ClickHouseConnection(connectionString);
-
-
-        var random = new Random(42);
-        data.EnsureCapacity(count);
-        for (int i = 0; i < data.Capacity; i++)
-        {
-            data.Add(new object[] { random.Next() });
-        }
         
         var targetTable = $"test.benchmark_bulk_insert_int64";
 
@@ -43,5 +47,5 @@ public class BulkInsertColumnBenchmark
     }
 
     [Benchmark]
-    public async Task BulkInsertInt32() => await bulkCopy.WriteToServerAsync(data);
+    public async Task BulkInsertInt32() => await bulkCopy.WriteToServerAsync(Rows.Take(Count));
 }
