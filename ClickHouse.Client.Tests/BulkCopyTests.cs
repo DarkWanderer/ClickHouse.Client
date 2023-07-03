@@ -257,6 +257,28 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         Assert.AreEqual(Count, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
     }
 
+    [Test]
+    public async Task ShouldExecuteWithDBNullArrays()
+    {
+        var targetTable = $"test.dbnull_array";
+
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (stringValue Array(String), intValue Array(Int32)) ENGINE TinyLog");
+
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = targetTable,
+        };
+
+        await bulkCopy.WriteToServerAsync(new List<object[]>
+        {
+            new object[] { DBNull.Value, new[] { 1, 2, 3 } },
+            new object[] { new [] { "sample1", "sample2" }, DBNull.Value },
+        }, CancellationToken.None);
+
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+    }
+
     private static string SanitizeTableName(string input)
     {
         var builder = new StringBuilder();
