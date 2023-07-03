@@ -36,6 +36,12 @@ internal class ArrayType : ParameterizedType
 
     public override void Write(ExtendedBinaryWriter writer, object value)
     {
+        if (value == DBNull.Value || value == null)
+        {
+            writer.Write7BitEncodedInt(0);
+            return;
+        }
+
         var collection = (IList)value;
         writer.Write7BitEncodedInt(collection.Count);
         for (var i = 0; i < collection.Count; i++)
