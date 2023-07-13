@@ -19,73 +19,51 @@ public class SelectColumnBenchmarks
         connection = new ClickHouseConnection(connectionString);
     }
 
+    private async Task RunNumericBenchmark(string expression)
+    {
+        using var reader = await connection.ExecuteReaderAsync($"SELECT {expression} FROM system.numbers LIMIT {Count}");
+        while (reader.Read()) ;
+    }
+
     [Benchmark(Baseline = true)]
-    public async Task SelectInt32()
-    {
-        using var reader = await connection.ExecuteReaderAsync($"SELECT toInt32(number) FROM system.numbers LIMIT {Count}");
-        while (reader.Read()) ;
-    }
+    public async Task SelectInt32() => await RunNumericBenchmark("toInt32(number)");
 
     [Benchmark]
-    public async Task SelectUInt32()
-    {
-        using var reader = await connection.ExecuteReaderAsync($"SELECT toUInt32(number) FROM system.numbers LIMIT {Count}");
-        while (reader.Read()) ;
-    }
+    public async Task SelectUInt32() => await RunNumericBenchmark("toUInt32(number)");
 
     [Benchmark]
-    public async Task SelectDecimal64()
-    {
-        using var reader = await connection.ExecuteReaderAsync($"SELECT toDecimal64(number,5) FROM system.numbers LIMIT {Count}");
-        while (reader.Read()) ;
-    }
+    public async Task SelectFloat32() => await RunNumericBenchmark("toFloat32(number)");
 
     [Benchmark]
-    public async Task SelectDecimal128()
-    {
-        using var reader = await connection.ExecuteReaderAsync($"SELECT toDecimal128(number,5) FROM system.numbers LIMIT {Count}");
-        while (reader.Read()) ;
-    }
+    public async Task SelectFloat64() => await RunNumericBenchmark("toFloat64(number)");
 
     [Benchmark]
-    public async Task SelectDecimal256()
-    {
-        using var reader = await connection.ExecuteReaderAsync($"SELECT toDecimal256(number,5) FROM system.numbers LIMIT {Count}");
-        while (reader.Read()) ;
-    }
+    public async Task SelectDecimal64() => await RunNumericBenchmark("toDecimal64(number,5)");
 
     [Benchmark]
-    public async Task SelectDate()
-    {
-        using var reader = await connection.ExecuteReaderAsync($"SELECT toDate(18942+number) FROM system.numbers LIMIT {Count}");
-        while (reader.Read()) ;
-    }
+    public async Task SelectDecimal128() => await RunNumericBenchmark("toDecimal128(number,5)");
 
     [Benchmark]
-    public async Task SelectDate32()
-    {
-        using var reader = await connection.ExecuteReaderAsync($"SELECT toDate32(18942+number) FROM system.numbers LIMIT {Count}");
-        while (reader.Read()) ;
-    }
+    public async Task SelectDecimal256() => await RunNumericBenchmark("toDecimal256(number,5)");
 
     [Benchmark]
-    public async Task SelectDateTime()
-    {
-        using var reader = await connection.ExecuteReaderAsync($"SELECT toDateTime(18942+number,'UTC') FROM system.numbers LIMIT {Count}");
-        while (reader.Read()) ;
-    }
+    public async Task SelectDate() => await RunNumericBenchmark("toDate(18942+number)");
 
     [Benchmark]
-    public async Task SelectString()
-    {
-        using var reader = await connection.ExecuteReaderAsync($"SELECT concat('test',toString(number)) FROM system.numbers LIMIT {Count}");
-        while (reader.Read()) ;
-    }
+    public async Task SelectDate32() => await RunNumericBenchmark("toDate32(18942+number)");
 
     [Benchmark]
-    public async Task SelectArray()
-    {
-        using var reader = await connection.ExecuteReaderAsync($"SELECT array(1, number, 3) FROM system.numbers LIMIT {Count}");
-        while (reader.Read()) ;
-    }
+    public async Task SelectDateTime() => await RunNumericBenchmark("toDateTime(18942+number,'UTC')");
+
+    [Benchmark]
+    public async Task SelectString() => await RunNumericBenchmark("concat('test',toString(number))");
+
+    [Benchmark]
+    public async Task SelectArray() => await RunNumericBenchmark("array(1, number, 3)");
+
+    [Benchmark]
+    public async Task SelectNullableInt32() => await RunNumericBenchmark("CAST(toInt32(number) AS Nullable(Int32))");
+
+    [Benchmark]
+    public async Task SelectTuple() => await RunNumericBenchmark("tuple(number, toString(number))");
 }
