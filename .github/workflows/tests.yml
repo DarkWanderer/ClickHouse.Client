@@ -108,7 +108,11 @@ jobs:
       run: pycobertura show ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-full.md
 
     - name: Post full summary
-      run: cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
+      run: |
+        echo "<details>" >> $GITHUB_STEP_SUMMARY
+        echo "<summary>Code Coverage</summary>" >> $GITHUB_STEP_SUMMARY
+        cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
+        echo "</details>" >> $GITHUB_STEP_SUMMARY
 
     - name: Stick PR comment
       uses: marocchino/sticky-pull-request-comment@v2
@@ -176,7 +180,11 @@ jobs:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
     - name: Post results to summary
-      run: cat results/*-report-github.md >> $GITHUB_STEP_SUMMARY
+      run: |
+        echo "<details>" >> $GITHUB_STEP_SUMMARY
+        echo "<summary>Code Coverage</summary>" >> $GITHUB_STEP_SUMMARY
+        cat results/*-report-github.md >> $GITHUB_STEP_SUMMARY
+        echo "</details>" >> $GITHUB_STEP_SUMMARY
 
   regress:
     name: Regression
