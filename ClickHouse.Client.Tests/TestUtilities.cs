@@ -174,6 +174,7 @@ public static class TestUtilities
             //yield return new DataTypeSample("Decimal256(0)", typeof(ClickHouseDecimal),
             //
             //"toDecimal256(repeat('1', 50), 0)", ClickHouseDecimal.Parse(new string('1', 50)));
+            yield return new DataTypeSample("DateTime32('UTC')", typeof(DateTime), "toDateTime('1988-08-28 11:22:33', 'UTC')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Unspecified));
         }
 
         if (SupportedFeatures.HasFlag(Feature.IPv6))
