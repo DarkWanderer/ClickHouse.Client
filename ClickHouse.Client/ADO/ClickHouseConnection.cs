@@ -286,7 +286,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 
             serverVersion = ParseVersion(serverVersionAndTimezone[0]);
             serverTimezone = serverVersionAndTimezone[1];
-            SupportedFeatures = GetFeatureFlags(serverVersion);
+            SupportedFeatures = ClickHouseFeatureMap.GetFeatureFlags(serverVersion);
             state = ConnectionState.Open;
         }
         catch (Exception)
@@ -344,59 +344,6 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         if (parts.Length == 0 || parts[0] == 0)
             throw new InvalidOperationException($"Invalid version: {versionString}");
         return new Version(parts.ElementAtOrDefault(0), parts.ElementAtOrDefault(1), parts.ElementAtOrDefault(2), parts.ElementAtOrDefault(3));
-    }
-
-    internal static Feature GetFeatureFlags(Version serverVersion)
-    {
-        Feature flags = 0;
-        if (serverVersion > new Version(20, 1, 2, 4))
-        {
-            flags |= Feature.DateTime64;
-        }
-        if (serverVersion > new Version(20, 5))
-        {
-            flags |= Feature.InlineQuery;
-            flags |= Feature.Geo;
-        }
-        if (serverVersion > new Version(20, 0))
-        {
-            flags |= Feature.Decimals;
-            flags |= Feature.IPv6;
-        }
-        if (serverVersion > new Version(21, 4))
-        {
-            flags |= Feature.UUIDParameters;
-        }
-        if (serverVersion > new Version(21, 4))
-        {
-            flags |= Feature.Map;
-        }
-        if (serverVersion > new Version(21, 12))
-        {
-            flags |= Feature.Bool;
-        }
-        if (serverVersion >= new Version(21, 9))
-        {
-            flags |= Feature.Date32;
-        }
-        if (serverVersion >= new Version(21, 6))
-        {
-            flags |= Feature.WideTypes;
-        }
-        if (serverVersion >= new Version(22, 6))
-        {
-            flags |= Feature.Stats;
-        }
-        if (serverVersion >= new Version(22, 6))
-        {
-            flags |= Feature.Json;
-        }
-        if (serverVersion >= new Version(22, 8))
-        {
-            flags |= Feature.AsyncInsert;
-        }
-
-        return flags;
     }
 
     internal HttpClient HttpClient => httpClientFactory.CreateClient(httpClientName);
