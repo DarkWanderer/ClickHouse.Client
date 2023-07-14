@@ -134,6 +134,7 @@ internal static class TypeConverter
         RegisterPlainType<DateType>();
         RegisterPlainType<Date32Type>();
         RegisterParameterizedType<DateTimeType>();
+        RegisterParameterizedType<DateTime32Type>();
         RegisterParameterizedType<DateTime64Type>();
 
         // Special 'nothing' type
