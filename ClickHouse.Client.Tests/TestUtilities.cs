@@ -6,6 +6,7 @@ using System.Net;
 using System.Numerics;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Numerics;
+using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests;
@@ -21,7 +22,7 @@ public static class TestUtilities
         if (versionString != null)
         {
             ServerVersion = Version.Parse(versionString.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Last());
-            SupportedFeatures = ClickHouseConnection.GetFeatureFlags(ServerVersion);
+            SupportedFeatures = ClickHouseFeatureMap.GetFeatureFlags(ServerVersion);
         }
         else
         {
@@ -43,7 +44,7 @@ public static class TestUtilities
         builder["set_session_timeout"] = 1; // Expire sessions quickly after test
 
         // Version 21.7 requires this flag for Map type
-        if (ServerVersion?.Major == 21 && ServerVersion?.Minor == 7)
+        if (SupportedFeatures.HasFlag(Feature.Map))
         {
             builder["set_allow_experimental_map_type"] = 1;
         }
