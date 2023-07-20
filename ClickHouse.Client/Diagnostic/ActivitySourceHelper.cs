@@ -49,7 +49,10 @@ internal static class ActivitySourceHelper
     {
         if (activity is null || sql is null)
             return;
-        sql = sql.Substring(0, StatementMaxLen);
+        if (sql.Length > StatementMaxLen)
+        {
+            sql = sql.Substring(0, StatementMaxLen);
+        }
         activity.SetTag(TagDbStatement, sql);
     }
 
