@@ -4,7 +4,7 @@ using ClickHouse.Client.Types.Grammar;
 
 namespace ClickHouse.Client.Types;
 
-internal class Date32Type : AbstractDateTimeType
+internal class Date32Type : DateType
 {
     public override string Name { get; }
 

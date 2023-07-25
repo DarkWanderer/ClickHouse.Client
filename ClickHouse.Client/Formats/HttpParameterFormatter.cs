@@ -38,13 +38,13 @@ internal static class HttpParameterFormatter
             case DecimalType dt:
                 return Convert.ToDecimal(value, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
 
-            case DateType dt when value is DateTimeOffset @do:
-                return @do.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            case DateType dt when value is DateTimeOffset @dto:
+                return @dto.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+#if NET6_0_OR_GREATER
+            case DateType dt when value is DateOnly @do:
+                return @do.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+#endif
             case DateType dt:
-                return Convert.ToDateTime(value, CultureInfo.InvariantCulture).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-            case Date32Type dt when value is DateTimeOffset @do:
-                return @do.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-            case Date32Type dt:
                 return Convert.ToDateTime(value, CultureInfo.InvariantCulture).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
             case StringType st:
