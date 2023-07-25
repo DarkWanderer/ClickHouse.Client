@@ -172,9 +172,6 @@ internal static class TypeConverter
         // Mapping fixups
         ReverseMapping.Add(typeof(ClickHouseDecimal), new Decimal128Type());
         ReverseMapping.Add(typeof(decimal), new Decimal128Type());
-#if NET6_0_OR_GREATER
-        ReverseMapping.Add(typeof(DateOnly), new DateType());
-#endif
         ReverseMapping[typeof(DateTime)] = new DateTimeType();
         ReverseMapping[typeof(DateTimeOffset)] = new DateTimeType();
     }

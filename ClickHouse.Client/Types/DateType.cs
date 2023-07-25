@@ -6,11 +6,22 @@ namespace ClickHouse.Client.Types;
 
 internal class DateType : AbstractDateTimeType
 {
+#if NET6_0_OR_GREATER
+    public override Type FrameworkType => typeof(DateOnly);
+#endif
+
     public override string Name { get; }
 
     public override string ToString() => "Date";
 
-    public override object Read(ExtendedBinaryReader reader) => DateTimeEpochStart.AddDays(reader.ReadUInt16());
+    public override object Read(ExtendedBinaryReader reader)
+    {
+#if NET6_0_OR_GREATER
+        return DateOnlyEpochStart.AddDays(reader.ReadUInt16());
+#else
+        return DateTimeEpochStart.AddDays(reader.ReadUInt16());
+#endif
+    }
 
     public override ParameterizedType Parse(SyntaxTreeNode typeName, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings) => throw new NotImplementedException();
 

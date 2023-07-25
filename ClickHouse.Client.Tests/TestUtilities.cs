@@ -138,7 +138,11 @@ public static class TestUtilities
         yield return new DataTypeSample("Tuple(Int32, Tuple(UInt8, String, Nullable(Int32)))", typeof(Tuple<int, Tuple<byte, string, int?>>), "tuple(123, tuple(5, 'a', 7))", Tuple.Create(123, Tuple.Create((byte)5, "a", 7)));
         yield return new DataTypeSample("Tuple(a Int32, b Int32)", typeof(Tuple<int, ushort>), "tuple(123, 456)", Tuple.Create(123, 456));
 
+#if NET6_0_OR_GREATER
+        yield return new DataTypeSample("Date", typeof(DateOnly), "toDateOrNull('1999-11-12')", new DateOnly(1999, 11, 12));
+#else
         yield return new DataTypeSample("Date", typeof(DateTime), "toDateOrNull('1999-11-12')", new DateTime(1999, 11, 12, 0, 0, 0, DateTimeKind.Unspecified));
+#endif
         yield return new DataTypeSample("DateTime('UTC')", typeof(DateTime), "toDateTime('1988-08-28 11:22:33', 'UTC')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Unspecified));
         yield return new DataTypeSample("DateTime('Pacific/Fiji')", typeof(DateTime), "toDateTime('1999-01-01 13:00:00', 'Pacific/Fiji')", new DateTime(1999, 01, 01, 13, 00, 00, DateTimeKind.Unspecified));
 
@@ -201,8 +205,13 @@ public static class TestUtilities
 
         if (SupportedFeatures.HasFlag(Feature.Date32))
         {
+#if NET6_0_OR_GREATER
+            yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('2001-02-03')", new DateOnly(2001, 02, 03));
+            yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('1925-01-02')", new DateOnly(1925, 01, 02));
+#else
             yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('2001-02-03')", new DateTime(2001, 02, 03));
             yield return new DataTypeSample("Date32", typeof(DateTime), "toDate32('1925-01-02')", new DateTime(1925, 01, 02));
+#endif
         }
 
         if (SupportedFeatures.HasFlag(Feature.WideTypes))
