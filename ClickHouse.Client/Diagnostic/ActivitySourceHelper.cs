@@ -18,6 +18,10 @@ internal static class ActivitySourceHelper
     private const string TagUser = "db.user";
     private const string TagService = "peer.service";
     private const string TagThreadId = "thread.id";
+    private const string TagReadRows = "db.clickhouse.read_rows";
+    private const string TagReadBytes = "db.clickhouse.read_bytes";
+    private const string TagWrittenRows = "db.clickhouse.written_rows";
+    private const string TagWrittenBytes = "db.clickhouse.written_bytes";
 
     internal const int StatementMaxLen = 300;
 
@@ -54,6 +58,16 @@ internal static class ActivitySourceHelper
             sql = sql.Substring(0, StatementMaxLen);
         }
         activity.SetTag(TagDbStatement, sql);
+    }
+
+    internal static void SetQueryStats(this Activity activity, QueryStats stats)
+    {
+        if (activity is null || stats is null)
+            return;
+        activity.SetTag(TagReadRows, stats.ReadRows);
+        activity.SetTag(TagReadBytes, stats.ReadBytes);
+        activity.SetTag(TagWrittenRows, stats.WrittenRows);
+        activity.SetTag(TagWrittenBytes, stats.WrittenBytes);
     }
 
     internal static void SetSuccess(this Activity activity)

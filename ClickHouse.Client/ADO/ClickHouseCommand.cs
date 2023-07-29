@@ -187,6 +187,7 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
         var response = await connection.HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
         QueryId = ExtractQueryId(response);
         QueryStats = ExtractQueryStats(response);
+        activity.SetQueryStats(QueryStats);
         return await ClickHouseConnection.HandleError(response, sqlQuery, activity).ConfigureAwait(false);
     }
 
