@@ -198,10 +198,5 @@ public class ClickHouseBulkCopy : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    // Utility method wrapping sending data to ClickHouse and counter increment as a single task
-    private async Task WriteStreamAndIncrement(Stream stream, string query, bool useInlineQuery, int counter, CancellationToken token)
-    {
-    }
-
     private static string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
 }
