@@ -114,6 +114,11 @@ jobs:
         cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
         echo "</details>" >> $GITHUB_STEP_SUMMARY
 
+    - name: Append link to run summary to diff
+      if: ${{ github.event_name == 'pull_request' }}
+      continue-on-error: true
+      run: echo [Summary](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) >> code-coverage-diff.md
+
     - name: Stick PR comment
       uses: marocchino/sticky-pull-request-comment@v2
       continue-on-error: true
