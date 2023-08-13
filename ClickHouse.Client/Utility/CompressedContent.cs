@@ -30,7 +30,7 @@ public class CompressedContent : HttpContent
             Headers.TryAddWithoutValidation(header.Key, header.Value);
         }
 
-        Headers.ContentEncoding.Add(this.compressionMethod.ToString().ToLowerInvariant());
+        Headers.ContentEncoding.Add(EnumToLowercaseStringCached<DecompressionMethods>.ToString(this.compressionMethod));
     }
 
     protected override void Dispose(bool disposing)

@@ -6,14 +6,14 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Benchmark.Benchmarks;
 
-public class SelectColumnBenchmarks
+public class SelectColumn
 {
     private readonly ClickHouseConnection connection;
 
     [Params(100000)]
     public int Count { get; set; }
 
-    public SelectColumnBenchmarks()
+    public SelectColumn()
     {
         var connectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION");
         connection = new ClickHouseConnection(connectionString);
@@ -30,6 +30,12 @@ public class SelectColumnBenchmarks
 
     [Benchmark]
     public async Task SelectUInt32() => await RunNumericBenchmark("toUInt32(number)");
+
+    [Benchmark]
+    public async Task SelectInt64() => await RunNumericBenchmark("toInt64(number)");
+
+    [Benchmark]
+    public async Task SelectUInt64() => await RunNumericBenchmark("toUInt64(number)");
 
     [Benchmark]
     public async Task SelectFloat32() => await RunNumericBenchmark("toFloat32(number)");

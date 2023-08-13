@@ -9,7 +9,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Benchmark.Benchmarks;
 
-public class BulkInsertColumnBenchmark
+public class BulkInsertColumn
 {
     private readonly ClickHouseConnection connection;
     private readonly ClickHouseBulkCopy bulkCopy;
@@ -27,7 +27,7 @@ public class BulkInsertColumnBenchmark
         }
     }
 
-    public BulkInsertColumnBenchmark()
+    public BulkInsertColumn()
     {
         var connectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION");
         connection = new ClickHouseConnection(connectionString);
