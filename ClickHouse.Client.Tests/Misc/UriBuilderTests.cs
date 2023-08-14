@@ -7,6 +7,7 @@ namespace ClickHouse.Client.Tests.Misc;
 
 public class UriBuilderTests
 {
+#if !NET462 && !NET48
     [Test]
     public void ShouldSetUriParametersCorrectly()
     {
@@ -31,4 +32,5 @@ public class UriBuilderTests
         Assert.AreEqual("SESSION", @params.Get("session_id"));
         Assert.AreEqual("false", @params.Get("enable_http_compression"));
     }
+#endif
 }
