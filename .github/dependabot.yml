@@ -4,6 +4,12 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      microsoft:
+        patterns: ['Microsoft*', 'System*']
+        exclude-patterns: ['Microsoft.EntityFrameworkCore']
+      testing:
+        patterns: ['Dapper', 'Microsoft.EntityFrameworkCore', 'Moq', 'BenchmarkDotNet', 'OpenTelemetry', 'NUnit*']
   - package-ecosystem: github-actions
     directory: /
     schedule:
