@@ -200,7 +200,7 @@ jobs:
           6.x
 
     - name: Install GitHubActionsTestLogger
-      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
+      run: dotnet add --no-restore ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
 
     - name: Test
       run: dotnet test --framework ${{ matrix.framework }} --configuration Release --verbosity normal --logger GitHubActions /clp:ErrorsOnly
@@ -251,7 +251,7 @@ jobs:
           6.x
 
     - name: Install GitHubActionsTestLogger
-      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
+      run: dotnet add --no-restore ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
 
     - name: Test
       run: dotnet test --framework net6.0 --configuration Release --verbosity normal --logger GitHubActions
