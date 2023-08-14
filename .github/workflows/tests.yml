@@ -43,7 +43,6 @@ jobs:
       with:
         dotnet-version: |
           6.x
-          7.x
 
     - name: Install pycobertura
       run: pip install pycobertura
@@ -61,10 +60,10 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --framework netstandard2.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
+      run: dotnet build --framework net6.0 --configuration Release --no-restore
 
     - name: Test with coverage
-      run: dotnet test --framework net6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
+      run: dotnet test --framework net6.0 --configuration Release --no-build --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
@@ -171,7 +170,7 @@ jobs:
       run: dotnet build --framework net6.0 --configuration Release --no-restore /clp:ErrorsOnly
 
     - name: Run
-      run: dotnet run --project ClickHouse.Client.Benchmark/ClickHouse.Client.Benchmark.csproj --framework net6.0 --configuration Release --no-restore -- --join --filter "*" --artifacts . --job Short
+      run: dotnet run --project ClickHouse.Client.Benchmark/ClickHouse.Client.Benchmark.csproj --framework net6.0 --configuration Release --no-build -- --join --filter "*" --artifacts . --job Short
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
@@ -217,13 +216,10 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --framework ${{ matrix.framework }} --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj /clp:ErrorsOnly
-
-    - name: Build
-      run: dotnet build --framework net6.0 --configuration Release --no-dependencies --no-restore ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj /clp:ErrorsOnly
+      run: dotnet build --framework ${{ matrix.framework }} --configuration Release --no-restore /clp:ErrorsOnly
 
     - name: Test
-      run: dotnet test --framework net6.0 --configuration Release --no-build --verbosity normal --logger GitHubActions
+      run: dotnet test --framework ${{ matrix.framework }} --configuration Release --no-build --verbosity normal --logger GitHubActions
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
@@ -269,7 +265,6 @@ jobs:
       with:
         dotnet-version: |
           6.x
-          7.x
 
     - name: Install GitHubActionsTestLogger
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
@@ -278,10 +273,10 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --framework netstandard2.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj /clp:ErrorsOnly
+      run: dotnet build --framework net6.0 --configuration Release --no-restore /clp:ErrorsOnly
 
     - name: Test
-      run: dotnet test --framework net6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions
+      run: dotnet test --framework net6.0 --configuration Release --no-build --verbosity normal --logger GitHubActions
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
         CLICKHOUSE_CONTAINER_VERSION: ${{ matrix.tag }}
