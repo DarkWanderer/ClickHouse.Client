@@ -178,6 +178,52 @@ jobs:
     - name: Post results to summary
       run: cat results/*-report-github.md >> $GITHUB_STEP_SUMMARY
 
+  regress-dotnet:
+    name: Regression
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dotnet: ['net6.0', 'net5.0', 'netstandard2.1', 'netcoreapp3.1']
+
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:latest
+        ports:
+          - 8123:8123
+    steps:
+    - uses: actions/checkout@v3
+      name: Checkout
+    
+    - uses: actions/cache@v3
+      name: Cache NuGet
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: |
+          5.x
+          6.x
+
+    - name: Install GitHubActionsTestLogger
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --framework ${{ matrix.framework }} --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj /clp:ErrorsOnly
+
+    - name: Test
+      run: dotnet test --framework ${{ matrix.framework }} --configuration Release --no-restore --verbosity normal --logger GitHubActions
+      env:
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+
   regress:
     name: Regression
     runs-on: ubuntu-latest
