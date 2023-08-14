@@ -48,13 +48,13 @@ jobs:
       run: pip install pycobertura
 
     - name: Install coverlet-collector
-      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector
+      run: dotnet add --no-restore ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector
 
     - name: Install coverlet-msbuild
-      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.msbuild
+      run: dotnet add --no-restore ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.msbuild
 
     - name: Install GitHubActionsTestLogger
-      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
+      run: dotnet add --no-restore ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
 
     - name: Test with coverage
       run: dotnet test --framework net6.0 --configuration Release --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
