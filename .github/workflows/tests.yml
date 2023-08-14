@@ -184,7 +184,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dotnet: ['net6.0', 'net5.0', 'netstandard2.1', 'netcoreapp3.1']
+        framework: ['net6.0', 'net5.0', 'netstandard2.1', 'netcoreapp3.1']
 
     services:
       clickhouse:
