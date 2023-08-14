@@ -219,8 +219,11 @@ jobs:
     - name: Build
       run: dotnet build --framework ${{ matrix.framework }} --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj /clp:ErrorsOnly
 
+    - name: Build
+      run: dotnet build --framework net6.0 --configuration Release --no-dependencies --no-restore ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj /clp:ErrorsOnly
+
     - name: Test
-      run: dotnet test --framework ${{ matrix.framework }} --configuration Release --no-restore --verbosity normal --logger GitHubActions
+      run: dotnet test --framework net6.0 --configuration Release --no-build --verbosity normal --logger GitHubActions
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
