@@ -67,12 +67,14 @@ jobs:
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
+    - run: mv ./ClickHouse.Client.Tests/coverage.net6.0.cobertura.xml ./coverage.cobertura.xml
+
     - name: Upload coverage xml
       if: always()
       uses: actions/upload-artifact@v3
       with:
         name: coverage
-        path: ./ClickHouse.Client.Tests/coverage.cobertura.xml
+        path: ./coverage.cobertura.xml
 
     - name: Download 'main' coverage
       if: ${{ github.event_name == 'pull_request' }}
@@ -92,20 +94,17 @@ jobs:
       working-directory: ${{ github.workspace }}/main/ClickHouse.Client
       run: unzip coverage.zip
 
-    - run: mv ./ClickHouse.Client.Tests/coverage.cobertura.xml ./ClickHouse.Client/
-      continue-on-error: true
-
     - name: Report diff coverage
       if: ${{ github.event_name == 'pull_request' }}
       continue-on-error: true
-      run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
+      run: pycobertura diff ./main/coverage.cobertura.xml ./coverage.cobertura.xml --format markdown -o code-coverage-diff.md
 
     - name: Post diff Summary
       if: ${{ github.event_name == 'pull_request' }}
       run: cat code-coverage-diff.md >> $GITHUB_STEP_SUMMARY
 
     - name: Report full coverage
-      run: pycobertura show ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-full.md
+      run: pycobertura show ./coverage.cobertura.xml --format markdown -o code-coverage-full.md
 
     - name: Post full summary
       run: cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
@@ -178,7 +177,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: ['net6.0', 'net5.0', 'netstandard2.1', 'netcoreapp3.1']
+        framework: ['net6.0', 'net5.0', 'netcoreapp3.1']
 
     services:
       clickhouse:
