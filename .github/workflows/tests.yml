@@ -43,37 +43,32 @@ jobs:
       with:
         dotnet-version: |
           6.x
-          7.x
 
     - name: Install pycobertura
       run: pip install pycobertura
 
     - name: Install coverlet-collector
-      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector --no-restore
 
     - name: Install coverlet-msbuild
-      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.msbuild
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.msbuild --no-restore
 
     - name: Install GitHubActionsTestLogger
-      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
-      
-    - name: Install dependencies
-      run: dotnet restore
-
-    - name: Build
-      run: dotnet build --framework netstandard2.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger --no-restore
 
     - name: Test with coverage
-      run: dotnet test --framework net6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
+      run: dotnet test --framework net6.0 --configuration Release --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+
+    - run: mv ./ClickHouse.Client.Tests/coverage.net6.0.cobertura.xml ./coverage.cobertura.xml
 
     - name: Upload coverage xml
       if: always()
       uses: actions/upload-artifact@v3
       with:
         name: coverage
-        path: ./ClickHouse.Client.Tests/coverage.cobertura.xml
+        path: ./coverage.cobertura.xml
 
     - name: Download 'main' coverage
       if: ${{ github.event_name == 'pull_request' }}
@@ -93,27 +88,26 @@ jobs:
       working-directory: ${{ github.workspace }}/main/ClickHouse.Client
       run: unzip coverage.zip
 
-    - run: mv ./ClickHouse.Client.Tests/coverage.cobertura.xml ./ClickHouse.Client/
-
     - name: Report diff coverage
       if: ${{ github.event_name == 'pull_request' }}
+      run: pycobertura diff ./main/coverage.cobertura.xml ./coverage.cobertura.xml --format markdown -o code-coverage-diff.md
       continue-on-error: true
-      run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
 
     - name: Post diff Summary
       if: ${{ github.event_name == 'pull_request' }}
       run: cat code-coverage-diff.md >> $GITHUB_STEP_SUMMARY
+      continue-on-error: true
 
     - name: Report full coverage
-      run: pycobertura show ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-full.md
+      run: pycobertura show ./coverage.cobertura.xml --format markdown -o code-coverage-full.md
 
     - name: Post full summary
       run: cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
 
     - name: Stick PR comment
+      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
       uses: marocchino/sticky-pull-request-comment@v2
       continue-on-error: true
-      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
       with:
         recreate: true
         path: code-coverage-diff.md
@@ -164,19 +158,54 @@ jobs:
           6.x
           7.x
 
-    - name: Install dependencies
-      run: dotnet restore
-
-    - name: Build
-      run: dotnet build --framework net6.0 --configuration Release --no-restore /clp:ErrorsOnly
-
     - name: Run
-      run: dotnet run --project ClickHouse.Client.Benchmark/ClickHouse.Client.Benchmark.csproj --framework net6.0 --configuration Release --no-restore -- --join --filter "*" --artifacts . --job Short
+      run: dotnet run --project ClickHouse.Client.Benchmark/ClickHouse.Client.Benchmark.csproj --framework net6.0 --configuration Release -- --join --filter "*" --artifacts . --job Short
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
     - name: Post results to summary
       run: cat results/*-report-github.md >> $GITHUB_STEP_SUMMARY
+
+  regress-dotnet:
+    name: Regression
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: ['net6.0', 'net5.0', 'netcoreapp3.1']
+
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:latest
+        ports:
+          - 8123:8123
+    steps:
+    - uses: actions/checkout@v3
+      name: Checkout
+    
+    - uses: actions/cache@v3
+      name: Cache NuGet
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: |
+          3.1.x
+          5.x
+          6.x
+
+    - name: Install GitHubActionsTestLogger
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger --no-restore
+
+    - name: Test
+      run: dotnet test --framework ${{ matrix.framework }} --configuration Release --verbosity normal --logger GitHubActions /clp:ErrorsOnly
+      env:
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
   regress:
     name: Regression
@@ -220,19 +249,12 @@ jobs:
       with:
         dotnet-version: |
           6.x
-          7.x
 
     - name: Install GitHubActionsTestLogger
-      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger
-
-    - name: Install dependencies
-      run: dotnet restore
-
-    - name: Build
-      run: dotnet build --framework netstandard2.1 --configuration Release --no-restore ClickHouse.Client/ClickHouse.Client.csproj /clp:ErrorsOnly
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger --no-restore
 
     - name: Test
-      run: dotnet test --framework net6.0 --configuration Release --no-restore --verbosity normal --logger GitHubActions
+      run: dotnet test --framework net6.0 --configuration Release --verbosity normal --logger GitHubActions
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
         CLICKHOUSE_CONTAINER_VERSION: ${{ matrix.tag }}

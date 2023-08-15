@@ -21,7 +21,7 @@ public static class TestUtilities
         var versionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONTAINER_VERSION");
         if (versionString != null)
         {
-            ServerVersion = Version.Parse(versionString.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Last());
+            ServerVersion = Version.Parse(versionString.Split(':').Last().Trim());
             SupportedFeatures = ClickHouseFeatureMap.GetFeatureFlags(ServerVersion);
         }
         else

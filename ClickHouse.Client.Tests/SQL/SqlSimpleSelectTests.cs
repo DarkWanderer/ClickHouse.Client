@@ -129,7 +129,7 @@ public class SqlSimpleSelectTests : IDisposable
             .Select(dt => $"to{dt}(55)")
             .ToArray();
 
-        var sql = $"select {string.Join(',', types)}";
+        var sql = $"select {string.Join(",", types)}";
 
         using var reader = await connection.ExecuteReaderAsync(sql);
         Assert.AreEqual(types.Length, reader.FieldCount);
