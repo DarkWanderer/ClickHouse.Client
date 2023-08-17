@@ -34,8 +34,6 @@ internal class PeekableStreamWrapper : Stream, IDisposable
 
     public override int Read(byte[] buffer, int offset, int count)
     {
-        if (buffer is null)
-            throw new ArgumentNullException(nameof(buffer));
         if (count == 0)
             return 0;
         var b = ReadByte();
