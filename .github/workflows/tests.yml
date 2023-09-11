@@ -21,7 +21,7 @@ jobs:
           
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - uses: actions/cache@v3
       name: Cache NuGet
@@ -32,7 +32,7 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Checkout main
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       if: ${{ github.event_name == 'pull_request' }}
       with:
         ref: main
@@ -117,7 +117,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - uses: actions/cache@v3
       name: Cache NuGet
@@ -140,7 +140,7 @@ jobs:
           - 8123:8123
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout
     
     - uses: actions/cache@v3
@@ -180,7 +180,7 @@ jobs:
         ports:
           - 8123:8123
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout
     
     - uses: actions/cache@v3
@@ -233,7 +233,7 @@ jobs:
         ports:
           - 8123:8123
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout
     
     - uses: actions/cache@v3
