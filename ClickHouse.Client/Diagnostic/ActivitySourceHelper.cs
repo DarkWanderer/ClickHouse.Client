@@ -45,7 +45,7 @@ internal static class ActivitySourceHelper
         activity.SetTag(TagDbConnectionString, connection.ConnectionString);
         activity.SetTag(TagDbName, connection.Database);
         activity.SetTag(TagUser, connection.Username);
-        activity.SetTag(TagService, connection.ServerUri);
+        activity.SetTag(TagService, $"{connection.ServerUri.Host}:{connection.ServerUri.Port}");
         return activity;
     }
 
