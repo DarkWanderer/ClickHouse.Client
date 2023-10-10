@@ -214,22 +214,20 @@ jobs:
       fail-fast: false
       matrix:
         tag:
-        - 'yandex/clickhouse-server:20.6'
-        - 'yandex/clickhouse-server:20.9'
-        - 'yandex/clickhouse-server:20.12'
-        - 'clickhouse/clickhouse-server:21.3'
-        - 'clickhouse/clickhouse-server:21.7'
-        - 'clickhouse/clickhouse-server:21.9'
-        - 'clickhouse/clickhouse-server:21.12'
-        - 'clickhouse/clickhouse-server:22.3'
-        - 'clickhouse/clickhouse-server:22.6'
-        - 'clickhouse/clickhouse-server:22.9'
-        - 'clickhouse/clickhouse-server:22.12'
-        - 'clickhouse/clickhouse-server:23.3'
-        - 'clickhouse/clickhouse-server:23.6'
+        - '21.3'
+        - '21.8'
+        - '22.3'
+        - '22.8'
+        - '22.9'
+        - '22.12'
+        - '23.3'
+        - '23.6'
+        - '23.8'
+        - '23.9'
+
     services:
       clickhouse:
-        image: ${{ matrix.tag }}
+        image: "clickhouse/clickhouse-server:${{ matrix.tag }}"
         ports:
           - 8123:8123
     steps:
