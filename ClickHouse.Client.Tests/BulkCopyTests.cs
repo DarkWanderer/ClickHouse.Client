@@ -124,9 +124,10 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
             DestinationTableName = targetTable,
+            ColumnNames = new[] { "`field.id`, `@value`" }
         };
 
-        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5, 5 }, 5), new[] { "`field.id`, `@value`" });
+        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5, 5 }, 5));
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM {targetTable}");
     }

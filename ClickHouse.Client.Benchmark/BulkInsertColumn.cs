@@ -42,8 +42,10 @@ public class BulkInsertColumn
         {
             DestinationTableName = targetTable,
             BatchSize = 10000,
-            MaxDegreeOfParallelism = 1
+            MaxDegreeOfParallelism = 1,
+            ColumnNames = new[] { "col1" }
         };
+        bulkCopy.InitAsync().Wait();
     }
 
     [Benchmark]
