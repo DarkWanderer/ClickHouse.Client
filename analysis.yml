@@ -1,0 +1,38 @@
+name: "Analysis"
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      security-events: write
+      
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: |
+          6.x
+          7.x
+
+    - name: Run .NET Code Analysis
+      uses: dotnet/code-analysis@main
+      id: code-analysis
+      with:
+        project: ClickHouse.Client\ClickHouse.Client.csproj
+        build-breaking: false
+        all-categories: all
+
+    - name: Upload analysis results to GitHub
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        path: ${{ steps.code-analysis.outputs.sarifFile }}
+        wait-for-processing: true
