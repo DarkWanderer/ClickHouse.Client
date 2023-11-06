@@ -22,9 +22,11 @@ public class DapperTests : AbstractConnectionTestFixture
 
     static DapperTests()
     {
-        SqlMapper.AddTypeHandler(new DateTimeOffsetHandler());
         SqlMapper.AddTypeHandler(new ClickHouseDecimalHandler());
+        SqlMapper.AddTypeHandler(new DateTimeOffsetHandler());
         SqlMapper.AddTypeHandler(new ITupleHandler());
+        SqlMapper.AddTypeMap(typeof(DateTime), DbType.DateTime2);
+        SqlMapper.AddTypeMap(typeof(DateTimeOffset), DbType.DateTime2);
     }
 
     // "The member value of type <xxxxxxxx> cannot be used as a parameter value"
@@ -104,11 +106,28 @@ public class DapperTests : AbstractConnectionTestFixture
     [Test]
     [Parallelizable]
     [TestCaseSource(typeof(DapperTests), nameof(SimpleSelectQueries))]
-    public async Task ShouldExecuteSelectWithSingleParameterValue(string sql, object value)
+    public async Task ShouldExecuteSelectStringWithSingleParameterValue(string sql, object value)
     {
         var parameters = new Dictionary<string, object> { { "value", value } };
         var results = await connection.QueryAsync<string>(sql, parameters);
         Assert.AreEqual(Convert.ToString(value, CultureInfo.InvariantCulture), results.Single());
+    }
+
+    [Test]
+    [Parallelizable]
+    [TestCaseSource(typeof(DapperTests), nameof(SimpleSelectQueries))]
+    public async Task ShouldExecuteSelectWithSingleParameterValue(string sql, object expected)
+    {
+        var parameters = new Dictionary<string, object> { { "value", expected } };
+        var rows = await connection.QueryAsync(sql, parameters);
+        IDictionary<string, object> row = rows.Single();
+
+        // Workaround: Dapper does not specify type, so
+        // DateTime is always mapped as CH's 32-bit DateTime
+        if (expected is DateTime dt)
+            expected = dt.AddTicks(-dt.Ticks % TimeSpan.TicksPerSecond);
+
+        Assert.AreEqual(expected, row.Single().Value);
     }
 
     [Test]
@@ -120,6 +139,14 @@ public class DapperTests : AbstractConnectionTestFixture
         var functions = (await connection.QueryAsync<string>(sql, parameters)).ToList();
         CollectionAssert.IsNotEmpty(functions);
         CollectionAssert.AllItemsAreNotNull(functions);
+    }
+
+    [Test]
+    public async Task ShouldExecuteSelectReturningNullable()
+    {
+        string sql = "SELECT toNullable(5)";
+        var result = (await connection.QueryAsync<int?>(sql)).Single();
+        Assert.AreEqual(5, result);
     }
 
     [Test]

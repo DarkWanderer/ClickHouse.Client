@@ -31,7 +31,7 @@ public class BulkInsertColumn
     {
         var connectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION");
         connection = new ClickHouseConnection(connectionString);
-        
+
         var targetTable = $"test.benchmark_bulk_insert_int64";
 
         // Create database and table for benchmark
@@ -42,8 +42,10 @@ public class BulkInsertColumn
         {
             DestinationTableName = targetTable,
             BatchSize = 10000,
-            MaxDegreeOfParallelism = 1
+            MaxDegreeOfParallelism = 1,
+            ColumnNames = new[] { "col1" }
         };
+        bulkCopy.InitAsync().Wait();
     }
 
     [Benchmark]
