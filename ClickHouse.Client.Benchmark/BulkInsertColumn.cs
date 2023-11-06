@@ -31,7 +31,7 @@ public class BulkInsertColumn
     {
         var connectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION");
         connection = new ClickHouseConnection(connectionString);
-        
+
         var targetTable = $"test.benchmark_bulk_insert_int64";
 
         // Create database and table for benchmark

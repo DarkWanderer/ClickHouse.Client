@@ -170,7 +170,7 @@ public static class TestUtilities
         {
             // Code: 53. DB::Exception: Type mismatch in IN or VALUES section. Expected: Decimal(76, 25). Got: Decimal256:
             // While processing toDecimal256(1e-24, 25) AS expected, _CAST('0.000000000000000000000001', 'Decimal256(25)') AS actual, expected = actual AS equals. (TYPE_MISMATCH) (version 22.9.3.18 (official build))
-            yield return new DataTypeSample("Decimal256(25)", typeof(ClickHouseDecimal), "toDecimal256(1e-24, 25)", new ClickHouseDecimal(10e-25m));
+            //yield return new DataTypeSample("Decimal256(25)", typeof(ClickHouseDecimal), "toDecimal256(1e-24, 25)", new ClickHouseDecimal(10e-25m));
             //yield return new DataTypeSample("Decimal256(0)", typeof(ClickHouseDecimal),
             //
             //"toDecimal256(repeat('1', 50), 0)", ClickHouseDecimal.Parse(new string('1', 50)));
