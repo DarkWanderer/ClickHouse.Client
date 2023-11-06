@@ -21,7 +21,6 @@ public class ClickHouseBulkCopy : IDisposable
     private bool ownsConnection;
     private long rowsWritten;
     private (string[] names, ClickHouseType[] types) columnNamesAndTypes;
-    private string destinationTableName;
 
     public ClickHouseBulkCopy(ClickHouseConnection connection)
     {
@@ -47,20 +46,14 @@ public class ClickHouseBulkCopy : IDisposable
     public int MaxDegreeOfParallelism { get; set; } = 4;
 
     /// <summary>
-    /// Gets or sets name of destination table to insert to. "SELECT ..columns.. LIMIT 0" query is performed before insertion.
+    /// Gets name of destination table to insert to
     /// </summary>
-    public string DestinationTableName
-    {
-        get
-        {
-            return destinationTableName;
-        }
+    public string DestinationTableName { get; init; }
 
-        set
-        {
-            destinationTableName = value ?? throw new ArgumentNullException(nameof(DestinationTableName));
-        }
-    }
+    /// <summary>
+    /// Gets columns
+    /// </summary>
+    public IReadOnlyCollection<string> ColumnNames { get; init; }
 
     private async Task<(string[] names, ClickHouseType[] types)> LoadNamesAndTypesAsync(string destinationTableName, IReadOnlyCollection<string> columns = null)
     {
@@ -81,13 +74,13 @@ public class ClickHouseBulkCopy : IDisposable
     /// </summary>
     /// <param name="names">Names of columns which will be inserted</param>
     /// <returns>Awaitable task</returns>
-    public async Task InitColumnsAsync(IReadOnlyCollection<string> names)
+    public async Task InitAsync()
     {
-        if (names is null)
-            throw new ArgumentNullException(nameof(names));
-        if (destinationTableName is null)
-            throw new InvalidOperationException($"{nameof(destinationTableName)} == null");
-        columnNamesAndTypes = await LoadNamesAndTypesAsync(destinationTableName, names).ConfigureAwait(false);
+        if (ColumnNames is null)
+            throw new InvalidOperationException($"{nameof(ColumnNames)} is null");
+        if (DestinationTableName is null)
+            throw new InvalidOperationException($"{nameof(DestinationTableName)} is null");
+        columnNamesAndTypes = await LoadNamesAndTypesAsync(DestinationTableName, ColumnNames).ConfigureAwait(false);
     }
 
     public Task WriteToServerAsync(IDataReader reader) => WriteToServerAsync(reader, CancellationToken.None);
@@ -120,10 +113,10 @@ public class ClickHouseBulkCopy : IDisposable
 
     public Task WriteToServerAsync(IEnumerable<object[]> rows) => WriteToServerAsync(rows, null, CancellationToken.None);
 
+    public Task WriteToServerAsync(IEnumerable<object[]> rows, CancellationToken token) => WriteToServerAsync(rows, null, token);
+
     [Obsolete("Use InitColumnsAsync method instead to set columns")]
     public Task WriteToServerAsync(IEnumerable<object[]> rows, IReadOnlyCollection<string> columns) => WriteToServerAsync(rows, columns, CancellationToken.None);
-
-    public Task WriteToServerAsync(IEnumerable<object[]> rows, CancellationToken token) => WriteToServerAsync(rows, null, token);
 
     [Obsolete("Use InitColumnsAsync method instead to set columns")]
     public async Task WriteToServerAsync(IEnumerable<object[]> rows, IReadOnlyCollection<string> columns, CancellationToken token)
