@@ -13,7 +13,7 @@ public class ParameterizedInsertTests : AbstractConnectionTestFixture
     public async Task ShouldInsertParameterizedFloat64Array()
     {
         await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.float_array");
-        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.float_array (arr Array(Float64)) ENGINE TinyLog");
+        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.float_array (arr Array(Float64)) ENGINE Memory");
 
         var command = connection.CreateCommand();
         command.AddParameter("values", new[] { 1.0, 2.0, 3.0 });
@@ -28,7 +28,7 @@ public class ParameterizedInsertTests : AbstractConnectionTestFixture
     public async Task ShouldInsertEnum8()
     {
         await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.insert_enum8");
-        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.insert_enum8 (enum Enum8('a' = -1, 'b' = 127)) ENGINE TinyLog");
+        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.insert_enum8 (enum Enum8('a' = -1, 'b' = 127)) ENGINE Memory");
 
         var command = connection.CreateCommand();
         command.AddParameter("value", "a");
@@ -45,7 +45,7 @@ public class ParameterizedInsertTests : AbstractConnectionTestFixture
     {
         await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.uuid_array");
         await connection.ExecuteStatementAsync(
-            "CREATE TABLE IF NOT EXISTS test.uuid_array (arr Array(UUID)) ENGINE TinyLog");
+            "CREATE TABLE IF NOT EXISTS test.uuid_array (arr Array(UUID)) ENGINE Memory");
 
         var command = connection.CreateCommand();
         command.AddParameter("values", new[] { Guid.NewGuid(), Guid.NewGuid(), });
@@ -61,7 +61,7 @@ public class ParameterizedInsertTests : AbstractConnectionTestFixture
     {
         await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.string_with_newline");
         await connection.ExecuteStatementAsync(
-            "CREATE TABLE IF NOT EXISTS test.string_with_newline (str_value String) ENGINE TinyLog");
+            "CREATE TABLE IF NOT EXISTS test.string_with_newline (str_value String) ENGINE Memory");
 
         var command = connection.CreateCommand();
 

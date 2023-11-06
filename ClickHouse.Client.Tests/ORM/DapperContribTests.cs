@@ -20,7 +20,7 @@ public class DapperContribTests : AbstractConnectionTestFixture
     public async Task SetUp()
     {
         await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.dapper_contrib");
-        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.dapper_contrib (Id Int32, Value String, Timestamp DateTime('UTC')) ENGINE TinyLog");
+        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.dapper_contrib (Id Int32, Value String, Timestamp DateTime('UTC')) ENGINE Memory");
         await connection.ExecuteStatementAsync("INSERT INTO test.dapper_contrib VALUES (1, 'value', toDateTime('2023/04/15 01:02:03', 'UTC'))");
     }
 

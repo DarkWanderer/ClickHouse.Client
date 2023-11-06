@@ -320,7 +320,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         {
             postMessage.Content.Headers.Add("Content-Encoding", "gzip");
         }
-
+        
         using var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
         await HandleError(response, sql, activity).ConfigureAwait(false);
     }

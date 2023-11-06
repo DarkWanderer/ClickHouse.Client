@@ -100,14 +100,14 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         var targetTable = $"test.multiple_columns";
 
         await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE TinyLog");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value1 Nullable(UInt8), value2 Nullable(Float32), value3 Nullable(Int8)) ENGINE Memory");
 
         using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
             DestinationTableName = targetTable,
         };
-
-        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5 }, 5), new[] { "value2" }, CancellationToken.None);
+        await bulkCopy.InitColumnsAsync(new[] { "value2" });
+        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5 }, 5), CancellationToken.None);
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
     }
@@ -118,7 +118,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         var targetTable = $"test.backticked_columns";
 
         await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`field.id` Nullable(UInt8), `@value` Nullable(UInt8)) ENGINE TinyLog");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`field.id` Nullable(UInt8), `@value` Nullable(UInt8)) ENGINE Memory");
 
         using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
@@ -149,7 +149,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         var targetTable = "test." + SanitizeTableName($"bulk_complex_{columnName}");
 
         await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`{columnName.Replace("`", "\\`")}` Int32) ENGINE TinyLog");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`{columnName.Replace("`", "\\`")}` Int32) ENGINE Memory");
 
         using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
@@ -216,7 +216,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         var targetTable = "test." + SanitizeTableName($"bulk_simple_aggregated_function");
 
         await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value SimpleAggregateFunction(anyLast,Nullable(Float64))) ENGINE TinyLog");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value SimpleAggregateFunction(anyLast,Nullable(Float64))) ENGINE Memory");
 
         using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
@@ -234,12 +234,12 @@ public class BulkCopyTests : AbstractConnectionTestFixture
 
 
     [Test]
-    public async Task ShouldNotLoseRowsOnMuptipleBatches()
+    public async Task ShouldNotLoseRowsOnMultipleBatches()
     {
         var targetTable = "test.bulk_multiple_batches"; ;
 
         await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value Int32) ENGINE TinyLog");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value Int32) ENGINE Memory");
 
         using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
