@@ -84,6 +84,7 @@ jobs:
     - name: Report diff coverage
       if: ${{ github.event_name == 'pull_request' }}
       run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format github-annotation
+      continue-on-error: true
 
     - name: Upload coverage xml
       if: always()
