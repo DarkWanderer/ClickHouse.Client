@@ -63,15 +63,6 @@ jobs:
 
     - run: mv ./ClickHouse.Client.Tests/coverage.net6.0.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
 
-    - run: pycobertura show --format github-annotation ./ClickHouse.Client/coverage.cobertura.xml
-
-    - name: Upload coverage xml
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage
-        path: ./ClickHouse.Client/coverage.cobertura.xml
-
     - name: Download 'main' coverage
       if: ${{ github.event_name == 'pull_request' }}
       uses: benday-inc/download-latest-artifact@main
@@ -90,29 +81,16 @@ jobs:
       working-directory: ${{ github.workspace }}/main/ClickHouse.Client
       run: unzip coverage.zip
 
-    - run: find .
-
     - name: Report diff coverage
       if: ${{ github.event_name == 'pull_request' }}
-      run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
+      run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format github-annotation
 
-    - name: Post diff Summary
-      if: ${{ github.event_name == 'pull_request' }}
-      run: cat code-coverage-diff.md >> $GITHUB_STEP_SUMMARY
-      
-    - name: Report full coverage
-      run: pycobertura show ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-full.md
-
-    - name: Post full summary
-      run: cat code-coverage-full.md >> $GITHUB_STEP_SUMMARY
-
-    - name: Stick PR comment
-      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
-      uses: marocchino/sticky-pull-request-comment@v2
-      continue-on-error: true
+    - name: Upload coverage xml
+      if: always()
+      uses: actions/upload-artifact@v3
       with:
-        recreate: true
-        path: code-coverage-diff.md
+        name: coverage
+        path: ./ClickHouse.Client/coverage.cobertura.xml
 
   windows:
     name: Windows Build
