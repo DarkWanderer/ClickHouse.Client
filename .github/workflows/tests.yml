@@ -80,12 +80,12 @@ jobs:
         workflow_name: ${{ github.workflow }}
         branch_name: main
         artifact_name: coverage
-        download_path: ${{ github.workspace }}/main/ClickHouse.Client
+        download_path: ${{ github.workspace }}/main
         download_filename: coverage.zip
       
     - name: Unzip 'main' coverage
       if: ${{ github.event_name == 'pull_request' }}
-      working-directory: ${{ github.workspace }}/main/ClickHouse.Client
+      working-directory: ${{ github.workspace }}/main
       run: unzip coverage.zip
 
     - run: find .
