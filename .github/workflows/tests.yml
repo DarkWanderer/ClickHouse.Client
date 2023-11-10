@@ -87,7 +87,7 @@ jobs:
       
     - name: Unzip 'main' coverage
       if: ${{ github.event_name == 'pull_request' }}
-      working-directory: ${{ github.workspace }}/main
+      working-directory: ${{ github.workspace }}/main/ClickHouse.Client
       run: unzip coverage.zip
 
     - run: find .
