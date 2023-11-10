@@ -61,14 +61,16 @@ jobs:
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
-    - run: mv ./ClickHouse.Client.Tests/coverage.net6.0.cobertura.xml ./coverage.cobertura.xml
+    - run: mv ./ClickHouse.Client.Tests/coverage.net6.0.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
+
+    - run: pycobertura show --format github-annotation ./ClickHouse.Client/coverage.cobertura.xml
 
     - name: Upload coverage xml
       if: always()
       uses: actions/upload-artifact@v3
       with:
         name: coverage
-        path: ./coverage.cobertura.xml
+        path: ./ClickHouse.Client/coverage.cobertura.xml
 
     - name: Download 'main' coverage
       if: ${{ github.event_name == 'pull_request' }}
