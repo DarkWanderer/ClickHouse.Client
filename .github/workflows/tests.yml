@@ -88,6 +88,8 @@ jobs:
       working-directory: ${{ github.workspace }}/main/ClickHouse.Client
       run: unzip coverage.zip
 
+    - run: find .
+
     - name: Report diff coverage
       if: ${{ github.event_name == 'pull_request' }}
       run: pycobertura diff ./main/coverage.cobertura.xml ./coverage.cobertura.xml --format markdown -o code-coverage-diff.md
