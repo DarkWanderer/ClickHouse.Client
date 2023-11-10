@@ -63,6 +63,8 @@ jobs:
 
     - run: mv ./ClickHouse.Client.Tests/coverage.net6.0.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
 
+    - run: pycobertura show --format github-annotation ./ClickHouse.Client/coverage.cobertura.xml
+
     - name: Upload coverage xml
       if: always()
       uses: actions/upload-artifact@v3
@@ -88,16 +90,16 @@ jobs:
       working-directory: ${{ github.workspace }}/main/ClickHouse.Client
       run: unzip coverage.zip
 
+    - run: find .
+
     - name: Report diff coverage
       if: ${{ github.event_name == 'pull_request' }}
-      run: pycobertura diff ./main/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
-      continue-on-error: true
+      run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-diff.md
 
     - name: Post diff Summary
       if: ${{ github.event_name == 'pull_request' }}
       run: cat code-coverage-diff.md >> $GITHUB_STEP_SUMMARY
-      continue-on-error: true
-
+      
     - name: Report full coverage
       run: pycobertura show ./ClickHouse.Client/coverage.cobertura.xml --format markdown -o code-coverage-full.md
 
