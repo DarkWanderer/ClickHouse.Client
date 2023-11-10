@@ -82,7 +82,7 @@ jobs:
         workflow_name: ${{ github.workflow }}
         branch_name: main
         artifact_name: coverage
-        download_path: ${{ github.workspace }}/main
+        download_path: ${{ github.workspace }}/main/ClickHouse.Client
         download_filename: coverage.zip
       
     - name: Unzip 'main' coverage
