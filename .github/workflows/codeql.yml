@@ -9,9 +9,7 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       security-events: write
-      pull-requests: read
 
     strategy:
       fail-fast: false
