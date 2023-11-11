@@ -87,7 +87,7 @@ jobs:
       continue-on-error: true
 
     - name: Set status checks
-      working-directory: ${{ github.workspace }}/main/ClickHouse.Client
+      working-directory: ${{ github.workspace }}/ClickHouse.Client
       run: python python ${{ github.workspace }}/.github/coverage-status.py 
               --coverage-file coverage.cobertura.xml 
               --repository ${{ github.repo }}
