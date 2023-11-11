@@ -99,7 +99,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: coverage
-        path: ./
+        path: ${{ github.workspace }}/ClickHouse.Client
 
     - name: Download 'main' coverage
       uses: benday-inc/download-latest-artifact@main
