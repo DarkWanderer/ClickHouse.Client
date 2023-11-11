@@ -60,6 +60,9 @@ jobs:
         name: coverage
         path: ./ClickHouse.Client/coverage.cobertura.xml
 
+    - name: Install pycobertura
+      run: pip install pycobertura
+
     - name: Set status checks
       working-directory: ${{ github.workspace }}/ClickHouse.Client
       run: python ${{ github.workspace }}/.github/coverage-status.py
