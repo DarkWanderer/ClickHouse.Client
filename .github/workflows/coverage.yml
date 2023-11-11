@@ -71,7 +71,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       run: python ${{ github.workspace }}/.github/coverage-status.py
                   --coverage-file coverage.cobertura.xml 
-                  --repository ${{ github.repository }} --sha ${{ github.sha }}
+                  --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
 
   compare:
     name: Compare
@@ -99,7 +99,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: coverage
-        path: ./
+        path: ${{ github.workspace }}/ClickHouse.Client
 
     - name: Download 'main' coverage
       uses: benday-inc/download-latest-artifact@main
@@ -123,5 +123,12 @@ jobs:
 
     - name: Generate diff json
       if: ${{ github.event_name == 'pull_request' }}
-      run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format json
+      run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format json --output coverage.diff.json
       continue-on-error: true
+
+    - name: Set status checks
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: python ${{ github.workspace }}/.github/coverage-status.py
+                  --coverage-file coverage.diff.json
+                  --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
