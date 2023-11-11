@@ -126,8 +126,27 @@ public class BulkCopyTests : AbstractConnectionTestFixture
             DestinationTableName = targetTable,
             ColumnNames = new[] { "`field.id`, `@value`" }
         };
-
+        await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 5, 5 }, 5));
+
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM {targetTable}");
+    }
+
+    [Test]
+    public async Task ShouldDetectColumnsAutomaticallyOnInit()
+    {
+        var targetTable = $"test.auto_detect_columns";
+
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (field1 UInt8, field2 Int8, field3 String) ENGINE Memory");
+
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = targetTable
+        };
+
+        await bulkCopy.InitAsync();
+        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 1, 2, "3" }, 5));
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM {targetTable}");
     }

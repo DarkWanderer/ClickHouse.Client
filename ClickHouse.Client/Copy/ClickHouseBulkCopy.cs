@@ -76,8 +76,6 @@ public class ClickHouseBulkCopy : IDisposable
     /// <returns>Awaitable task</returns>
     public async Task InitAsync()
     {
-        if (ColumnNames is null)
-            throw new InvalidOperationException($"{nameof(ColumnNames)} is null");
         if (DestinationTableName is null)
             throw new InvalidOperationException($"{nameof(DestinationTableName)} is null");
         columnNamesAndTypes = await LoadNamesAndTypesAsync(DestinationTableName, ColumnNames).ConfigureAwait(false);
