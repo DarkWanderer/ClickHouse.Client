@@ -13,7 +13,7 @@ jobs:
     name: Run
     runs-on: ubuntu-latest
     permissions:
-      checks: write
+      statuses: write
 
     services:
       clickhouse:
@@ -78,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' }}
     permissions:
-      checks: write
+      statuses: write
     needs:
       - coverage
 
