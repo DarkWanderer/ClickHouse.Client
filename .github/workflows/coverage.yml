@@ -71,7 +71,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       run: python ${{ github.workspace }}/.github/coverage-status.py
                   --coverage-file coverage.cobertura.xml 
-                  --repository ${{ github.repository }} --sha ${{ github.sha }}
+                  --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
 
   compare:
     name: Compare
