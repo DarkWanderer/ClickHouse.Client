@@ -21,8 +21,8 @@ jobs:
           
     steps:
     - name: Create check run
-      run: curl -L -X POST -H "Authorization: Bearer ${{ github.token }}" \
-                https://api.github.com/repos/${{ github.repository }}/check-runs \
+      run: curl -L -X POST -H "Authorization: Bearer ${{ github.token }}"
+                https://api.github.com/repos/${{ github.repository }}/check-runs
                 -d '{"name":"coverage-total", "head_sha":"${{ github.sha }}", "status":"in_progress"}'
 
     - name: Checkout
