@@ -10,7 +10,7 @@ github_token = os.getenv("GITHUB_TOKEN")
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--coverage-file", required=True
+    parser.add_argument("--coverage-file", required=True,
                         help="Path of pycobertura coverage XML file")
     parser.add_argument("--coverage-diff-file",
                         help="Path of pycobertura diff .json file")
