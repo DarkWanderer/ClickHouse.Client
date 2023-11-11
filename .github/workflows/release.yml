@@ -1,14 +1,16 @@
-# Release build
-# Needs to be clean
-# Should never install additional packages
-name: Release from tag
+name: Release
 
 on:
-  push:
-    tags:
-      - '*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  workflow_dispatch:
+    inputs:
+      version:
+        description: New release/tag name
+        required: true
+        type: string
 
 jobs:
+  # Build job
+  # Should only use official actions and tools
   build:
     name: Build
     runs-on: windows-latest
@@ -18,7 +20,7 @@ jobs:
 
     - name: Build & pack
       id: build_pack
-      run: dotnet build --configuration Release /p:Version=${{ github.ref_name }}
+      run: dotnet build --configuration Release /p:Version=${{ inputs.version }}
 
     - name: Upload package
       uses: actions/upload-artifact@v3
@@ -72,6 +74,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         artifacts: "*.nupkg,*.snupkg"
+        tag: ${{ inputs.version }}
         generateReleaseNotes: true
         draft: true
         prerelease: false
