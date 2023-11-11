@@ -67,7 +67,7 @@ jobs:
       working-directory: ${{ github.workspace }}/ClickHouse.Client
       run: python ${{ github.workspace }}/.github/coverage-status.py
                   --coverage-file coverage.cobertura.xml 
-                  --repository ${{ github.repo }} --sha ${{ github.sha }}
+                  --repository ${{ github.repository }} --sha ${{ github.sha }}
 
   compare:
     name: Compare
