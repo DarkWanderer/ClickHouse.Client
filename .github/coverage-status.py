@@ -3,29 +3,28 @@ import argparse
 import os
 import requests
 
+
+github_token = os.getenv("GITHUB_TOKEN")
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--coverage-file", required=True, help="Name of pycobertura XML file for coverage")
-    parser.add_argument("--repository", required=True, help="owner/name of repository")
+    parser.add_argument("--coverage-file", required=True,
+                        help="Path of pycobertura coverage XML file")
+    parser.add_argument("--repository", required=True,
+                        help="owner/name of repository")
     parser.add_argument("--sha", required=True, help="SHA hash of commit")
 
     return parser.parse_args()
 
-if __name__ == "__main__":
-    github_token = os.getenv("GITHUB_TOKEN")
-    args = parse_args()
-    
-    cobertura = Cobertura(args.coverage_file)
 
-    url = f"https://api.github.com/repos/{args.repository}/check-runs"
+def post_status(repository: str, sha: str, state: str, context: str, description: str):
+    url = f"https://api.github.com/repos/{repository}/statuses/{sha}"
     data = {
-        'name': 'coverage',
-        'conclusion': 'success',
-        'output': {
-            'title': 'Total code coverage',
-            'summary': f'Coverage: {cobertura.line_rate() * 100:.2f}%'
-        }
+        "context": context,
+        "description": description,
+        "state": state,
     }
     headers = {
         "Accept": "application/vnd.github+json",
@@ -33,3 +32,17 @@ if __name__ == "__main__":
     }
 
     requests.post(url, json=data, headers=headers).raise_for_status()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+
+    cobertura = Cobertura(args.coverage_file)
+
+    post_status(
+        repository=args.repository,
+        sha=args.sha,
+        state="success",
+        context="Total Coverage",
+        description=f"line: {cobertura.line_rate() * 100:.2f}% branch: {cobertura.branch_rate() * 100:.2f}%"
+    )
