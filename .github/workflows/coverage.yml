@@ -10,8 +10,10 @@ on:
 
 jobs:
   coverage:
-    name: Test
+    name: Run
     runs-on: ubuntu-latest
+    permissions:
+      statuses: write
 
     services:
       clickhouse:
@@ -30,22 +32,12 @@ jobs:
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
         restore-keys: |
           ${{ runner.os }}-nuget-
-
-    - name: Checkout main
-      uses: actions/checkout@v4
-      if: ${{ github.event_name == 'pull_request' }}
-      with:
-        ref: main
-        path: main
-
+      
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: |
           6.x
-
-    - name: Install pycobertura
-      run: pip install pycobertura
 
     - name: Install coverlet-collector
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector --no-restore
@@ -63,12 +55,57 @@ jobs:
 
     - run: mv ./ClickHouse.Client.Tests/coverage.net6.0.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
 
+    - name: Upload coverage xml
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage
+        path: ./ClickHouse.Client/coverage.cobertura.xml
+
+    - name: Install pycobertura
+      run: pip install pycobertura
+
+    - name: Set status checks
+      working-directory: ${{ github.workspace }}/ClickHouse.Client
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: python ${{ github.workspace }}/.github/coverage-status.py
+                  --coverage-file coverage.cobertura.xml 
+                  --repository ${{ github.repository }} --sha ${{ github.sha }}
+
+  compare:
+    name: Compare
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' }}
+    permissions:
+      statuses: write
+    needs:
+      - coverage
+
+    steps:
+    - name: Install pycobertura
+      run: pip install pycobertura
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Checkout main
+      uses: actions/checkout@v4
+      with:
+        ref: main
+        path: main
+
+    - name: Download coverage
+      uses: actions/download-artifact@v3
+      with:
+        name: coverage
+        path: ./
+
     - name: Download 'main' coverage
-      if: ${{ github.event_name == 'pull_request' }}
       uses: benday-inc/download-latest-artifact@main
       with:
         token: ${{ github.token }}
-        repository_owner: ${{ github.repository_owner	}}
+        repository_owner: ${{ github.repository_owner }}
         repository_name: ClickHouse.Client
         workflow_name: ${{ github.workflow }}
         branch_name: main
@@ -77,25 +114,14 @@ jobs:
         download_filename: coverage.zip
       
     - name: Unzip 'main' coverage
-      if: ${{ github.event_name == 'pull_request' }}
       working-directory: ${{ github.workspace }}/main/ClickHouse.Client
       run: unzip coverage.zip
 
-    - name: Report diff coverage
-      if: ${{ github.event_name == 'pull_request' }}
+    - name: Report diff annotations
       run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format github-annotation
       continue-on-error: true
 
-    - name: Set status checks
-      working-directory: ${{ github.workspace }}/ClickHouse.Client
-      run: python python ${{ github.workspace }}/.github/coverage-status.py 
-              --coverage-file coverage.cobertura.xml 
-              --repository ${{ github.repo }}
-              --sha ${{ github.sha }}
-
-    - name: Upload coverage xml
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage
-        path: ./ClickHouse.Client/coverage.cobertura.xml
+    - name: Generate diff json
+      if: ${{ github.event_name == 'pull_request' }}
+      run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format json
+      continue-on-error: true

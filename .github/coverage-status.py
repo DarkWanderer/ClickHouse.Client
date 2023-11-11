@@ -12,6 +12,8 @@ def parse_args():
 
     parser.add_argument("--coverage-file", required=True,
                         help="Path of pycobertura coverage XML file")
+    parser.add_argument("--coverage-diff-file",
+                        help="Path of pycobertura diff .json file")
     parser.add_argument("--repository", required=True,
                         help="owner/name of repository")
     parser.add_argument("--sha", required=True, help="SHA hash of commit")
@@ -39,10 +41,5 @@ if __name__ == "__main__":
 
     cobertura = Cobertura(args.coverage_file)
 
-    post_status(
-        repository=args.repository,
-        sha=args.sha,
-        state="success",
-        context="Total Coverage",
-        description=f"line: {cobertura.line_rate() * 100:.2f}% branch: {cobertura.branch_rate() * 100:.2f}%"
-    )
+    post_status(args.repository, args.sha, "success", "Coverage / Total",
+                f"line: {cobertura.line_rate() * 100:.2f}% branch: {cobertura.branch_rate() * 100:.2f}%")
