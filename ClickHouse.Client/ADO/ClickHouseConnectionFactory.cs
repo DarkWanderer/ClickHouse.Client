@@ -6,6 +6,8 @@ namespace ClickHouse.Client.ADO;
 
 public class ClickHouseConnectionFactory : DbProviderFactory
 {
+    public static ClickHouseConnectionFactory Instance => new();
+
     public override DbConnection CreateConnection() => new ClickHouseConnection();
 
     public override DbDataAdapter CreateDataAdapter() => new ClickHouseDataAdapter();
