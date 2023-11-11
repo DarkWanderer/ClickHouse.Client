@@ -20,12 +20,6 @@ jobs:
           - 8123:8123
           
     steps:
-    - name: Create check run
-      run: |
-        curl -L -X POST -H 'Authorization: Bearer ${{ github.token }}' \
-             https://api.github.com/repos/${{ github.repository }}/check-runs \
-             -d '{"name":"coverage-total", "head_sha":"${{ github.sha }}", "status":"in_progress"}'
-
     - name: Checkout
       uses: actions/checkout@v4
     
@@ -91,6 +85,13 @@ jobs:
       if: ${{ github.event_name == 'pull_request' }}
       run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format github-annotation
       continue-on-error: true
+
+    - name: Set status checks
+      working-directory: ${{ github.workspace }}/main/ClickHouse.Client
+      run: python python ${{ github.workspace }}/.github/coverage-status.py 
+              --coverage-file coverage.cobertura.xml 
+              --repository ${{ github.repo }}
+              --sha ${{ github.sha }}
 
     - name: Upload coverage xml
       if: always()
