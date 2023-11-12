@@ -70,6 +70,7 @@ jobs:
       run: pycobertura show coverage.cobertura.xml --format markdown >> $GITHUB_STEP_SUMMARY
 
     - name: Set status checks
+      working-directory: ${{ github.workspace }}/ClickHouse.Client
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: python ${{ github.workspace }}/.github/coverage-status.py
