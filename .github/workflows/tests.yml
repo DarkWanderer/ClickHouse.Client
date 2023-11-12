@@ -80,3 +80,37 @@ jobs:
       run: python ${{ github.workspace }}/.github/coverage-status.py
                   --coverage-file coverage.diff.json
                   --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
+
+  regress-clickhouse:
+    name: ClickHouse regression
+    uses: ./.github/workflows/reusable.yml
+    with:
+      clickhouse-version: ${{ matrix.version }}
+    needs:
+      - coverage
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+        - '21.3'
+        - '21.8'
+        - '22.3'
+        - '22.8'
+        - '22.9'
+        - '22.12'
+        - '23.3'
+        - '23.6'
+        - '23.8'
+        - '23.9'
+
+  regress-dotnet:
+    name: .NET regression
+    uses: ./.github/workflows/reusable.yml
+    with:
+      clickhouse-version: ${{ matrix.framework }}
+    needs:
+      - coverage
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: ['net6.0', 'net5.0', 'netcoreapp3.1']
