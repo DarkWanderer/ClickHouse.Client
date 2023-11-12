@@ -1,0 +1,73 @@
+name: Build & Test
+
+on:
+  workflow_call:
+    inputs:
+      dotnet-version:
+        required: true
+        type: string
+      clickhouse-version:
+        default: latest
+        required: false
+        type: string
+      coverage:
+        default: false
+        required: false
+        type: boolean
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:${{ inputs.clickhouse-version }}
+        ports:
+          - 8123:8123
+          
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - uses: actions/cache@v3
+      name: Cache NuGet
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: |
+          3.1.x
+          5.x
+          6.x
+          7.x
+          
+    - name: Install GitHubActionsTestLogger
+      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger --no-restore
+
+    - name: Install coverlet
+      if: ${{ inputs.coverage }}
+      run: |
+        dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector --no-restore
+        dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.msbuild --no-restore
+
+    - name: Test with coverage
+      run: dotnet test --framework ${{ inputs.dotnet-version }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
+      env:
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+
+    - name: Rename coverage file
+      if: ${{ inputs.coverage }}
+      run: mv ./ClickHouse.Client.Tests/coverage.${{ inputs.dotnet-version }}.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
+
+    - name: Upload coverage xml
+      if: ${{ inputs.coverage }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage
+        path: ./ClickHouse.Client/coverage.cobertura.xml
