@@ -18,7 +18,7 @@ public static class TestUtilities
 
     static TestUtilities()
     {
-        var versionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONTAINER_VERSION");
+        var versionString = Environment.GetEnvironmentVariable("CLICKHOUSE_VERSION");
         if (versionString != null)
         {
             ServerVersion = Version.Parse(versionString.Split(':').Last().Trim());

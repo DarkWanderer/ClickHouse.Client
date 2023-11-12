@@ -61,7 +61,8 @@ jobs:
       run: dotnet test --framework ${{ inputs.framework }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
-
+        CLICKHOUSE_VERSION: ${{ inputs.clickhouse-version }}
+    
     - name: Rename coverage file
       if: ${{ inputs.coverage }}
       run: mv ./ClickHouse.Client.Tests/coverage.${{ inputs.framework }}.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
