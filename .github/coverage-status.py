@@ -46,9 +46,8 @@ if __name__ == "__main__":
     elif ext == '.json':
         with open(args.coverage_file) as f:
             data = json.load(f)
-            chnge = data['total']["Cover"]
             stmts = data['total']["Stmts"]
-            post_status(args.repository, args.sha, "success", "Coverage / Diff",
-                        f"change: {chnge}, statements: {stmts}")
+            chnge = "0%" if stmts == "0" else data['total']["Cover"]
+            post_status(args.repository, args.sha, "success", "Coverage / Change", f"{chnge}, statements: {stmts}")
     else:
         raise Exception(f'Unknown file type {ext} for {args.coverage_file}')
