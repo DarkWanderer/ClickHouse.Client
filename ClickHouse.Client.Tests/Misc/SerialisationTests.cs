@@ -31,7 +31,7 @@ public class SerialisationTests
     }
 
     [Test]
-    public void BinaryReaderShouldThrowOnUnderflow()
+    public void BinaryReaderShouldThrowOnOverflow()
     {
         using var stream = new MemoryStream();
         using var writer = new ExtendedBinaryWriter(stream);
