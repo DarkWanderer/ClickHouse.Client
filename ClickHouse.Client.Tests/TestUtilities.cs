@@ -19,7 +19,7 @@ public static class TestUtilities
     static TestUtilities()
     {
         var versionString = Environment.GetEnvironmentVariable("CLICKHOUSE_VERSION");
-        if (versionString != null)
+        if (versionString is not null and not "latest")
         {
             ServerVersion = Version.Parse(versionString.Split(':').Last().Trim());
             SupportedFeatures = ClickHouseFeatureMap.GetFeatureFlags(ServerVersion);
