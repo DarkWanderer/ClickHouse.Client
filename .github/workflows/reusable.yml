@@ -4,7 +4,8 @@ on:
   workflow_call:
     inputs:
       dotnet-version:
-        required: true
+        default: net6.0
+        required: false
         type: string
       clickhouse-version:
         default: latest
