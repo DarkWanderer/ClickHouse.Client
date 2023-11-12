@@ -67,7 +67,7 @@ jobs:
 
     - name: Print summary
       working-directory: ${{ github.workspace }}/ClickHouse.Client
-      run: pycobertura show --format markdown coverage.cobertura.xml >> $GITHUB_STEP_SUMMARY
+      run: pycobertura show coverage.cobertura.xml --format markdown >> $GITHUB_STEP_SUMMARY
 
     - name: Set status checks
       env:
@@ -122,12 +122,12 @@ jobs:
 
     - name: Report diff annotations
       run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
-                --format github-annotation >> $GITHUB_STEP_SUMMARY
+                --format github-annotation
       continue-on-error: true
       
     - name: Report diff summary
       run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
-                --format github-annotation >> $GITHUB_STEP_SUMMARY
+                --format markdown >> $GITHUB_STEP_SUMMARY
       continue-on-error: true
 
     - name: Generate diff json
