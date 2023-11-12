@@ -107,7 +107,7 @@ jobs:
     name: .NET regression
     uses: ./.github/workflows/reusable.yml
     with:
-      clickhouse-version: ${{ matrix.framework }}
+      framework: ${{ matrix.framework }}
     needs:
       - coverage
     strategy:

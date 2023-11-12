@@ -3,7 +3,7 @@ name: Build & Test
 on:
   workflow_call:
     inputs:
-      dotnet-version:
+      framework:
         default: net6.0
         required: false
         type: string
@@ -42,7 +42,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: |
+        framework: |
           3.1.x
           5.x
           6.x
@@ -58,13 +58,13 @@ jobs:
         dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.msbuild --no-restore
 
     - name: Test with coverage
-      run: dotnet test --framework ${{ inputs.dotnet-version }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
+      run: dotnet test --framework ${{ inputs.framework }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
 
     - name: Rename coverage file
       if: ${{ inputs.coverage }}
-      run: mv ./ClickHouse.Client.Tests/coverage.${{ inputs.dotnet-version }}.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
+      run: mv ./ClickHouse.Client.Tests/coverage.${{ inputs.framework }}.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
 
     - name: Upload coverage xml
       if: ${{ inputs.coverage }}
