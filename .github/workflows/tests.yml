@@ -11,71 +11,9 @@ on:
 jobs:
   coverage:
     name: Run
-    runs-on: ubuntu-latest
-    permissions:
-      statuses: write
-
-    services:
-      clickhouse:
-        image: clickhouse/clickhouse-server:latest
-        ports:
-          - 8123:8123
-          
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - uses: actions/cache@v3
-      name: Cache NuGet
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-        restore-keys: |
-          ${{ runner.os }}-nuget-
-      
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: |
-          6.x
-
-    - name: Install coverlet-collector
-      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.collector --no-restore
-
-    - name: Install coverlet-msbuild
-      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.msbuild --no-restore
-
-    - name: Install GitHubActionsTestLogger
-      run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger --no-restore
-
-    - name: Test with coverage
-      run: dotnet test --framework net6.0 --configuration Release --verbosity normal --logger GitHubActions /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
-      env:
-        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
-
-    - run: mv ./ClickHouse.Client.Tests/coverage.net6.0.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
-
-    - name: Upload coverage xml
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage
-        path: ./ClickHouse.Client/coverage.cobertura.xml
-
-    - name: Install pycobertura
-      run: pip install pycobertura
-
-    - name: Print summary
-      working-directory: ${{ github.workspace }}/ClickHouse.Client
-      run: pycobertura show coverage.cobertura.xml --format markdown >> $GITHUB_STEP_SUMMARY
-
-    - name: Set status checks
-      working-directory: ${{ github.workspace }}/ClickHouse.Client
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      run: python ${{ github.workspace }}/.github/coverage-status.py
-                  --coverage-file coverage.cobertura.xml
-                  --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
+    uses: ./.github/workflows/reusable.yml
+    with:
+      coverage: true
 
   compare:
     name: Compare
