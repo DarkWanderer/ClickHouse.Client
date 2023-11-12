@@ -65,12 +65,16 @@ jobs:
     - name: Install pycobertura
       run: pip install pycobertura
 
+    - name: Print summary
+      working-directory: ${{ github.workspace }}/ClickHouse.Client
+      run: pycobertura show coverage.cobertura.xml --format markdown >> $GITHUB_STEP_SUMMARY
+
     - name: Set status checks
       working-directory: ${{ github.workspace }}/ClickHouse.Client
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: python ${{ github.workspace }}/.github/coverage-status.py
-                  --coverage-file coverage.cobertura.xml 
+                  --coverage-file coverage.cobertura.xml
                   --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
 
   compare:
@@ -118,7 +122,13 @@ jobs:
       run: unzip coverage.zip
 
     - name: Report diff annotations
-      run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format github-annotation
+      run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
+                --format github-annotation
+      continue-on-error: true
+      
+    - name: Report diff summary
+      run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
+                --format markdown >> $GITHUB_STEP_SUMMARY
       continue-on-error: true
 
     - name: Generate diff json
