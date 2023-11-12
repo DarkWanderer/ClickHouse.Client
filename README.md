@@ -5,7 +5,7 @@ ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra
 [![Latest version](https://img.shields.io/nuget/v/ClickHouse.Client)](https://www.nuget.org/packages/ClickHouse.Client/)
 [![Downloads](https://img.shields.io/nuget/dt/ClickHouse.Client)](https://www.nuget.org/packages/ClickHouse.Client/)
 [![License](https://img.shields.io/github/license/DarkWanderer/ClickHouse.Client)](https://github.com/DarkWanderer/ClickHouse.Client/blob/main/LICENSE)
-[![Tests](https://github.com/DarkWanderer/ClickHouse.Client/actions/workflows/tests.yml/badge.svg)](https://github.com/DarkWanderer/ClickHouse.Client/actions/workflows/tests.yml)
+[![Tests](https://github.com/DarkWanderer/ClickHouse.Client/actions/workflows/coverage.yml/badge.svg)](https://github.com/DarkWanderer/ClickHouse.Client/actions/workflows/coverage.yml)
 
 ## Key features
 
