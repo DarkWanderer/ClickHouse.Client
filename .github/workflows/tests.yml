@@ -10,7 +10,7 @@ on:
 
 jobs:
   coverage:
-    name: Run
+    name: Test with coverage
     uses: ./.github/workflows/reusable.yml
     with:
       coverage: true
