@@ -7,16 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClickHouse.Client", "ClickH
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClickHouse.Client.Tests", "ClickHouse.Client.Tests\ClickHouse.Client.Tests.csproj", "{0FAA543E-0480-490A-90DA-A6C6AC9ACC50}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F53FBE79-8B86-47CE-B93C-70137FF29384}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-		codecov.yml = codecov.yml
-		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
-		README.md = README.md
-		.github\workflows\release.yml = .github\workflows\release.yml
-		.github\workflows\tests.yml = .github\workflows\tests.yml
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClickHouse.Client.Benchmark", "ClickHouse.Client.Benchmark\ClickHouse.Client.Benchmark.csproj", "{6AD028BB-E6AA-454E-B130-67697ED1CE4B}"
 EndProject
 Global

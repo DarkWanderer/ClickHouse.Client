@@ -17,6 +17,8 @@
     <LangVersion>latest</LangVersion>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AnalysisMode>Recommended</AnalysisMode>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>../strongname.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
