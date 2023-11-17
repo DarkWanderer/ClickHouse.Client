@@ -30,7 +30,3 @@ Compared to other existing .NET clients, `ClickHouse.Client` has following advan
 ## Documentation
 
 Documentation for the library is available in [repository Wiki](https://github.com/DarkWanderer/ClickHouse.Client/wiki)
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=DarkWanderer/ClickHouse.Client&type=Date)](https://star-history.com/#DarkWanderer/ClickHouse.Client&Date)
