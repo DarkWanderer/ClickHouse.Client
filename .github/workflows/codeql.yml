@@ -3,6 +3,8 @@ name: CodeQL
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+    - '**/*.md'
 
 jobs:
   analyze:
