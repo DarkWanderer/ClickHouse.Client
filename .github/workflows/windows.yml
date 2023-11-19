@@ -12,6 +12,10 @@ jobs:
   windows:
     name: Build
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: ['net462', 'net48', 'netcoreapp3.1', 'net5.0', 'net6.0']
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -25,4 +29,4 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Build
-      run: dotnet build
+      run: dotnet build --framework ${{ matrix.framework }}
