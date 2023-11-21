@@ -74,13 +74,32 @@ jobs:
         name: coverage
         path: ./ClickHouse.Client/coverage.cobertura.xml
 
-    - if: ${{ inputs.coverage }}
-      run: pip install pycobertura
+  report-coverage:
+    name: Report coverage
+    if: ${{ inputs.coverage }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download coverage
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage
+          path: ${{ github.workspace }}/ClickHouse.Client
 
-    - name: Set status checks
-      if: ${{ inputs.coverage }}
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      run: python ${{ github.workspace }}/.github/coverage-status.py
-                  --coverage-file ./ClickHouse.Client/coverage.cobertura.xml
-                  --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Install pycobertura
+        run: pip install pycobertura
+
+      - name: Set status checks
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python ${{ github.workspace }}/.github/coverage-status.py
+                    --coverage-file ./ClickHouse.Client/coverage.cobertura.xml
+                    --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
+        
+      - name: Report diff summary
+        run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
+                         --format markdown >> $GITHUB_STEP_SUMMARY
+
+
+      - name: Report diff annotations
+        run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml 
+                         --format github-annotation
