@@ -80,6 +80,9 @@ jobs:
     if: ${{ inputs.coverage }}
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+    
       - name: Download coverage
         uses: actions/download-artifact@v3
         with:
@@ -96,11 +99,5 @@ jobs:
                     --coverage-file ./ClickHouse.Client/coverage.cobertura.xml
                     --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
         
-      - name: Report diff summary
-        run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
-                         --format markdown >> $GITHUB_STEP_SUMMARY
-
-
-      - name: Report diff annotations
-        run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml 
-                         --format github-annotation
+      - name: Report summary
+        run: pycobertura show ./ClickHouse.Client/coverage.cobertura.xml --format markdown >> $GITHUB_STEP_SUMMARY
