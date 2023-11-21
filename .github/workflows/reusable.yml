@@ -74,6 +74,9 @@ jobs:
         name: coverage
         path: ./ClickHouse.Client/coverage.cobertura.xml
 
+    - if: ${{ inputs.coverage }}
+      run: pip install pycobertura
+
     - name: Set status checks
       if: ${{ inputs.coverage }}
       env:
