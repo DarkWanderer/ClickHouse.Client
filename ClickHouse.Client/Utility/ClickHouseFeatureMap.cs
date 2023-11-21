@@ -1,27 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using ClickHouse.Client.ADO;
 
 namespace ClickHouse.Client.Utility;
 
 internal static class ClickHouseFeatureMap
 {
-    private static readonly Dictionary<Version, Feature> FeatureMap = new()
+    private static readonly Dictionary<Version, Feature> FeatureMap = new();
+
+    static ClickHouseFeatureMap()
     {
-        { new Version(20, 0), Feature.Decimals | Feature.IPv6 },
-        { new Version(20, 1), Feature.DateTime64 },
-        { new Version(20, 5), Feature.InlineQuery | Feature.Geo },
-        { new Version(21, 4), Feature.UUIDParameters | Feature.Map },
-        { new Version(21, 6), Feature.WideTypes },
-        { new Version(21, 9), Feature.Date32 },
-        { new Version(21, 12), Feature.Bool },
-        { new Version(22, 6), Feature.Stats | Feature.Json },
-        { new Version(22, 8), Feature.AsyncInsert },
-    };
+        var type = typeof(Feature);
+        var versionsToFeatures = from field in type.GetFields()
+                                 let attribute = field.GetCustomAttribute<SinceVersionAttribute>()
+                                 where attribute != null
+                                 let value = (Feature)field.GetRawConstantValue()
+                                 select (value, attribute.Version);
+
+        foreach ((var feature, var version) in versionsToFeatures)
+        {
+            if (!FeatureMap.TryAdd(version, feature))
+                FeatureMap[version] |= feature;
+        }
+    }
 
     internal static Feature GetFeatureFlags(Version serverVersion)
     {
-        Feature result = 0;
+        var result = Feature.None;
         foreach (var feature in FeatureMap)
         {
             if (serverVersion >= feature.Key)

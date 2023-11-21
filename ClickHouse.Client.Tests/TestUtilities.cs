@@ -42,20 +42,12 @@ public static class TestUtilities
         builder.UseSession = session;
         builder.UseCustomDecimals = customDecimals;
         builder["set_session_timeout"] = 1; // Expire sessions quickly after test
+        builder["set_allow_experimental_geo_types"] = 1; // Allow support for geo types
 
         // Version 21.7 requires this flag for Map type
         if (SupportedFeatures.HasFlag(Feature.Map))
         {
             builder["set_allow_experimental_map_type"] = 1;
-        }
-        if (SupportedFeatures.HasFlag(Feature.Geo)) // After we've loaded supported features
-        {
-            builder["set_allow_experimental_geo_types"] = 1; // Allow support for experimental geo types
-        }
-        if (SupportedFeatures.HasFlag(Feature.Json))
-        {
-            builder["set_allow_experimental_object_type"] = 1; // Allow support for JSON
-            builder["set_output_format_json_named_tuples_as_objects"] = 1;
         }
         return new ClickHouseConnection(builder.ConnectionString);
     }
@@ -166,7 +158,7 @@ public static class TestUtilities
             yield return new DataTypeSample("Decimal128(30)", typeof(ClickHouseDecimal), "toDecimal128(1, 30)", new ClickHouseDecimal(BigInteger.Pow(10, 30), 30));
         }
 
-        if (SupportedFeatures.HasFlag(Feature.Decimals) && SupportedFeatures.HasFlag(Feature.WideTypes))
+        if (SupportedFeatures.HasFlag(Feature.WideTypes))
         {
             // Code: 53. DB::Exception: Type mismatch in IN or VALUES section. Expected: Decimal(76, 25). Got: Decimal256:
             // While processing toDecimal256(1e-24, 25) AS expected, _CAST('0.000000000000000000000001', 'Decimal256(25)') AS actual, expected = actual AS equals. (TYPE_MISMATCH) (version 22.9.3.18 (official build))
@@ -177,8 +169,7 @@ public static class TestUtilities
             yield return new DataTypeSample("DateTime32('UTC')", typeof(DateTime), "toDateTime('1988-08-28 11:22:33', 'UTC')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Unspecified));
         }
 
-        if (SupportedFeatures.HasFlag(Feature.IPv6))
-            yield return new DataTypeSample("IPv6", typeof(IPAddress), "toIPv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334')", IPAddress.Parse("2001:0db8:85a3:0000:0000:8a2e:0370:7334"));
+        yield return new DataTypeSample("IPv6", typeof(IPAddress), "toIPv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334')", IPAddress.Parse("2001:0db8:85a3:0000:0000:8a2e:0370:7334"));
 
         if (SupportedFeatures.HasFlag(Feature.Map))
         {
@@ -218,15 +209,12 @@ public static class TestUtilities
             yield return new DataTypeSample("UInt256", typeof(BigInteger), "toInt256(concat('1', repeat('0', 50)))", BigInteger.Pow(new BigInteger(10), 50));
         }
 
-        if (SupportedFeatures.HasFlag(Feature.Geo))
-        {
-            yield return new DataTypeSample("Point", typeof(Tuple<double, double>), "(10,20)", Tuple.Create(10.0, 20.0));
-            yield return new DataTypeSample("Ring", typeof(Tuple<double, double>[]), "[(0.1,0.2), (0.2,0.3), (0.3,0.4)]", new[] {
-                Tuple.Create(.1, .2),
-                Tuple.Create(.2, .3),
-                Tuple.Create(.3, .4)
-            });
-        }
+        yield return new DataTypeSample("Point", typeof(Tuple<double, double>), "(10,20)", Tuple.Create(10.0, 20.0));
+        yield return new DataTypeSample("Ring", typeof(Tuple<double, double>[]), "[(0.1,0.2), (0.2,0.3), (0.3,0.4)]", new[] {
+            Tuple.Create(.1, .2),
+            Tuple.Create(.2, .3),
+            Tuple.Create(.3, .4)
+        });
 
         if (SupportedFeatures.HasFlag(Feature.Json))
         {
