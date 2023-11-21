@@ -73,3 +73,31 @@ jobs:
       with:
         name: coverage
         path: ./ClickHouse.Client/coverage.cobertura.xml
+
+  report-coverage:
+    name: Report coverage
+    needs: build-and-test
+    if: ${{ inputs.coverage }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+    
+      - name: Download coverage
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage
+          path: ${{ github.workspace }}/ClickHouse.Client
+
+      - name: Install pycobertura
+        run: pip install pycobertura
+
+      - name: Set status checks
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python ${{ github.workspace }}/.github/coverage-status.py
+                    --coverage-file ./ClickHouse.Client/coverage.cobertura.xml
+                    --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
+        
+      - name: Report summary
+        run: pycobertura show ./ClickHouse.Client/coverage.cobertura.xml --format markdown >> $GITHUB_STEP_SUMMARY

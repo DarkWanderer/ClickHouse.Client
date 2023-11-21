@@ -14,9 +14,11 @@ jobs:
     uses: ./.github/workflows/reusable.yml
     with:
       coverage: true
+    permissions:
+      statuses: write
 
   compare:
-    name: Compare
+    name: Compare coverage
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' }}
     permissions:
