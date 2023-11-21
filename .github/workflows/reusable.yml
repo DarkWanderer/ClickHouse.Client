@@ -20,8 +20,6 @@ jobs:
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
-    permissions:
-      statuses: write
 
     services:
       clickhouse:
