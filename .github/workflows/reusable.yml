@@ -20,6 +20,8 @@ jobs:
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
+    permissions:
+      statuses: write
 
     services:
       clickhouse:
@@ -73,3 +75,11 @@ jobs:
       with:
         name: coverage
         path: ./ClickHouse.Client/coverage.cobertura.xml
+
+    - name: Set status checks
+      if: ${{ inputs.coverage }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: python ${{ github.workspace }}/.github/coverage-status.py
+                  --coverage-file ./ClickHouse.Client/coverage.cobertura.xml
+                  --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
