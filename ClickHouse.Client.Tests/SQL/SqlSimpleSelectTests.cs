@@ -190,7 +190,11 @@ public class SqlSimpleSelectTests : IDisposable
         var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
         using var reader = await command.ExecuteReaderAsync();
-        Assert.AreEqual(new QueryStats(100, 800, 0, 0, 0), command.QueryStats);
+        var stats = command.QueryStats;
+        Assert.AreEqual(stats.ReadRows, 100);
+        Assert.AreEqual(stats.ReadBytes, 800);
+        Assert.AreEqual(stats.WrittenRows, 0);
+        Assert.AreEqual(stats.WrittenBytes, 0);
     }
 
     public void Dispose() => connection?.Dispose();
