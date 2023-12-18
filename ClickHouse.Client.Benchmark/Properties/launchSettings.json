@@ -2,7 +2,7 @@
   "profiles": {
     "ClickHouse.Client.Benchmark": {
       "commandName": "Project",
-      "commandLineArgs": "--filter \"*SelectUint64*\" --inProcess --job Default --join"
+      "commandLineArgs": "--filter \"*\" --inProcess --job Short --join"
     }
   }
 }

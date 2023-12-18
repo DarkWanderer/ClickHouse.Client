@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +22,7 @@ namespace ClickHouse.Client.Copy;
 public class ClickHouseBulkCopy : IDisposable
 {
     private readonly ClickHouseConnection connection;
-    private bool ownsConnection;
+    private readonly bool ownsConnection;
     private long rowsWritten;
     private (string[] names, ClickHouseType[] types) columnNamesAndTypes;
 
@@ -70,9 +74,8 @@ public class ClickHouseBulkCopy : IDisposable
 
     /// <summary>
     /// One-time init operation to load column types using provided names
-    /// Use to reduce number of service queries
+    /// Required to call before WriteToServerAsync
     /// </summary>
-    /// <param name="names">Names of columns which will be inserted</param>
     /// <returns>Awaitable task</returns>
     public async Task InitAsync()
     {
@@ -86,61 +89,35 @@ public class ClickHouseBulkCopy : IDisposable
     public Task WriteToServerAsync(IDataReader reader, CancellationToken token)
     {
         if (reader is null)
-        {
             throw new ArgumentNullException(nameof(reader));
-        }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        return WriteToServerAsync(reader.AsEnumerable(), reader.GetColumnNames(), token);
-#pragma warning restore CS0618 // Type or member is obsolete
+        return WriteToServerAsync(reader.AsEnumerable(), token);
     }
 
     public Task WriteToServerAsync(DataTable table, CancellationToken token)
     {
         if (table is null)
-        {
             throw new ArgumentNullException(nameof(table));
-        }
 
-        var rows = table.Rows.Cast<DataRow>().Select(r => r.ItemArray); // enumerable
-        var columns = table.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToArray();
-#pragma warning disable CS0618 // Type or member is obsolete
-        return WriteToServerAsync(rows, columns, token);
-#pragma warning restore CS0618 // Type or member is obsolete
+        var rows = table.Rows.Cast<DataRow>().Select(r => r.ItemArray);
+        return WriteToServerAsync(rows, token);
     }
 
-    public Task WriteToServerAsync(IEnumerable<object[]> rows) => WriteToServerAsync(rows, null, CancellationToken.None);
+    public Task WriteToServerAsync(IEnumerable<object[]> rows) => WriteToServerAsync(rows, CancellationToken.None);
 
-    public Task WriteToServerAsync(IEnumerable<object[]> rows, CancellationToken token) => WriteToServerAsync(rows, null, token);
-
-    [Obsolete("Use InitColumnsAsync method instead to set columns")]
-    public Task WriteToServerAsync(IEnumerable<object[]> rows, IReadOnlyCollection<string> columns) => WriteToServerAsync(rows, columns, CancellationToken.None);
-
-    [Obsolete("Use InitColumnsAsync method instead to set columns")]
-    public async Task WriteToServerAsync(IEnumerable<object[]> rows, IReadOnlyCollection<string> columns, CancellationToken token)
+    public async Task WriteToServerAsync(IEnumerable<object[]> rows, CancellationToken token)
     {
         if (rows is null)
-        {
             throw new ArgumentNullException(nameof(rows));
-        }
 
         if (string.IsNullOrWhiteSpace(DestinationTableName))
-        {
             throw new InvalidOperationException("Destination table not set");
-        }
 
         var (columnNames, columnTypes) = columnNamesAndTypes;
+        if (columnNames == null || columnTypes == null)
+            throw new InvalidOperationException("Column names not initialized. Call InitAsync once to load column data");
 
-        if (columns != null)
-        {
-            // Deprecated path
-            // If the list of columns was explicitly provided, avoid cache
-            (columnNames, columnTypes) = await LoadNamesAndTypesAsync(DestinationTableName, columns).ConfigureAwait(false);
-        }
-        else if (columnNames == null || columnNames.Length == 0)
-        {
-            (columnNames, columnTypes) = await LoadNamesAndTypesAsync(DestinationTableName, null).ConfigureAwait(false);
-        }
+        var query = $"INSERT INTO {DestinationTableName} ({string.Join(", ", columnNames)}) FORMAT RowBinary";
 
         var tasks = new Task[MaxDegreeOfParallelism];
         for (var i = 0; i < tasks.Length; i++)
@@ -148,67 +125,14 @@ public class ClickHouseBulkCopy : IDisposable
             tasks[i] = Task.CompletedTask;
         }
 
-        var query = $"INSERT INTO {DestinationTableName} ({string.Join(", ", columnNames)}) FORMAT RowBinary";
-        bool useInlineQuery = connection.SupportedFeatures.HasFlag(Feature.InlineQuery);
-
-        // Variables are outside the loop to capture context in case of exception
-        object[] row = null;
-        int col = 0;
-        var enumerator = rows.GetEnumerator();
-        bool hasMore = false;
-        do
+        foreach (var batch in IntoBatches(rows, query, columnTypes))
         {
-            token.ThrowIfCancellationRequested();
-            var stream = new MemoryStream() { Capacity = 4 * 1024 };
-            int counter = 0;
-            using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))
-            {
-                if (useInlineQuery)
-                {
-                    using var textWriter = new StreamWriter(gzipStream, Encoding.UTF8, 4 * 1024, true);
-                    textWriter.WriteLine(query);
-                }
-
-                using var writer = new ExtendedBinaryWriter(gzipStream);
-
-                try
-                {
-                    while (hasMore = enumerator.MoveNext())
-                    {
-                        row = enumerator.Current;
-                        for (col = 0; col < row.Length; col++)
-                        {
-                            columnTypes[col].Write(writer, row[col]);
-                        }
-                        counter++;
-
-                        if (counter >= BatchSize)
-                            break; // We've reached the batch size
-                    }
-                }
-                catch (Exception e)
-                {
-                    throw new ClickHouseBulkCopySerializationException(row, col, e);
-                }
-            }
-
-            token.ThrowIfCancellationRequested();
-            stream.Seek(0, SeekOrigin.Begin);
-
             while (true)
             {
                 var completedTaskIndex = Array.FindIndex(tasks, t => t.IsCompleted);
                 if (completedTaskIndex >= 0)
                 {
-                    async Task SendBatch()
-                    {
-                        using (stream)
-                        {
-                            await connection.PostStreamAsync(useInlineQuery ? null : query, stream, true, token).ConfigureAwait(false);
-                            Interlocked.Add(ref rowsWritten, counter);
-                        }
-                    }
-                    tasks[completedTaskIndex] = SendBatch();
+                    tasks[completedTaskIndex] = SendBatchAsync(batch, token);
                     break; // while (true); go to next batch
                 }
                 else
@@ -218,9 +142,61 @@ public class ClickHouseBulkCopy : IDisposable
                 }
             }
         }
-        while (hasMore);
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
+    }
+
+    private Stream SerializeBatch(Batch batch)
+    {
+        var stream = new MemoryStream() { Capacity = 8 * 1024 };
+
+        using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))
+        {
+            using (var textWriter = new StreamWriter(gzipStream, Encoding.UTF8, 4 * 1024, true))
+            {
+                textWriter.WriteLine(batch.Query);
+            }
+
+            using var writer = new ExtendedBinaryWriter(gzipStream);
+
+            int col = 0;
+            object[] row = null;
+            int counter = 0;
+            var enumerator = batch.Rows.GetEnumerator();
+            try
+            {
+                while (enumerator.MoveNext())
+                {
+                    row = (object[])enumerator.Current;
+                    for (col = 0; col < row.Length; col++)
+                    {
+                        batch.Types[col].Write(writer, row[col]);
+                    }
+                    counter++;
+                    if (counter >= batch.Size)
+                        break; // We've reached the batch size
+                }
+            }
+            catch (Exception e)
+            {
+                throw new ClickHouseBulkCopySerializationException(row, col, e);
+            }
+        }
+        stream.Seek(0, SeekOrigin.Begin);
+        return stream;
+    }
+
+    private async Task SendBatchAsync(Batch batch, CancellationToken token)
+    {
+        using (batch) // Dispose object regardless whether sending succeeds
+        {
+            // Async serialization
+            using var stream = await Task.Run(() => SerializeBatch(batch)).ConfigureAwait(false);
+            // Async sending
+            await connection.PostStreamAsync(null, stream, true, token).ConfigureAwait(false);
+            // Increase counter
+            Interlocked.Add(ref rowsWritten, batch.Size);
+        }
     }
 
     public void Dispose()
@@ -228,10 +204,35 @@ public class ClickHouseBulkCopy : IDisposable
         if (ownsConnection)
         {
             connection?.Dispose();
-            ownsConnection = false;
         }
         GC.SuppressFinalize(this);
     }
 
     private static string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
+
+    private IEnumerable<Batch> IntoBatches(IEnumerable<object[]> rows, string query, ClickHouseType[] types)
+    {
+        foreach (var (batch, size) in rows.BatchRented(BatchSize))
+        {
+            yield return new Batch { Rows = batch, Size = size, Query = query, Types = types };
+        }
+    }
+
+    // Convenience argument collection
+    private struct Batch : IDisposable
+    {
+        public object[] Rows;
+        public int Size;
+        public string Query;
+        public ClickHouseType[] Types;
+
+        public void Dispose()
+        {
+            if (Rows != null)
+            {
+                ArrayPool<object>.Shared.Return(Rows);
+                Rows = null;
+            }
+        }
+    }
 }

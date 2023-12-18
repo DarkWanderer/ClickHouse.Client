@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace ClickHouse.Client.Utility;
 
@@ -20,5 +22,25 @@ public static class EnumerableExtensions
         first = list[0];
         second = list[1];
         third = list[2];
+    }
+
+    public static IEnumerable<(T[], int)> BatchRented<T>(this IEnumerable<T> enumerable, int batchSize)
+    {
+        var array = ArrayPool<T>.Shared.Rent(batchSize);
+        int counter = 0;
+
+        foreach (var item in enumerable)
+        {
+            array[counter++] = item;
+
+            if (counter >= batchSize)
+            {
+                yield return (array, counter);
+                counter = 0;
+                array = ArrayPool<T>.Shared.Rent(batchSize);
+            }
+        }
+        if (counter > 0)
+            yield return (array, counter);
     }
 }

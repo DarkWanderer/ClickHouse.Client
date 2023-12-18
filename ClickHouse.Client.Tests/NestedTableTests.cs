@@ -28,6 +28,7 @@ public class NestedTableTests : AbstractConnectionTestFixture
         var row1 = new object[] { 1, new[] { 1, 2, 3 }, new[] { "v1", "v2", "v3" } };
         var row2 = new object[] { 2, new[] { 4, 5, 6 }, new[] { "v4", "v5", "v6" } };
 
+        await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(new[] { row1, row2 }, CancellationToken.None);
         using var reader = await connection.ExecuteReaderAsync("SELECT * FROM test.nested ORDER BY id ASC");
 
