@@ -203,10 +203,10 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         //Create tbl in db
         await connection.ExecuteStatementAsync(query);
 
-        await bulkCopy.InitAsync();
         var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = tableName };
 
         var rowToInsert = new[] { Enumerable.Range(1, columnCount).Select(x => (object)x).ToArray() };
+        await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(rowToInsert);
     }
 
