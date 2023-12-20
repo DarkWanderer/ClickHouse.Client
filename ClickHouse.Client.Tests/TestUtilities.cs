@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Net;
 using System.Numerics;
+using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Utility;
@@ -29,6 +30,14 @@ public static class TestUtilities
             SupportedFeatures = Feature.All;
             ServerVersion = null;
         }
+    }
+
+    [Test]
+    public static async Task ExpectedFeaturesShouldMatchActualFeatures()
+    {
+        using var connection = GetTestClickHouseConnection();
+        await connection.OpenAsync();
+        Assert.AreEqual(SupportedFeatures & connection.SupportedFeatures, connection.SupportedFeatures);
     }
 
     /// <summary>
@@ -134,12 +143,9 @@ public static class TestUtilities
         yield return new DataTypeSample("DateTime('UTC')", typeof(DateTime), "toDateTime('1988-08-28 11:22:33', 'UTC')", new DateTime(1988, 08, 28, 11, 22, 33, DateTimeKind.Unspecified));
         yield return new DataTypeSample("DateTime('Pacific/Fiji')", typeof(DateTime), "toDateTime('1999-01-01 13:00:00', 'Pacific/Fiji')", new DateTime(1999, 01, 01, 13, 00, 00, DateTimeKind.Unspecified));
 
-        if (SupportedFeatures.HasFlag(Feature.DateTime64))
-        {
-            yield return new DataTypeSample("DateTime64(4, 'UTC')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444', 9, 'UTC')", new DateTime(644444444444444000, DateTimeKind.Utc));
-            yield return new DataTypeSample("DateTime64(7, 'UTC')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'UTC')", new DateTime(644444444444444444, DateTimeKind.Utc));
-            yield return new DataTypeSample("DateTime64(7, 'Pacific/Fiji')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'Pacific/Fiji')", new DateTime(644444444444444444, DateTimeKind.Unspecified));
-        }
+        yield return new DataTypeSample("DateTime64(4, 'UTC')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444', 9, 'UTC')", new DateTime(644444444444444000, DateTimeKind.Utc));
+        yield return new DataTypeSample("DateTime64(7, 'UTC')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'UTC')", new DateTime(644444444444444444, DateTimeKind.Utc));
+        yield return new DataTypeSample("DateTime64(7, 'Pacific/Fiji')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'Pacific/Fiji')", new DateTime(644444444444444444, DateTimeKind.Unspecified));
 
         if (SupportedFeatures.HasFlag(Feature.Decimals))
         {
