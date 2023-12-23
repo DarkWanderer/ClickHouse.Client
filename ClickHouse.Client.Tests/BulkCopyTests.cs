@@ -44,6 +44,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
             BatchSize = 100
         };
 
+        await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { insertedValue }, 1));
 
         Assert.AreEqual(1, bulkCopy.RowsWritten);
@@ -179,6 +180,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
             BatchSize = 100
         };
 
+        await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)1 }, 1), CancellationToken.None);
 
         Assert.AreEqual(1, bulkCopy.RowsWritten);
@@ -204,6 +206,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = tableName };
 
         var rowToInsert = new[] { Enumerable.Range(1, columnCount).Select(x => (object)x).ToArray() };
+        await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(rowToInsert);
     }
 
@@ -218,6 +221,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         var rows = Enumerable.Range(250, 10).Select(n => new object[] { n }).ToArray();
 
         var bulkCopy = new ClickHouseBulkCopy(connection) { DestinationTableName = targetTable };
+        await bulkCopy.InitAsync();
         try
         {
             await bulkCopy.WriteToServerAsync(rows);
@@ -246,6 +250,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
             BatchSize = 100
         };
 
+        await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)1 }, 1), CancellationToken.None);
 
         Assert.AreEqual(1, bulkCopy.RowsWritten);
@@ -272,6 +277,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         const int Count = 1000;
         var data = Enumerable.Repeat(new object[] { 1 }, Count);
 
+        await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(data, CancellationToken.None);
 
         Assert.AreEqual(Count, bulkCopy.RowsWritten);
@@ -291,6 +297,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
             DestinationTableName = targetTable,
         };
 
+        await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(new List<object[]>
         {
             new object[] { DBNull.Value, new[] { 1, 2, 3 } },

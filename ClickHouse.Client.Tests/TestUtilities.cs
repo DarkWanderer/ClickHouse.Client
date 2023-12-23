@@ -147,22 +147,19 @@ public static class TestUtilities
         yield return new DataTypeSample("DateTime64(7, 'UTC')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'UTC')", new DateTime(644444444444444444, DateTimeKind.Utc));
         yield return new DataTypeSample("DateTime64(7, 'Pacific/Fiji')", typeof(DateTime), "toDateTime64('2043-03-01 18:34:04.4444444', 9, 'Pacific/Fiji')", new DateTime(644444444444444444, DateTimeKind.Unspecified));
 
-        if (SupportedFeatures.HasFlag(Feature.Decimals))
-        {
-            yield return new DataTypeSample("Decimal32(3)", typeof(ClickHouseDecimal), "toDecimal32(123.45, 3)", new ClickHouseDecimal(123.450m));
-            yield return new DataTypeSample("Decimal32(3)", typeof(ClickHouseDecimal), "toDecimal32(-123.45, 3)", new ClickHouseDecimal(-123.450m));
+        yield return new DataTypeSample("Decimal32(3)", typeof(ClickHouseDecimal), "toDecimal32(123.45, 3)", new ClickHouseDecimal(123.450m));
+        yield return new DataTypeSample("Decimal32(3)", typeof(ClickHouseDecimal), "toDecimal32(-123.45, 3)", new ClickHouseDecimal(-123.450m));
 
-            yield return new DataTypeSample("Decimal64(7)", typeof(ClickHouseDecimal), "toDecimal64(1.2345, 7)", new ClickHouseDecimal(1.2345000m));
-            yield return new DataTypeSample("Decimal64(7)", typeof(ClickHouseDecimal), "toDecimal64(-1.2345, 7)", new ClickHouseDecimal(-1.2345000m));
+        yield return new DataTypeSample("Decimal64(7)", typeof(ClickHouseDecimal), "toDecimal64(1.2345, 7)", new ClickHouseDecimal(1.2345000m));
+        yield return new DataTypeSample("Decimal64(7)", typeof(ClickHouseDecimal), "toDecimal64(-1.2345, 7)", new ClickHouseDecimal(-1.2345000m));
 
-            yield return new DataTypeSample("Decimal128(9)", typeof(ClickHouseDecimal), "toDecimal128(12.34, 9)", new ClickHouseDecimal(12.340000000m));
-            yield return new DataTypeSample("Decimal128(9)", typeof(ClickHouseDecimal), "toDecimal128(-12.34, 9)", new ClickHouseDecimal(-12.340000000m));
+        yield return new DataTypeSample("Decimal128(9)", typeof(ClickHouseDecimal), "toDecimal128(12.34, 9)", new ClickHouseDecimal(12.340000000m));
+        yield return new DataTypeSample("Decimal128(9)", typeof(ClickHouseDecimal), "toDecimal128(-12.34, 9)", new ClickHouseDecimal(-12.340000000m));
 
-            yield return new DataTypeSample("Decimal128(25)", typeof(ClickHouseDecimal), "toDecimal128(1e-24, 25)", new ClickHouseDecimal(10e-25m));
-            yield return new DataTypeSample("Decimal128(0)", typeof(ClickHouseDecimal), "toDecimal128(repeat('1', 30), 0)", ClickHouseDecimal.Parse(new string('1', 30)));
+        yield return new DataTypeSample("Decimal128(25)", typeof(ClickHouseDecimal), "toDecimal128(1e-24, 25)", new ClickHouseDecimal(10e-25m));
+        yield return new DataTypeSample("Decimal128(0)", typeof(ClickHouseDecimal), "toDecimal128(repeat('1', 30), 0)", ClickHouseDecimal.Parse(new string('1', 30)));
 
-            yield return new DataTypeSample("Decimal128(30)", typeof(ClickHouseDecimal), "toDecimal128(1, 30)", new ClickHouseDecimal(BigInteger.Pow(10, 30), 30));
-        }
+        yield return new DataTypeSample("Decimal128(30)", typeof(ClickHouseDecimal), "toDecimal128(1, 30)", new ClickHouseDecimal(BigInteger.Pow(10, 30), 30));
 
         if (SupportedFeatures.HasFlag(Feature.WideTypes))
         {
