@@ -28,21 +28,6 @@ jobs:
         name: package
         path: ClickHouse.Client/bin/Release/ClickHouse.Client.*nupkg
 
-  push_github:
-    runs-on: windows-latest
-    needs: [build]    
-    name: Upload to GitHub Packages
-    steps:
-    - name: Download Artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: package
-
-    - name: Push package
-      id: push
-      shell: cmd
-      run: dotnet nuget push ClickHouse.Client.*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
-
   push_nuget_org:
     runs-on: windows-latest
     needs: [build]
