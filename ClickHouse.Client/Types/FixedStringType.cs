@@ -29,7 +29,8 @@ internal class FixedStringType : ParameterizedType
     public override void Write(ExtendedBinaryWriter writer, object value)
     {
         var @string = Convert.ToString(value, CultureInfo.InvariantCulture);
-        var stringBytes = new byte[Length];
+        var bytesGiven = Encoding.UTF8.GetByteCount(@string);
+        var stringBytes = new byte[bytesGiven];
         Encoding.UTF8.GetBytes(@string, 0, @string.Length, stringBytes, 0);
         writer.Write(stringBytes);
     }
