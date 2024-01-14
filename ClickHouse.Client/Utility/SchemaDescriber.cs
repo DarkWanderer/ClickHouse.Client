@@ -11,62 +11,6 @@ namespace ClickHouse.Client.Utility;
 
 internal static class SchemaDescriber
 {
-    // Should match dbschematable.cs
-    private enum Column
-    {
-        ColumnName = 0,
-        ColumnOrdinal,
-        ColumnSize,
-        NumericPrecision,
-        NumericScale,
-        BaseServerName,
-        BaseCatalogName,
-        BaseColumnName,
-        BaseSchemaName,
-        BaseTableName,
-        IsAutoIncrement,
-        IsUnique,
-        IsKey,
-        IsRowVersion,
-        DataType,
-        AllowDBNull,
-        ProviderType,
-        IsAliased,
-        IsExpression,
-        IsIdentity,
-        IsHidden,
-        IsLong,
-        IsReadOnly,
-    }
-
-    // Should match dbschematable.cs
-    private static readonly string[] DbColumnNames =
-    [
-        "ColumnName",
-        "ColumnOrdinal",
-        "ColumnSize",
-        "NumericPrecision",
-        "NumericScale",
-        "BaseServerName",
-        "BaseCatalogName",
-        "BaseColumnName",
-        "BaseSchemaName",
-        "BaseTableName",
-        "IsAutoIncrement",
-        "IsUnique",
-        "IsKey",
-        "IsRowVersion",
-        "DataType",
-        "AllowDBNull",
-        "ProviderType",
-        "IsAliased",
-        "IsExpression",
-        "IsIdentity",
-        "IsHidden",
-        "IsLong",
-        "IsReadOnly",
-    ];
-
     public static DataTable DescribeSchema(this ClickHouseDataReader reader)
     {
         var table = new DataTable();
