@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 using ClickHouse.Client.ADO.Adapters;
 using NUnit.Framework;
 
@@ -42,6 +43,17 @@ public class DataAdapterTests : AbstractConnectionTestFixture
 
         Assert.AreEqual(100, dataTable.Rows.Count);
         Assert.AreEqual(2, dataTable.Columns.Count);
+    }
+
+    [Test]
+    public async Task DataTableShouldLoadResults()
+    {
+        using var connection = TestUtilities.GetTestClickHouseConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT 1 as SOMEID FROM numbers(10)";
+        await using var reader = await command.ExecuteReaderAsync();
+        var table = new DataTable();
+        table.Load(reader);
     }
 
     public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()

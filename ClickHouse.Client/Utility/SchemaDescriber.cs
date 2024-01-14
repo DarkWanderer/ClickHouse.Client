@@ -11,85 +11,109 @@ namespace ClickHouse.Client.Utility;
 
 internal static class SchemaDescriber
 {
-    private static readonly string[] Columns =
+    // Should match dbschematable.cs
+    private enum Column
     {
+        ColumnName = 0,
+        ColumnOrdinal,
+        ColumnSize,
+        NumericPrecision,
+        NumericScale,
+        BaseServerName,
+        BaseCatalogName,
+        BaseColumnName,
+        BaseSchemaName,
+        BaseTableName,
+        IsAutoIncrement,
+        IsUnique,
+        IsKey,
+        IsRowVersion,
+        DataType,
+        AllowDBNull,
+        ProviderType,
+        IsAliased,
+        IsExpression,
+        IsIdentity,
+        IsHidden,
+        IsLong,
+        IsReadOnly,
+    }
+
+    // Should match dbschematable.cs
+    private static readonly string[] DbColumnNames =
+    [
         "ColumnName",
         "ColumnOrdinal",
         "ColumnSize",
         "NumericPrecision",
         "NumericScale",
-        "DataType",
-        "ProviderType",
-        "IsLong",
-        "AllowDBNull",
-        "IsReadOnly",
-        "IsRowVersion",
-        "IsUnique",
-        "IsKey",
-        "IsAutoIncrement",
+        "BaseServerName",
         "BaseCatalogName",
+        "BaseColumnName",
         "BaseSchemaName",
         "BaseTableName",
-        "BaseColumnName",
-        "AutoIncrementSeed",
-        "AutoIncrementStep",
-        "DefaultValue",
-        "Expression",
-        "ColumnMapping",
-        "BaseTableNamespace",
-        "BaseColumnNamespace",
-    };
+        "IsAutoIncrement",
+        "IsUnique",
+        "IsKey",
+        "IsRowVersion",
+        "DataType",
+        "AllowDBNull",
+        "ProviderType",
+        "IsAliased",
+        "IsExpression",
+        "IsIdentity",
+        "IsHidden",
+        "IsLong",
+        "IsReadOnly",
+    ];
 
     public static DataTable DescribeSchema(this ClickHouseDataReader reader)
     {
-        var result = new DataTable();
-        foreach (var columnName in Columns)
-            result.Columns.Add(columnName);
-        for (int i = 0; i < reader.FieldCount; i++)
-            result.Rows.Add(reader.DescribeColumn(i));
+        var table = new DataTable();
+        table.Columns.Add("ColumnName", typeof(string));
+        table.Columns.Add("ColumnOrdinal", typeof(int));
+        table.Columns.Add("ColumnSize", typeof(int));
+        table.Columns.Add("NumericPrecision", typeof(int));
+        table.Columns.Add("NumericScale", typeof(int));
+        table.Columns.Add("IsUnique", typeof(bool));
+        table.Columns.Add("IsKey", typeof(bool));
+        table.Columns.Add("DataType", typeof(Type));
+        table.Columns.Add("AllowDBNull", typeof(bool));
+        table.Columns.Add("ProviderType", typeof(string));
+        table.Columns.Add("IsAliased", typeof(bool));
+        table.Columns.Add("IsExpression", typeof(bool));
+        table.Columns.Add("IsIdentity", typeof(bool));
+        table.Columns.Add("IsAutoIncrement", typeof(bool));
+        table.Columns.Add("IsRowVersion", typeof(bool));
+        table.Columns.Add("IsHidden", typeof(bool));
+        table.Columns.Add("IsLong", typeof(bool));
+        table.Columns.Add("IsReadOnly", typeof(bool));
 
-        return result;
-    }
-
-    private static object[] DescribeColumn(this ClickHouseDataReader reader, int ordinal)
-    {
-        var chType = reader.GetClickHouseType(ordinal);
-
-        var result = new object[Columns.Length];
-        result[0] = reader.GetName(ordinal); // ColumnName
-        result[1] = ordinal; // ColumnOrdinal
-        result[2] = null; // ColumnSize
-        result[3] = null; // NumericPrecision
-        result[4] = null; // NumericScale
-        result[5] = chType.FrameworkType; // DataType
-        result[6] = chType.ToString(); // ProviderType
-        result[7] = chType is StringType; // IsLong
-        result[8] = chType is NullableType; // AllowDBNull
-        result[9] = true; // IsReadOnly
-        result[10] = false; // IsRowVersion
-        result[11] = false; // IsUnique
-        result[12] = false; // IsKey
-        result[13] = false; // IsAutoIncrement
-        result[14] = null; // BaseCatalogName
-        result[15] = null; // BaseSchemaName
-        result[16] = null; // BaseTableName
-        result[17] = reader.GetName(ordinal); // BaseColumnName
-        result[18] = null; // AutoIncrementSeed
-        result[19] = null; // AutoIncrementStep
-        result[20] = null; // DefaultValue
-        result[21] = null; // Expression
-        result[22] = MappingType.Element; // ColumnMapping
-        result[23] = null; // BaseTableNamespace
-        result[24] = null; // BaseColumnNamespace
-
-        if (chType is DecimalType dt)
+        for (int ordinal = 0; ordinal < reader.FieldCount; ordinal++)
         {
-            result[2] = dt.Size;
-            result[3] = dt.Precision;
-            result[4] = dt.Scale;
-        }
+            var chType = reader.GetClickHouseType(ordinal);
 
-        return result;
+            var row = table.NewRow();
+            row["ColumnName"] = reader.GetName(ordinal);
+            row["ColumnOrdinal"] = ordinal;
+            row["DataType"] = chType.FrameworkType;
+            row["ProviderType"] = chType;
+            row["IsLong"] = chType is StringType;
+            row["AllowDBNull"] = chType is NullableType;
+            row["IsReadOnly"] = true;
+            row["IsRowVersion"] = false;
+            row["IsUnique"] = false;
+            row["IsKey"] = false;
+            row["IsAutoIncrement"] = false;
+
+            if (chType is DecimalType dt)
+            {
+                row["ColumnSize"] = dt.Size;
+                row["NumericPrecision"] = dt.Precision;
+                row["NumericScale"] = dt.Scale;
+            }
+        }
+        return table;
     }
 
     public static DataTable DescribeSchema(this ClickHouseConnection connection, string type, string[] restrictions) => type switch
