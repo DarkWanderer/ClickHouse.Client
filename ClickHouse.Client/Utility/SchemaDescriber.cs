@@ -56,6 +56,7 @@ internal static class SchemaDescriber
                 row["NumericPrecision"] = dt.Precision;
                 row["NumericScale"] = dt.Scale;
             }
+            table.Rows.Add(row);
         }
         return table;
     }
