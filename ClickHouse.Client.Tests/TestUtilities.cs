@@ -53,10 +53,13 @@ public static class TestUtilities
         builder["set_session_timeout"] = 1; // Expire sessions quickly after test
         builder["set_allow_experimental_geo_types"] = 1; // Allow support for geo types
 
-        // Version 21.7 requires this flag for Map type
         if (SupportedFeatures.HasFlag(Feature.Map))
         {
             builder["set_allow_experimental_map_type"] = 1;
+        }
+        if (SupportedFeatures.HasFlag(Feature.Variant))
+        {
+            builder["set_allow_experimental_variant_type"] = 1;
         }
         return new ClickHouseConnection(builder.ConnectionString);
     }
@@ -70,20 +73,12 @@ public static class TestUtilities
         return new ClickHouseConnectionStringBuilder(devConnectionString);
     }
 
-    public readonly struct DataTypeSample
+    public readonly struct DataTypeSample(string clickHouseType, Type frameworkType, string exampleExpression, object exampleValue)
     {
-        public readonly string ClickHouseType;
-        public readonly Type FrameworkType;
-        public readonly string ExampleExpression;
-        public readonly object ExampleValue;
-
-        public DataTypeSample(string clickHouseType, Type frameworkType, string exampleExpression, object exampleValue)
-        {
-            ClickHouseType = clickHouseType;
-            FrameworkType = frameworkType;
-            ExampleExpression = exampleExpression;
-            ExampleValue = exampleValue;
-        }
+        public readonly string ClickHouseType = clickHouseType;
+        public readonly Type FrameworkType = frameworkType;
+        public readonly string ExampleExpression = exampleExpression;
+        public readonly object ExampleValue = exampleValue;
     }
 
     public static IEnumerable<DataTypeSample> GetDataTypeSamples()
@@ -222,6 +217,11 @@ public static class TestUtilities
         if (SupportedFeatures.HasFlag(Feature.Json))
         {
             //yield return new DataTypeSample("Json", typeof(string), "'{\"a\": \"b\", \"c\": 3}'", "{\"a\": \"b\", \"c\": 3}");
+        }
+
+        if (SupportedFeatures.HasFlag(Feature.Variant))
+        {
+            yield return new DataTypeSample("Variant(UInt64, String, Array(UInt64))", typeof(string), "'Hello, World!'::Variant(UInt64, String, Array(UInt64))", "Hello, World!");
         }
     }
 
