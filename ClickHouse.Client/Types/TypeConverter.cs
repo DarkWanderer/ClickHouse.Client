@@ -158,6 +158,7 @@ internal static class TypeConverter
         RegisterParameterizedType<Enum16Type>();
         RegisterParameterizedType<SimpleAggregateFunctionType>();
         RegisterParameterizedType<MapType>();
+        RegisterParameterizedType<VariantType>();
 
         // Geo types
         RegisterPlainType<PointType>();

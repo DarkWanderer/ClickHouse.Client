@@ -90,6 +90,10 @@ internal static class HttpParameterFormatter
                 var strings = string.Join(",", dict.Keys.Cast<object>().Select(k => $"{Format(mapType.KeyType, k, true)} : {Format(mapType.ValueType, dict[k], true)}"));
                 return $"{{{string.Join(",", strings)}}}";
 
+            case VariantType variantType:
+                var (_,chType) = variantType.GetMatchingType(value);
+                return Format(chType, value, quote);
+
             default:
                 throw new ArgumentException($"Cannot convert {value} to {type}");
         }

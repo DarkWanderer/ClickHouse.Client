@@ -53,5 +53,8 @@ public enum Feature
     [SinceVersion("22.8")]
     AsyncInsert = 8192,
 
+    [SinceVersion("22.8")]
+    Variant = 16384,
+
     All = ~None, // Special value
 }
