@@ -42,7 +42,7 @@ internal static class ActivitySourceHelper
             activity.SetTag(TagThreadId, Environment.CurrentManagedThreadId.ToString(CultureInfo.InvariantCulture));
             activity.SetTag(TagDbSystem, "clickhouse");
         }
-        activity.SetTag(TagDbConnectionString, connection.ConnectionString);
+        activity.SetTag(TagDbConnectionString, connection.RedactedConnectionString);
         activity.SetTag(TagDbName, connection.Database);
         activity.SetTag(TagUser, connection.Username);
         activity.SetTag(TagService, $"{connection.ServerUri.Host}:{connection.ServerUri.Port}");

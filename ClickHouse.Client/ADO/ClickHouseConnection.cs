@@ -121,24 +121,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     {
         get
         {
-            var builder = new ClickHouseConnectionStringBuilder
-            {
-                Database = database,
-                Username = username,
-                Password = password,
-                Host = serverUri?.Host,
-                Port = (ushort)serverUri?.Port,
-                Compression = UseCompression,
-                UseSession = session != null,
-                Timeout = timeout,
-                UseServerTimezone = useServerTimezone,
-                UseCustomDecimals = useCustomDecimals,
-            };
-
-            foreach (var kvp in CustomSettings)
-                builder[CustomSettingPrefix + kvp.Key] = kvp.Value;
-
-            return builder.ToString();
+            return ConnectionStringBuilder.ToString();
         }
 
         set
@@ -172,6 +155,16 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     internal string Username => username;
 
     internal Uri ServerUri => serverUri;
+
+    internal string RedactedConnectionString
+    {
+        get
+        {
+            var builder = ConnectionStringBuilder;
+            builder.Password = "****";
+            return builder.ToString();
+        }
+    }
 
     public string ServerTimezone => serverTimezone;
 
@@ -371,6 +364,31 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         {
             headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
             headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+        }
+    }
+
+    internal ClickHouseConnectionStringBuilder ConnectionStringBuilder
+    {
+        get
+        {
+            var builder = new ClickHouseConnectionStringBuilder
+            {
+                Database = database,
+                Username = username,
+                Password = password,
+                Host = serverUri?.Host,
+                Port = (ushort)serverUri?.Port,
+                Compression = UseCompression,
+                UseSession = session != null,
+                Timeout = timeout,
+                UseServerTimezone = useServerTimezone,
+                UseCustomDecimals = useCustomDecimals,
+            };
+
+            foreach (var kvp in CustomSettings)
+                builder[CustomSettingPrefix + kvp.Key] = kvp.Value;
+
+            return builder;
         }
     }
 

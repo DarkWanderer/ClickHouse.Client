@@ -179,5 +179,13 @@ public class ConnectionTests : AbstractConnectionTestFixture
         Assert.AreEqual("default", conn.Database);
     }
 
+    [Test]
+    public void ShouldExcludePasswordFromRedactedConnectionString()
+    {
+        using var conn = TestUtilities.GetTestClickHouseConnection();
+        var password = conn.ConnectionStringBuilder.Password;
+        Assert.IsFalse(conn.RedactedConnectionString.Contains(password));
+    }
+
     private static string[] GetColumnNames(DataTable table) => table.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
 }
