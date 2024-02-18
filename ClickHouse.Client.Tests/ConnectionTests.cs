@@ -184,7 +184,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     {
         using var conn = TestUtilities.GetTestClickHouseConnection();
         var password = conn.ConnectionStringBuilder.Password;
-        Assert.IsFalse(conn.RedactedConnectionString.Contains(password));
+        Assert.That(conn.RedactedConnectionString, Is.Not.Contains(password));
     }
 
     private static string[] GetColumnNames(DataTable table) => table.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
