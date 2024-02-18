@@ -179,5 +179,17 @@ public class ConnectionTests : AbstractConnectionTestFixture
         Assert.AreEqual("default", conn.Database);
     }
 
+    [Test]
+    public void ShouldExcludePasswordFromRedactedConnectionString()
+    {
+        const string MOCK = "verysecurepassword";
+        using var conn = TestUtilities.GetTestClickHouseConnection();
+        var builder = conn.ConnectionStringBuilder;
+        builder.Password = MOCK;
+        conn.ConnectionStringBuilder = builder;
+        Assert.That(conn.ConnectionString, Contains.Substring($"Password={MOCK}"));
+        Assert.That(conn.RedactedConnectionString, Is.Not.Contains($"Password={MOCK}"));
+    }
+
     private static string[] GetColumnNames(DataTable table) => table.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
 }

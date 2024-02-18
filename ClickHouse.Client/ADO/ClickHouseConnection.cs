@@ -119,48 +119,8 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     /// </summary>
     public sealed override string ConnectionString
     {
-        get
-        {
-            var builder = new ClickHouseConnectionStringBuilder
-            {
-                Database = database,
-                Username = username,
-                Password = password,
-                Host = serverUri?.Host,
-                Port = (ushort)serverUri?.Port,
-                Compression = UseCompression,
-                UseSession = session != null,
-                Timeout = timeout,
-                UseServerTimezone = useServerTimezone,
-                UseCustomDecimals = useCustomDecimals,
-            };
-
-            foreach (var kvp in CustomSettings)
-                builder[CustomSettingPrefix + kvp.Key] = kvp.Value;
-
-            return builder.ToString();
-        }
-
-        set
-        {
-            var builder = new ClickHouseConnectionStringBuilder() { ConnectionString = value };
-            database = builder.Database;
-            username = builder.Username;
-            password = builder.Password;
-            serverUri = new UriBuilder(builder.Protocol, builder.Host, builder.Port).Uri;
-            UseCompression = builder.Compression;
-            session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
-            timeout = builder.Timeout;
-            useServerTimezone = builder.UseServerTimezone;
-            useCustomDecimals = builder.UseCustomDecimals;
-
-            foreach (var key in builder.Keys.Cast<string>().Where(k => k.StartsWith(CustomSettingPrefix, true, CultureInfo.InvariantCulture)))
-            {
-                CustomSettings.Set(key.Replace(CustomSettingPrefix, string.Empty), builder[key]);
-            }
-
-            ResetHttpClientFactory();
-        }
+        get => ConnectionStringBuilder.ToString();
+        set => ConnectionStringBuilder = new ClickHouseConnectionStringBuilder() { ConnectionString = value };
     }
 
     public IDictionary<string, object> CustomSettings => customSettings;
@@ -172,6 +132,16 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     internal string Username => username;
 
     internal Uri ServerUri => serverUri;
+
+    internal string RedactedConnectionString
+    {
+        get
+        {
+            var builder = ConnectionStringBuilder;
+            builder.Password = "****";
+            return builder.ToString();
+        }
+    }
 
     public string ServerTimezone => serverTimezone;
 
@@ -371,6 +341,52 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         {
             headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
             headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+        }
+    }
+
+    internal ClickHouseConnectionStringBuilder ConnectionStringBuilder
+    {
+        get
+        {
+            var builder = new ClickHouseConnectionStringBuilder
+            {
+                Database = database,
+                Username = username,
+                Password = password,
+                Host = serverUri?.Host,
+                Port = (ushort)serverUri?.Port,
+                Compression = UseCompression,
+                UseSession = session != null,
+                Timeout = timeout,
+                UseServerTimezone = useServerTimezone,
+                UseCustomDecimals = useCustomDecimals,
+            };
+
+            foreach (var kvp in CustomSettings)
+                builder[CustomSettingPrefix + kvp.Key] = kvp.Value;
+
+            return builder;
+        }
+
+        set
+        {
+            var builder = value;
+            database = builder.Database;
+            username = builder.Username;
+            password = builder.Password;
+            serverUri = new UriBuilder(builder.Protocol, builder.Host, builder.Port).Uri;
+            UseCompression = builder.Compression;
+            session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
+            timeout = builder.Timeout;
+            useServerTimezone = builder.UseServerTimezone;
+            useCustomDecimals = builder.UseCustomDecimals;
+
+            foreach (var key in builder.Keys.Cast<string>().Where(k => k.StartsWith(CustomSettingPrefix, true, CultureInfo.InvariantCulture)))
+            {
+                CustomSettings.Set(key.Replace(CustomSettingPrefix, string.Empty), builder[key]);
+            }
+
+            ResetHttpClientFactory();
         }
     }
 
