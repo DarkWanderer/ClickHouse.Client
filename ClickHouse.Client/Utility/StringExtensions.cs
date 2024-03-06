@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -52,7 +53,8 @@ public static class StringExtensions
     {
         if (replacements == null || replacements.Count == 0)
             return input;
-        var regex = "(" + string.Join("|", replacements.Keys) + ")";
+        var keys = replacements.Keys.OrderByDescending(t => t.Length);
+        var regex = "(" + string.Join("|", keys) + ")";
         return Regex.Replace(input, regex, (Match m) => { return replacements[m.Value]; });
     }
 }
