@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO.Adapters;
+using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.ADO;
@@ -71,11 +72,24 @@ public class DataAdapterTests : AbstractConnectionTestFixture
         command.CommandText = sql;
         adapter.SelectCommand = command;
 
-        var dataTable = new DataTable();
-        adapter.Fill(dataTable);
+        var table = new DataTable();
+        adapter.Fill(table);
 
-        Assert.AreEqual(1, dataTable.Rows.Count);
-        Assert.AreEqual(1, dataTable.Columns.Count);
-        Assert.AreEqual("col", dataTable.Columns[0].ColumnName);
+        Assert.AreEqual(1, table.Rows.Count);
+        Assert.AreEqual(1, table.Columns.Count);
+        Assert.AreEqual("col", table.Columns[0].ColumnName);
+    }
+
+    [Test]
+    [Parallelizable]
+    [TestCaseSource(typeof(DataAdapterTests), nameof(SimpleSelectQueries))]
+    public void ShouldReadDataTable(string sql)
+    {
+        using var adapter = new ClickHouseDataAdapter();
+        using var table = connection.ExecuteDataTable(sql);
+
+        Assert.AreEqual(1, table.Rows.Count);
+        Assert.AreEqual(1, table.Columns.Count);
+        Assert.AreEqual("col", table.Columns[0].ColumnName);
     }
 }
