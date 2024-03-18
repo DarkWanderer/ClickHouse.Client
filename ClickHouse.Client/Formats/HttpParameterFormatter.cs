@@ -54,7 +54,6 @@ internal static class HttpParameterFormatter
             case IPv4Type ip4:
             case IPv6Type ip6:
             case UuidType uuidType:
-            case JsonType jsonType:
                 return quote ? value.ToString().Escape().QuoteSingle() : value.ToString().Escape();
 
             case LowCardinalityType lt:

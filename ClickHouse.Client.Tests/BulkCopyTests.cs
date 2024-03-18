@@ -85,6 +85,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
                     BatchSize = 100
                 };
 
+                await bulkCopy.InitAsync();
                 await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)0 }, 1));
                 i++;
             }
@@ -187,7 +188,6 @@ public class BulkCopyTests : AbstractConnectionTestFixture
     }
 
     [Test]
-    [RequiredFeature(Feature.InlineQuery)]
     public async Task ShouldInsertIntoTableWithLotsOfColumns()
     {
         var tableName = "test.bulk_long_columns";
