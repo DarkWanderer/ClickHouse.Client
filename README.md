@@ -14,6 +14,7 @@ ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra
   * Composite types: `Array`, `Tuple`, `Nullable`, `Nested`, `Map`, including combinations
   * Specialized types: `IPv4`, `IPv6`, `UUID`, `DateTime64`, `LowCardinality`, `Enum` etc.
   * Large arithmetic types: `(U)Int128`, `(U)Int256`, `Decimal128`, `Decimal256`
+  * Note: JSON type support was officially dropped from ClickHouse itself
 * Correctly handles `DateTime`, including time zones
 * Supports [bulk insertion](https://github.com/DarkWanderer/ClickHouse.Client/wiki/Bulk-insertion)
 * Uses compressed binary protocol over HTTP(S)
