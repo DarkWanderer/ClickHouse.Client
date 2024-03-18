@@ -167,7 +167,6 @@ internal static class TypeConverter
         RegisterPlainType<MultiPolygonType>();
 
         // JSON/Object
-        RegisterPlainType<JsonType>();
         RegisterParameterizedType<ObjectType>();
 
         // Mapping fixups

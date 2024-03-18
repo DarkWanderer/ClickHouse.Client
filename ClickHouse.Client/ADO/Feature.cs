@@ -9,10 +9,6 @@ public enum Feature
     None = 0, // Special value
 
     [Obsolete]
-    [SinceVersion("20.5")]
-    InlineQuery = 2,
-
-    [Obsolete]
     [SinceVersion("20.1")]
     DateTime64 = 4,
 
@@ -45,10 +41,6 @@ public enum Feature
 
     [SinceVersion("22.6")]
     Stats = 2048,
-
-    [Obsolete]
-    [SinceVersion("22.6")]
-    Json = 4096,
 
     [SinceVersion("22.8")]
     AsyncInsert = 8192,

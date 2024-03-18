@@ -214,11 +214,6 @@ public static class TestUtilities
             Tuple.Create(.3, .4)
         });
 
-        if (SupportedFeatures.HasFlag(Feature.Json))
-        {
-            //yield return new DataTypeSample("Json", typeof(string), "'{\"a\": \"b\", \"c\": 3}'", "{\"a\": \"b\", \"c\": 3}");
-        }
-
         if (SupportedFeatures.HasFlag(Feature.Variant))
         {
             yield return new DataTypeSample("Variant(UInt64, String, Array(UInt64))", typeof(string), "'Hello, World!'::Variant(UInt64, String, Array(UInt64))", "Hello, World!");
