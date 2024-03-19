@@ -235,9 +235,8 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 
         try
         {
-            var uriBuilder = CreateUriBuilder();
-            uriBuilder.CustomParameters.Add("query", versionQuery);
-            var request = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
+            var uriBuilder = CreateUriBuilder(versionQuery);
+            var request = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
             AddDefaultHttpHeaders(request.Headers);
             var response = await HandleError(await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false), versionQuery, activity).ConfigureAwait(false);
 #if NET5_0_OR_GREATER
