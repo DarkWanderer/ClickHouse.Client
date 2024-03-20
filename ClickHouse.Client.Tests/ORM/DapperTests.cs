@@ -175,4 +175,20 @@ public class DapperTests : AbstractConnectionTestFixture
         Assert.IsInstanceOf<decimal>(result);
         Assert.AreEqual(0.0001m, result);
     }
+
+    [Test]
+    public async Task ShouldInsertParameterizedFloat64Array()
+    {
+        const decimal expected = 123.456m;
+
+        await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.dapper_decimal");
+        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.dapper_decimal (balance Decimal256(4)) ENGINE Memory");
+
+
+        var sql = @"INSERT INTO test.dapper_decimal (balance) VALUES (@balance)";
+        await connection.ExecuteAsync(sql, new { balance = expected });
+
+        var actual = (ClickHouseDecimal) await connection.ExecuteScalarAsync("SELECT * FROM test.dapper_decimal");
+        Assert.AreEqual(expected, actual.ToDecimal(CultureInfo.InvariantCulture));
+    }
 }
