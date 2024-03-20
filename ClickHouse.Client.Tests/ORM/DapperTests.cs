@@ -177,12 +177,14 @@ public class DapperTests : AbstractConnectionTestFixture
     }
 
     [Test]
-    public async Task ShouldInsertParameterizedFloat64Array()
+    [TestCase(100)]
+    [TestCase(1000000000)]
+    [TestCase(123.456)]
+    [TestCase(0.0001)]
+    public async Task ShouldWriteDecimalWithTypeInference(decimal expected)
     {
-        const decimal expected = 123.456m;
-
         await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.dapper_decimal");
-        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.dapper_decimal (balance Decimal128(4)) ENGINE Memory");
+        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.dapper_decimal (balance Decimal64(4)) ENGINE Memory");
 
 
         var sql = @"INSERT INTO test.dapper_decimal (balance) VALUES (@balance)";

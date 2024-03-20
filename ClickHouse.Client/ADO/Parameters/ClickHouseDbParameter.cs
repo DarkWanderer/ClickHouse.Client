@@ -41,7 +41,7 @@ public class ClickHouseDbParameter : DbParameter
             {
                 var parts = decimal.GetBits(d);
                 int scale = (parts[3] >> 16) & 0x7F;
-                return $"{{{ParameterName}:Decimal(22,{scale})}}";
+                return $"{{{ParameterName}:Decimal128({scale})}}";
             }
 
             var chType = TypeConverter.ToClickHouseType(Value?.GetType() ?? typeof(DBNull)).ToString();
