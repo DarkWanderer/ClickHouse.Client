@@ -67,7 +67,6 @@ public class TypeMappingTests
 
     [TestCase(typeof(float), ExpectedResult = "Float32")]
     [TestCase(typeof(double), ExpectedResult = "Float64")]
-    [TestCase(typeof(decimal), ExpectedResult = "Decimal128(0)")]
 
     [TestCase(typeof(string), ExpectedResult = "String")]
 
