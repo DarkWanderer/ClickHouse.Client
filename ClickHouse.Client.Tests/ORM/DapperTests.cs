@@ -182,7 +182,7 @@ public class DapperTests : AbstractConnectionTestFixture
         const decimal expected = 123.456m;
 
         await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.dapper_decimal");
-        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.dapper_decimal (balance Decimal256(4)) ENGINE Memory");
+        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.dapper_decimal (balance Decimal128(4)) ENGINE Memory");
 
 
         var sql = @"INSERT INTO test.dapper_decimal (balance) VALUES (@balance)";
