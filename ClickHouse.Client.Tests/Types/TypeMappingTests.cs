@@ -40,7 +40,13 @@ public class TypeMappingTests
 
     [TestCase("LowCardinality(String)", ExpectedResult = typeof(string))]
 
+#if NET6_0_OR_GREATER
+    [TestCase("Date", ExpectedResult = typeof(DateOnly))]
+    [TestCase("Date32", ExpectedResult = typeof(DateOnly))]
+#else
     [TestCase("Date", ExpectedResult = typeof(DateTime))]
+    [TestCase("Date32", ExpectedResult = typeof(DateTime))]
+#endif
     [TestCase("DateTime", ExpectedResult = typeof(DateTime))]
     [TestCase("DateTime('Etc/UTC')", ExpectedResult = typeof(DateTime))]
     [TestCase("DateTime64(3)", ExpectedResult = typeof(DateTime))]
