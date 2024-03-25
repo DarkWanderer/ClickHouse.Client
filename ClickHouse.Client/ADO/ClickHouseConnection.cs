@@ -236,8 +236,10 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         try
         {
             var uriBuilder = CreateUriBuilder();
-            uriBuilder.CustomParameters.Add("query", versionQuery);
-            var request = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
+            var request = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString())
+            {
+                Content = new StringContent(versionQuery, Encoding.UTF8),
+            };
             AddDefaultHttpHeaders(request.Headers);
             var response = await HandleError(await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false), versionQuery, activity).ConfigureAwait(false);
 #if NET5_0_OR_GREATER
@@ -290,7 +292,6 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         {
             postMessage.Content.Headers.Add("Content-Encoding", "gzip");
         }
-
         using var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
         await HandleError(response, sql, activity).ConfigureAwait(false);
     }
