@@ -226,8 +226,8 @@ public class ClickHouseDecimalTests
     [TestCase(typeof(string))]
     public void ShouldConvertToType(Type type)
     {
-        var expected = Convert.ChangeType(5m, type);
-        var actual = Convert.ChangeType(new ClickHouseDecimal(5m), type);
+        var expected = Convert.ChangeType(5.00m, type);
+        var actual = Convert.ChangeType(new ClickHouseDecimal(5.00m), type);
         Assert.AreEqual(expected, actual);
     }
 
