@@ -88,8 +88,6 @@ jobs:
     uses: ./.github/workflows/reusable.yml
     with:
       clickhouse-version: ${{ matrix.version }}
-    needs:
-      - coverage
     strategy:
       fail-fast: false
       matrix:
