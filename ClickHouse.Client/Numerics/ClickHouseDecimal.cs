@@ -181,22 +181,22 @@ public readonly struct ClickHouseDecimal
 
     public static explicit operator int(ClickHouseDecimal value)
     {
-        return (int)(value.Mantissa * BigInteger.Pow(10, value.Scale));
+        return (int)(value.Mantissa / BigInteger.Pow(10, value.Scale));
     }
 
     public static explicit operator uint(ClickHouseDecimal value)
     {
-        return (uint)(value.Mantissa * BigInteger.Pow(10, value.Scale));
+        return (uint)(value.Mantissa / BigInteger.Pow(10, value.Scale));
     }
 
     public static explicit operator long(ClickHouseDecimal value)
     {
-        return (long)(value.Mantissa * BigInteger.Pow(10, value.Scale));
+        return (long)(value.Mantissa / BigInteger.Pow(10, value.Scale));
     }
 
     public static explicit operator ulong(ClickHouseDecimal value)
     {
-        return (ulong)(value.Mantissa * BigInteger.Pow(10, value.Scale));
+        return (ulong)(value.Mantissa / BigInteger.Pow(10, value.Scale));
     }
 
     public static ClickHouseDecimal operator +(ClickHouseDecimal left, ClickHouseDecimal right)
