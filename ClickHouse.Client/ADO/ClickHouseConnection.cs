@@ -296,6 +296,20 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         await HandleError(response, sql, activity).ConfigureAwait(false);
     }
 
+    internal async Task PostContentAsync(string sql, HttpContent httpData, CancellationToken token)
+    {
+        using var activity = this.StartActivity("PostStreamAsync");
+        activity.SetQuery(sql);
+
+        var builder = CreateUriBuilder(sql);
+        using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());
+        AddDefaultHttpHeaders(postMessage.Headers);
+
+        postMessage.Content = httpData;
+        using var response = await HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
+        await HandleError(response, sql, activity).ConfigureAwait(false);
+    }
+
     public new ClickHouseCommand CreateCommand() => new ClickHouseCommand(this);
 
     void IDisposable.Dispose()
