@@ -149,7 +149,7 @@ public class ClickHouseBulkCopy : IDisposable
     private async Task SendBatchAsync(Batch batch, CancellationToken token)
     {
         // Async sending
-        await connection.PostContentAsync(null, new BulkCopyHttpContent(batch, ColumnNames, true), token).ConfigureAwait(false);
+        await connection.PostContentAsync(null, new BulkCopyHttpContent(batch, true), token).ConfigureAwait(false);
         // Increase counter
         Interlocked.Add(ref rowsWritten, batch.Size);
     }
@@ -194,13 +194,11 @@ public class ClickHouseBulkCopy : IDisposable
     private class BulkCopyHttpContent : HttpContent
     {
         private readonly Batch batch;
-        private readonly IReadOnlyCollection<string> columnNames;
         private readonly bool isCompressed;
 
-        public BulkCopyHttpContent(Batch batch, IReadOnlyCollection<string> columnNames, bool isCompressed)
+        public BulkCopyHttpContent(Batch batch, bool isCompressed)
         {
             this.batch = batch;
-            this.columnNames = columnNames;
             this.isCompressed = isCompressed;
             Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             if (isCompressed)
@@ -242,7 +240,7 @@ public class ClickHouseBulkCopy : IDisposable
                 while (enumerator.MoveNext())
                 {
                     row = (object[])enumerator.Current;
-                    for (col = 0; col < columnNames.Count; col++)
+                    for (col = 0; col < row.Length; col++)
                     {
                         batch.Types[col].Write(writer, row[col]);
                     }
