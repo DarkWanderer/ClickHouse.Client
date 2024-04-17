@@ -197,5 +197,16 @@ public class SqlSimpleSelectTests : IDisposable
         Assert.AreEqual(stats.WrittenBytes, 0);
     }
 
+    [Test]
+    public async Task ShouldSelectRandomizedData()
+    {
+        const int seed = 28081988;
+        const int count = 20;
+        const int columns = 100;
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM generateRandom(generateRandomStructure({columns}, {seed}), {seed}) LIMIT {count};");
+        reader.AssertHasFieldCount(columns);
+        while (await reader.ReadAsync()) ;
+    }
+
     public void Dispose() => connection?.Dispose();
 }
