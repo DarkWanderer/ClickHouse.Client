@@ -198,8 +198,7 @@ public class SqlSimpleSelectTests : IDisposable
     }
 
     [Test]
-    [IgnoreInVersion(22)]
-    [IgnoreInVersion(23, 3)]
+    [FromVersion(23, 6)]
     public async Task ShouldSelectRandomizedData()
     {
         const int seed = 28081988;
