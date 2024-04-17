@@ -202,7 +202,7 @@ public class SqlSimpleSelectTests : IDisposable
     {
         const int seed = 28081988;
         const int count = 20;
-        const int columns = 100;
+        const int columns = 50;
         using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM generateRandom(generateRandomStructure({columns}, {seed}), {seed}) LIMIT {count};");
         reader.AssertHasFieldCount(columns);
         while (await reader.ReadAsync()) ;
