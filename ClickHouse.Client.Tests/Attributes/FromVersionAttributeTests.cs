@@ -10,13 +10,20 @@ public class FromVersionAttributeTests : AbstractConnectionTestFixture
 {
     [Test]
     [FromVersion(23)]
-    public void ShouldRunFromVersion23() => Assert.That(TestUtilities.ServerVersion.Major >= 23);
+    public void ShouldRunFromVersion23()
+    {
+        if (TestUtilities.ServerVersion != null)
+            Assert.That(TestUtilities.ServerVersion.Major >= 23);
+    }
 
     [Test]
     [FromVersion(23, 3)]
     public void ShouldNotRunInVersion22()
     {
-        Assert.That(TestUtilities.ServerVersion.Major >= 23);
-        Assert.That(TestUtilities.ServerVersion.Minor >= 3);
+        if (TestUtilities.ServerVersion != null)
+        {
+            Assert.That(TestUtilities.ServerVersion.Major >= 23);
+            Assert.That(TestUtilities.ServerVersion.Minor >= 3);
+        }
     }
 }

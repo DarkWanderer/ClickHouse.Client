@@ -13,7 +13,7 @@ public class FromVersionAttribute : NUnitAttribute, IApplyToTest
 {
     private Version version;
 
-    public FromVersionAttribute(int major, int minor = -1, int build = -1, int revision = -1)
+    public FromVersionAttribute(int major, int minor = 0, int build = 0, int revision = 0)
     {
         version = new Version(major, minor, build, revision);
     }
