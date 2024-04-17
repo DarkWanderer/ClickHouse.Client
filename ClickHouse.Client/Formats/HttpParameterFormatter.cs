@@ -77,6 +77,10 @@ internal static class HttpParameterFormatter
             case ArrayType arrayType when value is IEnumerable enumerable:
                 return $"[{string.Join(",", enumerable.Cast<object>().Select(obj => Format(arrayType.UnderlyingType, obj, true)))}]";
 
+            case NestedType nestedType when value is IEnumerable enumerable:
+                var values = enumerable.Cast<object>().Select(x => Format(nestedType, x, false));
+                return $"[{string.Join(",", values)}]";
+
 #if !NET462
             case TupleType tupleType when value is ITuple tuple:
                 return $"({string.Join(",", tupleType.UnderlyingTypes.Select((x, i) => Format(x, tuple[i], true)))})";

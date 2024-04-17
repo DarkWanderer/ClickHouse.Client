@@ -52,6 +52,7 @@ public static class TestUtilities
         builder.UseCustomDecimals = customDecimals;
         builder["set_session_timeout"] = 1; // Expire sessions quickly after test
         builder["set_allow_experimental_geo_types"] = 1; // Allow support for geo types
+        builder["set_flatten_nested"] = 0; // Nested should be a single column, see https://clickhouse.com/docs/en/operations/settings/settings#flatten-nested
 
         if (SupportedFeatures.HasFlag(Feature.Map))
         {
@@ -155,6 +156,8 @@ public static class TestUtilities
         yield return new DataTypeSample("Decimal128(0)", typeof(ClickHouseDecimal), "toDecimal128(repeat('1', 30), 0)", ClickHouseDecimal.Parse(new string('1', 30)));
 
         yield return new DataTypeSample("Decimal128(30)", typeof(ClickHouseDecimal), "toDecimal128(1, 30)", new ClickHouseDecimal(BigInteger.Pow(10, 30), 30));
+
+        yield return new DataTypeSample("Nested(Id int, Comment String)", typeof(Tuple<int, string>[]), "CAST([(1, 'a')], 'Nested(Id int, Comment String)')", new[] { Tuple.Create(1, "a") });
 
         if (SupportedFeatures.HasFlag(Feature.WideTypes))
         {

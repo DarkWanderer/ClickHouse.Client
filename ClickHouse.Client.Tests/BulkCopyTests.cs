@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using ClickHouse.Client.Copy;
 using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 
 namespace ClickHouse.Client.Tests;
 
@@ -287,7 +289,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
     [Test]
     public async Task ShouldExecuteWithDBNullArrays()
     {
-        var targetTable = $"test.dbnull_array";
+        var targetTable = $"test.bulk_dbnull_array";
 
         await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
         await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (stringValue Array(String), intValue Array(Int32)) ENGINE TinyLog");
@@ -305,6 +307,28 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         }, CancellationToken.None);
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+    }
+
+    [Test]
+    public async Task ShouldInsertNestedTable()
+    {
+        var targetTable = "test.bulk_nested";
+
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`_id` UUID, `Comments` Nested(Id Nullable(String), Comment Nullable(String))) ENGINE TinyLog");
+
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = targetTable,
+        };
+
+        await bulkCopy.InitAsync();
+
+        await bulkCopy.WriteToServerAsync(new List<object[]>()  { new object[] { Guid.NewGuid(), new ITuple[] {("1", "Comment1"),("2","Comment2"),("3","Comment3")}} });
+
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+        Assert.AreEqual(1, bulkCopy.RowsWritten);
+        Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
     }
 
     private static string SanitizeTableName(string input)

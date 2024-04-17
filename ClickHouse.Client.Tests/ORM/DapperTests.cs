@@ -40,6 +40,8 @@ public class DapperTests : AbstractConnectionTestFixture
             return false;
         if (clickHouseType.Contains("Int256"))
             return false;
+        if (clickHouseType.Contains("Nested"))
+            return false;
         switch (clickHouseType)
         {
             case "UUID":
