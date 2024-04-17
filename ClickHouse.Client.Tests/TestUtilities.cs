@@ -157,7 +157,7 @@ public static class TestUtilities
 
         yield return new DataTypeSample("Decimal128(30)", typeof(ClickHouseDecimal), "toDecimal128(1, 30)", new ClickHouseDecimal(BigInteger.Pow(10, 30), 30));
 
-        //yield return new DataTypeSample("Nested(Id int, Comment String)", typeof(Tuple<int, string>[]), "toNested(1, 'a')", new[] { Tuple.Create(1, "a") });
+        yield return new DataTypeSample("Nested(Id int, Comment String)", typeof(Tuple<int, string>[]), "CAST([(1, 'a')], 'Nested(Id int, Comment String)')", new[] { Tuple.Create(1, "a") });
 
         if (SupportedFeatures.HasFlag(Feature.WideTypes))
         {
