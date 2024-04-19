@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
@@ -197,9 +198,9 @@ public class ClickHouseBulkCopy : IDisposable
 
         protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
         {
-            using (var gzipStream = new GZipStream(stream, CompressionLevel.Fastest, true))
+            using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))
             {
-                await SerializeBatchAsync(gzipStream);
+                await SerializeBatchAsync(gzipStream).ConfigureAwait(false);
             }
         }
 
@@ -207,7 +208,7 @@ public class ClickHouseBulkCopy : IDisposable
         {
             using (var textWriter = new StreamWriter(stream, Encoding.UTF8, 4 * 1024, true))
             {
-                await textWriter.WriteLineAsync(query);
+                await textWriter.WriteLineAsync(query).ConfigureAwait(false);
             }
 
             using var writer = new ExtendedBinaryWriter(stream);
