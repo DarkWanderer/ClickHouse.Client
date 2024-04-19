@@ -27,6 +27,9 @@ public class SqlSimpleSelectTests : IDisposable
     public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()
         .Select(sample => new TestCaseData($"SELECT {sample.ExampleExpression}") { ExpectedResult = sample.ExampleValue });
 
+    public static IEnumerable<TestCaseData> SimpleSelectTypes => TestUtilities.GetDataTypeSamples()
+        .Select(sample => new TestCaseData(sample.ClickHouseType));
+
     [Test]
     [Parallelizable]
     [TestCaseSource(typeof(SqlSimpleSelectTests), nameof(SimpleSelectQueries))]
@@ -195,6 +198,31 @@ public class SqlSimpleSelectTests : IDisposable
         Assert.AreEqual(stats.ReadBytes, 800);
         Assert.AreEqual(stats.WrittenRows, 0);
         Assert.AreEqual(stats.WrittenBytes, 0);
+    }
+
+    [Test]
+    [FromVersion(23, 6)]
+    public async Task ShouldSelectRandomizedData()
+    {
+        const int seed = 28081988;
+        const int count = 20;
+        const int columns = 50;
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM generateRandom(generateRandomStructure({columns}, {seed}), {seed}) LIMIT {count};");
+        reader.AssertHasFieldCount(columns);
+        while (await reader.ReadAsync()) ;
+    }
+
+    [Test]
+    [FromVersion(23, 6)]
+    [Parallelizable]
+    [TestCaseSource(typeof(SqlSimpleSelectTests), nameof(SimpleSelectTypes))]
+    public async Task ShouldExecuteRandomDataSelectQuery(string type)
+    {
+        if (type.StartsWith("Nested") || type == "Nothing" || type.StartsWith("Variant"))
+            Assert.Ignore($"Type {type} not supported by generateRandom");
+
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM generateRandom('value {type.Replace("'", "\\'")}', 10, 10, 10) LIMIT 100");
+        reader.AssertHasFieldCount(1);
     }
 
     public void Dispose() => connection?.Dispose();

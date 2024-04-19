@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using ClickHouse.Client.Copy;
 using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 
 namespace ClickHouse.Client.Tests;
 
@@ -287,10 +289,10 @@ public class BulkCopyTests : AbstractConnectionTestFixture
     [Test]
     public async Task ShouldExecuteWithDBNullArrays()
     {
-        var targetTable = $"test.dbnull_array";
+        var targetTable = $"test.bulk_dbnull_array";
 
         await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
-        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (stringValue Array(String), intValue Array(Int32)) ENGINE TinyLog");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (stringValue Array(String), intValue Array(Int32)) ENGINE Memory");
 
         using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
@@ -305,6 +307,63 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         }, CancellationToken.None);
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+    }
+
+    [Test]
+    public async Task ShouldInsertNestedTable()
+    {
+        var targetTable = "test.bulk_nested";
+
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (`_id` UUID, `Comments` Nested(Id Nullable(String), Comment Nullable(String))) ENGINE Memory");
+
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = targetTable,
+        };
+
+        await bulkCopy.InitAsync();
+
+        await bulkCopy.WriteToServerAsync(new List<object[]>() { new object[] { Guid.NewGuid(), new ITuple[] { ("1", "Comment1"), ("2", "Comment2"), ("3", "Comment3") } } });
+
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+        Assert.AreEqual(1, bulkCopy.RowsWritten);
+        Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
+    }
+
+    [Test]
+    public async Task ShouldInsertDoubleNestedTable()
+    {
+        var targetTable = "test.bulk_double_nested";
+
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (Id Int64, Threads Nested(Id Int64, Comments Nested(Id Int64, Text String))) ENGINE Memory");
+
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = targetTable,
+        };
+
+        await bulkCopy.InitAsync();
+
+        var comments = new[]
+        {
+            Tuple.Create(1, "Comment 1"),
+            Tuple.Create(2, "Comment 2"),
+            Tuple.Create(3, "Comment 3"),
+        };
+        var threads = new[]
+        {
+            Tuple.Create(1, comments),
+            Tuple.Create(2, comments),
+            Tuple.Create(3, comments),
+        };
+
+        await bulkCopy.WriteToServerAsync([[1, threads]]);
+
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+        Assert.AreEqual(1, bulkCopy.RowsWritten);
+        Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
     }
 
     private static string SanitizeTableName(string input)

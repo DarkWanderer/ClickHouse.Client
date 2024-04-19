@@ -8,18 +8,6 @@ public enum Feature
 {
     None = 0, // Special value
 
-    [Obsolete]
-    [SinceVersion("20.1")]
-    DateTime64 = 4,
-
-    [Obsolete]
-    [SinceVersion("20.0")]
-    Decimals = 8,
-
-    [Obsolete]
-    [SinceVersion("20.0")]
-    IPv6 = 16,
-
     [SinceVersion("21.4")]
     UUIDParameters = 32,
 
