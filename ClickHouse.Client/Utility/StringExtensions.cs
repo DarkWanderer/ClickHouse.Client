@@ -48,11 +48,11 @@ public static class StringExtensions
         return result.ToString();
     }
 
-    public static string ReplaceMultiple(this string input, Dictionary<string, string> replacements)
+    public static string ReplaceMultipleWords(this string input, Dictionary<string, string> replacements)
     {
         if (replacements == null || replacements.Count == 0)
             return input;
-        var regex = "(" + string.Join("|", replacements.Keys) + ")";
+        var regex = "(" + string.Join("\\b|", replacements.Keys) + "\\b)";
         return Regex.Replace(input, regex, (Match m) => { return replacements[m.Value]; });
     }
 }

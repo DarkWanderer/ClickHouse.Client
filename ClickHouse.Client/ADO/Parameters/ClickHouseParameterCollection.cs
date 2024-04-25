@@ -78,6 +78,6 @@ internal class ClickHouseParameterCollection : DbParameterCollection
         foreach (var p in parameters)
             replacements.TryAdd("@" + p.ParameterName, p.QueryForm);
 
-        return sqlQuery.ReplaceMultiple(replacements);
+        return sqlQuery.ReplaceMultipleWords(replacements);
     }
 }

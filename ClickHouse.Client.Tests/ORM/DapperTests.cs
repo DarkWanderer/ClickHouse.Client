@@ -195,4 +195,14 @@ public class DapperTests : AbstractConnectionTestFixture
         var actual = (ClickHouseDecimal) await connection.ExecuteScalarAsync("SELECT * FROM test.dapper_decimal");
         Assert.AreEqual(expected, actual.ToDecimal(CultureInfo.InvariantCulture));
     }
+
+    [Test]
+    public async Task ShouldWriteTwoFieldsWithTheSamePrefix()
+    {
+        await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.dapper_prefixes");
+        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.dapper_prefixes (testField Int32, testFieldWithSuffix Int32) ENGINE Memory");
+
+        const string sql = "INSERT INTO test.dapper_prefixes (testField, testFieldWithSuffix) VALUES (@testField, @testFieldWithSuffix)";
+        await connection.ExecuteAsync(sql, new { testField = 1, testFieldWithSuffix = 2 });
+    }
 }
