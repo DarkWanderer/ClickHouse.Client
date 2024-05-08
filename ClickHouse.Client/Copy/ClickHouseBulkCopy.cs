@@ -198,10 +198,8 @@ public class ClickHouseBulkCopy : IDisposable
 
         protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
         {
-            using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))
-            {
-                await SerializeBatchAsync(gzipStream).ConfigureAwait(false);
-            }
+            using var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024);
+            await SerializeBatchAsync(gzipStream).ConfigureAwait(false);
         }
 
         private async Task SerializeBatchAsync(Stream stream)
