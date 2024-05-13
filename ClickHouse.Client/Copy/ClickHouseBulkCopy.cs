@@ -5,11 +5,7 @@ using System.Data;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
@@ -126,7 +122,7 @@ public class ClickHouseBulkCopy : IDisposable
             tasks[i] = Task.CompletedTask;
         }
 
-        foreach (var batch in IntoBatchContents(rows, query, columnTypes))
+        foreach (var batch in IntoBatches(rows, query, columnTypes))
         {
             while (true)
             {
@@ -147,14 +143,56 @@ public class ClickHouseBulkCopy : IDisposable
         await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
-    private async Task SendBatchAsync(BulkCopyHttpContent batchContent, CancellationToken token)
+    private Stream SerializeBatch(Batch batch)
     {
-        using (batchContent)
+        var stream = new MemoryStream() { Capacity = 8 * 1024 };
+
+        using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))
         {
+            using (var textWriter = new StreamWriter(gzipStream, Encoding.UTF8, 4 * 1024, true))
+            {
+                textWriter.WriteLine(batch.Query);
+            }
+
+            using var writer = new ExtendedBinaryWriter(gzipStream);
+
+            int col = 0;
+            object[] row = null;
+            int counter = 0;
+            var enumerator = batch.Rows.GetEnumerator();
+            try
+            {
+                while (enumerator.MoveNext())
+                {
+                    row = (object[])enumerator.Current;
+                    for (col = 0; col < row.Length; col++)
+                    {
+                        batch.Types[col].Write(writer, row[col]);
+                    }
+                    counter++;
+                    if (counter >= batch.Size)
+                        break; // We've reached the batch size
+                }
+            }
+            catch (Exception e)
+            {
+                throw new ClickHouseBulkCopySerializationException(row, col, e);
+            }
+        }
+        stream.Seek(0, SeekOrigin.Begin);
+        return stream;
+    }
+
+    private async Task SendBatchAsync(Batch batch, CancellationToken token)
+    {
+        using (batch) // Dispose object regardless whether sending succeeds
+        {
+            // Async serialization
+            using var stream = await Task.Run(() => SerializeBatch(batch)).ConfigureAwait(false);
             // Async sending
-            await connection.PostContentAsync(null, batchContent, token).ConfigureAwait(false);
+            await connection.PostStreamAsync(null, stream, true, token).ConfigureAwait(false);
             // Increase counter
-            Interlocked.Add(ref rowsWritten, batchContent.Size);
+            Interlocked.Add(ref rowsWritten, batch.Size);
         }
     }
 
@@ -169,85 +207,29 @@ public class ClickHouseBulkCopy : IDisposable
 
     private static string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
 
-    private IEnumerable<BulkCopyHttpContent> IntoBatchContents(IEnumerable<object[]> rows, string query, ClickHouseType[] types)
+    private IEnumerable<Batch> IntoBatches(IEnumerable<object[]> rows, string query, ClickHouseType[] types)
     {
         foreach (var (batch, size) in rows.BatchRented(BatchSize))
         {
-            yield return new BulkCopyHttpContent(query, batch, size, types);
+            yield return new Batch { Rows = batch, Size = size, Query = query, Types = types };
         }
     }
 
-    private class BulkCopyHttpContent : HttpContent
+    // Convenience argument collection
+    private struct Batch : IDisposable
     {
-        private readonly string query;
-        private readonly object[][] rows;
-        private readonly int size;
-        private readonly ClickHouseType[] types;
+        public object[] Rows;
+        public int Size;
+        public string Query;
+        public ClickHouseType[] Types;
 
-        public BulkCopyHttpContent(string query, object[][] rows, int size, ClickHouseType[] types)
+        public void Dispose()
         {
-            this.query = query;
-            this.rows = rows;
-            this.size = size;
-            this.types = types;
-            Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-            Headers.ContentEncoding.Add("gzip");
-        }
-
-        public int Size => size;
-
-        protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
-        {
-            using var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024);
-            await SerializeBatchAsync(gzipStream).ConfigureAwait(false);
-        }
-
-        private async Task SerializeBatchAsync(Stream stream)
-        {
-            using (var textWriter = new StreamWriter(stream, Encoding.UTF8, 4 * 1024, true))
+            if (Rows != null)
             {
-                await textWriter.WriteLineAsync(query).ConfigureAwait(false);
+                ArrayPool<object>.Shared.Return(Rows);
+                Rows = null;
             }
-
-            using var writer = new ExtendedBinaryWriter(stream);
-
-            int col = 0;
-            object[] row = null;
-            int counter = 0;
-            var enumerator = rows.GetEnumerator();
-            try
-            {
-                while (enumerator.MoveNext())
-                {
-                    row = (object[])enumerator.Current;
-                    for (col = 0; col < row.Length; col++)
-                    {
-                        types[col].Write(writer, row[col]);
-                    }
-                    counter++;
-                    if (counter >= size)
-                        break; // We've reached the batch size
-                }
-            }
-            catch (Exception e)
-            {
-                throw new ClickHouseBulkCopySerializationException(row, col, e);
-            }
-        }
-
-        protected override bool TryComputeLength(out long length)
-        {
-            length = 0;
-            return false;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                ArrayPool<object[]>.Shared.Return(rows);
-            }
-            base.Dispose(disposing);
         }
     }
 }

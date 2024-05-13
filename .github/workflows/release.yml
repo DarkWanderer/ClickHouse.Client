@@ -8,6 +8,8 @@ on:
         required: true
         type: string
 
+run-name: Release ${{ inputs.version }}
+
 jobs:
   # Build job
   # Should only use official actions and tools
