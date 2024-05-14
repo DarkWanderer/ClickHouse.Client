@@ -366,6 +366,38 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
     }
 
+    [Test]
+    [TestCase(0.01)]
+    [TestCase(0.25)]
+    [TestCase(0.50)]
+    [TestCase(0.75)]
+    [TestCase(0.99)]
+    public async Task ShouldThrowExceptionOnInnerException(double fraction)
+    {
+        const int setSize = 3000000;
+        int dbNullIndex = (int)(setSize * fraction);
+
+        var targetTable = "test." + SanitizeTableName($"bulk_million_inserts");
+
+
+        var data = Enumerable.Repeat(new object[] { 1 }, setSize).ToArray();
+        data[dbNullIndex][0] = DBNull.Value;
+
+        //await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value Int16) ENGINE Null");
+
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = targetTable,
+            MaxDegreeOfParallelism = 2,
+            BatchSize = 1000
+        };
+
+        await bulkCopy.InitAsync();
+
+        Assert.ThrowsAsync<ClickHouseBulkCopySerializationException>(async () => await bulkCopy.WriteToServerAsync(data, CancellationToken.None));
+    }
+
     private static string SanitizeTableName(string input)
     {
         var builder = new StringBuilder();
@@ -377,3 +409,4 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         return builder.ToString();
     }
 }
+
