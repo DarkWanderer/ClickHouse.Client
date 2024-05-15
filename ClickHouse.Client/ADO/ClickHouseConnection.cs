@@ -277,7 +277,28 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     /// <param name="isCompressed">indicates whether "Content-Encoding: gzip" header should be added</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>Task-wrapped HttpResponseMessage object</returns>
-    public async Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
+    public Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
+    {
+        var content = new StreamContent(data);
+        return PostStreamAsync(sql, content, isCompressed, token);
+    }
+
+    /// <summary>
+    /// Warning: implementation-specific API. Exposed to allow custom optimizations
+    /// May change in future versions
+    /// </summary>
+    /// <param name="sql">SQL query to add to URL, may be empty</param>
+    /// <param name="callback">Callback invoked to write to the stream. May contain SQL query at the beginning. May be gzip-compressed</param>
+    /// <param name="isCompressed">indicates whether "Content-Encoding: gzip" header should be added</param>
+    /// <param name="token">Cancellation token</param>
+    /// <returns>Task-wrapped HttpResponseMessage object</returns>
+    public Task PostStreamAsync(string sql, Func<Stream, CancellationToken, Task> callback, bool isCompressed, CancellationToken token)
+    {
+        var content = new StreamCallbackContent(callback, token);
+        return PostStreamAsync(sql, content, isCompressed, token);
+    }
+
+    private async Task PostStreamAsync(string sql, HttpContent content, bool isCompressed, CancellationToken token)
     {
         using var activity = this.StartActivity("PostStreamAsync");
         activity.SetQuery(sql);
@@ -286,7 +307,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         using var postMessage = new HttpRequestMessage(HttpMethod.Post, builder.ToString());
         AddDefaultHttpHeaders(postMessage.Headers);
 
-        postMessage.Content = new StreamContent(data);
+        postMessage.Content = content;
         postMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
         if (isCompressed)
         {
