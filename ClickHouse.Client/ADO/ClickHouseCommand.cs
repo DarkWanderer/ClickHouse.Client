@@ -144,7 +144,7 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
                 break;
         }
         var result = await PostSqlQueryAsync(sqlBuilder.ToString(), lcts.Token).ConfigureAwait(false);
-        return new ClickHouseDataReader(result, connection.TypeSettings);
+        return ClickHouseDataReader.FromHttpResponse(result, connection.TypeSettings);
     }
 
     private async Task<HttpResponseMessage> PostSqlQueryAsync(string sqlQuery, CancellationToken token)

@@ -19,4 +19,11 @@ public static class ErrorHandlingTests
             Assert.AreEqual(47, ex.ErrorCode);
         }
     }
+
+    [Test]
+    public static async Task UnknownTypeShouldThrowException()
+    {
+        using var connection = TestUtilities.GetTestClickHouseConnection(true);
+        var result = await connection.ExecuteScalarAsync("SELECT INTERVAL 4 DAY");
+    }
 }
