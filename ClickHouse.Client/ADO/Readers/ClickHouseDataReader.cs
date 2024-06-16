@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Numerics;
@@ -23,16 +24,34 @@ public class ClickHouseDataReader : DbDataReader, IEnumerator<IDataReader>, IEnu
     private const int BufferSize = 512 * 1024;
 
     private readonly HttpResponseMessage httpResponse; // Used to dispose at the end of reader
-    private readonly TypeSettings settings;
     private readonly ExtendedBinaryReader reader;
 
-    internal ClickHouseDataReader(HttpResponseMessage httpResponse, TypeSettings settings)
+    private ClickHouseDataReader(HttpResponseMessage httpResponse, ExtendedBinaryReader reader, string[] names, ClickHouseType[] types)
     {
         this.httpResponse = httpResponse ?? throw new ArgumentNullException(nameof(httpResponse));
-        this.settings = settings;
-        var stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), BufferSize);
-        reader = new ExtendedBinaryReader(stream); // will dispose of stream
-        ReadHeaders();
+        this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
+        RawTypes = types;
+        FieldNames = names;
+        CurrentRow = new object[FieldNames.Length];
+    }
+
+    internal static ClickHouseDataReader FromHttpResponse(HttpResponseMessage httpResponse, TypeSettings settings)
+    {
+        if (httpResponse is null) throw new ArgumentNullException(nameof(httpResponse));
+        ExtendedBinaryReader reader = null;
+        try
+        {
+            var stream = new BufferedStream(httpResponse.Content.ReadAsStreamAsync().GetAwaiter().GetResult(), BufferSize);
+            reader = new ExtendedBinaryReader(stream); // will dispose of stream
+            var (names, types) = ReadHeaders(reader, settings);
+            return new ClickHouseDataReader(httpResponse, reader, names, types);
+        }
+        catch (Exception)
+        {
+            httpResponse?.Dispose();
+            reader?.Dispose();
+            throw;
+        }
     }
 
     internal ClickHouseType GetEffectiveClickHouseType(int ordinal)
@@ -197,30 +216,27 @@ public class ClickHouseDataReader : DbDataReader, IEnumerator<IDataReader>, IEnu
     }
 #pragma warning restore CA2215 // Dispose methods should call base class dispose
 
-    private void ReadHeaders()
+    private static (string[], ClickHouseType[]) ReadHeaders(ExtendedBinaryReader reader, TypeSettings settings)
     {
         if (reader.PeekChar() == -1)
         {
-            // Empty dataset
-            FieldNames = Array.Empty<string>();
-            RawTypes = Array.Empty<ClickHouseType>();
-            return;
+            return ([], []);
         }
         var count = reader.Read7BitEncodedInt();
-        FieldNames = new string[count];
-        RawTypes = new ClickHouseType[count];
-        CurrentRow = new object[count];
+        var names = new string[count];
+        var types = new ClickHouseType[count];
 
         for (var i = 0; i < count; i++)
         {
-            FieldNames[i] = reader.ReadString();
+            names[i] = reader.ReadString();
         }
 
         for (var i = 0; i < count; i++)
         {
             var chType = reader.ReadString();
-            RawTypes[i] = TypeConverter.ParseClickHouseType(chType, settings);
+            types[i] = TypeConverter.ParseClickHouseType(chType, settings);
         }
+        return (names, types);
     }
 
     public bool MoveNext() => Read();

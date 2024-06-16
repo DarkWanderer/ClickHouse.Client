@@ -68,10 +68,10 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         var targetTable = "test." + SanitizeTableName($"bulk_load_test");
 
         await connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}");
-        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value Int32) ENGINE Null");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (int Int32, str String, dt DateTime) ENGINE Null");
 
         var cb = TestUtilities.GetConnectionStringBuilder();
-        cb.UseSession = true;
+        cb.UseSession = false;
 
         var conn = new ClickHouseConnection(cb.ToString());
         sw.Start();
@@ -88,7 +88,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
                 };
 
                 await bulkCopy.InitAsync();
-                await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)0 }, 1));
+                await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 0, "a", DateTime.Now }, 1000));
                 i++;
             }
         }
