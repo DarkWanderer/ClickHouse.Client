@@ -21,9 +21,9 @@ public static class ErrorHandlingTests
     }
 
     [Test]
-    public static async Task UnknownTypeShouldThrowException()
+    public static void UnknownTypeShouldThrowException()
     {
         using var connection = TestUtilities.GetTestClickHouseConnection(true);
-        var result = await connection.ExecuteScalarAsync("SELECT INTERVAL 4 DAY");
+        Assert.ThrowsAsync<System.ArgumentException>(async () => await connection.ExecuteScalarAsync("SELECT INTERVAL 4 DAY"));
     }
 }
