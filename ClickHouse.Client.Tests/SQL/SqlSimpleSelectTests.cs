@@ -214,6 +214,16 @@ public class SqlSimpleSelectTests : IDisposable
 
     [Test]
     [FromVersion(23, 6)]
+    public async Task ShouldGetValueDecimal()
+    {
+        using var reader = await connection.ExecuteReaderAsync($"SELECT toDecimal32(1234.56, 3)");
+        Assert.IsTrue(reader.Read());
+        Assert.AreEqual(1234.56m, reader.GetDecimal(0));
+        Assert.IsFalse(reader.Read());
+    }
+
+    [Test]
+    [FromVersion(23, 6)]
     [Parallelizable]
     [TestCaseSource(typeof(SqlSimpleSelectTests), nameof(SimpleSelectTypes))]
     public async Task ShouldExecuteRandomDataSelectQuery(string type)
