@@ -3,6 +3,8 @@ using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
@@ -189,6 +191,23 @@ public class ConnectionTests : AbstractConnectionTestFixture
         conn.ConnectionStringBuilder = builder;
         Assert.That(conn.ConnectionString, Contains.Substring($"Password={MOCK}"));
         Assert.That(conn.RedactedConnectionString, Is.Not.Contains($"Password={MOCK}"));
+    }
+
+    [Test]
+    public async Task ShouldPostDynamicallyGeneratedRawStream()
+    {
+        var targetTable = "test.raw_stream";
+
+        await connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value Int32) ENGINE Null");
+        await connection.PostStreamAsync($"INSERT INTO {targetTable} FORMAT CSV", async (stream, ct) => {
+
+            foreach (var i in Enumerable.Range(1, 1000))
+            {
+                var line = $"{i}\n";
+                await stream.WriteAsync(Encoding.UTF8.GetBytes(line), ct);
+            }
+        }, false, CancellationToken.None);
     }
 
     private static string[] GetColumnNames(DataTable table) => table.Columns.Cast<DataColumn>().Select(dc => dc.ColumnName).ToArray();
