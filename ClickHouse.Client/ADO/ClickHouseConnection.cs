@@ -277,10 +277,10 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     /// <param name="isCompressed">indicates whether "Content-Encoding: gzip" header should be added</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>Task-wrapped HttpResponseMessage object</returns>
-    public Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
+    public async Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
     {
         var content = new StreamContent(data);
-        return PostStreamAsync(sql, content, isCompressed, token);
+        await PostStreamAsync(sql, content, isCompressed, token).ConfigureAwait(false);;
     }
 
     /// <summary>
@@ -292,10 +292,10 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     /// <param name="isCompressed">indicates whether "Content-Encoding: gzip" header should be added</param>
     /// <param name="token">Cancellation token</param>
     /// <returns>Task-wrapped HttpResponseMessage object</returns>
-    public Task PostStreamAsync(string sql, Func<Stream, CancellationToken, Task> callback, bool isCompressed, CancellationToken token)
+    public async Task PostStreamAsync(string sql, Func<Stream, CancellationToken, Task> callback, bool isCompressed, CancellationToken token)
     {
         var content = new StreamCallbackContent(callback, token);
-        return PostStreamAsync(sql, content, isCompressed, token);
+        await PostStreamAsync(sql, content, isCompressed, token).ConfigureAwait(false);
     }
 
     private async Task PostStreamAsync(string sql, HttpContent content, bool isCompressed, CancellationToken token)
