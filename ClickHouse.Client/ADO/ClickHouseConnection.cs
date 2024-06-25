@@ -280,7 +280,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     public async Task PostStreamAsync(string sql, Stream data, bool isCompressed, CancellationToken token)
     {
         var content = new StreamContent(data);
-        await PostStreamAsync(sql, content, isCompressed, token).ConfigureAwait(false);;
+        await PostStreamAsync(sql, content, isCompressed, token).ConfigureAwait(false);
     }
 
     /// <summary>
