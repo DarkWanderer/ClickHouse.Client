@@ -14,6 +14,7 @@ jobs:
     uses: ./.github/workflows/reusable.yml
     with:
       coverage: true
+      repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
     permissions:
       statuses: write
 
@@ -81,7 +82,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       run: python ${{ github.workspace }}/.github/coverage-status.py
                   --coverage-file coverage.diff.json
-                  --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
+                  --repository ${{ github.event.pull_request.head.repo.full_name || github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
 
   regress-clickhouse:
     name: ClickHouse regression
