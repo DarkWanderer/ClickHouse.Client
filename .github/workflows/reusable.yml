@@ -15,10 +15,6 @@ on:
         default: false
         required: false
         type: boolean
-      repository:
-        default: ${{ github.repository }}
-        required: false
-        type: string
 
 jobs:
   build-and-test:
@@ -88,7 +84,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       run: python ${{ github.workspace }}/.github/coverage-status.py
                   --coverage-file ./ClickHouse.Client/coverage.cobertura.xml
-                  --repository ${{ github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
+                  --repository ${{ github.event.pull_request.head.repo.full_name }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
       
     - name: Report summary
       if: ${{ inputs.coverage }}
