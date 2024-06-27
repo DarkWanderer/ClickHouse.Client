@@ -15,7 +15,7 @@ on:
         default: false
         required: false
         type: boolean
-      repository-url:
+      repository:
         default: ${{ github.repository }}
         required: false
         type: string
