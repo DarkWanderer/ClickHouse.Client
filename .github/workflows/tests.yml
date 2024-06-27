@@ -14,7 +14,6 @@ jobs:
     uses: ./.github/workflows/reusable.yml
     with:
       coverage: true
-      repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
     permissions:
       statuses: write
 
