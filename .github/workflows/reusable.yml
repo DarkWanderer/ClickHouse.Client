@@ -15,6 +15,10 @@ on:
         default: false
         required: false
         type: boolean
+      repository-url:
+        default: ${{ github.repository }}
+        required: false
+        type: string
 
 jobs:
   build-and-test:
