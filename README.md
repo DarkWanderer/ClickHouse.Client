@@ -1,5 +1,7 @@
 # ClickHouse.Client
 
+Clone of https://github.com/ClickHouse/ClickHouse with strong name added. Removed netcoreapp31 and net5 removed as build targets as so many warnings were associated with this.
+
 ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra-fast 'big data' relational database
 
 [![Latest version](https://img.shields.io/nuget/v/ClickHouse.Client)](https://www.nuget.org/packages/ClickHouse.Client/)
