@@ -72,11 +72,17 @@ jobs:
       continue-on-error: true
 
     - name: Generate diff json
-      if: ${{ github.event_name == 'pull_request' }}
       run: pycobertura diff ./main/ClickHouse.Client/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml --format json --output coverage.diff.json
       continue-on-error: true
 
-    - name: Set status checks
+    - name: Set coverage status
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: python ${{ github.workspace }}/.github/coverage-status.py
+                  --coverage-file ./ClickHouse.Client/coverage.cobertura.xml
+                  --repository ${{ github.event.pull_request.head.repo.full_name || github.repository }} --sha ${{ github.event.pull_request.head.sha || github.sha }}
+            
+    - name: Set coverage diff status
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: python ${{ github.workspace }}/.github/coverage-status.py
