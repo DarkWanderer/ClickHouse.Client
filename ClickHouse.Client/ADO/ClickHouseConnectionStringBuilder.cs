@@ -81,6 +81,12 @@ public class ClickHouseConnectionStringBuilder : DbConnectionStringBuilder
         set => this["UseCustomDecimals"] = value;
     }
 
+    public bool UseQueryId
+    {
+        get => GetBooleanOrDefault("UseQueryId", true);
+        set => this["UseQueryId"] = value;
+    }
+
     public TimeSpan Timeout
     {
         get

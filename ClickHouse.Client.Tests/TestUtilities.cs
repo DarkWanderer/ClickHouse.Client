@@ -44,12 +44,13 @@ public static class TestUtilities
     /// Utility method to allow to redirect ClickHouse connections to different machine, in case of Windows development environment
     /// </summary>
     /// <returns></returns>
-    public static ClickHouseConnection GetTestClickHouseConnection(bool compression = true, bool session = false, bool customDecimals = true)
+    public static ClickHouseConnection GetTestClickHouseConnection(bool compression = true, bool session = false, bool customDecimals = true, bool useQueryId = true)
     {
         var builder = GetConnectionStringBuilder();
         builder.Compression = compression;
         builder.UseSession = session;
         builder.UseCustomDecimals = customDecimals;
+        builder.UseQueryId = useQueryId;
         builder["set_session_timeout"] = 1; // Expire sessions quickly after test
         builder["set_allow_experimental_geo_types"] = 1; // Allow support for geo types
         builder["set_flatten_nested"] = 0; // Nested should be a single column, see https://clickhouse.com/docs/en/operations/settings/settings#flatten-nested

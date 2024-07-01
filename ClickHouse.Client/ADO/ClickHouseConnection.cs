@@ -151,6 +151,8 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 
     public bool UseCompression { get; private set; }
 
+    public bool UseQueryId { get; private set; }
+
     /// <summary>
     /// Gets enum describing which ClickHouse features are available on this particular server version
     /// Requires connection to be in Open state
@@ -382,6 +384,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
                 Timeout = timeout,
                 UseServerTimezone = useServerTimezone,
                 UseCustomDecimals = useCustomDecimals,
+                UseQueryId = UseQueryId
             };
 
             foreach (var kvp in CustomSettings)
@@ -402,6 +405,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
             timeout = builder.Timeout;
             useServerTimezone = builder.UseServerTimezone;
             useCustomDecimals = builder.UseCustomDecimals;
+            UseQueryId = builder.UseQueryId;
 
             foreach (var key in builder.Keys.Cast<string>().Where(k => k.StartsWith(CustomSettingPrefix, true, CultureInfo.InvariantCulture)))
             {

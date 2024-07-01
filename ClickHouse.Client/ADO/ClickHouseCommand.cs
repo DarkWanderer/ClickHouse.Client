@@ -167,7 +167,7 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
 
         activity.SetQuery(sqlQuery);
 
-        if (!string.IsNullOrEmpty(QueryId))
+        if (!string.IsNullOrEmpty(QueryId) && connection.UseQueryId)
             uriBuilder.CustomParameters.Add("query_id", QueryId);
 
         string uri = uriBuilder.ToString();
@@ -185,7 +185,10 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
         postMessage.Content = content;
 
         var response = await connection.HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
-        QueryId = ExtractQueryId(response);
+        if (connection.UseQueryId)
+        {
+            QueryId = ExtractQueryId(response);
+        }
         QueryStats = ExtractQueryStats(response);
         activity.SetQueryStats(QueryStats);
         return await ClickHouseConnection.HandleError(response, sqlQuery, activity).ConfigureAwait(false);

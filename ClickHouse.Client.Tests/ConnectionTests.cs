@@ -107,6 +107,16 @@ public class ConnectionTests : AbstractConnectionTestFixture
     }
 
     [Test]
+    public async Task ServerShouldNotSetQueryId()
+    {
+        await using var conn = TestUtilities.GetTestClickHouseConnection(useQueryId: false);
+        var command = conn.CreateCommand();
+        command.CommandText = "SELECT 1";
+        await command.ExecuteScalarAsync();
+        Assert.IsTrue(string.IsNullOrWhiteSpace(command.QueryId));
+    }
+
+    [Test]
     [Explicit("This test takes 3s, and can be flaky on loaded server")]
     public async Task ReplaceRunningQuerySettingShouldReplace()
     {
