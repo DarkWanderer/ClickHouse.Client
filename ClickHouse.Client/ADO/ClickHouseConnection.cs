@@ -151,6 +151,14 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 
     public bool UseCompression { get; private set; }
 
+    public bool UseFormDataParameters { get; private set; }
+
+    public void SetFormDataParameters(
+        bool sendParametersAsFormData)
+    {
+        this.UseFormDataParameters = sendParametersAsFormData;
+    }
+
     /// <summary>
     /// Gets enum describing which ClickHouse features are available on this particular server version
     /// Requires connection to be in Open state
