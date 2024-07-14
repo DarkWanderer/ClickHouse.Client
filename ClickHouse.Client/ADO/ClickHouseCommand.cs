@@ -159,7 +159,7 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
         if (!string.IsNullOrEmpty(QueryId))
             uriBuilder.CustomParameters.Add("query_id", QueryId);
 
-        using var postMessage = this.connection.UseFormDataParameters
+        using var postMessage = connection.UseFormDataParameters
             ? BuildHttpRequestMessageWithFormData(
                 sqlQuery: sqlQuery,
                 uriBuilder: uriBuilder)

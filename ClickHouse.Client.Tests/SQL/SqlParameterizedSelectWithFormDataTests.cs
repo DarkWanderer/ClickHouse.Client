@@ -18,7 +18,7 @@ public class SqlParameterizedSelectWithFormDataTests
     public SqlParameterizedSelectWithFormDataTests(bool useCompression)
     {
         connection = TestUtilities.GetTestClickHouseConnection(useCompression);
-        this.connection.SetFormDataParameters(true);
+        connection.SetFormDataParameters(true);
         connection.Open();
     }
 
