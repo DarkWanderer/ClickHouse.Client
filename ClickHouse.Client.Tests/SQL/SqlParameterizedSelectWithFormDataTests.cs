@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
+using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
@@ -31,6 +32,7 @@ public class SqlParameterizedSelectWithFormDataTests
 
     [Test]
     [Parallelizable]
+    [RequiredFeature(Feature.ParamsInMultipartFormData)]
     [TestCaseSource(typeof(SqlParameterizedSelectTests), nameof(TypedQueryParameters))]
     public async Task ShouldExecuteParameterizedCompareWithTypeDetection(string exampleExpression, string clickHouseType, object value)
     {
