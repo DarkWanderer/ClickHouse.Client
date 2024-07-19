@@ -36,5 +36,8 @@ public enum Feature
     [SinceVersion("24.1")]
     Variant = 16384,
 
+    [SinceVersion("22.3")]
+    ParamsInMultipartFormData = 32768,
+
     All = ~None, // Special value
 }

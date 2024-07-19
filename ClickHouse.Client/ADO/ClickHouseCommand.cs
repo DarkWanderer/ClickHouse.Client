@@ -156,6 +156,28 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
         var uriBuilder = connection.CreateUriBuilder();
         await connection.EnsureOpenAsync().ConfigureAwait(false); // Preserve old behavior
 
+        if (!string.IsNullOrEmpty(QueryId))
+            uriBuilder.CustomParameters.Add("query_id", QueryId);
+
+        using var postMessage = connection.UseFormDataParameters
+            ? BuildHttpRequestMessageWithFormData(
+                sqlQuery: sqlQuery,
+                uriBuilder: uriBuilder)
+            : BuildHttpRequestMessageWithQueryParams(
+                sqlQuery: sqlQuery,
+                uriBuilder: uriBuilder);
+
+        activity.SetQuery(sqlQuery);
+
+        var response = await connection.HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+        QueryId = ExtractQueryId(response);
+        QueryStats = ExtractQueryStats(response);
+        activity.SetQueryStats(QueryStats);
+        return await ClickHouseConnection.HandleError(response, sqlQuery, activity).ConfigureAwait(false);
+    }
+
+    private HttpRequestMessage BuildHttpRequestMessageWithQueryParams(string sqlQuery, ClickHouseUriBuilder uriBuilder)
+    {
         if (commandParameters != null)
         {
             sqlQuery = commandParameters.ReplacePlaceholders(sqlQuery);
@@ -165,14 +187,9 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
             }
         }
 
-        activity.SetQuery(sqlQuery);
+        var uri = uriBuilder.ToString();
 
-        if (!string.IsNullOrEmpty(QueryId))
-            uriBuilder.CustomParameters.Add("query_id", QueryId);
-
-        string uri = uriBuilder.ToString();
-
-        using var postMessage = new HttpRequestMessage(HttpMethod.Post, uri);
+        var postMessage = new HttpRequestMessage(HttpMethod.Post, uri);
 
         connection.AddDefaultHttpHeaders(postMessage.Headers);
         HttpContent content = new StringContent(sqlQuery);
@@ -184,11 +201,38 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
 
         postMessage.Content = content;
 
-        var response = await connection.HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
-        QueryId = ExtractQueryId(response);
-        QueryStats = ExtractQueryStats(response);
-        activity.SetQueryStats(QueryStats);
-        return await ClickHouseConnection.HandleError(response, sqlQuery, activity).ConfigureAwait(false);
+        return postMessage;
+    }
+
+    private HttpRequestMessage BuildHttpRequestMessageWithFormData(string sqlQuery, ClickHouseUriBuilder uriBuilder)
+    {
+        var content = new MultipartFormDataContent();
+
+        if (commandParameters != null)
+        {
+            sqlQuery = commandParameters.ReplacePlaceholders(sqlQuery);
+
+            foreach (ClickHouseDbParameter parameter in commandParameters)
+            {
+                content.Add(
+                    content: new StringContent(HttpParameterFormatter.Format(parameter, connection.TypeSettings)),
+                    name: $"param_{parameter.ParameterName}");
+            }
+        }
+
+        content.Add(
+            content: new StringContent(sqlQuery),
+            name: "query");
+
+        var uri = uriBuilder.ToString();
+
+        var postMessage = new HttpRequestMessage(HttpMethod.Post, uri);
+
+        connection.AddDefaultHttpHeaders(postMessage.Headers);
+
+        postMessage.Content = content;
+
+        return postMessage;
     }
 
     private static readonly JsonSerializerOptions SummarySerializerOptions = new JsonSerializerOptions
