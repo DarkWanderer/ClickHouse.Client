@@ -58,6 +58,38 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         Assert.AreEqual(insertedValue, data, "Original and actually inserted values differ");
     }
 
+
+#if NET6_0_OR_GREATER
+    [Test]
+    [Parallelizable]
+    [RequiredFeature(Feature.Date32)]
+    public async Task ShouldInsertDateOnly()
+    {
+        var targetTable = "test.bulk_dateonly";
+
+        await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value Date32) ENGINE Memory");
+
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = targetTable,
+            MaxDegreeOfParallelism = 2,
+            BatchSize = 100
+        };
+
+        await bulkCopy.InitAsync();
+        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { new DateOnly(1999, 12, 31) }, 1));
+
+        Assert.AreEqual(1, bulkCopy.RowsWritten);
+
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+        Assert.IsTrue(reader.Read(), "Cannot read inserted data");
+        reader.AssertHasFieldCount(1);
+        var data = reader.GetValue(0);
+        Assert.AreEqual(new DateTime(1999, 12, 31), data, "Original and actually inserted values differ");
+    }
+#endif
+
     [Test]
     [Explicit("Infinite loop test")]
     public async Task ShouldExecuteMultipleBulkInsertions()

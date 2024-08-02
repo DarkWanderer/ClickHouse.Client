@@ -97,7 +97,7 @@ public class ClickHouseDataReader : DbDataReader, IEnumerator<IDataReader>, IEnu
     public override DateTime GetDateTime(int ordinal) => (DateTime)GetValue(ordinal);
 
     public virtual DateTimeOffset GetDateTimeOffset(int ordinal) => GetEffectiveClickHouseType(ordinal) is AbstractDateTimeType adt ?
-        adt.ToDateTimeOffset(GetDateTime(ordinal)) : throw new InvalidCastException();
+        adt.CoerceToDateTimeOffset(GetDateTime(ordinal)) : throw new InvalidCastException();
 
     public override decimal GetDecimal(int ordinal)
     {
