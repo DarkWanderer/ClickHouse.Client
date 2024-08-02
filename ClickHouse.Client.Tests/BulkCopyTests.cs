@@ -62,6 +62,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
 #if NET6_0_OR_GREATER
     [Test]
     [Parallelizable]
+    [RequiredFeature(Feature.Date32)]
     public async Task ShouldInsertDateOnly()
     {
         var targetTable = "test.bulk_dateonly";
