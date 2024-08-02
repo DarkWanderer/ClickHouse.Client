@@ -22,11 +22,10 @@ internal class DateTimeType : AbstractDateTimeType
         return new DateTimeType { TimeZone = timeZone };
     }
 
-    public override object Read(ExtendedBinaryReader reader) => FromUnixTimeSeconds(reader.ReadUInt32());
+    public override object Read(ExtendedBinaryReader reader) => ToDateTime(Instant.FromUnixTimeSeconds(reader.ReadUInt32()));
 
     public override void Write(ExtendedBinaryWriter writer, object value)
     {
-        var dto = value is DateTimeOffset offset ? offset : ToDateTimeOffset((DateTime)value);
-        writer.Write((int)dto.ToUnixTimeSeconds());
+        writer.Write((int)CoerceToDateTimeOffset(value).ToUnixTimeSeconds());
     }
 }

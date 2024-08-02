@@ -3,38 +3,53 @@ using NodaTime;
 
 namespace ClickHouse.Client.Types;
 
-internal abstract class AbstractDateTimeType : ParameterizedType
+public static class DateTimeConversions
 {
-    // DateTime.UnixEpoch is not available on .NET 4.8
     public static readonly DateTime DateTimeEpochStart = DateTimeOffset.FromUnixTimeSeconds(0).UtcDateTime;
 
 #if NET6_0_OR_GREATER
-    public static readonly DateOnly DateOnlyEpochStart = new DateOnly(1970, 1, 1);
+    public static readonly DateOnly DateOnlyEpochStart = new(1970, 1, 1);
 #endif
+
+    public static int ToUnixTimeDays(this DateTimeOffset dto)
+    {
+        return (int)(dto.Date - DateTimeEpochStart.Date).TotalDays;
+    }
+
+    public static DateTime FromUnixTimeDays(int days) => DateTimeEpochStart.AddDays(days);
+}
+
+internal abstract class AbstractDateTimeType : ParameterizedType
+{
+    public DateTimeOffset CoerceToDateTimeOffset(object value)
+    {
+        return value switch
+        {
+#if NET6_0_OR_GREATER
+            DateOnly date => new DateTimeOffset(date.Year, date.Month, date.Day, 0, 0, 0, TimeSpan.Zero),
+#endif
+            DateTimeOffset v => v,
+            DateTime dt => TimeZoneOrUtc.AtLeniently(LocalDateTime.FromDateTime(dt)).ToDateTimeOffset(),
+            OffsetDateTime o => o.ToDateTimeOffset(),
+            ZonedDateTime z => z.ToDateTimeOffset(),
+            Instant i => ToDateTimeOffset(i),
+            _ => throw new NotSupportedException()
+        };
+    }
 
     public override Type FrameworkType => typeof(DateTime);
 
     public DateTimeZone TimeZone { get; set; }
 
-    public DateTime FromUnixTimeTicks(long ticks) => ToDateTime(Instant.FromUnixTimeTicks(ticks));
-
-    public DateTime FromUnixTimeSeconds(long seconds) => ToDateTime(Instant.FromUnixTimeSeconds(seconds));
-
-    public ZonedDateTime ToZonedDateTime(DateTime dateTime)
-    {
-        return TimeZone.AtLeniently(LocalDateTime.FromDateTime(dateTime));
-    }
-
-    public DateTimeOffset ToDateTimeOffset(DateTime dateTime) => ToZonedDateTime(dateTime).ToDateTimeOffset();
+    public DateTimeZone TimeZoneOrUtc => TimeZone ?? DateTimeZone.Utc;
 
     public override string ToString() => TimeZone == null ? $"{Name}" : $"{Name}({TimeZone.Id})";
 
-    private DateTime ToDateTime(Instant instant)
+    private DateTimeOffset ToDateTimeOffset(Instant instant) => instant.InZone(TimeZoneOrUtc).ToDateTimeOffset();
+
+    public DateTime ToDateTime(Instant instant)
     {
-        // Special case for ETC/GMT timezone. TODO: support other aliases like Etc/Universal
-        if (TimeZone == null)
-            return instant.ToDateTimeUtc();
-        var zonedDateTime = instant.InZone(TimeZone);
+        var zonedDateTime = instant.InZone(TimeZoneOrUtc);
         if (zonedDateTime.Offset.Ticks == 0)
             return zonedDateTime.ToDateTimeUtc();
         else

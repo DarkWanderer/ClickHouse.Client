@@ -19,7 +19,7 @@ internal class DateTime64Type : AbstractDateTimeType
     {
         // Convert ClickHouse variable precision ticks into "standard" .NET 100ns ones
         var ticks = MathUtils.ShiftDecimalPlaces(clickHouseTicks, 7 - Scale);
-        return FromUnixTimeTicks(ticks);
+        return ToDateTime(Instant.FromUnixTimeTicks(ticks));
     }
 
     public long ToClickHouseTicks(Instant instant) => MathUtils.ShiftDecimalPlaces(instant.ToUnixTimeTicks(), Scale - 7);
@@ -47,12 +47,6 @@ internal class DateTime64Type : AbstractDateTimeType
 
     public override void Write(ExtendedBinaryWriter writer, object value)
     {
-        var instant = value switch
-        {
-            DateTimeOffset dto => Instant.FromDateTimeOffset(dto),
-            DateTime dt => ToZonedDateTime(dt).ToInstant(),
-            _ => throw new ArgumentException("Cannot convert value to datetime"),
-        };
-        writer.Write(ToClickHouseTicks(instant));
+        writer.Write(ToClickHouseTicks(Instant.FromDateTimeOffset(CoerceToDateTimeOffset(value))));
     }
 }
