@@ -203,7 +203,7 @@ public class SqlSimpleSelectTests : IDisposable
     }
 
     [Test]
-    [FromVersion(23, 9)]
+    [FromVersion(23, 8)]
     public async Task ShouldGetElapsedQueryStats()
     {
         var command = connection.CreateCommand();
@@ -214,20 +214,8 @@ public class SqlSimpleSelectTests : IDisposable
     }
 
     [Test]
-    [FromVersion(23, 8)]
-    public async Task ShouldGetEmptyResultQueryStatsIfResponseBufferingDisabled()
-    {
-        var command = connection.CreateCommand();
-        command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
-        using var reader = await command.ExecuteReaderAsync();
-        var stats = command.QueryStats;
-        Assert.AreEqual(0, stats.ResultRows);
-        Assert.AreEqual(0, stats.ResultBytes);
-    }
-
-    [Test]
-    [FromVersion(23, 8)]
-    public async Task ShouldGetResultQueryStatsIfResponseBufferingEnabled()
+    [FromVersion(23, 7)]
+    public async Task ShouldGetResultQueryStats()
     {
         using var bufferingConnection = TestUtilities.GetTestClickHouseConnection(useCompression);
         bufferingConnection.EnableResponseBuffering();
