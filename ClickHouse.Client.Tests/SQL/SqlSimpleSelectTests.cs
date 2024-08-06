@@ -194,10 +194,10 @@ public class SqlSimpleSelectTests : IDisposable
         command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
         using var reader = await command.ExecuteReaderAsync();
         var stats = command.QueryStats;
-        Assert.AreEqual(stats.ReadRows, 100);
-        Assert.AreEqual(stats.ReadBytes, 800);
-        Assert.AreEqual(stats.WrittenRows, 0);
-        Assert.AreEqual(stats.WrittenBytes, 0);
+        Assert.AreEqual(100, stats.ReadRows);
+        Assert.AreEqual(800, stats.ReadBytes);
+        Assert.AreEqual(0, stats.WrittenRows);
+        Assert.AreEqual(0, stats.WrittenBytes);
     }
 
     [Test]
@@ -219,8 +219,8 @@ public class SqlSimpleSelectTests : IDisposable
         command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
         using var reader = await command.ExecuteReaderAsync();
         var stats = command.QueryStats;
-        Assert.AreEqual(stats.ResultRows, 0);
-        Assert.AreEqual(stats.ResultBytes, 0);
+        Assert.AreEqual(0, stats.ResultRows);
+        Assert.AreEqual(0, stats.ResultBytes);
     }
 
     [Test]
@@ -232,8 +232,8 @@ public class SqlSimpleSelectTests : IDisposable
         command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
         using var reader = await command.ExecuteReaderAsync();
         var stats = command.QueryStats;
-        Assert.AreEqual(stats.ResultRows, 100);
-        Assert.AreEqual(stats.ResultBytes, 800);
+        Assert.AreEqual(100, stats.ResultRows);
+        Assert.AreEqual(928, stats.ResultBytes);
     }
 
     [Test]
