@@ -188,7 +188,7 @@ public class SqlSimpleSelectTests : IDisposable
 
     [Test]
     [RequiredFeature(Feature.Stats)]
-    public async Task ShouldGetQueryStats()
+    public async Task ShouldGetBaseQueryStats()
     {
         var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
@@ -198,6 +198,44 @@ public class SqlSimpleSelectTests : IDisposable
         Assert.AreEqual(stats.ReadBytes, 800);
         Assert.AreEqual(stats.WrittenRows, 0);
         Assert.AreEqual(stats.WrittenBytes, 0);
+    }
+
+    [Test]
+    [FromVersion(23, 9)]
+    public async Task ShouldGetElapsedQueryStats()
+    {
+        var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
+        using var reader = await command.ExecuteReaderAsync();
+        var stats = command.QueryStats;
+        Assert.Greater(stats.ElapsedNs, 0);
+    }
+
+    [Test]
+    [FromVersion(23, 8)]
+    public async Task ShouldGetNullResultQueryStatsIfResponseBufferingDisabled()
+    {
+        var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
+        using var reader = await command.ExecuteReaderAsync();
+        var stats = command.QueryStats;
+        Assert.IsFalse(connection.IsResponseBufferingEnabled);
+        Assert.IsNull(stats.ResultRows);
+        Assert.IsNull(stats.ResultBytes);
+    }
+
+    [Test]
+    [FromVersion(23, 8)]
+    public async Task ShouldGetResultQueryStatsIfResponseBufferingEnabled()
+    {
+        connection.EnableResponseBuffering();
+        var command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
+        using var reader = await command.ExecuteReaderAsync();
+        var stats = command.QueryStats;
+        Assert.IsTrue(connection.IsResponseBufferingEnabled);
+        Assert.AreEqual(stats.ResultRows, 100);
+        Assert.AreEqual(stats.ResultBytes, 800);
     }
 
     [Test]
