@@ -18,9 +18,11 @@ namespace ClickHouse.Client.Tests.SQL;
 public class SqlSimpleSelectTests : IDisposable
 {
     private readonly ClickHouseConnection connection;
+    private readonly bool useCompression;
 
     public SqlSimpleSelectTests(bool useCompression)
     {
+        this.useCompression = useCompression;
         connection = TestUtilities.GetTestClickHouseConnection(useCompression);
     }
 
@@ -227,8 +229,9 @@ public class SqlSimpleSelectTests : IDisposable
     [FromVersion(23, 8)]
     public async Task ShouldGetResultQueryStatsIfResponseBufferingEnabled()
     {
-        connection.EnableResponseBuffering();
-        var command = connection.CreateCommand();
+        using var bufferingConnection = TestUtilities.GetTestClickHouseConnection(useCompression);
+        bufferingConnection.EnableResponseBuffering();
+        var command = bufferingConnection.CreateCommand();
         command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
         using var reader = await command.ExecuteReaderAsync();
         var stats = command.QueryStats;
