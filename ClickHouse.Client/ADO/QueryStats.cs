@@ -8,14 +8,8 @@ public record QueryStats(
     long WrittenRows,
     long WrittenBytes,
     long TotalRowsToRead,
-    long? ResultRows,
-    long? ResultBytes,
-    long ElapsedNs)
-{
-    internal QueryStats WithResponseBufferingDisabled()
-    {
-        return this with { ResultRows = null, ResultBytes = null };
-    }
-}
+    long ResultRows,
+    long ResultBytes,
+    long ElapsedNs);
 
 #pragma warning restore SA1313 // Parameter names should begin with lower-case letter

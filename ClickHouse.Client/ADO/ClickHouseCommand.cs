@@ -174,7 +174,7 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
             .ConfigureAwait(false);
 
         QueryId = ExtractQueryId(response);
-        QueryStats = ExtractQueryStats(response, connection.IsResponseBufferingEnabled);
+        QueryStats = ExtractQueryStats(response);
         activity.SetQueryStats(QueryStats);
         return await ClickHouseConnection.HandleError(response, sqlQuery, activity).ConfigureAwait(false);
     }
@@ -244,7 +244,7 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
         NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString,
     };
 
-    private static QueryStats ExtractQueryStats(HttpResponseMessage response, bool isResponseBufferingEnabled)
+    private static QueryStats ExtractQueryStats(HttpResponseMessage response)
     {
         try
         {
@@ -253,8 +253,7 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
             {
                 var value = response.Headers.GetValues(summaryHeader).FirstOrDefault();
                 var jsonDoc = JsonDocument.Parse(value);
-                var result = JsonSerializer.Deserialize<QueryStats>(value, SummarySerializerOptions);
-                return isResponseBufferingEnabled ? result : result.WithResponseBufferingDisabled();
+                return JsonSerializer.Deserialize<QueryStats>(value, SummarySerializerOptions);
             }
         }
         catch
