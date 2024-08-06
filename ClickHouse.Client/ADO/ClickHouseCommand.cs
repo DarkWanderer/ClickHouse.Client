@@ -169,9 +169,12 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
 
         activity.SetQuery(sqlQuery);
 
-        var response = await connection.HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+        var response = await connection.HttpClient
+            .SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token)
+            .ConfigureAwait(false);
+
         QueryId = ExtractQueryId(response);
-        QueryStats = ExtractQueryStats(response);
+        QueryStats = ExtractQueryStats(response, connection.IsResponseBufferingEnabled);
         activity.SetQueryStats(QueryStats);
         return await ClickHouseConnection.HandleError(response, sqlQuery, activity).ConfigureAwait(false);
     }
@@ -241,7 +244,7 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
         NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString,
     };
 
-    private static QueryStats ExtractQueryStats(HttpResponseMessage response)
+    private static QueryStats ExtractQueryStats(HttpResponseMessage response, bool isResponseBufferingEnabled)
     {
         try
         {
@@ -250,7 +253,8 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
             {
                 var value = response.Headers.GetValues(summaryHeader).FirstOrDefault();
                 var jsonDoc = JsonDocument.Parse(value);
-                return JsonSerializer.Deserialize<QueryStats>(value, SummarySerializerOptions);
+                var result = JsonSerializer.Deserialize<QueryStats>(value, SummarySerializerOptions);
+                return isResponseBufferingEnabled ? result : result.WithResponseBufferingDisabled();
             }
         }
         catch

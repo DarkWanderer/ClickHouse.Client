@@ -23,6 +23,9 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 {
     private const string CustomSettingPrefix = "set_";
 
+    private const string BufferSizeRequestParameter = "buffer_size";
+    private const string WaitEndOfQueryRequestParameter = "wait_end_of_query";
+
     private readonly List<IDisposable> disposables = new();
     private readonly string httpClientName;
     private readonly ConcurrentDictionary<string, object> customSettings = new ConcurrentDictionary<string, object>();
@@ -153,10 +156,25 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
 
     public bool UseFormDataParameters { get; private set; }
 
+    public bool IsResponseBufferingEnabled => customSettings.ContainsKey(WaitEndOfQueryRequestParameter);
+
     public void SetFormDataParameters(
         bool sendParametersAsFormData)
     {
         this.UseFormDataParameters = sendParametersAsFormData;
+    }
+
+    public void EnableResponseBuffering(long? bufferSizeBytes = null)
+    {
+        customSettings.TryAdd(WaitEndOfQueryRequestParameter, 1);
+
+        if (bufferSizeBytes != null)
+        {
+            customSettings.AddOrUpdate(
+                BufferSizeRequestParameter,
+                bufferSizeBytes.Value,
+                (_, _) => bufferSizeBytes.Value);
+        }
     }
 
     /// <summary>
