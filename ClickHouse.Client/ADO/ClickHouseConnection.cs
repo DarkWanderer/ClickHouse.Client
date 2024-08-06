@@ -159,7 +159,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         this.UseFormDataParameters = sendParametersAsFormData;
     }
 
-    public void EnableResponseBuffering(long? bufferSizeBytes = null)
+    public void ForceResponseBuffering(long? bufferSizeBytes = null)
     {
         const string bufferSizeRequestParameter = "buffer_size";
         const string waitEndOfQueryRequestParameter = "wait_end_of_query";
