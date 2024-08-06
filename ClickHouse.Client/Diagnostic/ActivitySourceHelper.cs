@@ -22,6 +22,9 @@ internal static class ActivitySourceHelper
     private const string TagReadBytes = "db.clickhouse.read_bytes";
     private const string TagWrittenRows = "db.clickhouse.written_rows";
     private const string TagWrittenBytes = "db.clickhouse.written_bytes";
+    private const string TagResultRows = "db.clickhouse.result_rows";
+    private const string TagResultBytes = "db.clickhouse.result_bytes";
+    private const string TagElapsedNs = "db.clickhouse.elapsed_ns";
 
     internal const int StatementMaxLen = 300;
 
@@ -68,6 +71,9 @@ internal static class ActivitySourceHelper
         activity.SetTag(TagReadBytes, stats.ReadBytes);
         activity.SetTag(TagWrittenRows, stats.WrittenRows);
         activity.SetTag(TagWrittenBytes, stats.WrittenBytes);
+        activity.SetTag(TagResultRows, stats.ResultRows);
+        activity.SetTag(TagResultBytes, stats.ResultBytes);
+        activity.SetTag(TagElapsedNs, stats.ElapsedNs);
     }
 
     internal static void SetSuccess(this Activity activity)
