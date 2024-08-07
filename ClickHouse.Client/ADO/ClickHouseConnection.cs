@@ -164,7 +164,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         const string bufferSizeRequestParameter = "buffer_size";
         const string waitEndOfQueryRequestParameter = "wait_end_of_query";
 
-        customSettings.TryAdd(waitEndOfQueryRequestParameter, 1);
+        customSettings.AddOrUpdate(waitEndOfQueryRequestParameter, 1, (_, _) => 1);
 
         if (bufferSizeBytes != null)
         {
