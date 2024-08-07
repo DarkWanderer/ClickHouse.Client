@@ -169,7 +169,10 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
 
         activity.SetQuery(sqlQuery);
 
-        var response = await connection.HttpClient.SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+        var response = await connection.HttpClient
+            .SendAsync(postMessage, HttpCompletionOption.ResponseHeadersRead, token)
+            .ConfigureAwait(false);
+
         QueryId = ExtractQueryId(response);
         QueryStats = ExtractQueryStats(response);
         activity.SetQueryStats(QueryStats);
