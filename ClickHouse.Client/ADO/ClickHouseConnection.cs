@@ -159,22 +159,6 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         this.UseFormDataParameters = sendParametersAsFormData;
     }
 
-    public void ForceResponseBuffering(long? bufferSizeBytes = null)
-    {
-        const string bufferSizeRequestParameter = "buffer_size";
-        const string waitEndOfQueryRequestParameter = "wait_end_of_query";
-
-        customSettings.AddOrUpdate(waitEndOfQueryRequestParameter, 1, (_, _) => 1);
-
-        if (bufferSizeBytes != null)
-        {
-            customSettings.AddOrUpdate(
-                bufferSizeRequestParameter,
-                bufferSizeBytes.Value,
-                (_, _) => bufferSizeBytes.Value);
-        }
-    }
-
     /// <summary>
     /// Gets enum describing which ClickHouse features are available on this particular server version
     /// Requires connection to be in Open state

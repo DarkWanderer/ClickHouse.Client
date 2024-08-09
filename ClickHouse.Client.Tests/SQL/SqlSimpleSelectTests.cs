@@ -218,7 +218,7 @@ public class SqlSimpleSelectTests : IDisposable
     public async Task ShouldGetResultQueryStats()
     {
         using var bufferingConnection = TestUtilities.GetTestClickHouseConnection(useCompression);
-        bufferingConnection.ForceResponseBuffering();
+        bufferingConnection.CustomSettings.Add("wait_end_of_query", 1);
         var command = bufferingConnection.CreateCommand();
         command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
         using var reader = await command.ExecuteReaderAsync();
