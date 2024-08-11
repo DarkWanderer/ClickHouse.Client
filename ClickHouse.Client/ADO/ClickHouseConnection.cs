@@ -355,7 +355,8 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
         Database = database,
         SessionId = session,
         UseCompression = UseCompression,
-        CustomParameters = customSettings.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
+        ConnectionQueryStringParameters = customSettings
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
         Sql = sql,
     };
 
