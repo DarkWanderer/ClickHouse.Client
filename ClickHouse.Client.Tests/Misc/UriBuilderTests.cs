@@ -55,5 +55,107 @@ public class UriBuilderTests
 
         Assert.AreEqual("2", @params.Get("a"));
     }
+
+    [Test]
+    public void ConnectionQueryStringParametersShouldOverrideCommonParameters()
+    {
+        var builder = new ClickHouseUriBuilder(new Uri("http://some.server:123"))
+        {
+            Database = "DATABASE",
+            UseCompression = false,
+            Sql = "SELECT 1",
+            SessionId = "SESSION",
+            QueryId = "QUERY",
+            ConnectionQueryStringParameters = new Dictionary<string, object>
+            {
+                { "database", "overrided" },
+                { "enable_http_compression", "overrided" },
+                { "query", "overrided" },
+                { "session_id", "overrided" },
+                { "query_id", "overrided" },
+            },
+        };
+
+        builder.AddSqlQueryParameter("sqlParameterName", "sqlParameterValue");
+
+        var result = new Uri(builder.ToString());
+        var @params = HttpUtility.ParseQueryString(result.Query);
+
+        Assert.AreEqual("overrided", @params.Get("database"));
+        Assert.AreEqual("overrided", @params.Get("enable_http_compression"));
+        Assert.AreEqual("overrided", @params.Get("query"));
+        Assert.AreEqual("overrided", @params.Get("session_id"));
+        Assert.AreEqual("overrided", @params.Get("query_id"));
+    }
+
+    [Test]
+    public void ConnectionQueryStringParametersShouldOverrideSqlQueryParameters()
+    {
+        var builder = new ClickHouseUriBuilder(new Uri("http://some.server:123"))
+        {
+            ConnectionQueryStringParameters = new Dictionary<string, object>
+            {
+                { "param_sqlParameterName", "overrided" },
+            },
+        };
+
+        builder.AddSqlQueryParameter("sqlParameterName", "sqlParameterValue");
+
+        var result = new Uri(builder.ToString());
+        var @params = HttpUtility.ParseQueryString(result.Query);
+
+        Assert.AreEqual("overrided", @params.Get("param_sqlParameterName"));
+    }
+
+    [Test]
+    public void CommandQueryStringParametersShouldOverrideCommonParameters()
+    {
+        var builder = new ClickHouseUriBuilder(new Uri("http://some.server:123"))
+        {
+            Database = "DATABASE",
+            UseCompression = false,
+            Sql = "SELECT 1",
+            SessionId = "SESSION",
+            QueryId = "QUERY",
+            CommandQueryStringParameters = new Dictionary<string, object>
+            {
+                { "database", "overrided" },
+                { "enable_http_compression", "overrided" },
+                { "query", "overrided" },
+                { "session_id", "overrided" },
+                { "query_id", "overrided" },
+            },
+        };
+
+        builder.AddSqlQueryParameter("sqlParameterName", "sqlParameterValue");
+
+        var result = new Uri(builder.ToString());
+        var @params = HttpUtility.ParseQueryString(result.Query);
+
+        Assert.AreEqual("overrided", @params.Get("database"));
+        Assert.AreEqual("overrided", @params.Get("enable_http_compression"));
+        Assert.AreEqual("overrided", @params.Get("query"));
+        Assert.AreEqual("overrided", @params.Get("session_id"));
+        Assert.AreEqual("overrided", @params.Get("query_id"));
+    }
+
+    [Test]
+    public void CommandQueryStringParametersShouldOverrideSqlQueryParameters()
+    {
+        var builder = new ClickHouseUriBuilder(new Uri("http://some.server:123"))
+        {
+            CommandQueryStringParameters = new Dictionary<string, object>
+            {
+                { "param_sqlParameterName", "overrided" },
+            },
+        };
+
+        builder.AddSqlQueryParameter("sqlParameterName", "sqlParameterValue");
+
+        var result = new Uri(builder.ToString());
+        var @params = HttpUtility.ParseQueryString(result.Query);
+
+        Assert.AreEqual("overrided", @params.Get("param_sqlParameterName"));
+    }
 #endif
 }
