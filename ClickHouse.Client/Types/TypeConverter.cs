@@ -169,6 +169,8 @@ internal static class TypeConverter
         // JSON/Object
         RegisterParameterizedType<ObjectType>();
 
+        RegisterParameterizedType<AggregateFunctionType>();
+
         // Mapping fixups
         ReverseMapping.Add(typeof(ClickHouseDecimal), new Decimal128Type());
         ReverseMapping.Add(typeof(decimal), new Decimal128Type());
