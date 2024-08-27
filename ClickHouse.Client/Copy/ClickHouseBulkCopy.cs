@@ -228,7 +228,7 @@ public class ClickHouseBulkCopy : IDisposable
         {
             if (Rows != null)
             {
-                ArrayPool<object[]>.Shared.Return(Rows);
+                ArrayPool<object[]>.Shared.Return(Rows, true);
                 Rows = null;
             }
         }
