@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
@@ -396,6 +397,30 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
         Assert.AreEqual(1, bulkCopy.RowsWritten);
         Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
+    }
+
+    [Test]
+    [NonParallelizable]
+    public async Task ShouldNotBreakArrayPool()
+    {
+        var targetTable = "test." + SanitizeTableName($"array_pool");
+    
+        await connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (int Int32, str String, dt DateTime) ENGINE Null");
+    
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = targetTable,
+            BatchSize = 2
+        };
+    
+        // This line works fine
+        var pocOK = JsonSerializer.Deserialize<QueryStats>("{ }");
+    
+        await bulkCopy.InitAsync();
+        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 0, "a", DateTime.Now }, 1));
+    
+        var pocCRASH = JsonSerializer.Deserialize<QueryStats>("{ }");
     }
 
     [Test]
