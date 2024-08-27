@@ -13,11 +13,13 @@ using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
+using Microsoft.IO;
 
 namespace ClickHouse.Client.Copy;
 
 public class ClickHouseBulkCopy : IDisposable
 {
+    private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
     private readonly ClickHouseConnection connection;
     private readonly bool ownsConnection;
     private long rowsWritten;
@@ -143,10 +145,8 @@ public class ClickHouseBulkCopy : IDisposable
         await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
-    private Stream SerializeBatch(Batch batch)
+    private void SerializeBatch(Batch batch, Stream stream)
     {
-        var stream = new MemoryStream() { Capacity = 8 * 1024 };
-
         using (var gzipStream = new BufferedStream(new GZipStream(stream, CompressionLevel.Fastest, true), 256 * 1024))
         {
             using (var textWriter = new StreamWriter(gzipStream, Encoding.UTF8, 4 * 1024, true))
@@ -179,16 +179,17 @@ public class ClickHouseBulkCopy : IDisposable
                 throw new ClickHouseBulkCopySerializationException(row, col, e);
             }
         }
-        stream.Seek(0, SeekOrigin.Begin);
-        return stream;
     }
 
     private async Task SendBatchAsync(Batch batch, CancellationToken token)
     {
         using (batch) // Dispose object regardless whether sending succeeds
         {
+            using var stream = MemoryStreamManager.GetStream(nameof(SendBatchAsync));
             // Async serialization
-            using var stream = await Task.Run(() => SerializeBatch(batch)).ConfigureAwait(false);
+            await Task.Run(() => SerializeBatch(batch, stream)).ConfigureAwait(false);
+            // Seek to beginning as after writing it's at end
+            stream.Seek(0, SeekOrigin.Begin);
             // Async sending
             await connection.PostStreamAsync(null, stream, true, token).ConfigureAwait(false);
             // Increase counter
