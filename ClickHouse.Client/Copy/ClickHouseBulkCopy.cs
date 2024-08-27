@@ -218,7 +218,7 @@ public class ClickHouseBulkCopy : IDisposable
     // Convenience argument collection
     private struct Batch : IDisposable
     {
-        public object[] Rows;
+        public object[][] Rows;
         public int Size;
         public string Query;
         public ClickHouseType[] Types;
@@ -227,7 +227,7 @@ public class ClickHouseBulkCopy : IDisposable
         {
             if (Rows != null)
             {
-                ArrayPool<object>.Shared.Return(Rows);
+                ArrayPool<object[]>.Shared.Return(Rows);
                 Rows = null;
             }
         }
