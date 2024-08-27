@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -428,6 +429,29 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.InitAsync();
 
         Assert.ThrowsAsync<ClickHouseBulkCopySerializationException>(async () => await bulkCopy.WriteToServerAsync(data, CancellationToken.None));
+    }
+
+    [Test]
+    public async Task ShouldNotAffectSharedArrayPool()
+    {
+        var targetTable = "test." + SanitizeTableName($"array_pool");
+
+        await connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (int Int32, str String, dt DateTime) ENGINE Null");
+
+        const int poolSize = 8;
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = targetTable,
+            BatchSize = poolSize
+        };
+
+        await bulkCopy.InitAsync();
+        await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 0, "a", DateTime.Now }, 100));
+
+        var rentedArray = ArrayPool<object>.Shared.Rent(poolSize);
+        Assert.DoesNotThrow(() => { rentedArray[0] = 1; });
+        ArrayPool<object>.Shared.Return(rentedArray);
     }
 
     private static string SanitizeTableName(string input)
