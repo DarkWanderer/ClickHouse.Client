@@ -1,11 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net462;net48;netstandard2.1;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net462;net48;netstandard2.1;net6.0</TargetFrameworks>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageProjectUrl>https://github.com/DarkWanderer/ClickHouse.Client</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/DarkWanderer/ClickHouse.Client</RepositoryUrl>
+    <RepositoryUrl>https://github.com/osigurdson/ClickHouse.Client</RepositoryUrl>
     <PackageTags>clickhouse, ado.net, client</PackageTags>
     <Authors>Oleg Kozlyuk</Authors>
     <Description>Fast binary-over-HTTP ADO.NET provider for ClickHouse</Description>
@@ -17,6 +16,11 @@
     <LangVersion>latest</LangVersion>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AnalysisMode>Recommended</AnalysisMode>
+
+    <Version>6.8.2</Version>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>../ClickHouse.Client.snk</AssemblyOriginatorKeyFile>
+    
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,6 +42,12 @@
   
   <ItemGroup Condition=" $(TargetFramework.StartsWith('net4')) ">
     <Reference Include="System.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>$(AssemblyName).Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001009d5a5b1b859c0d137c299e675662b0ff520837448d3ef1e9e77d6908eeaefbf173a62ee8c4b36681b66719a1954d5f7363eb596e5356151e4ee0e8cfe65e9e8793b97b5c8b898ee79b8d7a367017b1e500502b415e938801d3ebe6d2bcffce5bc414aa93bd05dd5aa8c26b453f7621871ebbf6cc1554b88c442671cefd96fb9e</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

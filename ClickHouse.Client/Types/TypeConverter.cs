@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types.Grammar;
-
-[assembly: InternalsVisibleTo("ClickHouse.Client.Tests")] // assembly-level tag to expose below classes to tests
 
 namespace ClickHouse.Client.Types;
 
