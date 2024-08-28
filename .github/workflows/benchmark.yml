@@ -35,7 +35,7 @@ jobs:
       with:
         dotnet-version: |
           6.x
-          7.x
+          8.x
 
     - name: Run
       run: dotnet run --project ClickHouse.Client.Benchmark/ClickHouse.Client.Benchmark.csproj --framework net6.0 --configuration Release -- --join --filter "*" --artifacts . --job Short

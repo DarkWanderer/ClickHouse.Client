@@ -44,9 +44,8 @@ jobs:
       with:
         dotnet-version: |
           3.1.x
-          5.x
           6.x
-          7.x
+          8.x
           
     - name: Install GitHubActionsTestLogger
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger --no-restore
