@@ -37,9 +37,9 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     private Version serverVersion;
     private string serverTimezone;
 
-    private string database = "default";
-    private string username;
-    private string password;
+    private string database = ClickHouseEnvironment.Database;
+    private string username = ClickHouseEnvironment.Username;
+    private string password = ClickHouseEnvironment.Password;
     private string session;
     private bool useServerTimezone;
     private bool useCustomDecimals;
