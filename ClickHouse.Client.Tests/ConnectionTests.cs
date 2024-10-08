@@ -194,6 +194,17 @@ public class ConnectionTests : AbstractConnectionTestFixture
     }
 
     [Test]
+    [TestCase("https")]
+    [TestCase("http")]
+    public void ShouldSaveProtocolAtConnectionString(string protocol)
+    {
+        string protocolPart = $"Protocol={protocol}";
+        string connString = new ClickHouseConnectionStringBuilder(protocolPart).ToString();
+        using var conn = new ClickHouseConnection(connString);
+        Assert.That(conn.ConnectionString, Contains.Substring(protocolPart));
+    }
+
+    [Test]
     public async Task ShouldPostDynamicallyGeneratedRawStream()
     {
         var targetTable = "test.raw_stream";

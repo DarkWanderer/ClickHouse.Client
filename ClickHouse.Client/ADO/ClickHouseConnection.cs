@@ -384,6 +384,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
                 Database = database,
                 Username = username,
                 Password = password,
+                Protocol = serverUri?.Scheme,
                 Host = serverUri?.Host,
                 Port = (ushort)serverUri?.Port,
                 Compression = UseCompression,
