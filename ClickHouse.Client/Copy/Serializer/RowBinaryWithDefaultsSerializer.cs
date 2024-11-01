@@ -1,4 +1,4 @@
-using System;
+using ClickHouse.Client.Constraints;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types;
 
@@ -11,7 +11,7 @@ internal class RowBinaryWithDefaultsSerializer : IRowSerializer
     {
         for (int col = 0; col < row.Length; col++)
         {
-            if (row[col] is DBNull) // TODO default type
+            if (row[col] is DBDefault)
             {
                 writer.Write(1);
             }
