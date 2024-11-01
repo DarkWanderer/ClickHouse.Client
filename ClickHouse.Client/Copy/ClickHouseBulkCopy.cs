@@ -33,7 +33,7 @@ public class ClickHouseBulkCopy : IDisposable
 
     public ClickHouseBulkCopy(string connectionString, RowBinaryFormat rowBinaryFormat = RowBinaryFormat.RowBinary)
         : this(
-            string.IsNullOrWhiteSpace(connectionString) 
+            string.IsNullOrWhiteSpace(connectionString)
                 ? throw new ArgumentNullException(nameof(connectionString))
                 : new ClickHouseConnection(connectionString),
             rowBinaryFormat)

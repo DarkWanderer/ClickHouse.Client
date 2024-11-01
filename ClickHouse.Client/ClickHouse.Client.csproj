@@ -39,9 +39,5 @@
   <ItemGroup Condition=" $(TargetFramework.StartsWith('net4')) ">
     <Reference Include="System.Web" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="SystemDataExtendedTypes" />
-  </ItemGroup>
 
 </Project>
