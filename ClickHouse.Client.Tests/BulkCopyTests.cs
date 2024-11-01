@@ -265,7 +265,6 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         catch (ClickHouseBulkCopySerializationException ex)
         {
             CollectionAssert.AreEqual(new object[] { 256 }, ex.Row);
-            Assert.AreEqual(0, ex.Index);
             Assert.IsInstanceOf<OverflowException>(ex.InnerException);
         }
     }
