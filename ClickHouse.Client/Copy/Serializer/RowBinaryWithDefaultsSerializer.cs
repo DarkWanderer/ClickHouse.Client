@@ -13,11 +13,11 @@ internal class RowBinaryWithDefaultsSerializer : IRowSerializer
         {
             if (row[col] is DBDefault)
             {
-                writer.Write(1);
+                writer.Write((byte)1);
             }
             else
             {
-                writer.Write(0);
+                writer.Write((byte)0);
                 types[col].Write(writer, row[col]);
             }
         }
