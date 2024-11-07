@@ -40,7 +40,8 @@ internal static class SchemaDescriber
             var row = table.NewRow();
             row["ColumnName"] = reader.GetName(ordinal);
             row["ColumnOrdinal"] = ordinal;
-            row["DataType"] = chType.FrameworkType;
+            row["ColumnSize"] = -1;
+            row["DataType"] = chType is NullableType nt ? nt.UnderlyingType.FrameworkType : chType.FrameworkType;
             row["ProviderType"] = chType;
             row["IsLong"] = chType is StringType;
             row["AllowDBNull"] = chType is NullableType;
