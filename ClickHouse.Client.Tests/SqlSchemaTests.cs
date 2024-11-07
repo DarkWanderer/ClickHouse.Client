@@ -1,7 +1,5 @@
 ﻿using System.Data;
-using System;
 using System.Data.Common;
-using System.Reflection.PortableExecutable;
 using System.Threading.Tasks;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
