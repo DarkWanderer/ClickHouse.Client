@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.Constraints;
 using ClickHouse.Client.Copy;
+using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
@@ -25,6 +26,7 @@ public class BulkCopyWithDefaultsTests : AbstractConnectionTestFixture
         yield return new TestCaseData("Date default toDate(now())", new DateTime(2003, 5, 2), new DateTime(2003, 5, 2), "DateTime_not_default");
     }
 
+    [FromVersion(23, 7)]
     [Parallelizable]
     [TestCaseSource(typeof(BulkCopyWithDefaultsTests), nameof(Get))]
     public async Task ShouldExecuteSingleValueInsertViaBulkCopyWithDefaults(string clickhouseType, object insertValue, object expectedValue, string tableName)
