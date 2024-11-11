@@ -452,16 +452,5 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         Assert.DoesNotThrow(() => { rentedArray[0] = 1; });
         ArrayPool<object>.Shared.Return(rentedArray);
     }
-
-    private static string SanitizeTableName(string input)
-    {
-        var builder = new StringBuilder();
-        foreach (var c in input)
-        {
-            if (char.IsLetterOrDigit(c) || c == '_')
-                builder.Append(c);
-        }
-        return builder.ToString();
-    }
 }
 
