@@ -27,7 +27,7 @@ public class BulkCopyWithDefaultsTests : AbstractConnectionTestFixture
 
     [Parallelizable]
     [TestCaseSource(typeof(BulkCopyWithDefaultsTests), nameof(Get))]
-    public async Task Should(string clickhouseType, object insertValue, object expectedValue, string tableName)
+    public async Task ShouldExecuteSingleValueInsertViaBulkCopyWithDefaults(string clickhouseType, object insertValue, object expectedValue, string tableName)
     {
         var targetTable = "test." + SanitizeTableName($"bulk_single_default_{tableName}");
 
