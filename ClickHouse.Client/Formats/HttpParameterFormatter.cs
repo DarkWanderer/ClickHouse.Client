@@ -12,7 +12,7 @@ namespace ClickHouse.Client.Formats;
 
 internal static class HttpParameterFormatter
 {
-    private const string NullValueString = "\\N";
+    private const string NullValueString = "Null";
 
     public static string Format(ClickHouseDbParameter parameter, TypeSettings settings)
     {
