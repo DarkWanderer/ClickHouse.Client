@@ -12,14 +12,11 @@ internal class BatchSerializer : IBatchSerializer
     {
         return format switch
         {
-            RowBinaryFormat.RowBinary => RowBinary,
-            RowBinaryFormat.RowBinaryWithDefaults => RowBinaryWithDefaults,
+            RowBinaryFormat.RowBinary => new BatchSerializer(new RowBinarySerializer()),
+            RowBinaryFormat.RowBinaryWithDefaults => new BatchSerializer(new RowBinaryWithDefaultsSerializer()),
             _ => throw new NotSupportedException(format.ToString())
         };
     }
-
-    private static readonly BatchSerializer RowBinary = new(new RowBinarySerializer());
-    private static readonly BatchSerializer RowBinaryWithDefaults = new(new RowBinaryWithDefaultsSerializer());
 
     private readonly IRowSerializer rowSerializer;
 
