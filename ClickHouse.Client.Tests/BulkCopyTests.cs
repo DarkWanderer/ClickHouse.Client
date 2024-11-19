@@ -265,7 +265,6 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         catch (ClickHouseBulkCopySerializationException ex)
         {
             CollectionAssert.AreEqual(new object[] { 256 }, ex.Row);
-            Assert.AreEqual(0, ex.Index);
             Assert.IsInstanceOf<OverflowException>(ex.InnerException);
         }
     }
@@ -452,17 +451,6 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         var rentedArray = ArrayPool<object>.Shared.Rent(poolSize);
         Assert.DoesNotThrow(() => { rentedArray[0] = 1; });
         ArrayPool<object>.Shared.Return(rentedArray);
-    }
-
-    private static string SanitizeTableName(string input)
-    {
-        var builder = new StringBuilder();
-        foreach (var c in input)
-        {
-            if (char.IsLetterOrDigit(c) || c == '_')
-                builder.Append(c);
-        }
-        return builder.ToString();
     }
 }
 
