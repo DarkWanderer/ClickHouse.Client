@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using ClickHouse.Client.ADO;
 using NUnit.Framework;
 
@@ -15,6 +16,18 @@ public class AbstractConnectionTestFixture : IDisposable
         using var command = connection.CreateCommand();
         command.CommandText = "CREATE DATABASE IF NOT EXISTS test;";
         command.ExecuteScalar();
+    }
+
+    protected static string SanitizeTableName(string input)
+    {
+        var builder = new StringBuilder();
+        foreach (var c in input)
+        {
+            if (char.IsLetterOrDigit(c) || c == '_')
+                builder.Append(c);
+        }
+
+        return builder.ToString();
     }
 
     public void Dispose() => connection?.Dispose();
