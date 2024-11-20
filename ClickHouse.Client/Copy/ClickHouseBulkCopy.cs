@@ -24,14 +24,18 @@ public class ClickHouseBulkCopy : IDisposable
     private long rowsWritten;
     private (string[] names, ClickHouseType[] types) columnNamesAndTypes;
 
-    public ClickHouseBulkCopy(ClickHouseConnection connection, RowBinaryFormat rowBinaryFormat = RowBinaryFormat.RowBinary)
+    public ClickHouseBulkCopy(ClickHouseConnection connection) : this(connection, RowBinaryFormat.RowBinary) {}
+
+    public ClickHouseBulkCopy(string connectionString) : this(connectionString, RowBinaryFormat.RowBinary) {}
+
+    public ClickHouseBulkCopy(ClickHouseConnection connection, RowBinaryFormat rowBinaryFormat)
     {
         this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
         this.rowBinaryFormat = rowBinaryFormat;
         batchSerializer = BatchSerializer.GetByRowBinaryFormat(rowBinaryFormat);
     }
 
-    public ClickHouseBulkCopy(string connectionString, RowBinaryFormat rowBinaryFormat = RowBinaryFormat.RowBinary)
+    public ClickHouseBulkCopy(string connectionString, RowBinaryFormat rowBinaryFormat = )
         : this(
             string.IsNullOrWhiteSpace(connectionString)
                 ? throw new ArgumentNullException(nameof(connectionString))
