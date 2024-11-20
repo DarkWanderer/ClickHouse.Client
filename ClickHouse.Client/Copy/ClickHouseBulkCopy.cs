@@ -35,7 +35,7 @@ public class ClickHouseBulkCopy : IDisposable
         batchSerializer = BatchSerializer.GetByRowBinaryFormat(rowBinaryFormat);
     }
 
-    public ClickHouseBulkCopy(string connectionString, RowBinaryFormat rowBinaryFormat = )
+    public ClickHouseBulkCopy(string connectionString, RowBinaryFormat rowBinaryFormat)
         : this(
             string.IsNullOrWhiteSpace(connectionString)
                 ? throw new ArgumentNullException(nameof(connectionString))
