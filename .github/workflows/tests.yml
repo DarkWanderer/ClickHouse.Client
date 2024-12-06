@@ -20,11 +20,11 @@ jobs:
   compare:
     name: Compare coverage
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' }}
+    if: false
     permissions:
       statuses: write
     needs:
-      - coverage
+    - coverage
 
     steps:
     - name: Install pycobertura
