@@ -20,11 +20,6 @@ public class ClickHouseServerException : DbException
         Query = query;
     }
 
-    protected ClickHouseServerException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
-    }
-
     public string Query { get; }
 
     public static ClickHouseServerException FromServerResponse(string error, string query)

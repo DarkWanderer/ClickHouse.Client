@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       framework:
-        default: net6.0
+        default: net8.0
         required: false
         type: string
       clickhouse-version:
