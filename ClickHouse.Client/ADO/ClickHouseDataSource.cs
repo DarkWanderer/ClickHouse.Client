@@ -10,8 +10,10 @@ namespace ClickHouse.Client.ADO;
 
 public sealed class ClickHouseDataSource : DbDataSource, IClickHouseDataSource
 {
-    private readonly Func<ClickHouseConnection> connectionFactory;
+    private readonly IHttpClientFactory httpClientFactory;
+    private readonly string httpClientName;
     private readonly HttpClient httpClient;
+    private readonly bool disposeHttpClient;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClickHouseDataSource"/> class using provided HttpClient.
@@ -23,13 +25,8 @@ public sealed class ClickHouseDataSource : DbDataSource, IClickHouseDataSource
     public ClickHouseDataSource(string connectionString, HttpClient httpClient = null, bool disposeHttpClient = true)
     {
         ConnectionString = connectionString;
-        connectionFactory = httpClient != null
-                                ? () => new ClickHouseConnection(connectionString, httpClient)
-                                : () => new ClickHouseConnection(connectionString);
-        if (disposeHttpClient)
-        {
-            this.httpClient = httpClient;
-        }
+        this.httpClient = httpClient;
+        this.disposeHttpClient = disposeHttpClient;
     }
 
     /// <summary>
@@ -72,7 +69,8 @@ public sealed class ClickHouseDataSource : DbDataSource, IClickHouseDataSource
         ArgumentNullException.ThrowIfNull(httpClientFactory);
         ArgumentNullException.ThrowIfNull(httpClientName);
         ConnectionString = connectionString;
-        connectionFactory = () => new ClickHouseConnection(connectionString, httpClientFactory, httpClientName);
+        this.httpClientFactory = httpClientFactory;
+        this.httpClientName = httpClientName;
     }
 
     public override string ConnectionString
@@ -90,7 +88,7 @@ public sealed class ClickHouseDataSource : DbDataSource, IClickHouseDataSource
     {
         base.Dispose(disposing);
 
-        if (disposing)
+        if (disposing && disposeHttpClient)
         {
             httpClient?.Dispose();
         }
@@ -98,7 +96,9 @@ public sealed class ClickHouseDataSource : DbDataSource, IClickHouseDataSource
 
     protected override DbConnection CreateDbConnection()
     {
-        var cn = connectionFactory();
+        var cn = httpClientFactory != null
+            ? new ClickHouseConnection(ConnectionString, httpClientFactory, httpClientName)
+            : new ClickHouseConnection(ConnectionString, httpClient);
         if (cn.Logger == null && Logger != null)
         {
             cn.Logger = Logger;
