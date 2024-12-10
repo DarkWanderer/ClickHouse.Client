@@ -68,7 +68,8 @@ jobs:
     
     - name: Rename coverage file
       if: ${{ inputs.coverage }}
-      run: mv ./ClickHouse.Client.Tests/coverage.${{ inputs.framework }}.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
+      # run: mv ./ClickHouse.Client.Tests/coverage.${{ inputs.framework }}.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
+      run: mv ./ClickHouse.Client.Tests/coverage.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
 
     - name: Upload coverage xml
       if: ${{ inputs.coverage }}
