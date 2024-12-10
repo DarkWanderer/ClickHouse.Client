@@ -1,0 +1,74 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+    - '**/*.md'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:${{ inputs.clickhouse-version }}
+        ports:
+          - 8123:8123
+          
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - uses: actions/cache@v4
+      name: Cache NuGet
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          3.1.x
+          6.x
+          8.x
+          
+    - name: Install GitHubActionsTestLogger
+      run: dotnet add ClickHouse.Client.IntegrationTests/ClickHouse.Client.IntegrationTests.csproj package GitHubActionsTestLogger --no-restore
+
+    - name: Install pycobertura
+      if: ${{ inputs.coverage }}
+      run: pip install pycobertura
+
+    - name: Install coverlet
+      if: ${{ inputs.coverage }}
+      run: |
+        dotnet add ClickHouse.Client.IntegrationTests/ClickHouse.Client.IntegrationTests.csproj package coverlet.collector --no-restore
+        dotnet add ClickHouse.Client.IntegrationTests/ClickHouse.Client.IntegrationTests.csproj package coverlet.msbuild --no-restore
+
+    - name: Test with coverage
+      run: dotnet test --framework ${{ inputs.framework }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
+      env:
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+        CLICKHOUSE_VERSION: ${{ inputs.clickhouse-version }}
+    
+    - name: Rename coverage file
+      if: ${{ inputs.coverage }}
+      run: mv ./ClickHouse.Client.IntegrationTests/coverage.${{ inputs.framework }}.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
+
+    - name: Upload coverage xml
+      if: ${{ inputs.coverage }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage
+        path: ./ClickHouse.Client/coverage.cobertura.xml
+      
+    - name: Report summary
+      if: ${{ inputs.coverage }}
+      run: pycobertura show ./ClickHouse.Client/coverage.cobertura.xml --format markdown >> $GITHUB_STEP_SUMMARY
