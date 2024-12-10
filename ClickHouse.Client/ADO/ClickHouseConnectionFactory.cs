@@ -17,4 +17,8 @@ public class ClickHouseConnectionFactory : DbProviderFactory
     public override DbParameter CreateParameter() => new ClickHouseDbParameter();
 
     public override DbCommand CreateCommand() => new ClickHouseCommand();
+
+#if NET7_0_OR_GREATER
+    public override DbDataSource CreateDataSource(string connectionString) => new ClickHouseDataSource(connectionString);
+#endif
 }

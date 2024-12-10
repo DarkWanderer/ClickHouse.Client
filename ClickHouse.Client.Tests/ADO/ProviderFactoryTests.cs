@@ -17,6 +17,9 @@ public class ProviderFactoryTests
         Assert.IsInstanceOf<ClickHouseDataAdapter>(factory.CreateDataAdapter());
         Assert.IsInstanceOf<ClickHouseConnectionStringBuilder>(factory.CreateConnectionStringBuilder());
         Assert.IsInstanceOf<ClickHouseDbParameter>(factory.CreateParameter());
+#if NET7_0_OR_GREATER
+        Assert.IsInstanceOf<ClickHouseDataSource>(factory.CreateDataSource("Host=ignored"));
+#endif
 
         // TODO
         // Assert.IsInstanceOf<ClickHouseConnectionStringBuilder>(factory.CreateCommandBuilder());
