@@ -15,7 +15,7 @@ jobs:
 
     services:
       clickhouse:
-        image: clickhouse/clickhouse-server:${{ inputs.clickhouse-version }}
+        image: clickhouse/clickhouse-server:latest
         ports:
           - 8123:8123
           
@@ -42,33 +42,8 @@ jobs:
     - name: Install GitHubActionsTestLogger
       run: dotnet add ClickHouse.Client.IntegrationTests/ClickHouse.Client.IntegrationTests.csproj package GitHubActionsTestLogger --no-restore
 
-    - name: Install pycobertura
-      if: ${{ inputs.coverage }}
-      run: pip install pycobertura
-
-    - name: Install coverlet
-      if: ${{ inputs.coverage }}
-      run: |
-        dotnet add ClickHouse.Client.IntegrationTests/ClickHouse.Client.IntegrationTests.csproj package coverlet.collector --no-restore
-        dotnet add ClickHouse.Client.IntegrationTests/ClickHouse.Client.IntegrationTests.csproj package coverlet.msbuild --no-restore
-
     - name: Test with coverage
-      run: dotnet test --framework ${{ inputs.framework }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
+      run: dotnet test --framework net8.0 --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
-        CLICKHOUSE_VERSION: ${{ inputs.clickhouse-version }}
-    
-    - name: Rename coverage file
-      if: ${{ inputs.coverage }}
-      run: mv ./ClickHouse.Client.IntegrationTests/coverage.${{ inputs.framework }}.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
-
-    - name: Upload coverage xml
-      if: ${{ inputs.coverage }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage
-        path: ./ClickHouse.Client/coverage.cobertura.xml
-      
-    - name: Report summary
-      if: ${{ inputs.coverage }}
-      run: pycobertura show ./ClickHouse.Client/coverage.cobertura.xml --format markdown >> $GITHUB_STEP_SUMMARY
+        CLICKHOUSE_VERSION: latest
