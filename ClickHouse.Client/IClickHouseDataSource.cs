@@ -6,9 +6,7 @@ namespace ClickHouse.Client;
 
 public interface IClickHouseDataSource
 {
-    string ConnectionString {
-        get;
-    }
+    string ConnectionString { get; }
 
     IClickHouseConnection CreateConnection();
 
