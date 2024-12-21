@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Net;
 using System.Numerics;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Numerics;
@@ -61,6 +62,10 @@ public static class TestUtilities
         if (SupportedFeatures.HasFlag(Feature.Variant))
         {
             builder["set_allow_experimental_variant_type"] = 1;
+        }
+        if (SupportedFeatures.HasFlag(Feature.Json))
+        {
+            builder["set_allow_experimental_json_type"] = 1;
         }
         return new ClickHouseConnection(builder.ConnectionString);
     }
@@ -220,6 +225,14 @@ public static class TestUtilities
         if (SupportedFeatures.HasFlag(Feature.Variant))
         {
             yield return new DataTypeSample("Variant(UInt64, String, Array(UInt64))", typeof(string), "'Hello, World!'::Variant(UInt64, String, Array(UInt64))", "Hello, World!");
+        }
+
+        if (SupportedFeatures.HasFlag(Feature.Json))
+        {
+            yield return new DataTypeSample("Json", typeof(string), "'{\"i1\":1,\"i2\":2}'::Json", "{\"i1\":1,\"i2\":2}");
+            yield return new DataTypeSample("Json", typeof(string), "'{\"str\":\"val\"}'::Json", "{\"str\":\"val\"}");
+            yield return new DataTypeSample("Json", typeof(string), "'{\"flt\":0.0}'::Json", "{\"flt\":0}");
+            // yield return new DataTypeSample("Json", typeof(string), "'{\"arr\":[1,2,3]}'::Json", "{\"arr\":[1,2,3]}"); // TODO
         }
     }
 

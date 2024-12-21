@@ -11,8 +11,6 @@ internal class AggregateFunctionType : ParameterizedType
 
     public override string Name => "AggregateFunction";
 
-
-
     public override Type FrameworkType => throw new AggregateFunctionException(Function);
 
     public override ParameterizedType Parse(SyntaxTreeNode typeName, Func<SyntaxTreeNode, ClickHouseType> parseClickHouseTypeFunc, TypeSettings settings)

@@ -407,7 +407,7 @@ public readonly struct ClickHouseDecimal
             Truncate(ref mantissa, ref scale, 0);
             return mantissa;
         }
-        return Convert.ChangeType(this, conversionType);
+        return Convert.ChangeType(this, conversionType, provider);
     }
 
     public int CompareTo(decimal other) => CompareTo((ClickHouseDecimal)other);
