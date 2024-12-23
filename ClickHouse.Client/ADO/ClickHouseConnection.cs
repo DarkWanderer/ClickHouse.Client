@@ -218,7 +218,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
             activity.SetSuccess();
             return response;
         }
-        activity.SetStatus(ActivityStatusCode.Error, response.ReasonPhrase);
+        activity.SetStatus(ActivityStatusCode.Error, response?.ReasonPhrase ?? string.Empty);
         var ex = new Exception($"Error '{response.StatusCode}' reading server response: {response.ReasonPhrase}");
         try
         {
