@@ -218,10 +218,20 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
             activity.SetSuccess();
             return response;
         }
-        var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        var ex = ClickHouseServerException.FromServerResponse(error, query);
-        activity.SetException(ex);
-        throw ex;
+        activity.SetStatus(ActivityStatusCode.Error, response.ReasonPhrase);
+        var ex = new Exception($"Error '{response.StatusCode}' reading server response: {response.ReasonPhrase}");
+        try
+        {
+            await response.Content.LoadIntoBufferAsync(4096);
+            var stream = (MemoryStream)await response.Content.ReadAsStreamAsync();
+            var error = new StreamReader(stream).ReadToEnd();
+            ex = ClickHouseServerException.FromServerResponse(error, query);
+            activity.SetException(ex);
+        }
+        finally
+        {
+            throw ex;
+        }
     }
 
     public override void ChangeDatabase(string databaseName) => database = databaseName;
