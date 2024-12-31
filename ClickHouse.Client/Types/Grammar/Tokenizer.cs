@@ -4,7 +4,7 @@ namespace ClickHouse.Client.Types.Grammar;
 
 public static class Tokenizer
 {
-    private static readonly char[] Breaks = new[] { ',', '(', ')' };
+    private static readonly char[] Breaks = [',', '(', ')'];
 
     public static IEnumerable<string> GetTokens(string input)
     {

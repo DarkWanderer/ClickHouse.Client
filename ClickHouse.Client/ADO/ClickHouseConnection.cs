@@ -338,7 +338,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
     {
         if (string.IsNullOrWhiteSpace(versionString))
             throw new ArgumentException($"'{nameof(versionString)}' cannot be null or whitespace.", nameof(versionString));
-        var parts = versionString.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
+        var parts = versionString.Split(DotSeparator, StringSplitOptions.RemoveEmptyEntries)
             .Select(s => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) ? i : 0)
             .ToArray();
         if (parts.Length == 0 || parts[0] == 0)
@@ -421,6 +421,8 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
             ResetHttpClientFactory();
         }
     }
+
+    private static readonly char[] DotSeparator = ['.'];
 
     protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => throw new NotSupportedException();
 

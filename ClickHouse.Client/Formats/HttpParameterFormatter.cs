@@ -94,7 +94,7 @@ internal static class HttpParameterFormatter
                 return $"{{{string.Join(",", strings)}}}";
 
             case VariantType variantType:
-                var (_,chType) = variantType.GetMatchingType(value);
+                var (_, chType) = variantType.GetMatchingType(value);
                 return Format(chType, value, quote);
 
             default:

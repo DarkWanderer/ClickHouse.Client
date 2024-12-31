@@ -11,11 +11,11 @@ namespace ClickHouse.Client.Types;
 
 internal static class TypeConverter
 {
-    private static readonly IDictionary<string, ClickHouseType> SimpleTypes = new Dictionary<string, ClickHouseType>();
-    private static readonly IDictionary<string, ParameterizedType> ParameterizedTypes = new Dictionary<string, ParameterizedType>();
-    private static readonly IDictionary<Type, ClickHouseType> ReverseMapping = new Dictionary<Type, ClickHouseType>();
+    private static readonly Dictionary<string, ClickHouseType> SimpleTypes = [];
+    private static readonly Dictionary<string, ParameterizedType> ParameterizedTypes = [];
+    private static readonly Dictionary<Type, ClickHouseType> ReverseMapping = [];
 
-    private static readonly IDictionary<string, string> Aliases = new Dictionary<string, string>()
+    private static readonly Dictionary<string, string> Aliases = new()
     {
         { "BIGINT", "Int64" },
         { "BIGINT SIGNED", "Int64" },
@@ -97,6 +97,8 @@ internal static class TypeConverter
         .Concat(ParameterizedTypes.Values.Select(t => t.Name))
         .OrderBy(x => x)
         .ToArray();
+
+    internal static readonly string[] Separator = [" "];
 
     static TypeConverter()
     {
@@ -216,7 +218,7 @@ internal static class TypeConverter
 
         if (typeName.Contains(' '))
         {
-            var parts = typeName.Split(new[] { " " }, 2, StringSplitOptions.RemoveEmptyEntries);
+            var parts = typeName.Split(Separator, 2, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 2)
             {
                 typeName = parts[1].Trim();
@@ -232,9 +234,9 @@ internal static class TypeConverter
             return typeInfo;
         }
 
-        if (ParameterizedTypes.ContainsKey(typeName))
+        if (ParameterizedTypes.TryGetValue(typeName, out var value))
         {
-            return ParameterizedTypes[typeName].Parse(node, (n) => ParseClickHouseType(n, settings), settings);
+            return value.Parse(node, (n) => ParseClickHouseType(n, settings), settings);
         }
 
         throw new ArgumentException("Unknown type: " + node.ToString());
@@ -248,9 +250,9 @@ internal static class TypeConverter
     /// <returns>Corresponding ClickHouse type</returns>
     public static ClickHouseType ToClickHouseType(Type type)
     {
-        if (ReverseMapping.ContainsKey(type))
+        if (ReverseMapping.TryGetValue(type, out var value))
         {
-            return ReverseMapping[type];
+            return value;
         }
 
         if (type.IsArray)
