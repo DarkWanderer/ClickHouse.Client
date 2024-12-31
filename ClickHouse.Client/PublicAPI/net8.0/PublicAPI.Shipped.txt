@@ -1,0 +1,17 @@
+﻿ClickHouse.Client.ADO.ClickHouseDataSource
+ClickHouse.Client.ADO.ClickHouseDataSource.ClickHouseDataSource(string connectionString, System.Net.Http.HttpClient httpClient = null, bool disposeHttpClient = true) -> void
+ClickHouse.Client.ADO.ClickHouseDataSource.ClickHouseDataSource(string connectionString, System.Net.Http.IHttpClientFactory httpClientFactory, string httpClientName = "") -> void
+ClickHouse.Client.ADO.ClickHouseDataSource.CreateConnection() -> ClickHouse.Client.ADO.ClickHouseConnection
+ClickHouse.Client.ADO.ClickHouseDataSource.Logger.get -> Microsoft.Extensions.Logging.ILogger
+ClickHouse.Client.ADO.ClickHouseDataSource.Logger.set -> void
+ClickHouse.Client.ADO.ClickHouseDataSource.OpenConnection() -> ClickHouse.Client.ADO.ClickHouseConnection
+ClickHouse.Client.ADO.ClickHouseDataSource.OpenConnectionAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<ClickHouse.Client.ADO.ClickHouseConnection>
+ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetTuple(int ordinal) -> System.Runtime.CompilerServices.ITuple
+ClickHouse.Client.IClickHouseDataSource
+ClickHouse.Client.IClickHouseDataSource.ConnectionString.get -> string
+ClickHouse.Client.IClickHouseDataSource.CreateConnection() -> ClickHouse.Client.IClickHouseConnection
+ClickHouse.Client.IClickHouseDataSource.OpenConnection() -> ClickHouse.Client.IClickHouseConnection
+ClickHouse.Client.IClickHouseDataSource.OpenConnectionAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<ClickHouse.Client.IClickHouseConnection>
+override ClickHouse.Client.ADO.ClickHouseConnectionFactory.CreateDataSource(string connectionString) -> System.Data.Common.DbDataSource
+override ClickHouse.Client.ADO.ClickHouseDataSource.ConnectionString.get -> string
+static readonly ClickHouse.Client.Types.DateTimeConversions.DateOnlyEpochStart -> System.DateOnly
