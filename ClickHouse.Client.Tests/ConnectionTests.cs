@@ -157,7 +157,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     [Ignore("Needs support for named tuple parameters")]
     public void ShouldFetchSchemaDatabaseColumns()
     {
-        var schema = connection.GetSchema("Columns", new[] { "system" });
+        var schema = connection.GetSchema("Columns", ["system"]);
         Assert.IsNotNull(schema);
         CollectionAssert.IsSubsetOf(new[] { "Database", "Table", "DataType", "ProviderType" }, GetColumnNames(schema));
     }
@@ -165,7 +165,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     [Test]
     public void ShouldFetchSchemaTableColumns()
     {
-        var schema = connection.GetSchema("Columns", new[] { "system", "functions" });
+        var schema = connection.GetSchema("Columns", ["system", "functions"]);
         Assert.IsNotNull(schema);
         CollectionAssert.IsSubsetOf(new[] { "Database", "Table", "DataType", "ProviderType" }, GetColumnNames(schema));
     }

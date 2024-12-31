@@ -1,11 +1,14 @@
-﻿ClickHouse.Client.ADO.ClickHouseConnection.PostStreamAsync(string sql, System.Func<System.IO.Stream, System.Threading.CancellationToken, System.Threading.Tasks.Task> callback, bool isCompressed, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
-ClickHouse.Client.ADO.ClickHouseConnection.PostStreamAsync(string sql, System.IO.Stream data, bool isCompressed, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
-ClickHouse.Client.Types.DateTimeConversions
-ClickHouse.Client.Types.Grammar.Parser
-ClickHouse.Client.Types.Grammar.SyntaxTreeNode
-ClickHouse.Client.Types.Grammar.SyntaxTreeNode.ChildNodes.get -> System.Collections.Generic.IList<ClickHouse.Client.Types.Grammar.SyntaxTreeNode>
-ClickHouse.Client.Types.Grammar.SyntaxTreeNode.SingleChild.get -> ClickHouse.Client.Types.Grammar.SyntaxTreeNode
-ClickHouse.Client.Types.Grammar.SyntaxTreeNode.SyntaxTreeNode() -> void
-ClickHouse.Client.Types.Grammar.SyntaxTreeNode.Value.get -> string
-ClickHouse.Client.Types.Grammar.SyntaxTreeNode.Value.set -> void
+﻿static Microsoft.Extensions.DependencyInjection.ClickHouseServiceCollectionExtensions.AddClickHouseDataSource(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string connectionString, System.Net.Http.IHttpClientFactory httpClientFactory, string httpClientName = "", Microsoft.Extensions.DependencyInjection.ServiceLifetime connectionLifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient, Microsoft.Extensions.DependencyInjection.ServiceLifetime dataSourceLifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton, object serviceKey = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+static Microsoft.Extensions.DependencyInjection.ClickHouseServiceCollectionExtensions.AddClickHouseDataSource(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string connectionString, System.Net.Http.HttpClient httpClient = null, Microsoft.Extensions.DependencyInjection.ServiceLifetime connectionLifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient, Microsoft.Extensions.DependencyInjection.ServiceLifetime dataSourceLifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton, object serviceKey = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+Microsoft.Extensions.DependencyInjection.ClickHouseServiceCollectionExtensions
 ClickHouse.Client.Types.Grammar.Tokenizer
+ClickHouse.Client.Types.Grammar.SyntaxTreeNode.Value.set -> void
+ClickHouse.Client.Types.Grammar.SyntaxTreeNode.Value.get -> string
+ClickHouse.Client.Types.Grammar.SyntaxTreeNode.SyntaxTreeNode() -> void
+ClickHouse.Client.Types.Grammar.SyntaxTreeNode.SingleChild.get -> ClickHouse.Client.Types.Grammar.SyntaxTreeNode
+ClickHouse.Client.Types.Grammar.SyntaxTreeNode.ChildNodes.get -> System.Collections.Generic.IList<ClickHouse.Client.Types.Grammar.SyntaxTreeNode>
+ClickHouse.Client.Types.Grammar.SyntaxTreeNode
+ClickHouse.Client.Types.Grammar.Parser
+ClickHouse.Client.Types.DateTimeConversions
+ClickHouse.Client.ADO.ClickHouseConnection.PostStreamAsync(string sql, System.IO.Stream data, bool isCompressed, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
+ClickHouse.Client.ADO.ClickHouseConnection.PostStreamAsync(string sql, System.Func<System.IO.Stream, System.Threading.CancellationToken, System.Threading.Tasks.Task> callback, bool isCompressed, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task

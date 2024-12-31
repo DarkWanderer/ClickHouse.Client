@@ -24,9 +24,11 @@ public class ClickHouseBulkCopy : IDisposable
     private long rowsWritten;
     private (string[] names, ClickHouseType[] types) columnNamesAndTypes;
 
-    public ClickHouseBulkCopy(ClickHouseConnection connection) : this(connection, RowBinaryFormat.RowBinary) {}
+    public ClickHouseBulkCopy(ClickHouseConnection connection)
+        : this(connection, RowBinaryFormat.RowBinary) { }
 
-    public ClickHouseBulkCopy(string connectionString) : this(connectionString, RowBinaryFormat.RowBinary) {}
+    public ClickHouseBulkCopy(string connectionString)
+        : this(connectionString, RowBinaryFormat.RowBinary) { }
 
     public ClickHouseBulkCopy(ClickHouseConnection connection, RowBinaryFormat rowBinaryFormat)
     {

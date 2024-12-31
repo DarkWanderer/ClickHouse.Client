@@ -23,7 +23,7 @@ internal class MapType : ParameterizedType
             valueType = value.Item2;
 
             var genericType = typeof(Dictionary<,>);
-            frameworkType = genericType.MakeGenericType(new[] { keyType.FrameworkType, valueType.FrameworkType });
+            frameworkType = genericType.MakeGenericType([keyType.FrameworkType, valueType.FrameworkType]);
         }
     }
 

@@ -19,8 +19,8 @@ public class ClickHouseDecimalTests
     {
     }
 
-    public static readonly decimal[] Decimals = new decimal[]
-    {
+    public static readonly decimal[] Decimals =
+    [
         -1000000000000m,
         -5478689523m,
         -459m,
@@ -39,17 +39,17 @@ public class ClickHouseDecimalTests
         10,
         1000000,
         1000000000000m,
-    };
+    ];
 
     public static readonly decimal[] DecimalsWithoutZero = Decimals.Where(d => d != 0).ToArray();
 
     public static readonly decimal[] DecimalsWithExtremeValues = Decimals.Append(decimal.MinValue).Append(decimal.MinValue / 100000m).Append(decimal.MaxValue).Append(decimal.MaxValue / 100000m).ToArray();
 
-    public static readonly string[] LongDecimalStrings = new string[]
-    {
+    public static readonly string[] LongDecimalStrings =
+    [
         new string('1', 100),
         "3.141592653589793238462643383"
-    };
+    ];
 
     public static void AssertAreEqualWithDelta(decimal left, decimal right)
     {
@@ -62,14 +62,14 @@ public class ClickHouseDecimalTests
             Assert.AreEqual(left, right);
     }
 
-    public static readonly CultureInfo[] Cultures = new CultureInfo[]
-    {
+    public static readonly CultureInfo[] Cultures =
+    [
         CultureInfo.InvariantCulture,
         CultureInfo.GetCultureInfo("en-US"),
         CultureInfo.GetCultureInfo("zh-CN"),
         CultureInfo.GetCultureInfo("ru-RU"),
         CultureInfo.GetCultureInfo("ar-SA"),
-    };
+    ];
 
     [Test]
     [TestCase(0.001, ExpectedResult = 3)]
