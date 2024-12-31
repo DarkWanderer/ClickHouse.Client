@@ -2,11 +2,15 @@
 
 [*]
 indent_style = space
+insert_final_newline = true
+
+[*.csproj]
+tab_width = 2
+indent_size = 2
 
 [*.cs]
 tab_width = 4
 indent_size = 4
-insert_final_newline = true
 end_of_line = crlf
 
 csharp_style_namespace_declarations=file_scoped:warning
