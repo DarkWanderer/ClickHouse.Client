@@ -1,0 +1,354 @@
+ClickHouse.Client.ADO.Adapters.ClickHouseDataAdapter
+ClickHouse.Client.ADO.Adapters.ClickHouseDataAdapter.ClickHouseDataAdapter() -> void
+ClickHouse.Client.ADO.ClickHouseCommand
+ClickHouse.Client.ADO.ClickHouseCommand.ClickHouseCommand() -> void
+ClickHouse.Client.ADO.ClickHouseCommand.ClickHouseCommand(ClickHouse.Client.ADO.ClickHouseConnection connection) -> void
+ClickHouse.Client.ADO.ClickHouseCommand.CreateParameter() -> ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter
+ClickHouse.Client.ADO.ClickHouseCommand.CustomSettings.get -> System.Collections.Generic.IDictionary<string, object>
+ClickHouse.Client.ADO.ClickHouseCommand.ExecuteRawResultAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<ClickHouse.Client.ADO.ClickHouseRawResult>
+ClickHouse.Client.ADO.ClickHouseCommand.QueryId.get -> string
+ClickHouse.Client.ADO.ClickHouseCommand.QueryId.set -> void
+ClickHouse.Client.ADO.ClickHouseCommand.QueryStats.get -> ClickHouse.Client.ADO.QueryStats
+ClickHouse.Client.ADO.ClickHouseConnection
+ClickHouse.Client.ADO.ClickHouseConnection.ClickHouseConnection() -> void
+ClickHouse.Client.ADO.ClickHouseConnection.ClickHouseConnection(string connectionString) -> void
+ClickHouse.Client.ADO.ClickHouseConnection.ClickHouseConnection(string connectionString, System.Net.Http.HttpClient httpClient) -> void
+ClickHouse.Client.ADO.ClickHouseConnection.ClickHouseConnection(string connectionString, System.Net.Http.IHttpClientFactory httpClientFactory, string httpClientName = "") -> void
+ClickHouse.Client.ADO.ClickHouseConnection.Clone() -> object
+ClickHouse.Client.ADO.ClickHouseConnection.CreateCommand() -> ClickHouse.Client.ADO.ClickHouseCommand
+ClickHouse.Client.ADO.ClickHouseConnection.CustomSettings.get -> System.Collections.Generic.IDictionary<string, object>
+ClickHouse.Client.ADO.ClickHouseConnection.Logger.get -> Microsoft.Extensions.Logging.ILogger
+ClickHouse.Client.ADO.ClickHouseConnection.Logger.set -> void
+ClickHouse.Client.ADO.ClickHouseConnection.ServerTimezone.get -> string
+ClickHouse.Client.ADO.ClickHouseConnection.SetFormDataParameters(bool sendParametersAsFormData) -> void
+ClickHouse.Client.ADO.ClickHouseConnection.UseCompression.get -> bool
+ClickHouse.Client.ADO.ClickHouseConnection.UseFormDataParameters.get -> bool
+ClickHouse.Client.ADO.ClickHouseConnectionFactory
+ClickHouse.Client.ADO.ClickHouseConnectionFactory.ClickHouseConnectionFactory() -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.ClickHouseConnectionStringBuilder() -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.ClickHouseConnectionStringBuilder(string connectionString) -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Compression.get -> bool
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Compression.set -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Database.get -> string
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Database.set -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Host.get -> string
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Host.set -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Password.get -> string
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Password.set -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Port.get -> ushort
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Port.set -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Protocol.get -> string
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Protocol.set -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.SessionId.get -> string
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.SessionId.set -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Timeout.get -> System.TimeSpan
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Timeout.set -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.UseCustomDecimals.get -> bool
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.UseCustomDecimals.set -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.UseServerTimezone.get -> bool
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.UseServerTimezone.set -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.UseSession.get -> bool
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.UseSession.set -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Username.get -> string
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Username.set -> void
+ClickHouse.Client.ADO.ClickHouseRawResult
+ClickHouse.Client.ADO.ClickHouseRawResult.CopyToAsync(System.IO.Stream stream) -> System.Threading.Tasks.Task
+ClickHouse.Client.ADO.ClickHouseRawResult.Dispose() -> void
+ClickHouse.Client.ADO.ClickHouseRawResult.ReadAsByteArrayAsync() -> System.Threading.Tasks.Task<byte[]>
+ClickHouse.Client.ADO.ClickHouseRawResult.ReadAsStreamAsync() -> System.Threading.Tasks.Task<System.IO.Stream>
+ClickHouse.Client.ADO.ClickHouseRawResult.ReadAsStringAsync() -> System.Threading.Tasks.Task<string>
+ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Feature.All = -1 -> ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Feature.AsyncInsert = 8192 -> ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Feature.Bool = 128 -> ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Feature.Date32 = 256 -> ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Feature.Geo = 1024 -> ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Feature.Map = 64 -> ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Feature.None = 0 -> ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Feature.ParamsInMultipartFormData = 32768 -> ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Feature.Stats = 2048 -> ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Feature.UUIDParameters = 32 -> ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Feature.Variant = 16384 -> ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Feature.WideTypes = 512 -> ClickHouse.Client.ADO.Feature
+ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter
+ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.ClickHouseDbParameter() -> void
+ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.ClickHouseType.get -> string
+ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.ClickHouseType.set -> void
+ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.QueryForm.get -> string
+ClickHouse.Client.ADO.QueryStats
+ClickHouse.Client.ADO.QueryStats.ElapsedNs.get -> long
+ClickHouse.Client.ADO.QueryStats.ElapsedNs.init -> void
+ClickHouse.Client.ADO.QueryStats.QueryStats(long ReadRows, long ReadBytes, long WrittenRows, long WrittenBytes, long TotalRowsToRead, long ResultRows, long ResultBytes, long ElapsedNs) -> void
+ClickHouse.Client.ADO.QueryStats.ReadBytes.get -> long
+ClickHouse.Client.ADO.QueryStats.ReadBytes.init -> void
+ClickHouse.Client.ADO.QueryStats.ReadRows.get -> long
+ClickHouse.Client.ADO.QueryStats.ReadRows.init -> void
+ClickHouse.Client.ADO.QueryStats.ResultBytes.get -> long
+ClickHouse.Client.ADO.QueryStats.ResultBytes.init -> void
+ClickHouse.Client.ADO.QueryStats.ResultRows.get -> long
+ClickHouse.Client.ADO.QueryStats.ResultRows.init -> void
+ClickHouse.Client.ADO.QueryStats.TotalRowsToRead.get -> long
+ClickHouse.Client.ADO.QueryStats.TotalRowsToRead.init -> void
+ClickHouse.Client.ADO.QueryStats.WrittenBytes.get -> long
+ClickHouse.Client.ADO.QueryStats.WrittenBytes.init -> void
+ClickHouse.Client.ADO.QueryStats.WrittenRows.get -> long
+ClickHouse.Client.ADO.QueryStats.WrittenRows.init -> void
+ClickHouse.Client.ADO.Readers.ClickHouseDataReader
+ClickHouse.Client.ADO.Readers.ClickHouseDataReader.Current.get -> System.Data.IDataReader
+ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetBigInteger(int ordinal) -> System.Numerics.BigInteger
+ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetIPAddress(int ordinal) -> System.Net.IPAddress
+ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetSByte(int ordinal) -> sbyte
+ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetUInt16(int ordinal) -> ushort
+ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetUInt32(int ordinal) -> uint
+ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetUInt64(int ordinal) -> ulong
+ClickHouse.Client.ADO.Readers.ClickHouseDataReader.MoveNext() -> bool
+ClickHouse.Client.ADO.Readers.ClickHouseDataReader.Reset() -> void
+ClickHouse.Client.ClickHouseServerException
+ClickHouse.Client.ClickHouseServerException.ClickHouseServerException() -> void
+ClickHouse.Client.ClickHouseServerException.ClickHouseServerException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
+ClickHouse.Client.ClickHouseServerException.ClickHouseServerException(string error, string query, int errorCode) -> void
+ClickHouse.Client.ClickHouseServerException.Query.get -> string
+ClickHouse.Client.Constraints.DBDefault
+ClickHouse.Client.Constraints.DBDefault.DBDefault() -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopy
+ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSize.get -> int
+ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSize.set -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopy.ClickHouseBulkCopy(ClickHouse.Client.ADO.ClickHouseConnection connection) -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopy.ClickHouseBulkCopy(ClickHouse.Client.ADO.ClickHouseConnection connection, ClickHouse.Client.Copy.RowBinaryFormat rowBinaryFormat) -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopy.ClickHouseBulkCopy(string connectionString) -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopy.ClickHouseBulkCopy(string connectionString, ClickHouse.Client.Copy.RowBinaryFormat rowBinaryFormat) -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopy.ColumnNames.get -> System.Collections.Generic.IReadOnlyCollection<string>
+ClickHouse.Client.Copy.ClickHouseBulkCopy.ColumnNames.init -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopy.DestinationTableName.get -> string
+ClickHouse.Client.Copy.ClickHouseBulkCopy.DestinationTableName.init -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopy.Dispose() -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopy.InitAsync() -> System.Threading.Tasks.Task
+ClickHouse.Client.Copy.ClickHouseBulkCopy.MaxDegreeOfParallelism.get -> int
+ClickHouse.Client.Copy.ClickHouseBulkCopy.MaxDegreeOfParallelism.set -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopy.RowsWritten.get -> long
+ClickHouse.Client.Copy.ClickHouseBulkCopy.WriteToServerAsync(System.Collections.Generic.IEnumerable<object[]> rows) -> System.Threading.Tasks.Task
+ClickHouse.Client.Copy.ClickHouseBulkCopy.WriteToServerAsync(System.Collections.Generic.IEnumerable<object[]> rows, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
+ClickHouse.Client.Copy.ClickHouseBulkCopy.WriteToServerAsync(System.Data.DataTable table, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
+ClickHouse.Client.Copy.ClickHouseBulkCopy.WriteToServerAsync(System.Data.IDataReader reader) -> System.Threading.Tasks.Task
+ClickHouse.Client.Copy.ClickHouseBulkCopy.WriteToServerAsync(System.Data.IDataReader reader, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
+ClickHouse.Client.Copy.ClickHouseBulkCopySerializationException
+ClickHouse.Client.Copy.ClickHouseBulkCopySerializationException.ClickHouseBulkCopySerializationException(object[] row, System.Exception innerException) -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopySerializationException.Row.get -> object[]
+ClickHouse.Client.Copy.RowBinaryFormat
+ClickHouse.Client.Copy.RowBinaryFormat.RowBinary = 0 -> ClickHouse.Client.Copy.RowBinaryFormat
+ClickHouse.Client.Copy.RowBinaryFormat.RowBinaryWithDefaults = 1 -> ClickHouse.Client.Copy.RowBinaryFormat
+ClickHouse.Client.Formats.ExtendedBinaryWriter
+ClickHouse.Client.Formats.ExtendedBinaryWriter.ExtendedBinaryWriter(System.IO.Stream stream) -> void
+ClickHouse.Client.Formats.ExtendedBinaryWriter.Write7BitEncodedInt(int i) -> void
+ClickHouse.Client.IClickHouseCommand
+ClickHouse.Client.IClickHouseCommand.CreateParameter() -> ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter
+ClickHouse.Client.IClickHouseCommand.CustomSettings.get -> System.Collections.Generic.IDictionary<string, object>
+ClickHouse.Client.IClickHouseCommand.ExecuteRawResultAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<ClickHouse.Client.ADO.ClickHouseRawResult>
+ClickHouse.Client.IClickHouseConnection
+ClickHouse.Client.IClickHouseConnection.CreateCommand() -> ClickHouse.Client.ADO.ClickHouseCommand
+ClickHouse.Client.Numerics.ClickHouseDecimal
+ClickHouse.Client.Numerics.ClickHouseDecimal.ClickHouseDecimal() -> void
+ClickHouse.Client.Numerics.ClickHouseDecimal.ClickHouseDecimal(System.Numerics.BigInteger mantissa, int scale) -> void
+ClickHouse.Client.Numerics.ClickHouseDecimal.ClickHouseDecimal(decimal value) -> void
+ClickHouse.Client.Numerics.ClickHouseDecimal.CompareTo(ClickHouse.Client.Numerics.ClickHouseDecimal other) -> int
+ClickHouse.Client.Numerics.ClickHouseDecimal.CompareTo(decimal other) -> int
+ClickHouse.Client.Numerics.ClickHouseDecimal.CompareTo(object obj) -> int
+ClickHouse.Client.Numerics.ClickHouseDecimal.Equals(ClickHouse.Client.Numerics.ClickHouseDecimal other) -> bool
+ClickHouse.Client.Numerics.ClickHouseDecimal.Floor() -> ClickHouse.Client.Numerics.ClickHouseDecimal
+ClickHouse.Client.Numerics.ClickHouseDecimal.GetTypeCode() -> System.TypeCode
+ClickHouse.Client.Numerics.ClickHouseDecimal.Mantissa.get -> System.Numerics.BigInteger
+ClickHouse.Client.Numerics.ClickHouseDecimal.Scale.get -> int
+ClickHouse.Client.Numerics.ClickHouseDecimal.Sign.get -> int
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToBoolean(System.IFormatProvider provider) -> bool
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToByte(System.IFormatProvider provider) -> byte
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToChar(System.IFormatProvider provider) -> char
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToDateTime(System.IFormatProvider provider) -> System.DateTime
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToDecimal(System.IFormatProvider provider) -> decimal
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToDouble(System.IFormatProvider provider) -> double
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToInt16(System.IFormatProvider provider) -> short
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToInt32(System.IFormatProvider provider) -> int
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToInt64(System.IFormatProvider provider) -> long
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToSByte(System.IFormatProvider provider) -> sbyte
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToSingle(System.IFormatProvider provider) -> float
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToString(System.IFormatProvider provider) -> string
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToString(string format, System.IFormatProvider formatProvider) -> string
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToType(System.Type conversionType, System.IFormatProvider provider) -> object
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToUInt16(System.IFormatProvider provider) -> ushort
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToUInt32(System.IFormatProvider provider) -> uint
+ClickHouse.Client.Numerics.ClickHouseDecimal.ToUInt64(System.IFormatProvider provider) -> ulong
+ClickHouse.Client.Numerics.ClickHouseDecimal.Truncate(int precision = 0) -> ClickHouse.Client.Numerics.ClickHouseDecimal
+ClickHouse.Client.Utility.CommandExtensions
+ClickHouse.Client.Utility.CompressedContent
+ClickHouse.Client.Utility.CompressedContent.CompressedContent(System.Net.Http.HttpContent content, System.Net.DecompressionMethods compressionMethod) -> void
+ClickHouse.Client.Utility.ConnectionExtensions
+ClickHouse.Client.Utility.DataReaderExtensions
+ClickHouse.Client.Utility.DictionaryExtensions
+ClickHouse.Client.Utility.EnumerableExtensions
+ClickHouse.Client.Utility.MathUtils
+ClickHouse.Client.Utility.NameValueCollectionExtensions
+ClickHouse.Client.Utility.StringExtensions
+override ClickHouse.Client.ADO.ClickHouseCommand.Cancel() -> void
+override ClickHouse.Client.ADO.ClickHouseCommand.CommandText.get -> string
+override ClickHouse.Client.ADO.ClickHouseCommand.CommandText.set -> void
+override ClickHouse.Client.ADO.ClickHouseCommand.CommandTimeout.get -> int
+override ClickHouse.Client.ADO.ClickHouseCommand.CommandTimeout.set -> void
+override ClickHouse.Client.ADO.ClickHouseCommand.CommandType.get -> System.Data.CommandType
+override ClickHouse.Client.ADO.ClickHouseCommand.CommandType.set -> void
+override ClickHouse.Client.ADO.ClickHouseCommand.CreateDbParameter() -> System.Data.Common.DbParameter
+override ClickHouse.Client.ADO.ClickHouseCommand.DbConnection.get -> System.Data.Common.DbConnection
+override ClickHouse.Client.ADO.ClickHouseCommand.DbConnection.set -> void
+override ClickHouse.Client.ADO.ClickHouseCommand.DbParameterCollection.get -> System.Data.Common.DbParameterCollection
+override ClickHouse.Client.ADO.ClickHouseCommand.DbTransaction.get -> System.Data.Common.DbTransaction
+override ClickHouse.Client.ADO.ClickHouseCommand.DbTransaction.set -> void
+override ClickHouse.Client.ADO.ClickHouseCommand.DesignTimeVisible.get -> bool
+override ClickHouse.Client.ADO.ClickHouseCommand.DesignTimeVisible.set -> void
+override ClickHouse.Client.ADO.ClickHouseCommand.Dispose(bool disposing) -> void
+override ClickHouse.Client.ADO.ClickHouseCommand.ExecuteDbDataReader(System.Data.CommandBehavior behavior) -> System.Data.Common.DbDataReader
+override ClickHouse.Client.ADO.ClickHouseCommand.ExecuteDbDataReaderAsync(System.Data.CommandBehavior behavior, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Data.Common.DbDataReader>
+override ClickHouse.Client.ADO.ClickHouseCommand.ExecuteNonQuery() -> int
+override ClickHouse.Client.ADO.ClickHouseCommand.ExecuteNonQueryAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>
+override ClickHouse.Client.ADO.ClickHouseCommand.ExecuteScalar() -> object
+override ClickHouse.Client.ADO.ClickHouseCommand.ExecuteScalarAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<object>
+override ClickHouse.Client.ADO.ClickHouseCommand.Prepare() -> void
+override ClickHouse.Client.ADO.ClickHouseCommand.UpdatedRowSource.get -> System.Data.UpdateRowSource
+override ClickHouse.Client.ADO.ClickHouseCommand.UpdatedRowSource.set -> void
+override ClickHouse.Client.ADO.ClickHouseConnection.BeginDbTransaction(System.Data.IsolationLevel isolationLevel) -> System.Data.Common.DbTransaction
+override ClickHouse.Client.ADO.ClickHouseConnection.ChangeDatabase(string databaseName) -> void
+override ClickHouse.Client.ADO.ClickHouseConnection.Close() -> void
+override ClickHouse.Client.ADO.ClickHouseConnection.CreateDbCommand() -> System.Data.Common.DbCommand
+override ClickHouse.Client.ADO.ClickHouseConnection.DataSource.get -> string
+override ClickHouse.Client.ADO.ClickHouseConnection.Database.get -> string
+override ClickHouse.Client.ADO.ClickHouseConnection.GetSchema() -> System.Data.DataTable
+override ClickHouse.Client.ADO.ClickHouseConnection.GetSchema(string collectionName) -> System.Data.DataTable
+override ClickHouse.Client.ADO.ClickHouseConnection.GetSchema(string collectionName, string[] restrictionValues) -> System.Data.DataTable
+override ClickHouse.Client.ADO.ClickHouseConnection.Open() -> void
+override ClickHouse.Client.ADO.ClickHouseConnection.OpenAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
+override ClickHouse.Client.ADO.ClickHouseConnection.ServerVersion.get -> string
+override ClickHouse.Client.ADO.ClickHouseConnection.State.get -> System.Data.ConnectionState
+override ClickHouse.Client.ADO.ClickHouseConnectionFactory.CreateCommand() -> System.Data.Common.DbCommand
+override ClickHouse.Client.ADO.ClickHouseConnectionFactory.CreateConnection() -> System.Data.Common.DbConnection
+override ClickHouse.Client.ADO.ClickHouseConnectionFactory.CreateConnectionStringBuilder() -> System.Data.Common.DbConnectionStringBuilder
+override ClickHouse.Client.ADO.ClickHouseConnectionFactory.CreateDataAdapter() -> System.Data.Common.DbDataAdapter
+override ClickHouse.Client.ADO.ClickHouseConnectionFactory.CreateParameter() -> System.Data.Common.DbParameter
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.DbType.get -> System.Data.DbType
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.DbType.set -> void
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.Direction.get -> System.Data.ParameterDirection
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.Direction.set -> void
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.IsNullable.get -> bool
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.IsNullable.set -> void
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.ParameterName.get -> string
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.ParameterName.set -> void
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.ResetDbType() -> void
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.Size.get -> int
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.Size.set -> void
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.SourceColumn.get -> string
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.SourceColumn.set -> void
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.SourceColumnNullMapping.get -> bool
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.SourceColumnNullMapping.set -> void
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.ToString() -> string
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.Value.get -> object
+override ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter.Value.set -> void
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.Close() -> void
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.Depth.get -> int
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.FieldCount.get -> int
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetBoolean(int ordinal) -> bool
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetByte(int ordinal) -> byte
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length) -> long
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetChar(int ordinal) -> char
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) -> long
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetDataTypeName(int ordinal) -> string
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetDateTime(int ordinal) -> System.DateTime
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetDecimal(int ordinal) -> decimal
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetDouble(int ordinal) -> double
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetEnumerator() -> System.Collections.IEnumerator
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetFieldType(int ordinal) -> System.Type
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetFieldValue<T>(int ordinal) -> T
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetFloat(int ordinal) -> float
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetGuid(int ordinal) -> System.Guid
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetInt16(int ordinal) -> short
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetInt32(int ordinal) -> int
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetInt64(int ordinal) -> long
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetName(int ordinal) -> string
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetOrdinal(string name) -> int
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetSchemaTable() -> System.Data.DataTable
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetString(int ordinal) -> string
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetValue(int ordinal) -> object
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetValues(object[] values) -> int
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.IsClosed.get -> bool
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.IsDBNull(int ordinal) -> bool
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.NextResult() -> bool
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.NextResultAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.Read() -> bool
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.RecordsAffected.get -> int
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.this[int ordinal].get -> object
+override ClickHouse.Client.ADO.Readers.ClickHouseDataReader.this[string name].get -> object
+override ClickHouse.Client.Numerics.ClickHouseDecimal.Equals(object obj) -> bool
+override ClickHouse.Client.Numerics.ClickHouseDecimal.GetHashCode() -> int
+override ClickHouse.Client.Numerics.ClickHouseDecimal.ToString() -> string
+override ClickHouse.Client.Types.Grammar.SyntaxTreeNode.ToString() -> string
+override ClickHouse.Client.Utility.CompressedContent.Dispose(bool disposing) -> void
+override ClickHouse.Client.Utility.CompressedContent.SerializeToStreamAsync(System.IO.Stream stream, System.Net.TransportContext context) -> System.Threading.Tasks.Task
+override ClickHouse.Client.Utility.CompressedContent.TryComputeLength(out long length) -> bool
+override sealed ClickHouse.Client.ADO.ClickHouseConnection.ConnectionString.get -> string
+override sealed ClickHouse.Client.ADO.ClickHouseConnection.ConnectionString.set -> void
+override sealed ClickHouse.Client.ADO.Readers.ClickHouseDataReader.HasRows.get -> bool
+static ClickHouse.Client.ADO.ClickHouseConnectionFactory.Instance.get -> ClickHouse.Client.ADO.ClickHouseConnectionFactory
+static ClickHouse.Client.ClickHouseServerException.FromServerResponse(string error, string query) -> ClickHouse.Client.ClickHouseServerException
+static ClickHouse.Client.Numerics.ClickHouseDecimal.MaxDivisionPrecision -> int
+static ClickHouse.Client.Numerics.ClickHouseDecimal.NumberOfDigits(System.Numerics.BigInteger value) -> int
+static ClickHouse.Client.Numerics.ClickHouseDecimal.One.get -> ClickHouse.Client.Numerics.ClickHouseDecimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.Parse(string input) -> ClickHouse.Client.Numerics.ClickHouseDecimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.Parse(string input, System.IFormatProvider provider) -> ClickHouse.Client.Numerics.ClickHouseDecimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.Zero.get -> ClickHouse.Client.Numerics.ClickHouseDecimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.explicit operator decimal(ClickHouse.Client.Numerics.ClickHouseDecimal value) -> decimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.explicit operator double(ClickHouse.Client.Numerics.ClickHouseDecimal value) -> double
+static ClickHouse.Client.Numerics.ClickHouseDecimal.explicit operator float(ClickHouse.Client.Numerics.ClickHouseDecimal value) -> float
+static ClickHouse.Client.Numerics.ClickHouseDecimal.explicit operator int(ClickHouse.Client.Numerics.ClickHouseDecimal value) -> int
+static ClickHouse.Client.Numerics.ClickHouseDecimal.explicit operator long(ClickHouse.Client.Numerics.ClickHouseDecimal value) -> long
+static ClickHouse.Client.Numerics.ClickHouseDecimal.explicit operator uint(ClickHouse.Client.Numerics.ClickHouseDecimal value) -> uint
+static ClickHouse.Client.Numerics.ClickHouseDecimal.explicit operator ulong(ClickHouse.Client.Numerics.ClickHouseDecimal value) -> ulong
+static ClickHouse.Client.Numerics.ClickHouseDecimal.implicit operator ClickHouse.Client.Numerics.ClickHouseDecimal(decimal value) -> ClickHouse.Client.Numerics.ClickHouseDecimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.implicit operator ClickHouse.Client.Numerics.ClickHouseDecimal(double value) -> ClickHouse.Client.Numerics.ClickHouseDecimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.implicit operator ClickHouse.Client.Numerics.ClickHouseDecimal(int value) -> ClickHouse.Client.Numerics.ClickHouseDecimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.operator !=(ClickHouse.Client.Numerics.ClickHouseDecimal left, ClickHouse.Client.Numerics.ClickHouseDecimal right) -> bool
+static ClickHouse.Client.Numerics.ClickHouseDecimal.operator %(ClickHouse.Client.Numerics.ClickHouseDecimal dividend, ClickHouse.Client.Numerics.ClickHouseDecimal divisor) -> ClickHouse.Client.Numerics.ClickHouseDecimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.operator *(ClickHouse.Client.Numerics.ClickHouseDecimal left, ClickHouse.Client.Numerics.ClickHouseDecimal right) -> ClickHouse.Client.Numerics.ClickHouseDecimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.operator +(ClickHouse.Client.Numerics.ClickHouseDecimal left, ClickHouse.Client.Numerics.ClickHouseDecimal right) -> ClickHouse.Client.Numerics.ClickHouseDecimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.operator -(ClickHouse.Client.Numerics.ClickHouseDecimal left, ClickHouse.Client.Numerics.ClickHouseDecimal right) -> ClickHouse.Client.Numerics.ClickHouseDecimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.operator /(ClickHouse.Client.Numerics.ClickHouseDecimal dividend, ClickHouse.Client.Numerics.ClickHouseDecimal divisor) -> ClickHouse.Client.Numerics.ClickHouseDecimal
+static ClickHouse.Client.Numerics.ClickHouseDecimal.operator <(ClickHouse.Client.Numerics.ClickHouseDecimal left, ClickHouse.Client.Numerics.ClickHouseDecimal right) -> bool
+static ClickHouse.Client.Numerics.ClickHouseDecimal.operator <=(ClickHouse.Client.Numerics.ClickHouseDecimal left, ClickHouse.Client.Numerics.ClickHouseDecimal right) -> bool
+static ClickHouse.Client.Numerics.ClickHouseDecimal.operator ==(ClickHouse.Client.Numerics.ClickHouseDecimal left, ClickHouse.Client.Numerics.ClickHouseDecimal right) -> bool
+static ClickHouse.Client.Numerics.ClickHouseDecimal.operator >(ClickHouse.Client.Numerics.ClickHouseDecimal left, ClickHouse.Client.Numerics.ClickHouseDecimal right) -> bool
+static ClickHouse.Client.Numerics.ClickHouseDecimal.operator >=(ClickHouse.Client.Numerics.ClickHouseDecimal left, ClickHouse.Client.Numerics.ClickHouseDecimal right) -> bool
+static ClickHouse.Client.Types.DateTimeConversions.FromUnixTimeDays(int days) -> System.DateTime
+static ClickHouse.Client.Types.DateTimeConversions.ToUnixTimeDays(this System.DateTimeOffset dto) -> int
+static ClickHouse.Client.Types.Grammar.Parser.Parse(string input) -> ClickHouse.Client.Types.Grammar.SyntaxTreeNode
+static ClickHouse.Client.Types.Grammar.Tokenizer.GetTokens(string input) -> System.Collections.Generic.IEnumerable<string>
+static ClickHouse.Client.Utility.CommandExtensions.AddParameter(this ClickHouse.Client.ADO.ClickHouseCommand command, string parameterName, object parameterValue) -> ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter
+static ClickHouse.Client.Utility.CommandExtensions.AddParameter(this ClickHouse.Client.ADO.ClickHouseCommand command, string parameterName, string clickHouseType, object parameterValue) -> ClickHouse.Client.ADO.Parameters.ClickHouseDbParameter
+static ClickHouse.Client.Utility.ConnectionExtensions.ExecuteDataTable(this System.Data.Common.DbConnection connection, string sql) -> System.Data.DataTable
+static ClickHouse.Client.Utility.ConnectionExtensions.ExecuteReaderAsync(this System.Data.Common.DbConnection connection, string sql) -> System.Threading.Tasks.Task<System.Data.Common.DbDataReader>
+static ClickHouse.Client.Utility.ConnectionExtensions.ExecuteScalarAsync(this System.Data.Common.DbConnection connection, string sql) -> System.Threading.Tasks.Task<object>
+static ClickHouse.Client.Utility.ConnectionExtensions.ExecuteStatementAsync(this System.Data.Common.DbConnection connection, string sql) -> System.Threading.Tasks.Task<int>
+static ClickHouse.Client.Utility.DataReaderExtensions.GetColumnNames(this System.Data.IDataReader reader) -> string[]
+static ClickHouse.Client.Utility.DictionaryExtensions.Set<TKey, TValue>(this System.Collections.Generic.IDictionary<TKey, TValue> dictionary, TKey key, TValue value) -> void
+static ClickHouse.Client.Utility.DictionaryExtensions.TryAdd<TKey, TValue>(this System.Collections.Generic.IDictionary<TKey, TValue> dictionary, TKey key, TValue value) -> bool
+static ClickHouse.Client.Utility.EnumerableExtensions.BatchRented<T>(this System.Collections.Generic.IEnumerable<T> enumerable, int batchSize) -> System.Collections.Generic.IEnumerable<(T[], int)>
+static ClickHouse.Client.Utility.EnumerableExtensions.Deconstruct<T>(this System.Collections.Generic.IList<T> list, out T first, out T second) -> void
+static ClickHouse.Client.Utility.EnumerableExtensions.Deconstruct<T>(this System.Collections.Generic.IList<T> list, out T first, out T second, out T third) -> void
+static ClickHouse.Client.Utility.MathUtils.ShiftDecimalPlaces(long value, int places) -> long
+static ClickHouse.Client.Utility.MathUtils.ToPower(int value, int power) -> long
+static ClickHouse.Client.Utility.NameValueCollectionExtensions.SetOrRemove(this System.Collections.Specialized.NameValueCollection collection, string name, string value) -> void
+static ClickHouse.Client.Utility.StringExtensions.EncloseColumnName(this string str) -> string
+static ClickHouse.Client.Utility.StringExtensions.Escape(this string str) -> string
+static ClickHouse.Client.Utility.StringExtensions.QuoteDouble(this string str) -> string
+static ClickHouse.Client.Utility.StringExtensions.QuoteSingle(this string str) -> string
+static ClickHouse.Client.Utility.StringExtensions.ReplaceMultipleWords(this string input, System.Collections.Generic.Dictionary<string, string> replacements) -> string
+static ClickHouse.Client.Utility.StringExtensions.ToSnakeCase(this string str) -> string
+static readonly ClickHouse.Client.Constraints.DBDefault.Value -> ClickHouse.Client.Constraints.DBDefault
+static readonly ClickHouse.Client.Types.DateTimeConversions.DateTimeEpochStart -> System.DateTime
+virtual ClickHouse.Client.ADO.ClickHouseConnection.SupportedFeatures.get -> ClickHouse.Client.ADO.Feature
+virtual ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetDateTimeOffset(int ordinal) -> System.DateTimeOffset
+﻿ClickHouse.Client.ADO.Adapters.ClickHouseDataAdapter
