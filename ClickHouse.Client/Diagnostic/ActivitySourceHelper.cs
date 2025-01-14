@@ -48,12 +48,7 @@ internal static class ActivitySourceHelper
         activity.SetTag(TagDbConnectionString, connection.RedactedConnectionString);
         activity.SetTag(TagDbName, connection.Database);
         activity.SetTag(TagUser, connection.Username);
-
-        if (string.IsNullOrWhiteSpace(connection.ServerUri.AbsolutePath))
-            activity.SetTag(TagService, $"{connection.ServerUri.Host}:{connection.ServerUri.Port}");
-        else
-            activity.SetTag(TagService, $"{connection.ServerUri.Host}:{connection.ServerUri.Port}/{connection.ServerUri.AbsolutePath}");
-
+        activity.SetTag(TagService, $"{connection.ServerUri.Host}:{connection.ServerUri.Port}{connection.ServerUri.AbsolutePath}");
         return activity;
     }
 
