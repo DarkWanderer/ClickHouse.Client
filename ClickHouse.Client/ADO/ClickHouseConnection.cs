@@ -386,6 +386,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
                 Password = password,
                 Protocol = serverUri?.Scheme,
                 Host = serverUri?.Host,
+                Path = serverUri?.AbsolutePath,
                 Port = (ushort)serverUri?.Port,
                 Compression = UseCompression,
                 UseSession = session != null,
@@ -406,7 +407,7 @@ public class ClickHouseConnection : DbConnection, IClickHouseConnection, IClonea
             database = builder.Database;
             username = builder.Username;
             password = builder.Password;
-            serverUri = new UriBuilder(builder.Protocol, builder.Host, builder.Port).Uri;
+            serverUri = new UriBuilder(builder.Protocol, builder.Host, builder.Port, builder.Path).Uri;
             UseCompression = builder.Compression;
             session = builder.UseSession ? builder.SessionId ?? Guid.NewGuid().ToString() : null;
             timeout = builder.Timeout;
