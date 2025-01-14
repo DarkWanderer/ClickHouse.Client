@@ -34,6 +34,8 @@ ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Database.get -> string
 ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Database.set -> void
 ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Host.get -> string
 ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Host.set -> void
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Path.get -> string
+ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Path.set -> void
 ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Password.get -> string
 ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Password.set -> void
 ClickHouse.Client.ADO.ClickHouseConnectionStringBuilder.Port.get -> ushort
