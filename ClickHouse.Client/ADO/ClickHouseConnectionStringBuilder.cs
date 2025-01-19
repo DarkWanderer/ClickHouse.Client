@@ -45,6 +45,12 @@ public class ClickHouseConnectionStringBuilder : DbConnectionStringBuilder
         set => this["Host"] = value;
     }
 
+    public string Path
+    {
+        get => GetStringOrDefault("Path", null);
+        set => this["Path"] = value;
+    }
+
     public bool Compression
     {
         get => GetBooleanOrDefault("Compression", true);
