@@ -6,6 +6,7 @@ using System.Net.Http;
 using ClickHouse.Client;
 using ClickHouse.Client.ADO;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection;
@@ -40,7 +41,7 @@ public static class ClickHouseServiceCollectionExtensions
         object serviceKey = null) =>
         AddClickHouseDataSource(
             services,
-            (_, _) =>
+            (sp, _) =>
             {
                 if (httpClient == null)
                 {
@@ -53,7 +54,10 @@ public static class ClickHouseServiceCollectionExtensions
 #pragma warning restore CA5399
                 }
 
-                return new ClickHouseDataSource(connectionString, httpClient);
+                return new ClickHouseDataSource(connectionString, httpClient)
+                {
+                    Logger = sp.GetService<ILogger<ClickHouseConnection>>()
+                };
             },
             connectionLifetime,
             dataSourceLifetime,
@@ -87,7 +91,10 @@ public static class ClickHouseServiceCollectionExtensions
         ServiceLifetime connectionLifetime = ServiceLifetime.Transient,
         ServiceLifetime dataSourceLifetime = ServiceLifetime.Singleton,
         object serviceKey = null) =>
-        AddClickHouseDataSource(services, (_, _) => new ClickHouseDataSource(connectionString, httpClientFactory, httpClientName), connectionLifetime, dataSourceLifetime, serviceKey);
+        AddClickHouseDataSource(services, (sp, _) => new ClickHouseDataSource(connectionString, httpClientFactory, httpClientName)
+        {
+            Logger = sp.GetService<ILogger<ClickHouseConnection>>()
+        }, connectionLifetime, dataSourceLifetime, serviceKey);
 
     /// <summary>
     /// Registers a <see cref="ClickHouseDataSource" /> and a <see cref="ClickHouseConnection" /> in the <see cref="IServiceCollection" />.
@@ -104,7 +111,7 @@ public static class ClickHouseServiceCollectionExtensions
     /// </param>
     /// <param name="serviceKey">The <see cref="ServiceDescriptor.ServiceKey"/> of the data source.</param>
     /// <returns>The same service collection so that multiple calls can be chained.</returns>
-    private static IServiceCollection AddClickHouseDataSource(
+    public static IServiceCollection AddClickHouseDataSource(
         this IServiceCollection services,
         Func<IServiceProvider, object, ClickHouseDataSource> dataSourceFactory,
         ServiceLifetime connectionLifetime = ServiceLifetime.Transient,
