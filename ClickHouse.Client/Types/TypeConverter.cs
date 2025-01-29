@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types.Grammar;
 
@@ -169,6 +170,7 @@ internal static class TypeConverter
         RegisterPlainType<MultiPolygonType>();
 
         // JSON/Object
+        RegisterParameterizedType<JsonType>();
         RegisterParameterizedType<ObjectType>();
 
         RegisterParameterizedType<AggregateFunctionType>();
@@ -181,6 +183,8 @@ internal static class TypeConverter
 #endif
         ReverseMapping[typeof(DateTime)] = new DateTimeType();
         ReverseMapping[typeof(DateTimeOffset)] = new DateTimeType();
+
+        ReverseMapping[typeof(JsonElement)] = new JsonType();
     }
 
     private static void RegisterPlainType<T>()
