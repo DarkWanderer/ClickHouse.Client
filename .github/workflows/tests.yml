@@ -119,7 +119,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: ['net8.0', 'net7.0', 'net6.0', 'net5.0', 'netcoreapp3.1']
+        framework: ['net8.0', 'net7.0', 'net5.0', 'netcoreapp3.1']
 
   integration:
     name: Integration Tests
