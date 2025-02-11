@@ -26,7 +26,12 @@ jobs:
         image: clickhouse/clickhouse-server:${{ inputs.clickhouse-version }}
         ports:
           - 8123:8123
-          
+        env:
+          CLICKHOUSE_DB: test
+          CLICKHOUSE_USER: test
+          CLICKHOUSE_PASSWORD: test1234
+          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: '1'
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -63,7 +68,7 @@ jobs:
     - name: Test with coverage
       run: dotnet test ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj --framework ${{ inputs.framework }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
       env:
-        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=test;Password=test1234
         CLICKHOUSE_VERSION: ${{ inputs.clickhouse-version }}
     
     - name: Rename coverage file

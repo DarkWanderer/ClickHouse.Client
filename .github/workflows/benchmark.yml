@@ -17,6 +17,11 @@ jobs:
         image: clickhouse/clickhouse-server:latest
         ports:
           - 8123:8123
+        env:
+          CLICKHOUSE_DB: test
+          CLICKHOUSE_USER: test
+          CLICKHOUSE_PASSWORD: test1234
+          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: '1'
 
     steps:
     - uses: actions/checkout@v4
@@ -40,7 +45,7 @@ jobs:
     - name: Run
       run: dotnet run --project ClickHouse.Client.Benchmark/ClickHouse.Client.Benchmark.csproj --framework net6.0 --configuration Release -- --join --filter "*" --artifacts . --job Short
       env:
-        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=test;Password=test1234
 
     - name: Post results to summary
       run: cat results/*-report-github.md >> $GITHUB_STEP_SUMMARY
