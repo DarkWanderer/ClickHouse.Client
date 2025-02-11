@@ -159,5 +159,5 @@ jobs:
     - name: Test with coverage
       run: dotnet test ClickHouse.Client.IntegrationTests/ClickHouse.Client.IntegrationTests.csproj --framework net8.0 --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
       env:
-        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;user=test;password=test1234
         CLICKHOUSE_VERSION: latest
