@@ -1,7 +1,0 @@
-users:
-  test:
-    password: test1234
-    grants:
-      query:
-        - GRANT ALL ON test.*
-        - GRANT SELECT ON system.*
