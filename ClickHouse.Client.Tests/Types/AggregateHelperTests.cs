@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
 using ClickHouse.Client.Types;
 
 namespace ClickHouse.Client.Tests.Types;

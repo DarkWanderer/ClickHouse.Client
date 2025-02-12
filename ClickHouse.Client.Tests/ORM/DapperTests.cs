@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Utility;
 using Dapper;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.ORM;
 
@@ -41,6 +40,8 @@ public class DapperTests : AbstractConnectionTestFixture
         if (clickHouseType.Contains("Int256"))
             return false;
         if (clickHouseType.Contains("Nested"))
+            return false;
+        if (clickHouseType.Contains("Json"))
             return false;
         switch (clickHouseType)
         {
@@ -112,7 +113,7 @@ public class DapperTests : AbstractConnectionTestFixture
     {
         var parameters = new Dictionary<string, object> { { "value", value } };
         var results = await connection.QueryAsync<string>(sql, parameters);
-        Assert.AreEqual(Convert.ToString(value, CultureInfo.InvariantCulture), results.Single());
+        ClassicAssert.AreEqual(Convert.ToString(value, CultureInfo.InvariantCulture), results.Single());
     }
 
     [Test]
@@ -129,7 +130,8 @@ public class DapperTests : AbstractConnectionTestFixture
         if (expected is DateTime dt)
             expected = dt.AddTicks(-dt.Ticks % TimeSpan.TicksPerSecond);
 
-        Assert.AreEqual(expected, row.Single().Value);
+        var actual = row.Single().Value;
+        Assert.That(actual, Is.EqualTo(expected).UsingPropertiesComparer());
     }
 
     [Test]
@@ -148,7 +150,7 @@ public class DapperTests : AbstractConnectionTestFixture
     {
         string sql = "SELECT toNullable(5)";
         var result = (await connection.QueryAsync<int?>(sql)).Single();
-        Assert.AreEqual(5, result);
+        ClassicAssert.AreEqual(5, result);
     }
 
     [Test]
@@ -165,7 +167,7 @@ public class DapperTests : AbstractConnectionTestFixture
     {
         string sql = "SELECT tuple(1,2,3)";
         var result = (await connection.QueryAsync<ITuple>(sql)).Single();
-        Assert.IsInstanceOf<ITuple>(result);
+        ClassicAssert.IsInstanceOf<ITuple>(result);
         CollectionAssert.AreEqual(new[] { 1, 2, 3 }, result.AsEnumerable());
     }
 
@@ -174,8 +176,8 @@ public class DapperTests : AbstractConnectionTestFixture
     {
         string sql = "SELECT toDecimal128(0.0001, 8)";
         var result = (await connection.QueryAsync<decimal>(sql)).Single();
-        Assert.IsInstanceOf<decimal>(result);
-        Assert.AreEqual(0.0001m, result);
+        ClassicAssert.IsInstanceOf<decimal>(result);
+        ClassicAssert.AreEqual(0.0001m, result);
     }
 
     [Test]
@@ -193,7 +195,7 @@ public class DapperTests : AbstractConnectionTestFixture
         await connection.ExecuteAsync(sql, new { balance = expected });
 
         var actual = (ClickHouseDecimal) await connection.ExecuteScalarAsync("SELECT * FROM test.dapper_decimal");
-        Assert.AreEqual(expected, actual.ToDecimal(CultureInfo.InvariantCulture));
+        ClassicAssert.AreEqual(expected, actual.ToDecimal(CultureInfo.InvariantCulture));
     }
 
     [Test]

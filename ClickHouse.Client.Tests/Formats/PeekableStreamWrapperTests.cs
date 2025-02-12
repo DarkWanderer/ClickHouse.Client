@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using ClickHouse.Client.Formats;
 using NSubstitute;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.Formats;
 
@@ -19,10 +18,10 @@ public class PeekableStreamWrapperTests
         streamMock.CanWrite.Returns(false);
         streamMock.Length.Returns(999999);
 
-        Assert.AreEqual(false, wrapper.CanSeek);
-        Assert.AreEqual(true, wrapper.CanRead);
-        Assert.AreEqual(false, wrapper.CanWrite);
-        Assert.AreEqual(999999, wrapper.Length);
+        ClassicAssert.AreEqual(false, wrapper.CanSeek);
+        ClassicAssert.AreEqual(true, wrapper.CanRead);
+        ClassicAssert.AreEqual(false, wrapper.CanWrite);
+        ClassicAssert.AreEqual(999999, wrapper.Length);
 
         wrapper.Flush();
         streamMock.Received().Flush();

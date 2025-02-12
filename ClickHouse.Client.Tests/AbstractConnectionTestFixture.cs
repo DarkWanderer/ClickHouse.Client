@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text;
 using ClickHouse.Client.ADO;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests;
 

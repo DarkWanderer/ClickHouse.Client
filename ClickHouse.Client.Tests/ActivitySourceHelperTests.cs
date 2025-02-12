@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using ClickHouse.Client.Diagnostic;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests;
 
@@ -19,6 +18,6 @@ public class ActivitySourceHelperTests : AbstractConnectionTestFixture
         ActivitySource.AddActivityListener(listener);
 
         using var activity = connection.StartActivity("TestActivity");
-        Assert.IsNotNull(activity);
+        ClassicAssert.IsNotNull(activity);
     }
 }
