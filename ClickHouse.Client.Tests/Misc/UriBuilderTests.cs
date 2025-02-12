@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.Misc;
 
@@ -27,18 +26,18 @@ public class UriBuilderTests
         var result = new Uri(builder.ToString());
         var @params = HttpUtility.ParseQueryString(result.Query);
 
-        Assert.AreEqual("some.server", result.Host);
-        Assert.AreEqual(123, result.Port);
-        Assert.AreEqual("DATABASE", @params.Get("database"));
-        Assert.AreEqual("SELECT 1", @params.Get("query"));
-        Assert.AreEqual("1", @params.Get("a"));
-        Assert.AreEqual("c", @params.Get("b"));
-        Assert.AreEqual("1", @params.Get("c"));
-        Assert.AreEqual("c", @params.Get("d"));
-        Assert.AreEqual("SESSION", @params.Get("session_id"));
-        Assert.AreEqual("false", @params.Get("enable_http_compression"));
-        Assert.AreEqual("QUERY", @params.Get("query_id"));
-        Assert.AreEqual("sqlParameterValue", @params.Get("param_sqlParameterName"));
+        ClassicAssert.AreEqual("some.server", result.Host);
+        ClassicAssert.AreEqual(123, result.Port);
+        ClassicAssert.AreEqual("DATABASE", @params.Get("database"));
+        ClassicAssert.AreEqual("SELECT 1", @params.Get("query"));
+        ClassicAssert.AreEqual("1", @params.Get("a"));
+        ClassicAssert.AreEqual("c", @params.Get("b"));
+        ClassicAssert.AreEqual("1", @params.Get("c"));
+        ClassicAssert.AreEqual("c", @params.Get("d"));
+        ClassicAssert.AreEqual("SESSION", @params.Get("session_id"));
+        ClassicAssert.AreEqual("false", @params.Get("enable_http_compression"));
+        ClassicAssert.AreEqual("QUERY", @params.Get("query_id"));
+        ClassicAssert.AreEqual("sqlParameterValue", @params.Get("param_sqlParameterName"));
     }
 
     [Test]
@@ -53,7 +52,7 @@ public class UriBuilderTests
         var result = new Uri(builder.ToString());
         var @params = HttpUtility.ParseQueryString(result.Query);
 
-        Assert.AreEqual("2", @params.Get("a"));
+        ClassicAssert.AreEqual("2", @params.Get("a"));
     }
 
     [Test]
@@ -81,11 +80,11 @@ public class UriBuilderTests
         var result = new Uri(builder.ToString());
         var @params = HttpUtility.ParseQueryString(result.Query);
 
-        Assert.AreEqual("overrided", @params.Get("database"));
-        Assert.AreEqual("overrided", @params.Get("enable_http_compression"));
-        Assert.AreEqual("overrided", @params.Get("query"));
-        Assert.AreEqual("overrided", @params.Get("session_id"));
-        Assert.AreEqual("overrided", @params.Get("query_id"));
+        ClassicAssert.AreEqual("overrided", @params.Get("database"));
+        ClassicAssert.AreEqual("overrided", @params.Get("enable_http_compression"));
+        ClassicAssert.AreEqual("overrided", @params.Get("query"));
+        ClassicAssert.AreEqual("overrided", @params.Get("session_id"));
+        ClassicAssert.AreEqual("overrided", @params.Get("query_id"));
     }
 
     [Test]
@@ -104,7 +103,7 @@ public class UriBuilderTests
         var result = new Uri(builder.ToString());
         var @params = HttpUtility.ParseQueryString(result.Query);
 
-        Assert.AreEqual("overrided", @params.Get("param_sqlParameterName"));
+        ClassicAssert.AreEqual("overrided", @params.Get("param_sqlParameterName"));
     }
 
     [Test]
@@ -132,11 +131,11 @@ public class UriBuilderTests
         var result = new Uri(builder.ToString());
         var @params = HttpUtility.ParseQueryString(result.Query);
 
-        Assert.AreEqual("overrided", @params.Get("database"));
-        Assert.AreEqual("overrided", @params.Get("enable_http_compression"));
-        Assert.AreEqual("overrided", @params.Get("query"));
-        Assert.AreEqual("overrided", @params.Get("session_id"));
-        Assert.AreEqual("overrided", @params.Get("query_id"));
+        ClassicAssert.AreEqual("overrided", @params.Get("database"));
+        ClassicAssert.AreEqual("overrided", @params.Get("enable_http_compression"));
+        ClassicAssert.AreEqual("overrided", @params.Get("query"));
+        ClassicAssert.AreEqual("overrided", @params.Get("session_id"));
+        ClassicAssert.AreEqual("overrided", @params.Get("query_id"));
     }
 
     [Test]
@@ -155,7 +154,7 @@ public class UriBuilderTests
         var result = new Uri(builder.ToString());
         var @params = HttpUtility.ParseQueryString(result.Query);
 
-        Assert.AreEqual("overrided", @params.Get("param_sqlParameterName"));
+        ClassicAssert.AreEqual("overrided", @params.Get("param_sqlParameterName"));
     }
 #endif
 }

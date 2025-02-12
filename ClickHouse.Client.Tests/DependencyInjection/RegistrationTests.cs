@@ -1,6 +1,5 @@
 using ClickHouse.Client.ADO;
 using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.DependencyInjection;
 
@@ -14,10 +13,10 @@ public class RegistrationTests
                              .AddClickHouseDataSource(connectionString)
                              .BuildServiceProvider();
         var dataSource = services.GetRequiredService<IClickHouseDataSource>();
-        Assert.AreEqual(connectionString, dataSource.ConnectionString);
+        ClassicAssert.AreEqual(connectionString, dataSource.ConnectionString);
 
         using var fromService = services.GetRequiredService<IClickHouseConnection>();
         using var rawConnection = new ClickHouseConnection(connectionString);
-        Assert.AreEqual(rawConnection.ConnectionString, fromService.ConnectionString);
+        ClassicAssert.AreEqual(rawConnection.ConnectionString, fromService.ConnectionString);
     }
 }

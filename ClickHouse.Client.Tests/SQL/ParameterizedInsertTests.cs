@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.SQL;
 
@@ -21,7 +20,7 @@ public class ParameterizedInsertTests : AbstractConnectionTestFixture
         await command.ExecuteNonQueryAsync();
 
         var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.float_array");
-        Assert.AreEqual(1, count);
+        ClassicAssert.AreEqual(1, count);
     }
 
     [Test]
@@ -36,7 +35,7 @@ public class ParameterizedInsertTests : AbstractConnectionTestFixture
         await command.ExecuteNonQueryAsync();
 
         var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.insert_enum8");
-        Assert.AreEqual(1, count);
+        ClassicAssert.AreEqual(1, count);
     }
 
     [Test]
@@ -53,7 +52,7 @@ public class ParameterizedInsertTests : AbstractConnectionTestFixture
         await command.ExecuteNonQueryAsync();
 
         var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.uuid_array");
-        Assert.AreEqual(1, count);
+        ClassicAssert.AreEqual(1, count);
     }
 
     [Test]
@@ -72,6 +71,6 @@ public class ParameterizedInsertTests : AbstractConnectionTestFixture
         await command.ExecuteNonQueryAsync();
 
         var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.string_with_newline");
-        Assert.AreEqual(1, count);
+        ClassicAssert.AreEqual(1, count);
     }
 }

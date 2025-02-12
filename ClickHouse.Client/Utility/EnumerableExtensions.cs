@@ -42,4 +42,28 @@ public static class EnumerableExtensions
         if (counter > 0)
             yield return (array, counter);
     }
+
+    internal static IEnumerable<T> SkipLast1<T>(this IEnumerable<T> source, int count)
+    {
+        var queue = new Queue<T>();
+
+        using (var e = source.GetEnumerator())
+        {
+            while (e.MoveNext())
+            {
+                if (queue.Count == count)
+                {
+                    do
+                    {
+                        yield return queue.Dequeue();
+                        queue.Enqueue(e.Current);
+                    } while (e.MoveNext());
+                }
+                else
+                {
+                    queue.Enqueue(e.Current);
+                }
+            }
+        }
+    }
 }

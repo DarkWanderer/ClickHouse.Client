@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests;
 
@@ -21,7 +20,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
         using var httpClient = new HttpClient(httpClientHandler);
         using var connection = new ClickHouseConnection(TestUtilities.GetConnectionStringBuilder().ToString(), httpClient);
         await connection.OpenAsync();
-        Assert.IsNotEmpty(connection.ServerVersion);
+        ClassicAssert.IsNotEmpty(connection.ServerVersion);
     }
 
     [Test]
@@ -36,7 +35,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     public void ShouldParseCustomParameter()
     {
         using var connection = new ClickHouseConnection("set_my_parameter=aaa");
-        Assert.AreEqual("aaa", connection.CustomSettings["my_parameter"]);
+        ClassicAssert.AreEqual("aaa", connection.CustomSettings["my_parameter"]);
     }
 
     [Test]
@@ -52,10 +51,10 @@ public class ConnectionTests : AbstractConnectionTestFixture
     {
         using var connection = TestUtilities.GetTestClickHouseConnection();
         connection.Open();
-        Assert.IsNotEmpty(connection.ServerVersion);
-        Assert.AreEqual(ConnectionState.Open, connection.State);
+        ClassicAssert.IsNotEmpty(connection.ServerVersion);
+        ClassicAssert.AreEqual(ConnectionState.Open, connection.State);
         connection.Close();
-        Assert.AreEqual(ConnectionState.Closed, connection.State);
+        ClassicAssert.AreEqual(ConnectionState.Closed, connection.State);
     }
 
     [Test]
@@ -92,7 +91,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
         var command = connection.CreateCommand();
         command.CommandText = "SELECT 1";
         await command.ExecuteScalarAsync();
-        Assert.IsFalse(string.IsNullOrWhiteSpace(command.QueryId));
+        ClassicAssert.IsFalse(string.IsNullOrWhiteSpace(command.QueryId));
     }
 
     [Test]
@@ -103,7 +102,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
         command.CommandText = "SELECT 1";
         command.QueryId = queryId;
         await command.ExecuteScalarAsync();
-        Assert.AreEqual(queryId, command.QueryId);
+        ClassicAssert.AreEqual(queryId, command.QueryId);
     }
 
     [Test]
@@ -142,7 +141,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     public void ShouldFetchSchema()
     {
         var schema = connection.GetSchema();
-        Assert.IsNotNull(schema);
+        ClassicAssert.IsNotNull(schema);
     }
 
     [Test]
@@ -150,7 +149,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     public void ShouldFetchSchemaTables()
     {
         var schema = connection.GetSchema("Tables");
-        Assert.IsNotNull(schema);
+        ClassicAssert.IsNotNull(schema);
     }
 
     [Test]
@@ -158,7 +157,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     public void ShouldFetchSchemaDatabaseColumns()
     {
         var schema = connection.GetSchema("Columns", ["system"]);
-        Assert.IsNotNull(schema);
+        ClassicAssert.IsNotNull(schema);
         CollectionAssert.IsSubsetOf(new[] { "Database", "Table", "DataType", "ProviderType" }, GetColumnNames(schema));
     }
 
@@ -166,7 +165,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     public void ShouldFetchSchemaTableColumns()
     {
         var schema = connection.GetSchema("Columns", ["system", "functions"]);
-        Assert.IsNotNull(schema);
+        ClassicAssert.IsNotNull(schema);
         CollectionAssert.IsSubsetOf(new[] { "Database", "Table", "DataType", "ProviderType" }, GetColumnNames(schema));
     }
 
@@ -176,9 +175,9 @@ public class ConnectionTests : AbstractConnectionTestFixture
         // Using separate connection instance here to avoid conflicting with other tests
         using var conn = TestUtilities.GetTestClickHouseConnection();
         conn.ChangeDatabase("system");
-        Assert.AreEqual("system", conn.Database);
+        ClassicAssert.AreEqual("system", conn.Database);
         conn.ChangeDatabase("default");
-        Assert.AreEqual("default", conn.Database);
+        ClassicAssert.AreEqual("default", conn.Database);
     }
 
     [Test]

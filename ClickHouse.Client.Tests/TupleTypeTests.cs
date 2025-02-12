@@ -4,7 +4,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests;
 
@@ -15,9 +14,9 @@ public class TupleTypeTests : AbstractConnectionTestFixture
     {
         var items = string.Join(",", Enumerable.Range(1, count));
         var result = await connection.ExecuteScalarAsync($"select tuple({items})");
-        Assert.IsInstanceOf<ITuple>(result);
+        ClassicAssert.IsInstanceOf<ITuple>(result);
         var tuple = result as ITuple;
-        Assert.AreEqual(count, tuple.Length);
+        ClassicAssert.AreEqual(count, tuple.Length);
         CollectionAssert.AreEqual(Enumerable.Range(1, count), AsEnumerable(tuple));
     }
 

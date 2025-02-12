@@ -8,7 +8,6 @@ using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.SQL;
 
@@ -25,7 +24,7 @@ public class SqlSimpleSelectTests : IDisposable
     }
 
     public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()
-        .Select(sample => new TestCaseData($"SELECT {sample.ExampleExpression}") { ExpectedResult = sample.ExampleValue });
+        .Select(sample => new TestCaseData($"SELECT {sample.ExampleExpression}", sample.ExampleValue));
 
     public static IEnumerable<TestCaseData> SimpleSelectTypes => TestUtilities.GetDataTypeSamples()
         .Select(sample => new TestCaseData(sample.ClickHouseType));
@@ -33,13 +32,13 @@ public class SqlSimpleSelectTests : IDisposable
     [Test]
     [Parallelizable]
     [TestCaseSource(typeof(SqlSimpleSelectTests), nameof(SimpleSelectQueries))]
-    public async Task<object> ShouldExecuteSimpleSelectQuery(string sql)
+    public async Task ShouldExecuteSimpleSelectQuery(string sql, object expected)
     {
         using var reader = await connection.ExecuteReaderAsync(sql);
         reader.AssertHasFieldCount(1);
-        var result = reader.GetEnsureSingleRow().Single();
+        var actual = reader.GetEnsureSingleRow().Single();
 
-        return result;
+        Assert.That(actual, Is.EqualTo(expected).UsingPropertiesComparer());
     }
 
     [Test]
@@ -65,7 +64,7 @@ public class SqlSimpleSelectTests : IDisposable
 
         reader.AssertHasFieldCount(1);
         var result = reader.GetEnsureSingleRow().Single();
-        Assert.AreEqual(input, result);
+        ClassicAssert.AreEqual(input, result);
     }
 
     [Test]
@@ -74,8 +73,8 @@ public class SqlSimpleSelectTests : IDisposable
         using var reader = await connection.ExecuteReaderAsync("SELECT 1 LIMIT 0");
 
         reader.AssertHasFieldCount(1);
-        //Assert.IsFalse(reader.HasRows);
-        Assert.IsFalse(reader.Read());
+        //ClassicAssert.IsFalse(reader.HasRows);
+        ClassicAssert.IsFalse(reader.Read());
     }
 
     [Test]
@@ -89,21 +88,21 @@ public class SqlSimpleSelectTests : IDisposable
         using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT to{type}('2020-01-01 00:00:00', {precision} '{timezone}')");
 
         reader.AssertHasFieldCount(1);
-        Assert.IsTrue(reader.Read());
+        ClassicAssert.IsTrue(reader.Read());
         var dt = reader.GetDateTime(0);
         var dto = reader.GetDateTimeOffset(0);
-        Assert.IsFalse(reader.Read());
+        ClassicAssert.IsFalse(reader.Read());
 
-        Assert.AreEqual(2020, dt.Year);
-        Assert.AreEqual(1, dt.Month);
-        Assert.AreEqual(1, dt.Day);
-        Assert.AreEqual(0, dt.Hour);
-        Assert.AreEqual(0, dt.Minute);
-        Assert.AreEqual(0, dt.Second);
+        ClassicAssert.AreEqual(2020, dt.Year);
+        ClassicAssert.AreEqual(1, dt.Month);
+        ClassicAssert.AreEqual(1, dt.Day);
+        ClassicAssert.AreEqual(0, dt.Hour);
+        ClassicAssert.AreEqual(0, dt.Minute);
+        ClassicAssert.AreEqual(0, dt.Second);
 
         if (dto.Offset == TimeSpan.Zero)
         {
-            Assert.AreEqual(DateTimeKind.Utc, dt.Kind);
+            ClassicAssert.AreEqual(DateTimeKind.Utc, dt.Kind);
         }
     }
 
@@ -117,7 +116,7 @@ public class SqlSimpleSelectTests : IDisposable
     {
         using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT toDateTime('2020-01-01 00:00:00', '{timezone}')");
         reader.AssertHasFieldCount(1);
-        Assert.IsTrue(reader.Read());
+        ClassicAssert.IsTrue(reader.Read());
         var dto = reader.GetDateTimeOffset(0);
         return dto.Offset.TotalHours;
     }
@@ -135,7 +134,7 @@ public class SqlSimpleSelectTests : IDisposable
         var sql = $"select {string.Join(",", types)}";
 
         using var reader = await connection.ExecuteReaderAsync(sql);
-        Assert.AreEqual(types.Length, reader.FieldCount);
+        ClassicAssert.AreEqual(types.Length, reader.FieldCount);
 
         var data = reader.GetEnsureSingleRow();
         Assert.That(data, Is.All.EqualTo(55).Or.EqualTo(new BigInteger(55)));
@@ -149,9 +148,9 @@ public class SqlSimpleSelectTests : IDisposable
 
         var results = new List<int>();
 
-        Assert.IsTrue(reader.HasRows);
+        ClassicAssert.IsTrue(reader.HasRows);
         reader.AssertHasFieldCount(1);
-        Assert.AreEqual(typeof(short), reader.GetFieldType(0));
+        ClassicAssert.AreEqual(typeof(short), reader.GetFieldType(0));
 
         while (reader.Read())
             results.Add(reader.GetInt16(0)); // Intentional conversion
@@ -183,7 +182,7 @@ public class SqlSimpleSelectTests : IDisposable
     public async Task ShouldSelectSimpleAggregateFunction()
     {
         var result = await connection.ExecuteScalarAsync("SELECT CAST(1,'SimpleAggregateFunction(anyLast, Nullable(Float64))')");
-        Assert.AreEqual(1, result);
+        ClassicAssert.AreEqual(1, result);
     }
 
     [Test]
@@ -194,10 +193,10 @@ public class SqlSimpleSelectTests : IDisposable
         command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
         using var reader = await command.ExecuteReaderAsync();
         var stats = command.QueryStats;
-        Assert.AreEqual(100, stats.ReadRows);
-        Assert.AreEqual(800, stats.ReadBytes);
-        Assert.AreEqual(0, stats.WrittenRows);
-        Assert.AreEqual(0, stats.WrittenBytes);
+        ClassicAssert.AreEqual(100, stats.ReadRows);
+        ClassicAssert.AreEqual(800, stats.ReadBytes);
+        ClassicAssert.AreEqual(0, stats.WrittenRows);
+        ClassicAssert.AreEqual(0, stats.WrittenBytes);
     }
 
     [Test]
@@ -208,7 +207,7 @@ public class SqlSimpleSelectTests : IDisposable
         command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
         using var reader = await command.ExecuteReaderAsync();
         var stats = command.QueryStats;
-        Assert.Greater(stats.ElapsedNs, 0);
+        ClassicAssert.Greater(stats.ElapsedNs, 0);
     }
 
     [Test]
@@ -220,8 +219,8 @@ public class SqlSimpleSelectTests : IDisposable
         command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
         using var reader = await command.ExecuteReaderAsync();
         var stats = command.QueryStats;
-        Assert.AreEqual(100, stats.ResultRows);
-        Assert.AreEqual(928, stats.ResultBytes);
+        ClassicAssert.AreEqual(100, stats.ResultRows);
+        ClassicAssert.AreEqual(928, stats.ResultBytes);
     }
 
     [Test]
@@ -241,9 +240,9 @@ public class SqlSimpleSelectTests : IDisposable
     public async Task ShouldGetValueDecimal()
     {
         using var reader = await connection.ExecuteReaderAsync($"SELECT toDecimal32(1234.56, 3)");
-        Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1234.56m, reader.GetDecimal(0));
-        Assert.IsFalse(reader.Read());
+        ClassicAssert.IsTrue(reader.Read());
+        ClassicAssert.AreEqual(1234.56m, reader.GetDecimal(0));
+        ClassicAssert.IsFalse(reader.Read());
     }
 
     [Test]
@@ -252,7 +251,7 @@ public class SqlSimpleSelectTests : IDisposable
     [TestCaseSource(typeof(SqlSimpleSelectTests), nameof(SimpleSelectTypes))]
     public async Task ShouldExecuteRandomDataSelectQuery(string type)
     {
-        if (type.StartsWith("Nested") || type == "Nothing" || type.StartsWith("Variant"))
+        if (type.StartsWith("Nested") || type == "Nothing" || type.StartsWith("Variant") || type.StartsWith("Json"))
             Assert.Ignore($"Type {type} not supported by generateRandom");
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM generateRandom('value {type.Replace("'", "\\'")}', 10, 10, 10) LIMIT 100");
