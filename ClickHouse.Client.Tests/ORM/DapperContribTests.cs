@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using ClickHouse.Client.Utility;
 using Dapper.Contrib.Extensions;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.ORM;
 
@@ -28,7 +27,7 @@ public class DapperContribTests : AbstractConnectionTestFixture
     public async Task ShouldGetAll() => CollectionAssert.Contains(await connection.GetAllAsync<TestRecord>(), referenceRecord);
 
     [Test]
-    public async Task ShouldGet() => Assert.AreEqual(referenceRecord, await connection.GetAsync<TestRecord>(1));
+    public async Task ShouldGet() => ClassicAssert.AreEqual(referenceRecord, await connection.GetAsync<TestRecord>(1));
 
     [Test]
     [Ignore("Dapper.Contrib does not properly support ClickHouse yet")]

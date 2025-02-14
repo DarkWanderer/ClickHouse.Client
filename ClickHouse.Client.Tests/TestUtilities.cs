@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
+using System.Text.Json.Nodes;
 
 namespace ClickHouse.Client.Tests;
 
@@ -37,7 +37,7 @@ public static class TestUtilities
     {
         using var connection = GetTestClickHouseConnection();
         await connection.OpenAsync();
-        Assert.AreEqual(SupportedFeatures & connection.SupportedFeatures, connection.SupportedFeatures);
+        ClassicAssert.AreEqual(SupportedFeatures & connection.SupportedFeatures, connection.SupportedFeatures);
     }
 
     /// <summary>
@@ -61,6 +61,10 @@ public static class TestUtilities
         if (SupportedFeatures.HasFlag(Feature.Variant))
         {
             builder["set_allow_experimental_variant_type"] = 1;
+        }
+        if (SupportedFeatures.HasFlag(Feature.Json))
+        {
+            builder["set_allow_experimental_json_type"] = 1;
         }
         return new ClickHouseConnection(builder.ConnectionString);
     }
@@ -221,16 +225,31 @@ public static class TestUtilities
         {
             yield return new DataTypeSample("Variant(UInt64, String, Array(UInt64))", typeof(string), "'Hello, World!'::Variant(UInt64, String, Array(UInt64))", "Hello, World!");
         }
+
+        if (SupportedFeatures.HasFlag(Feature.Json))
+        {
+            var jsonExamples = new[]
+            {
+                "{\"val\": \"string\"}",
+                "{\"val\": 1}",
+                "{\"val\": 1.0}",
+                "{\"val\": [1,2]}",
+                "{ \"nested\": { \"double\": 1.23456, \"int\": 123456, \"string\": \"stringValue\" } }",
+            };
+
+            foreach (var example in jsonExamples)
+                yield return new DataTypeSample("Json", typeof(string), $"'{example}'::Json", (JsonObject)JsonNode.Parse(example));
+        }
     }
 
     public static object[] GetEnsureSingleRow(this DbDataReader reader)
     {
-        Assert.IsTrue(reader.HasRows, "Reader expected to have rows");
-        Assert.IsTrue(reader.Read(), "Failed to read first row");
+        ClassicAssert.IsTrue(reader.HasRows, "Reader expected to have rows");
+        ClassicAssert.IsTrue(reader.Read(), "Failed to read first row");
 
         var data = reader.GetFieldValues();
 
-        Assert.IsFalse(reader.Read(), "Unexpected extra row: " + string.Join(",", reader.GetFieldValues()));
+        ClassicAssert.IsFalse(reader.Read(), "Unexpected extra row: " + string.Join(",", reader.GetFieldValues()));
 
         return data;
     }
@@ -241,5 +260,5 @@ public static class TestUtilities
 
     public static object[] GetFieldValues(this DbDataReader reader) => Enumerable.Range(0, reader.FieldCount).Select(reader.GetValue).ToArray();
 
-    public static void AssertHasFieldCount(this DbDataReader reader, int expectedCount) => Assert.AreEqual(expectedCount, reader.FieldCount);
+    public static void AssertHasFieldCount(this DbDataReader reader, int expectedCount) => ClassicAssert.AreEqual(expectedCount, reader.FieldCount);
 }

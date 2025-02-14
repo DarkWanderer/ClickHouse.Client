@@ -1,5 +1,4 @@
 ﻿using ClickHouse.Client.ADO.Parameters;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests;
 
@@ -21,26 +20,26 @@ public class ParameterCollectionTests
 
         CollectionAssert.AllItemsAreNotNull(collection);
         CollectionAssert.AllItemsAreUnique(collection);
-        Assert.AreEqual(3, collection.Count);
-        Assert.IsTrue(collection.Contains(param2));
-        Assert.IsTrue(collection.Contains("param3"));
+        ClassicAssert.AreEqual(3, collection.Count);
+        ClassicAssert.IsTrue(collection.Contains(param2));
+        ClassicAssert.IsTrue(collection.Contains("param3"));
         collection.CopyTo(new object[collection.Count], 0);
-        Assert.AreEqual(0, collection.IndexOf(param1));
-        Assert.AreEqual(2, collection.IndexOf("param3"));
+        ClassicAssert.AreEqual(0, collection.IndexOf(param1));
+        ClassicAssert.AreEqual(2, collection.IndexOf("param3"));
 
         collection["param4"] = param4;
         collection.Insert(3, param2);
-        Assert.AreEqual(param2, collection[3]);
-        Assert.AreEqual(param4, collection["param4"]);
+        ClassicAssert.AreEqual(param2, collection[3]);
+        ClassicAssert.AreEqual(param4, collection["param4"]);
 
         var sql = "SELECT @param1, @param2, @param3, @param4";
-        Assert.AreEqual("SELECT {param1:Int32}, {param2:Int32}, {param3:String}, {param4:Nothing}", collection.ReplacePlaceholders(sql));
+        ClassicAssert.AreEqual("SELECT {param1:Int32}, {param2:Int32}, {param3:String}, {param4:Nothing}", collection.ReplacePlaceholders(sql));
 
         collection.RemoveAt("param4");
         collection.RemoveAt(3);
         collection.Remove(param2);
-        Assert.AreEqual(2, collection.Count);
+        ClassicAssert.AreEqual(2, collection.Count);
         collection.Clear();
-        Assert.AreEqual(0, collection.Count);
+        ClassicAssert.AreEqual(0, collection.Count);
     }
 }

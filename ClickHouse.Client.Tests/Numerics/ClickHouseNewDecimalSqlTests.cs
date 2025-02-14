@@ -5,7 +5,6 @@ using ClickHouse.Client.ADO;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.Numerics;
 
@@ -56,8 +55,8 @@ public class ClickHouseNewDecimalSqlTests
         using var reader = await connection.ExecuteReaderAsync($"SELECT CAST('{type.MaxValue}', '{type}')");
         reader.AssertHasFieldCount(1);
         var result = reader.GetEnsureSingleRow().Single();
-        Assert.IsInstanceOf<ClickHouseDecimal>(result);
-        Assert.AreEqual(type.MaxValue, result);
+        ClassicAssert.IsInstanceOf<ClickHouseDecimal>(result);
+        ClassicAssert.AreEqual(type.MaxValue, result);
     }
 
     [Test]
@@ -69,8 +68,8 @@ public class ClickHouseNewDecimalSqlTests
         using var reader = await connection.ExecuteReaderAsync($"SELECT CAST('{type.MinValue}', '{type}')");
         reader.AssertHasFieldCount(1);
         var result = reader.GetEnsureSingleRow().Single();
-        Assert.IsInstanceOf<ClickHouseDecimal>(result);
-        Assert.AreEqual(type.MinValue, result);
+        ClassicAssert.IsInstanceOf<ClickHouseDecimal>(result);
+        ClassicAssert.AreEqual(type.MinValue, result);
     }
 
     [Test]
@@ -81,7 +80,7 @@ public class ClickHouseNewDecimalSqlTests
         using var reader = await connection.ExecuteReaderAsync(sql);
         reader.AssertHasFieldCount(1);
         var result = reader.GetEnsureSingleRow().Single();
-        Assert.IsInstanceOf<ClickHouseDecimal>(result);
-        Assert.AreEqual(expected, result);
+        ClassicAssert.IsInstanceOf<ClickHouseDecimal>(result);
+        ClassicAssert.AreEqual(expected, result);
     }
 }

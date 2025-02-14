@@ -4,14 +4,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Copy;
 using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
 using NUnit.Framework.Internal;
 
 namespace ClickHouse.Client.Tests;
@@ -50,13 +48,13 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { insertedValue }, 1));
 
-        Assert.AreEqual(1, bulkCopy.RowsWritten);
+        ClassicAssert.AreEqual(1, bulkCopy.RowsWritten);
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
-        Assert.IsTrue(reader.Read(), "Cannot read inserted data");
+        ClassicAssert.IsTrue(reader.Read(), "Cannot read inserted data");
         reader.AssertHasFieldCount(1);
         var data = reader.GetValue(0);
-        Assert.AreEqual(insertedValue, data, "Original and actually inserted values differ");
+        Assert.That(insertedValue, Is.EqualTo(insertedValue).UsingPropertiesComparer(), "Original and actually inserted values differ");
     }
 
 
@@ -81,13 +79,13 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { new DateOnly(1999, 12, 31) }, 1));
 
-        Assert.AreEqual(1, bulkCopy.RowsWritten);
+        ClassicAssert.AreEqual(1, bulkCopy.RowsWritten);
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
-        Assert.IsTrue(reader.Read(), "Cannot read inserted data");
+        ClassicAssert.IsTrue(reader.Read(), "Cannot read inserted data");
         reader.AssertHasFieldCount(1);
         var data = reader.GetValue(0);
-        Assert.AreEqual(new DateTime(1999, 12, 31), data, "Original and actually inserted values differ");
+        ClassicAssert.AreEqual(new DateTime(1999, 12, 31), data, "Original and actually inserted values differ");
     }
 #endif
 
@@ -219,7 +217,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)1 }, 1), CancellationToken.None);
 
-        Assert.AreEqual(1, bulkCopy.RowsWritten);
+        ClassicAssert.AreEqual(1, bulkCopy.RowsWritten);
     }
 
     [Test]
@@ -265,7 +263,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         catch (ClickHouseBulkCopySerializationException ex)
         {
             CollectionAssert.AreEqual(new object[] { 256 }, ex.Row);
-            Assert.IsInstanceOf<OverflowException>(ex.InnerException);
+            ClassicAssert.IsInstanceOf<OverflowException>(ex.InnerException);
         }
     }
 
@@ -287,9 +285,9 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { (object)1 }, 1), CancellationToken.None);
 
-        Assert.AreEqual(1, bulkCopy.RowsWritten);
+        ClassicAssert.AreEqual(1, bulkCopy.RowsWritten);
         // Verify we can read back
-        Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT value FROM {targetTable}"));
+        ClassicAssert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT value FROM {targetTable}"));
     }
 
 
@@ -314,8 +312,8 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(data, CancellationToken.None);
 
-        Assert.AreEqual(Count, bulkCopy.RowsWritten);
-        Assert.AreEqual(Count, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
+        ClassicAssert.AreEqual(Count, bulkCopy.RowsWritten);
+        ClassicAssert.AreEqual(Count, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
     }
 
     [Test]
@@ -332,11 +330,11 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         };
 
         await bulkCopy.InitAsync();
-        await bulkCopy.WriteToServerAsync(new List<object[]>
-        {
-            new object[] { DBNull.Value, new[] { 1, 2, 3 } },
-            new object[] { new [] { "sample1", "sample2" }, DBNull.Value },
-        }, CancellationToken.None);
+        await bulkCopy.WriteToServerAsync(
+        [
+            [DBNull.Value, new[] { 1, 2, 3 }],
+            [new [] { "sample1", "sample2" }, DBNull.Value],
+        ], CancellationToken.None);
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
     }
@@ -359,8 +357,8 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.WriteToServerAsync(new List<object[]>() { new object[] { Guid.NewGuid(), new ITuple[] { ("1", "Comment1"), ("2", "Comment2"), ("3", "Comment3") } } });
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
-        Assert.AreEqual(1, bulkCopy.RowsWritten);
-        Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
+        ClassicAssert.AreEqual(1, bulkCopy.RowsWritten);
+        ClassicAssert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
     }
 
     [Test]
@@ -394,8 +392,8 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.WriteToServerAsync([[1, threads]]);
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
-        Assert.AreEqual(1, bulkCopy.RowsWritten);
-        Assert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
+        ClassicAssert.AreEqual(1, bulkCopy.RowsWritten);
+        ClassicAssert.AreEqual(1, await connection.ExecuteScalarAsync($"SELECT count() FROM {targetTable}"));
     }
 
     [Test]
@@ -449,7 +447,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 0, "a", DateTime.Now }, 100));
 
         var rentedArray = ArrayPool<object>.Shared.Rent(poolSize);
-        Assert.DoesNotThrow(() => { rentedArray[0] = 1; });
+        Assert.DoesNotThrow(() => rentedArray[0] = 1);
         ArrayPool<object>.Shared.Return(rentedArray);
     }
 }

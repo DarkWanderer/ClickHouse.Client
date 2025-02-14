@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO.Adapters;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.ADO;
 
@@ -24,9 +23,9 @@ public class DataAdapterTests : AbstractConnectionTestFixture
         var dataSet = new DataSet();
         adapter.Fill(dataSet);
 
-        Assert.AreEqual(1, dataSet.Tables.Count);
-        Assert.AreEqual(100, dataSet.Tables[0].Rows.Count);
-        Assert.AreEqual(2, dataSet.Tables[0].Columns.Count);
+        ClassicAssert.AreEqual(1, dataSet.Tables.Count);
+        ClassicAssert.AreEqual(100, dataSet.Tables[0].Rows.Count);
+        ClassicAssert.AreEqual(2, dataSet.Tables[0].Columns.Count);
     }
 
     [Test]
@@ -42,8 +41,8 @@ public class DataAdapterTests : AbstractConnectionTestFixture
         var dataTable = new DataTable();
         adapter.Fill(dataTable);
 
-        Assert.AreEqual(100, dataTable.Rows.Count);
-        Assert.AreEqual(2, dataTable.Columns.Count);
+        ClassicAssert.AreEqual(100, dataTable.Rows.Count);
+        ClassicAssert.AreEqual(2, dataTable.Columns.Count);
     }
 
     [Test]
@@ -75,9 +74,9 @@ public class DataAdapterTests : AbstractConnectionTestFixture
         var table = new DataTable();
         adapter.Fill(table);
 
-        Assert.AreEqual(1, table.Rows.Count);
-        Assert.AreEqual(1, table.Columns.Count);
-        Assert.AreEqual("col", table.Columns[0].ColumnName);
+        ClassicAssert.AreEqual(1, table.Rows.Count);
+        ClassicAssert.AreEqual(1, table.Columns.Count);
+        ClassicAssert.AreEqual("col", table.Columns[0].ColumnName);
     }
 
     [Test]
@@ -88,8 +87,8 @@ public class DataAdapterTests : AbstractConnectionTestFixture
         using var adapter = new ClickHouseDataAdapter();
         using var table = connection.ExecuteDataTable(sql);
 
-        Assert.AreEqual(1, table.Rows.Count);
-        Assert.AreEqual(1, table.Columns.Count);
-        Assert.AreEqual("col", table.Columns[0].ColumnName);
+        ClassicAssert.AreEqual(1, table.Rows.Count);
+        ClassicAssert.AreEqual(1, table.Columns.Count);
+        ClassicAssert.AreEqual("col", table.Columns[0].ColumnName);
     }
 }

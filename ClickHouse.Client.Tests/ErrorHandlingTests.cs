@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests;
 
@@ -16,7 +15,7 @@ public static class ErrorHandlingTests
         }
         catch (ClickHouseServerException ex)
         {
-            Assert.AreEqual(47, ex.ErrorCode);
+            ClassicAssert.AreEqual(47, ex.ErrorCode);
         }
     }
 

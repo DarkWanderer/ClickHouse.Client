@@ -1,5 +1,3 @@
-namespace ClickHouse.Client.Tests.SQL;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +5,8 @@ using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
+
+namespace ClickHouse.Client.Tests.SQL;
 
 [Parallelizable]
 [TestFixture(true)]
@@ -51,11 +50,11 @@ public class SqlParameterizedSelectWithFormDataTests
         command.AddParameter("var", value);
 
         var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow();
-        Assert.AreEqual(result[0], result[1]);
+        Assert.That(result[0], Is.EqualTo(result[1]).UsingPropertiesComparer());
 
-        if (value is null || value is DBNull)
+        if (value is null or DBNull)
         {
-            Assert.IsInstanceOf<DBNull>(result[2]);
+            ClassicAssert.IsInstanceOf<DBNull>(result[2]);
         }
     }
 

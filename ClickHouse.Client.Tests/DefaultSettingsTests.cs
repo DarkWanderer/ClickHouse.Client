@@ -1,5 +1,4 @@
 ﻿using ClickHouse.Client.ADO;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests;
 
@@ -9,9 +8,9 @@ public class DefaultSettingsTests
     public void DefaultSettingsShouldMatch()
     {
         var builder = new ClickHouseConnectionStringBuilder();
-        Assert.AreEqual(true, builder.UseCustomDecimals);
-        Assert.AreEqual(true, builder.Compression);
-        Assert.AreEqual(true, builder.UseServerTimezone);
-        Assert.AreEqual(false, builder.UseSession);
+        ClassicAssert.AreEqual(true, builder.UseCustomDecimals);
+        ClassicAssert.AreEqual(true, builder.Compression);
+        ClassicAssert.AreEqual(true, builder.UseServerTimezone);
+        ClassicAssert.AreEqual(false, builder.UseSession);
     }
 }

@@ -1,6 +1,4 @@
-﻿using NUnit.Framework;
-
-namespace ClickHouse.Client.Tests.Attributes;
+﻿namespace ClickHouse.Client.Tests.Attributes;
 
 /// <summary>
 /// IgnoreInVersionAttribute tests
