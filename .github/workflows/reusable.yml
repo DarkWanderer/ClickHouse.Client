@@ -72,5 +72,4 @@ jobs:
       with:
         fail_ci_if_error: true
         disable_search: true
-        token: ${{ secrets.CODECOV_TOKEN }}
         files: ./ClickHouse.Client.Tests/coverage.${{ inputs.framework }}.opencover.xml 
