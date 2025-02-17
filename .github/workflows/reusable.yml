@@ -55,10 +55,6 @@ jobs:
     - name: Install GitHubActionsTestLogger
       run: dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package GitHubActionsTestLogger --no-restore
 
-    - name: Install pycobertura
-      if: ${{ inputs.coverage }}
-      run: pip install pycobertura
-
     - name: Install coverlet
       if: ${{ inputs.coverage }}
       run: |
@@ -66,22 +62,15 @@ jobs:
         dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.msbuild --no-restore
 
     - name: Test with coverage
-      run: dotnet test ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj --framework ${{ inputs.framework }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
+      run: dotnet test ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj --framework ${{ inputs.framework }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=test;Password=test1234
         CLICKHOUSE_VERSION: ${{ inputs.clickhouse-version }}
     
-    - name: Rename coverage file
+    - uses: codecov/codecov-action@v5      
       if: ${{ inputs.coverage }}
-      run: mv ./ClickHouse.Client.Tests/coverage.${{ inputs.framework }}.cobertura.xml ./ClickHouse.Client/coverage.cobertura.xml
-
-    - name: Upload coverage xml
-      if: ${{ inputs.coverage }}
-      uses: actions/upload-artifact@v4
       with:
-        name: coverage
-        path: ./ClickHouse.Client/coverage.cobertura.xml
-      
-    - name: Report summary
-      if: ${{ inputs.coverage }}
-      run: pycobertura show ./ClickHouse.Client/coverage.cobertura.xml --format markdown >> $GITHUB_STEP_SUMMARY
+        fail_ci_if_error: true
+        disable_search: true
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./ClickHouse.Client.Tests/coverage.${{ inputs.framework }}.opencover.xml 
