@@ -62,7 +62,7 @@ jobs:
         dotnet add ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj package coverlet.msbuild --no-restore
 
     - name: Test with coverage
-      run: dotnet test ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj --framework ${{ inputs.framework }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
+      run: dotnet test ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj --framework ${{ inputs.framework }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=test;Password=test1234
         CLICKHOUSE_VERSION: ${{ inputs.clickhouse-version }}
@@ -72,4 +72,4 @@ jobs:
       with:
         fail_ci_if_error: true
         disable_search: true
-        files: ./ClickHouse.Client.Tests/coverage.${{ inputs.framework }}.cobertura.xml 
+        files: ./ClickHouse.Client.Tests/coverage.${{ inputs.framework }}.opencover.xml 
