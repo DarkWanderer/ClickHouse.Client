@@ -16,7 +16,6 @@ jobs:
       coverage: true
     permissions:
       statuses: write
-    secrets: inherit
 
   regress-clickhouse:
     name: ClickHouse regression
