@@ -37,6 +37,7 @@ jobs:
         - '23.6'
         - '23.8'
         - '23.9'
+        - '24.12'
 
   regress-dotnet:
     name: .NET regression
