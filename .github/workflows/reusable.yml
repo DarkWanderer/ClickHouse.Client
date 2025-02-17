@@ -69,6 +69,8 @@ jobs:
     
     - uses: codecov/codecov-action@v5      
       if: ${{ inputs.coverage }}
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       with:
         fail_ci_if_error: true
         disable_search: true
