@@ -1,5 +1,4 @@
 ﻿using System;
-using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 
@@ -9,14 +8,9 @@ namespace ClickHouse.Client.Tests.Attributes;
 /// Ignores test if launched on specific ClickHouse version
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-public class FromVersionAttribute : NUnitAttribute, IApplyToTest
+public class FromVersionAttribute(int major, int minor = 0, int build = 0, int revision = 0) : NUnitAttribute, IApplyToTest
 {
-    private Version version;
-
-    public FromVersionAttribute(int major, int minor = 0, int build = 0, int revision = 0)
-    {
-        version = new Version(major, minor, build, revision);
-    }
+    private readonly Version version = new(major, minor, build, revision);
 
     public void ApplyToTest(Test test)
     {

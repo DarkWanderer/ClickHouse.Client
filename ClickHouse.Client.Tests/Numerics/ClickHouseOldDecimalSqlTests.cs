@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Types;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.Numerics;
 
@@ -55,7 +54,7 @@ public class ClickHouseOldDecimalSqlTests
         using var reader = await connection.ExecuteReaderAsync(sql);
         reader.AssertHasFieldCount(1);
         var result = reader.GetEnsureSingleRow().Single();
-        Assert.IsInstanceOf<decimal>(result);
-        Assert.AreEqual(expected, result);
+        ClassicAssert.IsInstanceOf<decimal>(result);
+        ClassicAssert.AreEqual(expected, result);
     }
 }

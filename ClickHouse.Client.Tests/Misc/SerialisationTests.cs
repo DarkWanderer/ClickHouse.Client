@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.Misc;
 
@@ -16,18 +16,22 @@ public class SerialisationTests
 
     [Test]
     [TestCaseSource(nameof(TestCases))]
-    public void ShouldRoundtripSerialisation(object original, string clickHouseType)
+    public void ShouldRoundtripSerialisation(object expected, string clickHouseType)
     {
         var type = TypeConverter.ParseClickHouseType(clickHouseType, TypeSettings.Default);
 
         using var stream = new MemoryStream();
         using var writer = new ExtendedBinaryWriter(stream);
         using var reader = new ExtendedBinaryReader(stream);
-        type.Write(writer, original);
+        type.Write(writer, expected);
+
+        var data = Convert.ToHexString(stream.ToArray());
         stream.Seek(0, SeekOrigin.Begin);
-        var read = type.Read(reader);
-        Assert.AreEqual(original, read, "Different value read from stream");
-        Assert.AreEqual(stream.Length, stream.Position, "Read underflow");
+
+        var actual = type.Read(reader);
+        Assert.That(actual, Is.EqualTo(expected).UsingPropertiesComparer(), "Different value read from stream");
+
+        ClassicAssert.AreEqual(stream.Length, stream.Position, "Read underflow");
     }
 
     [Test]

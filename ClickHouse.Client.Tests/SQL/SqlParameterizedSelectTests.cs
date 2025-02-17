@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.SQL;
 
@@ -49,22 +48,23 @@ public class SqlParameterizedSelectTests : IDisposable
         command.AddParameter("var", value);
 
         var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow();
-        Assert.AreEqual(result[0], result[1]);
 
-        if (value is null || value is DBNull)
+        Assert.That(result[0], Is.EqualTo(result[1]).UsingPropertiesComparer());
+
+        if (value is null or DBNull)
         {
-            Assert.IsInstanceOf<DBNull>(result[2]);
+            ClassicAssert.IsInstanceOf<DBNull>(result[2]);
         }
         //else
         //{
-        //    Assert.AreEqual(1, result[2], $"Equality check in ClickHouse failed: {result[0]} {result[1]}");
+        //    ClassicAssert.AreEqual(1, result[2], $"Equality check in ClickHouse failed: {result[0]} {result[1]}");
         //}
     }
 
     [Test]
     [Parallelizable]
     [TestCaseSource(typeof(SqlParameterizedSelectTests), nameof(TypedQueryParameters))]
-    public async Task ShouldExecuteParameterizedSelectWithExplicitType(string _, string clickHouseType, object value)
+    public async Task ShouldExecuteParameterizedSelectWithExplicitType(string _, string clickHouseType, object expected)
     {
         // https://github.com/ClickHouse/ClickHouse/issues/33928
         // TODO: remove
@@ -75,10 +75,10 @@ public class SqlParameterizedSelectTests : IDisposable
             clickHouseType = "String";
         using var command = connection.CreateCommand();
         command.CommandText = $"SELECT {{var:{clickHouseType}}} as res";
-        command.AddParameter("var", clickHouseType, value);
+        command.AddParameter("var", clickHouseType, expected);
 
         var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow().Single();
-        Assert.AreEqual(value, result);
+        Assert.That(result, Is.EqualTo(expected).UsingPropertiesComparer());
     }
 
     [Test]
@@ -98,15 +98,15 @@ public class SqlParameterizedSelectTests : IDisposable
         command.AddParameter("var", clickHouseType, value);
 
         var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow();
-        Assert.AreEqual(result[1], result[0]);
+        Assert.That(result[0], Is.EqualTo(result[1]).UsingPropertiesComparer());
 
-        if (value is null || value is DBNull)
+        if (value is null or DBNull)
         {
-            Assert.IsInstanceOf<DBNull>(result[2]);
+            ClassicAssert.IsInstanceOf<DBNull>(result[2]);
         }
         // else
         // {
-        //     Assert.AreEqual(1, result[2], $"Equality check in ClickHouse failed: {result[0]} {result[1]}");
+        //     ClassicAssert.AreEqual(1, result[2], $"Equality check in ClickHouse failed: {result[0]} {result[1]}");
         // }
     }
 

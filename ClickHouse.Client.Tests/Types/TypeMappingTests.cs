@@ -4,7 +4,6 @@ using System.Net;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types;
 using Dapper;
-using NUnit.Framework;
 namespace ClickHouse.Client.Tests.Types;
 
 public class TypeMappingTests

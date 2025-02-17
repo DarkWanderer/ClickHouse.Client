@@ -1,6 +1,5 @@
 ﻿using System;
 using ClickHouse.Client.Utility;
-using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.Misc;
 
@@ -10,17 +9,17 @@ public class ExtensionsTests
     public void ShouldDeconstruct2()
     {
         var (a1, a2) = new[] { 1, 2 };
-        Assert.AreEqual(1, a1);
-        Assert.AreEqual(2, a2);
+        ClassicAssert.AreEqual(1, a1);
+        ClassicAssert.AreEqual(2, a2);
     }
 
     [Test]
     public void ShouldDeconstruct3()
     {
         var (b1, b2, b3) = new[] { 1, 2, 3 };
-        Assert.AreEqual(1, b1);
-        Assert.AreEqual(2, b2);
-        Assert.AreEqual(3, b3);
+        ClassicAssert.AreEqual(1, b1);
+        ClassicAssert.AreEqual(2, b2);
+        ClassicAssert.AreEqual(3, b3);
     }
 
     [Test]
