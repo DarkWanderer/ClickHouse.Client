@@ -20,12 +20,12 @@ permissions:
 jobs:
   call-openhands-resolver:
     if: github.actor == 'DarkWanderer'
-    uses: All-Hands-AI/OpenHands/.github/workflows/openhands-resolver.yml@main
+    uses: DarkWanderer/OpenHands/.github/workflows/openhands-resolver.yml@main
     with:
       macro: ${{ vars.OPENHANDS_MACRO || '@openhands-agent' }}
-      max_iterations: ${{ fromJson(vars.OPENHANDS_MAX_ITER || 50) }}
+      max_iterations: 50
       base_container_image: ${{ vars.OPENHANDS_BASE_CONTAINER_IMAGE || '' }}
-      LLM_MODEL: ${{ vars.LLM_MODEL || 'anthropic/claude-3-5-sonnet-20241022' }}
-      target_branch: ${{ vars.TARGET_BRANCH || 'main' }}
+      LLM_MODEL: openai/gpt-4o
+      target_branch: ${{ github.event.repository.default_branch }}
     secrets:
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
