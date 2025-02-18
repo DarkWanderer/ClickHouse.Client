@@ -36,3 +36,27 @@ jobs:
       with:
         path: ${{ steps.code-analysis.outputs.sarifFile }}
         wait-for-processing: true
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        framework: ["net462", "net48", "netstandard2.1", "net8.0"]
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.x
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release
+
+    - name: Test
+      run: dotnet test ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj --framework ${{ matrix.framework }}
+
