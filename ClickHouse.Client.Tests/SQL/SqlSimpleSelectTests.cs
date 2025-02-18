@@ -53,22 +53,6 @@ public class SqlSimpleSelectTests : IDisposable
     }
 
     [Test]
-    [TestCase("Добрый день")]
-    [TestCase("¿Qué tal?")]
-    [TestCase("你好")]
-    [TestCase("こんにちは")]
-    [TestCase("⌬⏣")]
-    [Parallelizable]
-    public async Task ShouldSelectUnicode(string input)
-    {
-        using var reader = await connection.ExecuteReaderAsync($"SELECT '{input}'");
-
-        reader.AssertHasFieldCount(1);
-        var result = reader.GetEnsureSingleRow().Single();
-        Assert.AreEqual(input, result);
-    }
-
-    [Test]
     public async Task ShouldSelectEmptyDataset()
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT 1 LIMIT 0");

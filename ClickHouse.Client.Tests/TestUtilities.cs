@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
@@ -106,6 +106,15 @@ public static class TestUtilities
 
         yield return new DataTypeSample("String", typeof(string), "'TestString'", "TestString");
         yield return new DataTypeSample("String", typeof(string), "'\t\r\n'", "\t\r\n");
+
+        yield return new DataTypeSample("String", typeof(string), "'Добрый день'", "Добрый день");
+        yield return new DataTypeSample("String", typeof(string), "'¿Qué tal?'", "¿Qué tal?");
+        yield return new DataTypeSample("String", typeof(string), "'你好'", "你好");
+        yield return new DataTypeSample("String", typeof(string), "'こんにちは'", "こんにちは");
+        yield return new DataTypeSample("String", typeof(string), "'⌬⏣'", "⌬⏣");
+        yield return new DataTypeSample("String", typeof(string), "'Çay'", "Çay");
+        yield return new DataTypeSample("String", typeof(string), "'お茶'", "お茶");
+
         // yield return new DataTypeSample("String", typeof(string), "'1\t2\n3'", "1\t2\n3");
         yield return new DataTypeSample("FixedString(3)", typeof(string), "toFixedString('ASD',3)", "ASD");
         yield return new DataTypeSample("FixedString(5)", typeof(string), "toFixedString('ASD',5)", "ASD\0\0");

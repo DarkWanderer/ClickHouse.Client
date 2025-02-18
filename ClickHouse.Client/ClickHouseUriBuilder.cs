@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Web;
 using ClickHouse.Client.Utility;
 
@@ -38,7 +39,7 @@ internal class ClickHouseUriBuilder
 
     public override string ToString()
     {
-        var parameters = HttpUtility.ParseQueryString(string.Empty); // NameValueCollection but a special one
+        var parameters = new Dictionary<string, string>(); // NameValueCollection but a special one
         parameters.Set(
             "enable_http_compression",
             UseCompression.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
@@ -49,7 +50,7 @@ internal class ClickHouseUriBuilder
         parameters.SetOrRemove("query_id", QueryId);
 
         foreach (var parameter in sqlQueryParameters)
-            parameters.Set("param_" + parameter.Key, parameter.Value);
+            parameters.Set("param_" + parameter.Key, parameter.Value.ToString(CultureInfo.InvariantCulture));
 
         if (ConnectionQueryStringParameters != null)
         {
@@ -63,7 +64,9 @@ internal class ClickHouseUriBuilder
                 parameters.Set(parameter.Key, Convert.ToString(parameter.Value, CultureInfo.InvariantCulture));
         }
 
-        var uriBuilder = new UriBuilder(BaseUri) { Query = parameters.ToString() };
+        var queryString = string.Join("&", parameters.Select(kvp => $"{kvp.Key}={HttpUtility.UrlEncode(kvp.Value)}"));
+
+        var uriBuilder = new UriBuilder(BaseUri) { Query = queryString };
         return uriBuilder.ToString();
     }
 }

@@ -157,5 +157,20 @@ public class UriBuilderTests
 
         Assert.AreEqual("overrided", @params.Get("param_sqlParameterName"));
     }
+
+    [Test]
+    [TestCase("Çay", "%c3%87ay")]
+    public void ShouldEncodeUnicodeCharactersCorrectly(string input, string expected)
+    {
+        var builder = new ClickHouseUriBuilder(new Uri("http://a.b:123"))
+        {
+            CommandQueryStringParameters = new Dictionary<string, object>
+            {
+                { "param_input", input },
+            },
+        };
+
+        Assert.That(builder.ToString(), Contains.Substring(expected));
+    }
 #endif
 }
