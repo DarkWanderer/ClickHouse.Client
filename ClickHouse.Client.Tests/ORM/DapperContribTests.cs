@@ -25,10 +25,10 @@ public class DapperContribTests : AbstractConnectionTestFixture
     }
 
     [Test]
-    public async Task ShouldGetAll() => CollectionAssert.Contains(await connection.GetAllAsync<TestRecord>(), referenceRecord);
+    public async Task ShouldGetAll() => Assert.That(await connection.GetAllAsync<TestRecord>(), Has.Member(referenceRecord));
 
     [Test]
-    public async Task ShouldGet() => Assert.AreEqual(referenceRecord, await connection.GetAsync<TestRecord>(1));
+    public async Task ShouldGet() => Assert.That(await connection.GetAsync<TestRecord>(1), Is.EqualTo(referenceRecord));
 
     [Test]
     [Ignore("Dapper.Contrib does not properly support ClickHouse yet")]

@@ -12,7 +12,7 @@ public class TypeGrammarParsingTests
     public static void ShouldRoundTripParsedType(string input)
     {
         var output = Parser.Parse(input);
-        Assert.AreEqual(input, output.ToString());
+        Assert.That(output.ToString(), Is.EqualTo(input));
     }
 
     public static IList<string> Types => TestUtilities.GetDataTypeSamples().Select(s => s.ClickHouseType).Distinct().OrderBy(t => t).ToList();

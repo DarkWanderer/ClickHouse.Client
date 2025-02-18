@@ -16,7 +16,7 @@ public static class ErrorHandlingTests
         }
         catch (ClickHouseServerException ex)
         {
-            Assert.AreEqual(47, ex.ErrorCode);
+            Assert.That(ex.ErrorCode, Is.EqualTo(47));
         }
     }
 

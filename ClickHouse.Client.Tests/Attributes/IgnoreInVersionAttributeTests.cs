@@ -21,8 +21,11 @@ public class IgnoreInVersionAttributeTests : AbstractConnectionTestFixture
     [IgnoreInVersion(22)]
     public void ShouldNotRunInVersion21or22()
     {
-        Assert.That(!connection.ServerVersion.StartsWith("21"));
-        Assert.That(!connection.ServerVersion.StartsWith("22"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(!connection.ServerVersion.StartsWith("21"));
+            Assert.That(!connection.ServerVersion.StartsWith("22"));
+        });
     }
 
     [Test]

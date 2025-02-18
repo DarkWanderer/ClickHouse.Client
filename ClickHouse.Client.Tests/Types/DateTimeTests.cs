@@ -3,7 +3,7 @@ using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.Types;
 
 public class DateTimeTests : AbstractConnectionTestFixture
 {
