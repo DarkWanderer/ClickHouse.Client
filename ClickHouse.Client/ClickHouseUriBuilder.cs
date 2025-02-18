@@ -48,8 +48,17 @@ internal class ClickHouseUriBuilder
         parameters.SetOrRemove("query", Sql);
         parameters.SetOrRemove("query_id", QueryId);
 
+        // foreach (var parameter in sqlQueryParameters)
+        //     parameters.Set("param_" + parameter.Key, HttpUtility.UrlEncode(parameter.Value));
+
+        string queryString = parameters.ToString();
+
         foreach (var parameter in sqlQueryParameters)
-            parameters.Set("param_" + parameter.Key, parameter.Value);
+        {
+            queryString = queryString + (string.IsNullOrEmpty(queryString) ? string.Empty : "&") + "param_" + parameter.Key + "=" + HttpUtility.UrlEncode(parameter.Value);
+        }
+
+        var uriBuilder = new UriBuilder(BaseUri) { Query = queryString };
 
         if (ConnectionQueryStringParameters != null)
         {
