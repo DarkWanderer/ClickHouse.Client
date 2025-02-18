@@ -97,22 +97,20 @@ jobs:
         CLICKHOUSE_VERSION: latest
 
   windows:
-    name: Build
+    name: Windows Tests
     runs-on: windows-latest
-    services:
-      clickhouse:
-        image: clickhouse/clickhouse-server:latest
-        ports:
-          - 8123:8123
-        env:
-          CLICKHOUSE_DB: test
-          CLICKHOUSE_USER: test
-          CLICKHOUSE_PASSWORD: test1234
-          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: '1'
     steps:
+    - uses: Vampire/setup-wsl@v4
+
     - name: Checkout
       uses: actions/checkout@v4
 
+    - shell: wsl-bash -u root {0}
+      run: curl https://clickhouse.com/ | sh
+
+    - shell: wsl-bash -u root {0}
+      run: clickhouse-server --config-file=/etc/clickhouse-server/config.xml --daemon
+    
     - uses: actions/cache@v4
       name: Cache NuGet
       with:
