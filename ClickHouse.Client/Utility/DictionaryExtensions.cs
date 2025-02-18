@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Specialized;
 
 namespace ClickHouse.Client.Utility;
 
@@ -18,5 +19,17 @@ public static class DictionaryExtensions
             dictionary[key] = value;
         else
             dictionary.Add(key, value);
+    }
+
+    public static void SetOrRemove(this IDictionary<string, string> dictionary, string key, string value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            dictionary.Set(key, value);
+        }
+        else
+        {
+            dictionary.Remove(key);
+        }
     }
 }
