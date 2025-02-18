@@ -22,10 +22,11 @@ jobs:
     if: github.actor == 'DarkWanderer'
     uses: DarkWanderer/OpenHands/.github/workflows/openhands-resolver.yml@main
     with:
-      macro: ${{ vars.OPENHANDS_MACRO || '@openhands-agent' }}
+      macro: '@${{ vars.PAT_USERNAME }}'
       max_iterations: 50
-      base_container_image: ${{ vars.OPENHANDS_BASE_CONTAINER_IMAGE || '' }}
       LLM_MODEL: openai/gpt-4o
       target_branch: ${{ github.event.repository.default_branch }}
     secrets:
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+      PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+      PAT_USERNAME: ${{ vars.PAT_USERNAME }}
