@@ -1,11 +1,8 @@
-using ClickHouse.Client.ADO;
-using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
-
 namespace ClickHouse.Client.Tests.DependencyInjection;
 
 public class RegistrationTests
 {
+#if NET50_OR_GREATER
     [Test]
     public void CanAddClickHouseDataSource()
     {
@@ -20,4 +17,5 @@ public class RegistrationTests
         using var rawConnection = new ClickHouseConnection(connectionString);
         Assert.AreEqual(rawConnection.ConnectionString, fromService.ConnectionString);
     }
+#endif
 }

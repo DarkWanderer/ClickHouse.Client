@@ -4,7 +4,7 @@ using BenchmarkDotNet.Attributes;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 
-namespace ClickHouse.Client.Benchmark.Benchmarks;
+namespace ClickHouse.Client.Benchmark;
 
 public class SelectColumn
 {

@@ -5,7 +5,7 @@ using ClickHouse.Client.Utility;
 using NUnit.Framework;
 using System.Linq;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.ADO;
 
 public class SqlSchemaTests : AbstractConnectionTestFixture
 {
@@ -14,9 +14,12 @@ public class SqlSchemaTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT 1 as num, 'a' as str");
         var schema = reader.GetColumnSchema();
-        Assert.AreEqual(2, schema.Count);
-        Assert.AreEqual("num", schema[0].ColumnName);
-        Assert.AreEqual("str", schema[1].ColumnName);
+        Assert.That(schema.Count, Is.EqualTo(2));
+        Assert.Multiple(() =>
+        {
+            Assert.That(schema[0].ColumnName, Is.EqualTo("num"));
+            Assert.That(schema[1].ColumnName, Is.EqualTo("str"));
+        });
     }
 
     [Test]
@@ -24,7 +27,7 @@ public class SqlSchemaTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT 1 as num, 'a' as str");
         var schema = reader.GetSchemaTable();
-        Assert.AreEqual(2, schema.Rows.Count);
+        Assert.That(schema.Rows.Count, Is.EqualTo(2));
     }
 
     [Test]
@@ -34,14 +37,15 @@ public class SqlSchemaTests : AbstractConnectionTestFixture
         command.CommandText = "SELECT name, total_rows from system.tables";
         using var reader = command.ExecuteReader();
         var table = new DataTable();
-        try { 
+        try
+        {
             table.Load(reader);
         }
         catch
         {
-            
+
         }
         var errors = table.GetErrors().Select(e => e.RowError).ToList();
-        CollectionAssert.IsEmpty(errors);
+        Assert.That(errors, Is.Empty);
     }
 }

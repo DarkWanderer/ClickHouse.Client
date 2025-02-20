@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Types;
@@ -84,22 +85,26 @@ public class TypeMappingTests
     [TestCase(typeof(Tuple<int, byte, float?, string[]>), ExpectedResult = "Tuple(Int32,UInt8,Nullable(Float32),Array(String))")]
     public string ShouldConvertToClickHouseType(Type type) => TypeConverter.ToClickHouseType(type).ToString();
 
-    [Test, Explicit, TestCaseSource(nameof(GetClickHouseRegisteredTypes))]
-    public void ShouldConvertClickHouseType(string clickHouseType)
-    {
-        try
-        {
-            TypeConverter.ParseClickHouseType(clickHouseType, TypeSettings.Default);
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            Assert.Pass("Expected failure (no arguments provided");
-        }
-    }
-
-    private static IList<string> GetClickHouseRegisteredTypes()
+    [Test, Explicit]
+    public void ShouldConvertClickHouseType()
     {
         using var connection = TestUtilities.GetTestClickHouseConnection();
-        return connection.Query<string>("SELECT name FROM system.data_type_families") as IList<string>;
+        var types = connection.Query<string>("SELECT name FROM system.data_type_families").ToList();
+        var exceptions = new List<Exception>();
+        foreach (var type in types)
+        {
+            try
+            {
+                TypeConverter.ParseClickHouseType(type, TypeSettings.Default);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+            }
+            catch (Exception e)
+            {
+                exceptions.Add(e);
+            }
+        }
+        Assert.IsEmpty(exceptions);
     }
 }

@@ -37,7 +37,7 @@ public static class TestUtilities
     {
         using var connection = GetTestClickHouseConnection();
         await connection.OpenAsync();
-        Assert.AreEqual(SupportedFeatures & connection.SupportedFeatures, connection.SupportedFeatures);
+        Assert.That(connection.SupportedFeatures, Is.EqualTo(SupportedFeatures & connection.SupportedFeatures));
     }
 
     /// <summary>
@@ -62,7 +62,9 @@ public static class TestUtilities
         {
             builder["set_allow_experimental_variant_type"] = 1;
         }
-        return new ClickHouseConnection(builder.ConnectionString);
+        var connection = new ClickHouseConnection(builder.ConnectionString);
+        connection.Open();
+        return connection;
     }
 
     public static ClickHouseConnectionStringBuilder GetConnectionStringBuilder()
@@ -250,5 +252,5 @@ public static class TestUtilities
 
     public static object[] GetFieldValues(this DbDataReader reader) => Enumerable.Range(0, reader.FieldCount).Select(reader.GetValue).ToArray();
 
-    public static void AssertHasFieldCount(this DbDataReader reader, int expectedCount) => Assert.AreEqual(expectedCount, reader.FieldCount);
+    public static void AssertHasFieldCount(this DbDataReader reader, int expectedCount) => Assert.That(reader.FieldCount, Is.EqualTo(expectedCount));
 }

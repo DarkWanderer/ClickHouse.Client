@@ -24,9 +24,12 @@ public class DataAdapterTests : AbstractConnectionTestFixture
         var dataSet = new DataSet();
         adapter.Fill(dataSet);
 
-        Assert.AreEqual(1, dataSet.Tables.Count);
-        Assert.AreEqual(100, dataSet.Tables[0].Rows.Count);
-        Assert.AreEqual(2, dataSet.Tables[0].Columns.Count);
+        Assert.That(dataSet.Tables.Count, Is.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(dataSet.Tables[0].Rows.Count, Is.EqualTo(100));
+            Assert.That(dataSet.Tables[0].Columns.Count, Is.EqualTo(2));
+        });
     }
 
     [Test]
@@ -42,8 +45,11 @@ public class DataAdapterTests : AbstractConnectionTestFixture
         var dataTable = new DataTable();
         adapter.Fill(dataTable);
 
-        Assert.AreEqual(100, dataTable.Rows.Count);
-        Assert.AreEqual(2, dataTable.Columns.Count);
+        Assert.Multiple(() =>
+        {
+            Assert.That(dataTable.Rows.Count, Is.EqualTo(100));
+            Assert.That(dataTable.Columns.Count, Is.EqualTo(2));
+        });
     }
 
     [Test]
@@ -52,7 +58,7 @@ public class DataAdapterTests : AbstractConnectionTestFixture
         using var connection = TestUtilities.GetTestClickHouseConnection();
         using var command = connection.CreateCommand();
         command.CommandText = "SELECT 1 as SOMEID FROM numbers(10)";
-        await using var reader = await command.ExecuteReaderAsync();
+        using var reader = await command.ExecuteReaderAsync();
         var table = new DataTable();
         table.Load(reader);
     }
@@ -62,7 +68,6 @@ public class DataAdapterTests : AbstractConnectionTestFixture
         .Select(sample => new TestCaseData($"SELECT {sample.ExampleExpression} AS col"));
 
     [Test]
-    [Parallelizable]
     [TestCaseSource(typeof(DataAdapterTests), nameof(SimpleSelectQueries))]
     public void DataAdapterShouldFillSingleValue(string sql)
     {
@@ -75,21 +80,26 @@ public class DataAdapterTests : AbstractConnectionTestFixture
         var table = new DataTable();
         adapter.Fill(table);
 
-        Assert.AreEqual(1, table.Rows.Count);
-        Assert.AreEqual(1, table.Columns.Count);
-        Assert.AreEqual("col", table.Columns[0].ColumnName);
+        Assert.Multiple(() =>
+        {
+            Assert.That(table.Rows.Count, Is.EqualTo(1));
+            Assert.That(table.Columns.Count, Is.EqualTo(1));
+        });
+        Assert.That(table.Columns[0].ColumnName, Is.EqualTo("col"));
     }
 
     [Test]
-    [Parallelizable]
     [TestCaseSource(typeof(DataAdapterTests), nameof(SimpleSelectQueries))]
     public void ShouldReadDataTable(string sql)
     {
         using var adapter = new ClickHouseDataAdapter();
         using var table = connection.ExecuteDataTable(sql);
 
-        Assert.AreEqual(1, table.Rows.Count);
-        Assert.AreEqual(1, table.Columns.Count);
-        Assert.AreEqual("col", table.Columns[0].ColumnName);
+        Assert.Multiple(() =>
+        {
+            Assert.That(table.Rows.Count, Is.EqualTo(1));
+            Assert.That(table.Columns.Count, Is.EqualTo(1));
+        });
+        Assert.That(table.Columns[0].ColumnName, Is.EqualTo("col"));
     }
 }

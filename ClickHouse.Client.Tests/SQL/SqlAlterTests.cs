@@ -24,4 +24,10 @@ public class SqlAlterTests
         await connection.ExecuteScalarAsync($"CREATE TABLE IF NOT EXISTS test.table_delete_from (value Int32) ENGINE MergeTree ORDER BY value");
         await connection.ExecuteScalarAsync($"ALTER TABLE test.table_delete_from DELETE WHERE 1=1");
     }
+
+    [OneTimeTearDown]
+    public void Dispose()
+    {
+        connection?.Dispose();
+    }
 }

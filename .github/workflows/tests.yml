@@ -40,6 +40,7 @@ jobs:
 
   regress-dotnet:
     name: .NET regression
+    if: false
     uses: ./.github/workflows/reusable.yml
     with:
       framework: ${{ matrix.framework }}

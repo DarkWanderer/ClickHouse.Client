@@ -19,10 +19,13 @@ public class PeekableStreamWrapperTests
         streamMock.CanWrite.Returns(false);
         streamMock.Length.Returns(999999);
 
-        Assert.AreEqual(false, wrapper.CanSeek);
-        Assert.AreEqual(true, wrapper.CanRead);
-        Assert.AreEqual(false, wrapper.CanWrite);
-        Assert.AreEqual(999999, wrapper.Length);
+        Assert.Multiple(() =>
+        {
+            Assert.That(wrapper.CanSeek, Is.EqualTo(false));
+            Assert.That(wrapper.CanRead, Is.EqualTo(true));
+            Assert.That(wrapper.CanWrite, Is.EqualTo(false));
+            Assert.That(wrapper.Length, Is.EqualTo(999999));
+        });
 
         wrapper.Flush();
         streamMock.Received().Flush();
