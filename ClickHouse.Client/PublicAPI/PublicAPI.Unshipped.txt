@@ -1,5 +1,8 @@
-﻿ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSentCallback
-ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSentEvent -> ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSentCallback
+﻿ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSent -> ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSentEventHandler
+ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSentEventArgs
+ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSentEventArgs.BatchSentEventArgs(long rowsWritten) -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSentEventArgs.RowsWritten.get -> long
+ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSentEventHandler
 static ClickHouse.Client.Utility.DictionaryExtensions.SetOrRemove(this System.Collections.Generic.IDictionary<string, string> dictionary, string key, string value) -> void
 static Microsoft.Extensions.DependencyInjection.ClickHouseServiceCollectionExtensions.AddClickHouseDataSource(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string connectionString, System.Net.Http.IHttpClientFactory httpClientFactory, string httpClientName = "", Microsoft.Extensions.DependencyInjection.ServiceLifetime connectionLifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient, Microsoft.Extensions.DependencyInjection.ServiceLifetime dataSourceLifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton, object serviceKey = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
 static Microsoft.Extensions.DependencyInjection.ClickHouseServiceCollectionExtensions.AddClickHouseDataSource(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string connectionString, System.Net.Http.HttpClient httpClient = null, Microsoft.Extensions.DependencyInjection.ServiceLifetime connectionLifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient, Microsoft.Extensions.DependencyInjection.ServiceLifetime dataSourceLifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton, object serviceKey = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection

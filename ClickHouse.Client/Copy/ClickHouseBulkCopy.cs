@@ -16,7 +16,20 @@ namespace ClickHouse.Client.Copy;
 
 public class ClickHouseBulkCopy : IDisposable
 {
-    public delegate void BatchSentCallback(long rowsWritten);
+    public delegate void BatchSentEventHandler(object sender, BatchSentEventArgs args);
+
+    public sealed class BatchSentEventArgs : EventArgs
+    {
+        protected internal BatchSentEventArgs(long rowsWritten)
+        {
+            RowsWritten = rowsWritten;
+        }
+
+        public long RowsWritten
+        {
+            get;
+        }
+    }
 
     private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
     private readonly ClickHouseConnection connection;
@@ -72,7 +85,7 @@ public class ClickHouseBulkCopy : IDisposable
     /// <summary>
     /// Bulk insert progress event.
     /// </summary>
-    public event BatchSentCallback BatchSentEvent;
+    public event BatchSentEventHandler BatchSent;
 
     private async Task<(string[] names, ClickHouseType[] types)> LoadNamesAndTypesAsync(string destinationTableName, IReadOnlyCollection<string> columns = null)
     {
@@ -174,16 +187,16 @@ public class ClickHouseBulkCopy : IDisposable
             await connection.PostStreamAsync(null, stream, true, token).ConfigureAwait(false);
             // Increase counter
             var lcRowsWritten = Interlocked.Add(ref rowsWritten, batch.Size);
-            // Signal progress signal (the batch is sent)
-            FireProgressSignal(lcRowsWritten);
+            // Fire batch sent event
+            FireBatchSentEvent(lcRowsWritten);
         }
     }
 
-    private void FireProgressSignal(long rowsWritten)
+    private void FireBatchSentEvent(long rowsWritten)
     {
-        var batchSentEvent = BatchSentEvent;
-        if(batchSentEvent is not null)
-            batchSentEvent(rowsWritten);
+        var batchSent = BatchSent;
+        if(batchSent is not null)
+            batchSent(this, new BatchSentEventArgs(rowsWritten));
     }
 
     public void Dispose()

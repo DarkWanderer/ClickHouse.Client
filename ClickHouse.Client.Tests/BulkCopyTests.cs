@@ -40,7 +40,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await connection.ExecuteStatementAsync($"TRUNCATE TABLE IF EXISTS {targetTable}");
         await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value {clickHouseType}) ENGINE Memory");
 
-        var batchSentInvocationCount = 0;
+        var batchSentInvocationCount = 0L;
 
         using var bulkCopy = new ClickHouseBulkCopy(connection)
         {
@@ -49,7 +49,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
             BatchSize = 100
         };
 
-        bulkCopy.BatchSentEvent += (long rowsWritten) => Interlocked.Increment(ref batchSentInvocationCount);
+        bulkCopy.BatchSent += (sender, e) => Interlocked.Add(ref batchSentInvocationCount, e.RowsWritten);
 
         await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new[] { insertedValue }, 1));
