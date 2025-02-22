@@ -16,21 +16,6 @@ namespace ClickHouse.Client.Copy;
 
 public class ClickHouseBulkCopy : IDisposable
 {
-    public delegate void BatchSentEventHandler(object sender, BatchSentEventArgs args);
-
-    public sealed class BatchSentEventArgs : EventArgs
-    {
-        protected internal BatchSentEventArgs(long rowsWritten)
-        {
-            RowsWritten = rowsWritten;
-        }
-
-        public long RowsWritten
-        {
-            get;
-        }
-    }
-
     private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
     private readonly ClickHouseConnection connection;
     private readonly IBatchSerializer batchSerializer;
@@ -63,6 +48,11 @@ public class ClickHouseBulkCopy : IDisposable
     }
 
     /// <summary>
+    /// Bulk insert progress event.
+    /// </summary>
+    public event EventHandler<BatchSentEventArgs> BatchSent;
+
+    /// <summary>
     /// Gets or sets size of batch in rows.
     /// </summary>
     public int BatchSize { get; set; } = 100000;
@@ -82,10 +72,18 @@ public class ClickHouseBulkCopy : IDisposable
     /// </summary>
     public IReadOnlyCollection<string> ColumnNames { get; init; }
 
-    /// <summary>
-    /// Bulk insert progress event.
-    /// </summary>
-    public event BatchSentEventHandler BatchSent;
+    public sealed class BatchSentEventArgs : EventArgs
+    {
+        internal BatchSentEventArgs(long rowsWritten)
+        {
+            RowsWritten = rowsWritten;
+        }
+
+        public long RowsWritten
+        {
+            get;
+        }
+    }
 
     private async Task<(string[] names, ClickHouseType[] types)> LoadNamesAndTypesAsync(string destinationTableName, IReadOnlyCollection<string> columns = null)
     {
@@ -186,17 +184,10 @@ public class ClickHouseBulkCopy : IDisposable
             // Async sending
             await connection.PostStreamAsync(null, stream, true, token).ConfigureAwait(false);
             // Increase counter
-            var lcRowsWritten = Interlocked.Add(ref rowsWritten, batch.Size);
-            // Fire batch sent event
-            FireBatchSentEvent(lcRowsWritten);
+            var batchRowsWritten = Interlocked.Add(ref rowsWritten, batch.Size);
+            // Raise BatchSent event
+            BatchSent?.Invoke(this, new BatchSentEventArgs(batchRowsWritten));
         }
-    }
-
-    private void FireBatchSentEvent(long rowsWritten)
-    {
-        var batchSent = BatchSent;
-        if(batchSent is not null)
-            batchSent(this, new BatchSentEventArgs(rowsWritten));
     }
 
     public void Dispose()
