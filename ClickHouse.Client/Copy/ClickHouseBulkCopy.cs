@@ -18,7 +18,7 @@ public class ClickHouseBulkCopy : IDisposable
 {
     private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
     private readonly ClickHouseConnection connection;
-    private readonly IBatchSerializer batchSerializer;
+    private readonly BatchSerializer batchSerializer;
     private readonly RowBinaryFormat rowBinaryFormat;
     private readonly bool ownsConnection;
     private long rowsWritten;
