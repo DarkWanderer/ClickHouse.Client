@@ -342,7 +342,6 @@ static ClickHouse.Client.Utility.EnumerableExtensions.Deconstruct<T>(this System
 static ClickHouse.Client.Utility.EnumerableExtensions.Deconstruct<T>(this System.Collections.Generic.IList<T> list, out T first, out T second, out T third) -> void
 static ClickHouse.Client.Utility.MathUtils.ShiftDecimalPlaces(long value, int places) -> long
 static ClickHouse.Client.Utility.MathUtils.ToPower(int value, int power) -> long
-static ClickHouse.Client.Utility.NameValueCollectionExtensions.SetOrRemove(this System.Collections.Specialized.NameValueCollection collection, string name, string value) -> void
 static ClickHouse.Client.Utility.StringExtensions.EncloseColumnName(this string str) -> string
 static ClickHouse.Client.Utility.StringExtensions.Escape(this string str) -> string
 static ClickHouse.Client.Utility.StringExtensions.QuoteDouble(this string str) -> string
@@ -354,3 +353,7 @@ static readonly ClickHouse.Client.Types.DateTimeConversions.DateTimeEpochStart -
 virtual ClickHouse.Client.ADO.ClickHouseConnection.SupportedFeatures.get -> ClickHouse.Client.ADO.Feature
 virtual ClickHouse.Client.ADO.Readers.ClickHouseDataReader.GetDateTimeOffset(int ordinal) -> System.DateTimeOffset
 ﻿ClickHouse.Client.ADO.Adapters.ClickHouseDataAdapter
+ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSent -> System.EventHandler<ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSentEventArgs>
+ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSentEventArgs
+ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSentEventArgs.BatchSentEventArgs(long rowsWritten) -> void
+ClickHouse.Client.Copy.ClickHouseBulkCopy.BatchSentEventArgs.RowsWritten.get -> long
