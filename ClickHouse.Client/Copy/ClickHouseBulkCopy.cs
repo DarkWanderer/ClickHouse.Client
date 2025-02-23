@@ -48,6 +48,11 @@ public class ClickHouseBulkCopy : IDisposable
     }
 
     /// <summary>
+    /// Bulk insert progress event.
+    /// </summary>
+    public event EventHandler<BatchSentEventArgs> BatchSent;
+
+    /// <summary>
     /// Gets or sets size of batch in rows.
     /// </summary>
     public int BatchSize { get; set; } = 100000;
@@ -58,7 +63,7 @@ public class ClickHouseBulkCopy : IDisposable
     public int MaxDegreeOfParallelism { get; set; } = 4;
 
     /// <summary>
-    /// Gets name of destination table to insert to
+    /// Gets name of destination table to insert to.
     /// </summary>
     public string DestinationTableName { get; init; }
 
@@ -66,6 +71,19 @@ public class ClickHouseBulkCopy : IDisposable
     /// Gets columns
     /// </summary>
     public IReadOnlyCollection<string> ColumnNames { get; init; }
+
+    public sealed class BatchSentEventArgs : EventArgs
+    {
+        internal BatchSentEventArgs(long rowsWritten)
+        {
+            RowsWritten = rowsWritten;
+        }
+
+        public long RowsWritten
+        {
+            get;
+        }
+    }
 
     private async Task<(string[] names, ClickHouseType[] types)> LoadNamesAndTypesAsync(string destinationTableName, IReadOnlyCollection<string> columns = null)
     {
@@ -166,7 +184,9 @@ public class ClickHouseBulkCopy : IDisposable
             // Async sending
             await connection.PostStreamAsync(null, stream, true, token).ConfigureAwait(false);
             // Increase counter
-            Interlocked.Add(ref rowsWritten, batch.Size);
+            var batchRowsWritten = Interlocked.Add(ref rowsWritten, batch.Size);
+            // Raise BatchSent event
+            BatchSent?.Invoke(this, new BatchSentEventArgs(batchRowsWritten));
         }
     }
 
