@@ -30,5 +30,6 @@ public class AbstractConnectionTestFixture : IDisposable
         return builder.ToString();
     }
 
+    [OneTimeTearDown]
     public void Dispose() => connection?.Dispose();
 }

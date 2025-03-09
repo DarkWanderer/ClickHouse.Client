@@ -21,7 +21,7 @@ public class ParameterizedInsertTests : AbstractConnectionTestFixture
         await command.ExecuteNonQueryAsync();
 
         var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.float_array");
-        Assert.AreEqual(1, count);
+        Assert.That(count, Is.EqualTo(1));
     }
 
     [Test]
@@ -36,7 +36,7 @@ public class ParameterizedInsertTests : AbstractConnectionTestFixture
         await command.ExecuteNonQueryAsync();
 
         var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.insert_enum8");
-        Assert.AreEqual(1, count);
+        Assert.That(count, Is.EqualTo(1));
     }
 
     [Test]
@@ -53,7 +53,7 @@ public class ParameterizedInsertTests : AbstractConnectionTestFixture
         await command.ExecuteNonQueryAsync();
 
         var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.uuid_array");
-        Assert.AreEqual(1, count);
+        Assert.That(count, Is.EqualTo(1));
     }
 
     [Test]
@@ -72,6 +72,6 @@ public class ParameterizedInsertTests : AbstractConnectionTestFixture
         await command.ExecuteNonQueryAsync();
 
         var count = await connection.ExecuteScalarAsync("SELECT COUNT(*) FROM test.string_with_newline");
-        Assert.AreEqual(1, count);
+        Assert.That(count, Is.EqualTo(1));
     }
 }

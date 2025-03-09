@@ -14,7 +14,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT 1 as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1, reader[0]);
+        Assert.That(reader[0], Is.EqualTo(1));
         Assert.IsFalse(reader.Read());
     }
 
@@ -23,7 +23,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT 1 as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1, reader["value"]);
+        Assert.That(reader["value"], Is.EqualTo(1));
         Assert.IsFalse(reader.Read());
     }
 
@@ -32,7 +32,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT 1 as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(true, reader.GetBoolean(0));
+        Assert.That(reader.GetBoolean(0), Is.EqualTo(true));
         Assert.IsFalse(reader.Read());
     }
 
@@ -41,7 +41,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT toUInt8(1) as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1, reader.GetByte(0));
+        Assert.That(reader.GetByte(0), Is.EqualTo(1));
         Assert.IsFalse(reader.Read());
     }
 
@@ -50,7 +50,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT toFloat32(1) as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1, reader.GetFloat(0));
+        Assert.That(reader.GetFloat(0), Is.EqualTo(1));
         Assert.IsFalse(reader.Read());
     }
 
@@ -59,7 +59,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT toFloat64(1) as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1, reader.GetDouble(0));
+        Assert.That(reader.GetDouble(0), Is.EqualTo(1));
         Assert.IsFalse(reader.Read());
     }
 
@@ -68,7 +68,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT toInt16(1) as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1, reader.GetInt16(0));
+        Assert.That(reader.GetInt16(0), Is.EqualTo(1));
         Assert.IsFalse(reader.Read());
     }
 
@@ -77,7 +77,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT toInt32(1) as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1, reader.GetInt32(0));
+        Assert.That(reader.GetInt32(0), Is.EqualTo(1));
         Assert.IsFalse(reader.Read());
     }
 
@@ -86,7 +86,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT toInt64(1) as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1, reader.GetInt64(0));
+        Assert.That(reader.GetInt64(0), Is.EqualTo(1));
         Assert.IsFalse(reader.Read());
     }
 
@@ -95,7 +95,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync("SELECT toUInt16(1) as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1, reader.GetUInt16(0));
+        Assert.That(reader.GetUInt16(0), Is.EqualTo(1));
         Assert.IsFalse(reader.Read());
     }
 
@@ -104,7 +104,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync("SELECT toUInt32(1) as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1, reader.GetUInt32(0));
+        Assert.That(reader.GetUInt32(0), Is.EqualTo(1));
         Assert.IsFalse(reader.Read());
     }
 
@@ -113,7 +113,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync("SELECT toUInt64(1) as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1, reader.GetUInt64(0));
+        Assert.That(reader.GetUInt64(0), Is.EqualTo(1));
         Assert.IsFalse(reader.Read());
     }
 
@@ -122,7 +122,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync("SELECT toDecimal64(1,3) as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual(1.000m, reader.GetDecimal(0));
+        Assert.That(reader.GetDecimal(0), Is.EqualTo(1.000m));
         Assert.IsFalse(reader.Read());
     }
 
@@ -131,7 +131,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT 'ASD' as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual("ASD", reader.GetString(0));
+        Assert.That(reader.GetString(0), Is.EqualTo("ASD"));
         Assert.IsFalse(reader.Read());
     }
 
@@ -153,6 +153,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
         Assert.IsFalse(reader.Read());
     }
 
+#if NET48 || NET5_0_OR_GREATER
     [Test]
     public async Task ShouldReadTuple()
     {
@@ -161,6 +162,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
         Assert.IsNotNull(reader.GetTuple(0));
         Assert.IsFalse(reader.Read());
     }
+#endif
 
     [Test]
     public async Task ShouldReadGuid()
@@ -176,7 +178,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT 'ASD' as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual("ASD", reader.GetFieldValue<string>(0));
+        Assert.That(reader.GetFieldValue<string>(0), Is.EqualTo("ASD"));
         Assert.IsFalse(reader.Read());
     }
 
@@ -185,7 +187,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT 'ASD' as value");
         Assert.IsTrue(reader.Read());
-        Assert.AreEqual("String", reader.GetDataTypeName(0));
+        Assert.That(reader.GetDataTypeName(0), Is.EqualTo("String"));
         Assert.IsFalse(reader.Read());
     }
 
@@ -194,7 +196,7 @@ public class DataReaderTests : AbstractConnectionTestFixture
     {
         using var reader = await connection.ExecuteReaderAsync("SELECT * FROM system.numbers LIMIT 100");
         var rows = reader.Cast<IDataRecord>().Select(row => row[0]).ToList();
-        CollectionAssert.AreEqual(Enumerable.Range(0, 100), rows);
+        Assert.That(rows, Is.EqualTo(Enumerable.Range(0, 100)).AsCollection);
         Assert.IsFalse(reader.Read());
     }
 }

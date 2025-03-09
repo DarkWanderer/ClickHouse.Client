@@ -43,7 +43,8 @@ public class ClickHouseDecimalTests
 
     public static readonly decimal[] DecimalsWithoutZero = Decimals.Where(d => d != 0).ToArray();
 
-    public static readonly decimal[] DecimalsWithExtremeValues = Decimals.Append(decimal.MinValue).Append(decimal.MinValue / 100000m).Append(decimal.MaxValue).Append(decimal.MaxValue / 100000m).ToArray();
+    public static readonly decimal[] DecimalsWithExtremeValues = Decimals.Union(
+        [decimal.MinValue, decimal.MinValue / 100000m, decimal.MaxValue, decimal.MaxValue / 100000m]).ToArray();
 
     public static readonly string[] LongDecimalStrings =
     [
@@ -59,7 +60,7 @@ public class ClickHouseDecimalTests
         noticeableDiff = Math.Max(noticeableDiff, magic);
 
         if (delta > noticeableDiff)
-            Assert.AreEqual(left, right);
+            Assert.That(right, Is.EqualTo(left));
     }
 
     public static readonly CultureInfo[] Cultures =
@@ -98,15 +99,18 @@ public class ClickHouseDecimalTests
     [Test]
     public void ShouldValidateBuiltinValues()
     {
-        Assert.AreEqual(new ClickHouseDecimal(0m), ClickHouseDecimal.Zero);
-        Assert.AreEqual(new ClickHouseDecimal(1m), ClickHouseDecimal.One);
+        Assert.Multiple(() =>
+        {
+            Assert.That(ClickHouseDecimal.Zero, Is.EqualTo(new ClickHouseDecimal(0m)));
+            Assert.That(ClickHouseDecimal.One, Is.EqualTo(new ClickHouseDecimal(1m)));
+        });
     }
 
     [Test]
     public void ShouldRoundtripConversion([ValueSource(typeof(ClickHouseDecimalTests), nameof(DecimalsWithExtremeValues))] decimal value)
     {
         var result = new ClickHouseDecimal(value);
-        Assert.AreEqual(value, (decimal)result);
+        Assert.That((decimal)result, Is.EqualTo(value));
     }
 
     [Test, Combinatorial]
@@ -116,7 +120,7 @@ public class ClickHouseDecimalTests
     {
         decimal expected = left + right;
         var actual = (ClickHouseDecimal)left + (ClickHouseDecimal)right;
-        Assert.AreEqual(expected, (decimal)actual);
+        Assert.That((decimal)actual, Is.EqualTo(expected));
     }
 
     [Test, Combinatorial]
@@ -125,7 +129,7 @@ public class ClickHouseDecimalTests
     {
         var expected = value.ToString(culture);
         var actual = ((ClickHouseDecimal)value).ToString(culture);
-        Assert.AreEqual(expected, actual);
+        Assert.That(actual, Is.EqualTo(expected));
     }
 
     [Test, Combinatorial]
@@ -133,7 +137,7 @@ public class ClickHouseDecimalTests
                                 [ValueSource(typeof(ClickHouseDecimalTests), nameof(Cultures))] CultureInfo culture)
     {
         var actual = (decimal)ClickHouseDecimal.Parse(expected.ToString(culture), culture);
-        Assert.AreEqual(expected, actual);
+        Assert.That(actual, Is.EqualTo(expected));
     }
 
     [Test]
@@ -141,7 +145,7 @@ public class ClickHouseDecimalTests
     public void ShouldParseLarge(string input)
     {
         var actual = ClickHouseDecimal.Parse(input);
-        Assert.AreEqual(input, actual.ToString(CultureInfo.InvariantCulture));
+        Assert.That(actual.ToString(CultureInfo.InvariantCulture), Is.EqualTo(input));
     }
 
     [Test, Combinatorial]
@@ -150,7 +154,7 @@ public class ClickHouseDecimalTests
     {
         decimal expected = left - right;
         var actual = (ClickHouseDecimal)left - (ClickHouseDecimal)right;
-        Assert.AreEqual(expected, (decimal)actual);
+        Assert.That((decimal)actual, Is.EqualTo(expected));
     }
 
     [Test, Combinatorial]
@@ -159,7 +163,7 @@ public class ClickHouseDecimalTests
     {
         decimal expected = left * right;
         var actual = (ClickHouseDecimal)left * (ClickHouseDecimal)right;
-        Assert.AreEqual(expected, (decimal)actual);
+        Assert.That((decimal)actual, Is.EqualTo(expected));
     }
 
     [Test, Combinatorial]
@@ -182,7 +186,7 @@ public class ClickHouseDecimalTests
     {
         decimal expected = left % right;
         var actual = (ClickHouseDecimal)left % (ClickHouseDecimal)right;
-        Assert.AreEqual(expected, (decimal)actual);
+        Assert.That((decimal)actual, Is.EqualTo(expected));
     }
 
     [Test, Combinatorial]
@@ -191,7 +195,7 @@ public class ClickHouseDecimalTests
     {
         int expected = left.CompareTo(right);
         int actual = ((ClickHouseDecimal)left).CompareTo((ClickHouseDecimal)right);
-        Assert.AreEqual(expected, actual);
+        Assert.That(actual, Is.EqualTo(expected));
     }
 
     [Test]
@@ -207,7 +211,7 @@ public class ClickHouseDecimalTests
     public void ShouldRoundtripIntoDouble(double @double)
     {
         ClickHouseDecimal @decimal = @double;
-        Assert.AreEqual(@double, @decimal.ToDouble(CultureInfo.InvariantCulture));
+        Assert.That(@decimal.ToDouble(CultureInfo.InvariantCulture), Is.EqualTo(@double));
     }
 
     [Test]
@@ -228,7 +232,7 @@ public class ClickHouseDecimalTests
     {
         var expected = Convert.ChangeType(5.00m, type);
         var actual = Convert.ChangeType(new ClickHouseDecimal(5.00m), type);
-        Assert.AreEqual(expected, actual);
+        Assert.That(actual, Is.EqualTo(expected));
     }
 
     [Test]
@@ -236,7 +240,7 @@ public class ClickHouseDecimalTests
     {
         var expected = new BigInteger(123);
         var actual = new ClickHouseDecimal(123.45m).ToType(typeof(BigInteger), CultureInfo.InvariantCulture);
-        Assert.AreEqual(expected, actual);
+        Assert.That(actual, Is.EqualTo(expected));
     }
 
     [Test]
@@ -247,7 +251,7 @@ public class ClickHouseDecimalTests
 
         using var connection = TestUtilities.GetTestClickHouseConnection();
         var result = (ClickHouseDecimal)await connection.ExecuteScalarAsync($"SELECT toDecimal256('{value.ToString(CultureInfo.InvariantCulture)}', {scale})");
-        Assert.AreEqual(value, (decimal)result);
+        Assert.That((decimal)result, Is.EqualTo(value));
     }
 
     private static int GetScale(decimal value)

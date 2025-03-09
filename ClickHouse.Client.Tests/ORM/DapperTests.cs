@@ -24,7 +24,9 @@ public class DapperTests : AbstractConnectionTestFixture
     {
         SqlMapper.AddTypeHandler(new ClickHouseDecimalHandler());
         SqlMapper.AddTypeHandler(new DateTimeOffsetHandler());
+#if NET48 || NET5_0_OR_GREATER
         SqlMapper.AddTypeHandler(new ITupleHandler());
+#endif
         SqlMapper.AddTypeMap(typeof(DateTime), DbType.DateTime2);
         SqlMapper.AddTypeMap(typeof(DateTimeOffset), DbType.DateTime2);
     }
@@ -58,12 +60,23 @@ public class DapperTests : AbstractConnectionTestFixture
         }
     }
 
+#if NET48 || NET5_0_OR_GREATER
     private class ITupleHandler : SqlMapper.TypeHandler<ITuple>
     {
         public override void SetValue(IDbDataParameter parameter, ITuple value) => parameter.Value = value;
 
         public override ITuple Parse(object value) => value as ITuple ?? throw new NotSupportedException();
     }
+
+    [Test]
+    public async Task ShouldExecuteSelectReturningTuple()
+    {
+        string sql = "SELECT tuple(1,2,3)";
+        var result = (await connection.QueryAsync<ITuple>(sql)).Single();
+        Assert.IsInstanceOf<ITuple>(result);
+        Assert.That(result.AsEnumerable(), Is.EqualTo(new[] { 1, 2, 3 }).AsCollection);
+    }
+#endif
 
     private class DateTimeOffsetHandler : SqlMapper.TypeHandler<DateTimeOffset>
     {
@@ -101,22 +114,20 @@ public class DapperTests : AbstractConnectionTestFixture
         string sql = "SELECT * FROM system.table_functions";
 
         var functions = (await connection.QueryAsync<string>(sql)).ToList();
-        CollectionAssert.IsNotEmpty(functions);
-        CollectionAssert.AllItemsAreNotNull(functions);
+        Assert.That(functions, Is.Not.Empty);
+        Assert.That(functions, Is.All.Not.Null);
     }
 
     [Test]
-    [Parallelizable]
     [TestCaseSource(typeof(DapperTests), nameof(SimpleSelectQueries))]
     public async Task ShouldExecuteSelectStringWithSingleParameterValue(string sql, object value)
     {
         var parameters = new Dictionary<string, object> { { "value", value } };
         var results = await connection.QueryAsync<string>(sql, parameters);
-        Assert.AreEqual(Convert.ToString(value, CultureInfo.InvariantCulture), results.Single());
+        Assert.That(results.Single(), Is.EqualTo(Convert.ToString(value, CultureInfo.InvariantCulture)));
     }
 
     [Test]
-    [Parallelizable]
     [TestCaseSource(typeof(DapperTests), nameof(SimpleSelectQueries))]
     public async Task ShouldExecuteSelectWithSingleParameterValue(string sql, object expected)
     {
@@ -129,7 +140,7 @@ public class DapperTests : AbstractConnectionTestFixture
         if (expected is DateTime dt)
             expected = dt.AddTicks(-dt.Ticks % TimeSpan.TicksPerSecond);
 
-        Assert.AreEqual(expected, row.Single().Value);
+        Assert.That(row.Single().Value, Is.EqualTo(expected));
     }
 
     [Test]
@@ -139,8 +150,8 @@ public class DapperTests : AbstractConnectionTestFixture
         string sql = "SELECT * FROM system.table_functions WHERE has({names:Array(String)}, name)";
 
         var functions = (await connection.QueryAsync<string>(sql, parameters)).ToList();
-        CollectionAssert.IsNotEmpty(functions);
-        CollectionAssert.AllItemsAreNotNull(functions);
+        Assert.That(functions, Is.Not.Empty);
+        Assert.That(functions, Is.All.Not.Null);
     }
 
     [Test]
@@ -148,7 +159,7 @@ public class DapperTests : AbstractConnectionTestFixture
     {
         string sql = "SELECT toNullable(5)";
         var result = (await connection.QueryAsync<int?>(sql)).Single();
-        Assert.AreEqual(5, result);
+        Assert.That(result, Is.EqualTo(5));
     }
 
     [Test]
@@ -156,17 +167,8 @@ public class DapperTests : AbstractConnectionTestFixture
     {
         string sql = "SELECT array(1,2,3)";
         var result = (await connection.QueryAsync<int[]>(sql)).Single();
-        CollectionAssert.IsNotEmpty(result);
-        CollectionAssert.AllItemsAreNotNull(result);
-    }
-
-    [Test]
-    public async Task ShouldExecuteSelectReturningTuple()
-    {
-        string sql = "SELECT tuple(1,2,3)";
-        var result = (await connection.QueryAsync<ITuple>(sql)).Single();
-        Assert.IsInstanceOf<ITuple>(result);
-        CollectionAssert.AreEqual(new[] { 1, 2, 3 }, result.AsEnumerable());
+        Assert.That(result, Is.Not.Empty);
+        Assert.That(result, Is.All.Not.Null);
     }
 
     [Test]
@@ -175,7 +177,7 @@ public class DapperTests : AbstractConnectionTestFixture
         string sql = "SELECT toDecimal128(0.0001, 8)";
         var result = (await connection.QueryAsync<decimal>(sql)).Single();
         Assert.IsInstanceOf<decimal>(result);
-        Assert.AreEqual(0.0001m, result);
+        Assert.That(result, Is.EqualTo(0.0001m));
     }
 
     [Test]
@@ -193,7 +195,7 @@ public class DapperTests : AbstractConnectionTestFixture
         await connection.ExecuteAsync(sql, new { balance = expected });
 
         var actual = (ClickHouseDecimal) await connection.ExecuteScalarAsync("SELECT * FROM test.dapper_decimal");
-        Assert.AreEqual(expected, actual.ToDecimal(CultureInfo.InvariantCulture));
+        Assert.That(actual.ToDecimal(CultureInfo.InvariantCulture), Is.EqualTo(expected));
     }
 
     [Test]
