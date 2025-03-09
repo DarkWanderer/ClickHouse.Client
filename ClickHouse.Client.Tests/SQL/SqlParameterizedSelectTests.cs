@@ -47,11 +47,11 @@ public class SqlParameterizedSelectTests : IDisposable
         command.AddParameter("var", value);
 
         var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow();
-        Assert.That(result[1], Is.EqualTo(result[0]));
+        Assert.That(result[1], Is.EqualTo(result[0]).UsingPropertiesComparer());
 
         if (value is null || value is DBNull)
         {
-            Assert.IsInstanceOf<DBNull>(result[2]);
+            Assert.That(result[2], Is.InstanceOf<DBNull>());
         }
         //else
         //{
@@ -75,7 +75,7 @@ public class SqlParameterizedSelectTests : IDisposable
         command.AddParameter("var", clickHouseType, value);
 
         var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow().Single();
-        Assert.That(result, Is.EqualTo(value));
+        Assert.That(result, Is.EqualTo(value).UsingPropertiesComparer());
     }
 
     [Test]
@@ -94,11 +94,11 @@ public class SqlParameterizedSelectTests : IDisposable
         command.AddParameter("var", clickHouseType, value);
 
         var result = (await command.ExecuteReaderAsync()).GetEnsureSingleRow();
-        Assert.That(result[0], Is.EqualTo(result[1]));
+        Assert.That(result[0], Is.EqualTo(result[1]).UsingPropertiesComparer());
 
         if (value is null || value is DBNull)
         {
-            Assert.IsInstanceOf<DBNull>(result[2]);
+            Assert.That(result[2], Is.InstanceOf<DBNull>());
         }
         // else
         // {

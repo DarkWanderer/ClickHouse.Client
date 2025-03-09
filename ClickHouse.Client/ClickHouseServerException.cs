@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data.Common;
-using System.Runtime.Serialization;
 
 namespace ClickHouse.Client;
 

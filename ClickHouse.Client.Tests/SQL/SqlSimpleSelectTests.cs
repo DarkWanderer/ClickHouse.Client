@@ -24,20 +24,19 @@ public class SqlSimpleSelectTests : IDisposable
     }
 
     public static IEnumerable<TestCaseData> SimpleSelectQueries => TestUtilities.GetDataTypeSamples()
-        .Select(sample => new TestCaseData($"SELECT {sample.ExampleExpression}") { ExpectedResult = sample.ExampleValue });
+        .Select(sample => new TestCaseData($"SELECT {sample.ExampleExpression}", sample.ExampleValue));
 
     public static IEnumerable<TestCaseData> SimpleSelectTypes => TestUtilities.GetDataTypeSamples()
         .Select(sample => new TestCaseData(sample.ClickHouseType));
 
     [Test]
     [TestCaseSource(typeof(SqlSimpleSelectTests), nameof(SimpleSelectQueries))]
-    public async Task<object> ShouldExecuteSimpleSelectQuery(string sql)
+    public async Task ShouldExecuteSimpleSelectQuery(string sql, object expected)
     {
         using var reader = await connection.ExecuteReaderAsync(sql);
         reader.AssertHasFieldCount(1);
         var result = reader.GetEnsureSingleRow().Single();
-
-        return result;
+        Assert.That(result, Is.EqualTo(expected).UsingPropertiesComparer());
     }
 
     [Test]
@@ -59,8 +58,8 @@ public class SqlSimpleSelectTests : IDisposable
         using var reader = await connection.ExecuteReaderAsync("SELECT 1 LIMIT 0");
 
         reader.AssertHasFieldCount(1);
-        //Assert.IsFalse(reader.HasRows);
-        Assert.IsFalse(reader.Read());
+        //ClassicAssert.IsFalse(reader.HasRows);
+        ClassicAssert.IsFalse(reader.Read());
     }
 
     [Test]
@@ -74,10 +73,10 @@ public class SqlSimpleSelectTests : IDisposable
         using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT to{type}('2020-01-01 00:00:00', {precision} '{timezone}')");
 
         reader.AssertHasFieldCount(1);
-        Assert.IsTrue(reader.Read());
+        ClassicAssert.IsTrue(reader.Read());
         var dt = reader.GetDateTime(0);
         var dto = reader.GetDateTimeOffset(0);
-        Assert.IsFalse(reader.Read());
+        ClassicAssert.IsFalse(reader.Read());
 
         Assert.Multiple(() =>
         {
@@ -105,7 +104,7 @@ public class SqlSimpleSelectTests : IDisposable
     {
         using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT toDateTime('2020-01-01 00:00:00', '{timezone}')");
         reader.AssertHasFieldCount(1);
-        Assert.IsTrue(reader.Read());
+        ClassicAssert.IsTrue(reader.Read());
         var dto = reader.GetDateTimeOffset(0);
         return dto.Offset.TotalHours;
     }
@@ -137,7 +136,7 @@ public class SqlSimpleSelectTests : IDisposable
 
         var results = new List<int>();
 
-        Assert.IsTrue(reader.HasRows);
+        ClassicAssert.IsTrue(reader.HasRows);
         reader.AssertHasFieldCount(1);
         Assert.That(reader.GetFieldType(0), Is.EqualTo(typeof(short)));
 
@@ -199,7 +198,7 @@ public class SqlSimpleSelectTests : IDisposable
         command.CommandText = "SELECT * FROM system.numbers LIMIT 100";
         using var reader = await command.ExecuteReaderAsync();
         var stats = command.QueryStats;
-        Assert.Greater(stats.ElapsedNs, 0);
+        ClassicAssert.Greater(stats.ElapsedNs, 0);
     }
 
     [Test]
@@ -235,9 +234,9 @@ public class SqlSimpleSelectTests : IDisposable
     public async Task ShouldGetValueDecimal()
     {
         using var reader = await connection.ExecuteReaderAsync($"SELECT toDecimal32(1234.56, 3)");
-        Assert.IsTrue(reader.Read());
+        ClassicAssert.IsTrue(reader.Read());
         Assert.That(reader.GetDecimal(0), Is.EqualTo(1234.56m));
-        Assert.IsFalse(reader.Read());
+        ClassicAssert.IsFalse(reader.Read());
     }
 
     [Test]
@@ -245,7 +244,7 @@ public class SqlSimpleSelectTests : IDisposable
     [TestCaseSource(typeof(SqlSimpleSelectTests), nameof(SimpleSelectTypes))]
     public async Task ShouldExecuteRandomDataSelectQuery(string type)
     {
-        if (type.StartsWith("Nested") || type == "Nothing" || type.StartsWith("Variant"))
+        if (type.StartsWith("Nested") || type == "Nothing" || type.StartsWith("Variant") || type.StartsWith("Json"))
             Assert.Ignore($"Type {type} not supported by generateRandom");
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * FROM generateRandom('value {type.Replace("'", "\\'")}', 10, 10, 10) LIMIT 100");

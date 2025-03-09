@@ -19,6 +19,6 @@ public class ActivitySourceHelperTests : AbstractConnectionTestFixture
         ActivitySource.AddActivityListener(listener);
 
         using var activity = connection.StartActivity("TestActivity");
-        Assert.IsNotNull(activity);
+        ClassicAssert.NotNull(activity);
     }
 }

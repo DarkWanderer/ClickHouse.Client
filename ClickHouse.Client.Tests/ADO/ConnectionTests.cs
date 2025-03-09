@@ -21,7 +21,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
         using var httpClient = new HttpClient(httpClientHandler);
         using var connection = new ClickHouseConnection(TestUtilities.GetConnectionStringBuilder().ToString(), httpClient);
         await connection.OpenAsync();
-        Assert.IsNotEmpty(connection.ServerVersion);
+        ClassicAssert.IsNotEmpty(connection.ServerVersion);
     }
 
     [Test]
@@ -52,7 +52,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     {
         using var connection = TestUtilities.GetTestClickHouseConnection();
         connection.Open();
-        Assert.IsNotEmpty(connection.ServerVersion);
+        ClassicAssert.IsNotEmpty(connection.ServerVersion);
         Assert.That(connection.State, Is.EqualTo(ConnectionState.Open));
         connection.Close();
         Assert.That(connection.State, Is.EqualTo(ConnectionState.Closed));
@@ -92,7 +92,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
         var command = connection.CreateCommand();
         command.CommandText = "SELECT 1";
         await command.ExecuteScalarAsync();
-        Assert.IsFalse(string.IsNullOrWhiteSpace(command.QueryId));
+        ClassicAssert.IsFalse(string.IsNullOrWhiteSpace(command.QueryId));
     }
 
     [Test]
@@ -142,7 +142,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     public void ShouldFetchSchema()
     {
         var schema = connection.GetSchema();
-        Assert.IsNotNull(schema);
+        ClassicAssert.NotNull(schema);
     }
 
     [Test]
@@ -150,7 +150,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     public void ShouldFetchSchemaTables()
     {
         var schema = connection.GetSchema("Tables");
-        Assert.IsNotNull(schema);
+        ClassicAssert.NotNull(schema);
     }
 
     [Test]
@@ -158,7 +158,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     public void ShouldFetchSchemaDatabaseColumns()
     {
         var schema = connection.GetSchema("Columns", ["system"]);
-        Assert.IsNotNull(schema);
+        ClassicAssert.NotNull(schema);
         Assert.That(new[] { "Database", "Table", "DataType", "ProviderType" }, Is.SubsetOf(GetColumnNames(schema)));
     }
 
@@ -166,7 +166,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     public void ShouldFetchSchemaTableColumns()
     {
         var schema = connection.GetSchema("Columns", ["system", "functions"]);
-        Assert.IsNotNull(schema);
+        ClassicAssert.NotNull(schema);
         Assert.That(new[] { "Database", "Table", "DataType", "ProviderType" }, Is.SubsetOf(GetColumnNames(schema)));
     }
 

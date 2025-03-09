@@ -15,7 +15,7 @@ public class TupleTypeTests : AbstractConnectionTestFixture
     {
         var items = string.Join(",", Enumerable.Range(1, count));
         var result = await connection.ExecuteScalarAsync($"select tuple({items})");
-        Assert.IsInstanceOf<ITuple>(result);
+        ClassicAssert.IsInstanceOf<ITuple>(result);
         var tuple = result as ITuple;
         Assert.Multiple(() =>
         {

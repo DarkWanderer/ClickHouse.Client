@@ -1,4 +1,3 @@
-using System;
 using ClickHouse.Client.Formats;
 using ClickHouse.Client.Types;
 

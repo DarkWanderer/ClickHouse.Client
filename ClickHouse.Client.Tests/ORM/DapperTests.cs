@@ -4,6 +4,8 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using ClickHouse.Client.Numerics;
 using ClickHouse.Client.Utility;
@@ -73,7 +75,7 @@ public class DapperTests : AbstractConnectionTestFixture
     {
         string sql = "SELECT tuple(1,2,3)";
         var result = (await connection.QueryAsync<ITuple>(sql)).Single();
-        Assert.IsInstanceOf<ITuple>(result);
+        ClassicAssert.IsInstanceOf<ITuple>(result);
         Assert.That(result.AsEnumerable(), Is.EqualTo(new[] { 1, 2, 3 }).AsCollection);
     }
 #endif
@@ -122,6 +124,10 @@ public class DapperTests : AbstractConnectionTestFixture
     [TestCaseSource(typeof(DapperTests), nameof(SimpleSelectQueries))]
     public async Task ShouldExecuteSelectStringWithSingleParameterValue(string sql, object value)
     {
+        if (value is JsonObject)
+        {
+            Assert.Ignore("Dapper does not support selecting JsonObject as string");
+        }
         var parameters = new Dictionary<string, object> { { "value", value } };
         var results = await connection.QueryAsync<string>(sql, parameters);
         Assert.That(results.Single(), Is.EqualTo(Convert.ToString(value, CultureInfo.InvariantCulture)));
@@ -140,7 +146,7 @@ public class DapperTests : AbstractConnectionTestFixture
         if (expected is DateTime dt)
             expected = dt.AddTicks(-dt.Ticks % TimeSpan.TicksPerSecond);
 
-        Assert.That(row.Single().Value, Is.EqualTo(expected));
+        Assert.That(row.Single().Value, Is.EqualTo(expected).UsingPropertiesComparer());
     }
 
     [Test]
@@ -176,7 +182,7 @@ public class DapperTests : AbstractConnectionTestFixture
     {
         string sql = "SELECT toDecimal128(0.0001, 8)";
         var result = (await connection.QueryAsync<decimal>(sql)).Single();
-        Assert.IsInstanceOf<decimal>(result);
+        ClassicAssert.IsInstanceOf<decimal>(result);
         Assert.That(result, Is.EqualTo(0.0001m));
     }
 

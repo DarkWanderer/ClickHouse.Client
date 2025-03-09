@@ -39,5 +39,8 @@ public enum Feature
     [SinceVersion("22.3")]
     ParamsInMultipartFormData = 32768,
 
+    [SinceVersion("24.1")]
+    Json = 65536,
+
     All = ~None, // Special value
 }
