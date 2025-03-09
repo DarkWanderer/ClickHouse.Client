@@ -6,6 +6,7 @@ namespace ClickHouse.Client.Tests.DependencyInjection;
 
 public class RegistrationTests
 {
+#if NET5_0_OR_GREATER
     [Test]
     public void CanAddClickHouseDataSource()
     {
@@ -14,10 +15,11 @@ public class RegistrationTests
                              .AddClickHouseDataSource(connectionString)
                              .BuildServiceProvider();
         var dataSource = services.GetRequiredService<IClickHouseDataSource>();
-        Assert.AreEqual(connectionString, dataSource.ConnectionString);
+        Assert.That(dataSource.ConnectionString, Is.EqualTo(connectionString));
 
         using var fromService = services.GetRequiredService<IClickHouseConnection>();
         using var rawConnection = new ClickHouseConnection(connectionString);
-        Assert.AreEqual(rawConnection.ConnectionString, fromService.ConnectionString);
+        Assert.That(fromService.ConnectionString, Is.EqualTo(rawConnection.ConnectionString));
     }
+#endif
 }

@@ -10,17 +10,23 @@ public class ExtensionsTests
     public void ShouldDeconstruct2()
     {
         var (a1, a2) = new[] { 1, 2 };
-        Assert.AreEqual(1, a1);
-        Assert.AreEqual(2, a2);
+        Assert.Multiple(() =>
+        {
+            Assert.That(a1, Is.EqualTo(1));
+            Assert.That(a2, Is.EqualTo(2));
+        });
     }
 
     [Test]
     public void ShouldDeconstruct3()
     {
         var (b1, b2, b3) = new[] { 1, 2, 3 };
-        Assert.AreEqual(1, b1);
-        Assert.AreEqual(2, b2);
-        Assert.AreEqual(3, b3);
+        Assert.Multiple(() =>
+        {
+            Assert.That(b1, Is.EqualTo(1));
+            Assert.That(b2, Is.EqualTo(2));
+            Assert.That(b3, Is.EqualTo(3));
+        });
     }
 
     [Test]

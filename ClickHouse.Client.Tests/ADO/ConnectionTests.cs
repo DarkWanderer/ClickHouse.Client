@@ -10,7 +10,7 @@ using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.ADO;
 
 public class ConnectionTests : AbstractConnectionTestFixture
 {
@@ -36,7 +36,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     public void ShouldParseCustomParameter()
     {
         using var connection = new ClickHouseConnection("set_my_parameter=aaa");
-        Assert.AreEqual("aaa", connection.CustomSettings["my_parameter"]);
+        Assert.That(connection.CustomSettings["my_parameter"], Is.EqualTo("aaa"));
     }
 
     [Test]
@@ -53,9 +53,9 @@ public class ConnectionTests : AbstractConnectionTestFixture
         using var connection = TestUtilities.GetTestClickHouseConnection();
         connection.Open();
         Assert.IsNotEmpty(connection.ServerVersion);
-        Assert.AreEqual(ConnectionState.Open, connection.State);
+        Assert.That(connection.State, Is.EqualTo(ConnectionState.Open));
         connection.Close();
-        Assert.AreEqual(ConnectionState.Closed, connection.State);
+        Assert.That(connection.State, Is.EqualTo(ConnectionState.Closed));
     }
 
     [Test]
@@ -103,7 +103,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
         command.CommandText = "SELECT 1";
         command.QueryId = queryId;
         await command.ExecuteScalarAsync();
-        Assert.AreEqual(queryId, command.QueryId);
+        Assert.That(command.QueryId, Is.EqualTo(queryId));
     }
 
     [Test]
@@ -159,7 +159,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     {
         var schema = connection.GetSchema("Columns", ["system"]);
         Assert.IsNotNull(schema);
-        CollectionAssert.IsSubsetOf(new[] { "Database", "Table", "DataType", "ProviderType" }, GetColumnNames(schema));
+        Assert.That(new[] { "Database", "Table", "DataType", "ProviderType" }, Is.SubsetOf(GetColumnNames(schema)));
     }
 
     [Test]
@@ -167,7 +167,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     {
         var schema = connection.GetSchema("Columns", ["system", "functions"]);
         Assert.IsNotNull(schema);
-        CollectionAssert.IsSubsetOf(new[] { "Database", "Table", "DataType", "ProviderType" }, GetColumnNames(schema));
+        Assert.That(new[] { "Database", "Table", "DataType", "ProviderType" }, Is.SubsetOf(GetColumnNames(schema)));
     }
 
     [Test]
@@ -176,9 +176,9 @@ public class ConnectionTests : AbstractConnectionTestFixture
         // Using separate connection instance here to avoid conflicting with other tests
         using var conn = TestUtilities.GetTestClickHouseConnection();
         conn.ChangeDatabase("system");
-        Assert.AreEqual("system", conn.Database);
+        Assert.That(conn.Database, Is.EqualTo("system"));
         conn.ChangeDatabase("default");
-        Assert.AreEqual("default", conn.Database);
+        Assert.That(conn.Database, Is.EqualTo("default"));
     }
 
     [Test]
@@ -189,8 +189,11 @@ public class ConnectionTests : AbstractConnectionTestFixture
         var builder = conn.ConnectionStringBuilder;
         builder.Password = MOCK;
         conn.ConnectionStringBuilder = builder;
-        Assert.That(conn.ConnectionString, Contains.Substring($"Password={MOCK}"));
-        Assert.That(conn.RedactedConnectionString, Is.Not.Contains($"Password={MOCK}"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(conn.ConnectionString, Contains.Substring($"Password={MOCK}"));
+            Assert.That(conn.RedactedConnectionString, Is.Not.Contains($"Password={MOCK}"));
+        });
     }
 
     [Test]
@@ -211,12 +214,14 @@ public class ConnectionTests : AbstractConnectionTestFixture
 
         await connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}");
         await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value Int32) ENGINE Null");
-        await connection.PostStreamAsync($"INSERT INTO {targetTable} FORMAT CSV", async (stream, ct) => {
+        await connection.PostStreamAsync($"INSERT INTO {targetTable} FORMAT CSV", async (stream, ct) =>
+        {
 
             foreach (var i in Enumerable.Range(1, 1000))
             {
                 var line = $"{i}\n";
-                await stream.WriteAsync(Encoding.UTF8.GetBytes(line), ct);
+                var bytes = Encoding.UTF8.GetBytes(line);
+                await stream.WriteAsync(bytes, 0, bytes.Length, ct);
             }
         }, false, CancellationToken.None);
     }

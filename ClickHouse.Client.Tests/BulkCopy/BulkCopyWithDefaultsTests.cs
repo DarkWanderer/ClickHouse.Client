@@ -8,7 +8,7 @@ using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Utility;
 using NUnit.Framework;
 
-namespace ClickHouse.Client.Tests;
+namespace ClickHouse.Client.Tests.BulkCopy;
 
 public class BulkCopyWithDefaultsTests : AbstractConnectionTestFixture
 {
@@ -27,7 +27,6 @@ public class BulkCopyWithDefaultsTests : AbstractConnectionTestFixture
     }
 
     [FromVersion(23, 7)]
-    [Parallelizable]
     [TestCaseSource(typeof(BulkCopyWithDefaultsTests), nameof(Get))]
     public async Task ShouldExecuteSingleValueInsertViaBulkCopyWithDefaults(string clickhouseType, object insertValue, object expectedValue, string tableName)
     {
@@ -49,7 +48,7 @@ public class BulkCopyWithDefaultsTests : AbstractConnectionTestFixture
 
         Assert.That(bulkCopyWithDefaults.RowsWritten, Is.EqualTo(1));
 
-        await using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
 
         Assert.That(await reader.ReadAsync(), Is.True, "Cannot read inserted data");
         Assert.That(reader.FieldCount, Is.EqualTo(1));

@@ -12,7 +12,7 @@ public class DataSourceTests
         var connectionString = new ClickHouseConnection("Host=localhost").ConnectionString;
         using var dataSource = new ClickHouseDataSource(connectionString);
         using var connection = dataSource.CreateConnection();
-        Assert.AreEqual(connection.ConnectionString, connectionString);
+        Assert.That(connectionString, Is.EqualTo(connection.ConnectionString));
     }
 }
 #endif

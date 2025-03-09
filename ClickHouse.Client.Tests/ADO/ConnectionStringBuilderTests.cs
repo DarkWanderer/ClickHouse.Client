@@ -8,9 +8,12 @@ public class ConnectionStringBuilderTests
     [Test]
     public void ShouldHaveReasonableDefaults()
     {
-        Assert.AreEqual(8123, new ClickHouseConnectionStringBuilder().Port);
-        Assert.AreEqual(8443, new ClickHouseConnectionStringBuilder("Protocol=https").Port);
-        Assert.AreEqual("default", new ClickHouseConnectionStringBuilder().Database);
-        Assert.AreEqual("default", new ClickHouseConnectionStringBuilder().Username);
+        Assert.Multiple(() =>
+        {
+            Assert.That(new ClickHouseConnectionStringBuilder().Port, Is.EqualTo(8123));
+            Assert.That(new ClickHouseConnectionStringBuilder("Protocol=https").Port, Is.EqualTo(8443));
+            Assert.That(new ClickHouseConnectionStringBuilder().Database, Is.EqualTo("default"));
+            Assert.That(new ClickHouseConnectionStringBuilder().Username, Is.EqualTo("default"));
+        });
     }
 }
