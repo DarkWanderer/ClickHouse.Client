@@ -96,3 +96,34 @@ jobs:
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=test;Password=test1234
         CLICKHOUSE_VERSION: latest
+
+  windows:
+    name: Windows Tests
+    runs-on: windows-latest
+    steps:
+    - uses: Vampire/setup-wsl@v4
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - shell: wsl-bash -u root {0}
+      run: |
+          sudo apt update
+          sudo apt upgrade -y
+          sudo apt install curl -y
+          curl https://clickhouse.com/ | sh
+          ./clickhouse server --daemon
+    
+    - uses: actions/cache@v4
+      name: Cache NuGet
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Build
+      run: dotnet test
+      env:
+        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=default
+
