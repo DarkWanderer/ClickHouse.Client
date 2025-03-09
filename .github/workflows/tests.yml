@@ -88,9 +88,6 @@ jobs:
           6.x
           8.x
           
-    - name: Install GitHubActionsTestLogger
-      run: dotnet add ClickHouse.Client.IntegrationTests/ClickHouse.Client.IntegrationTests.csproj package GitHubActionsTestLogger --no-restore
-
     - name: Test with coverage
       run: dotnet test ClickHouse.Client.IntegrationTests/ClickHouse.Client.IntegrationTests.csproj --framework net8.0 --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
       env:
@@ -123,7 +120,6 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Build
-      run: dotnet test
+      run: dotnet test ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj --framework net48 --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
       env:
         CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=default
-
