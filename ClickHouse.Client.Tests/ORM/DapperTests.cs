@@ -207,4 +207,22 @@ public class DapperTests : AbstractConnectionTestFixture
         const string sql = "INSERT INTO test.dapper_prefixes (testField, testFieldWithSuffix) VALUES (@testField, @testFieldWithSuffix)";
         await connection.ExecuteAsync(sql, new { testField = 1, testFieldWithSuffix = 2 });
     }
+
+    [Test]
+    [TestCase(1.0)]
+    [TestCase(null)]
+    public async Task ShouldWriteNullableDoubleWithTypeInference(double? expected)
+    {
+        await connection.ExecuteStatementAsync("TRUNCATE TABLE IF EXISTS test.dapper_nullable_double");
+        await connection.ExecuteStatementAsync("CREATE TABLE IF NOT EXISTS test.dapper_nullable_double (balance Nullable(Float64)) ENGINE Memory");
+
+        var sql = @"INSERT INTO test.dapper_nullable_double (balance) VALUES (@balance)";
+        await connection.ExecuteAsync(sql, new { balance = expected });
+
+        var actual = await connection.ExecuteScalarAsync("SELECT * FROM test.dapper_nullable_double");
+        if (expected is null)
+            Assert.That(actual, Is.InstanceOf<DBNull>());
+        else
+            Assert.That(actual, Is.EqualTo(expected));
+    }
 }

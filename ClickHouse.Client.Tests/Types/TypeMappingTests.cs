@@ -54,7 +54,7 @@ public class TypeMappingTests
     public Type ShouldConvertFromClickHouseType(string clickHouseType) => TypeConverter.ParseClickHouseType(clickHouseType, TypeSettings.Default).FrameworkType;
 
     [Test]
-    [TestCase(typeof(DBNull), ExpectedResult = "Nothing")]
+    [TestCase(typeof(DBNull), ExpectedResult = "Nullable(Nothing)")]
 
     [TestCase(typeof(sbyte), ExpectedResult = "Int8")]
     [TestCase(typeof(short), ExpectedResult = "Int16")]

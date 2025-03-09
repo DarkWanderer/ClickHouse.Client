@@ -181,6 +181,7 @@ internal static class TypeConverter
 #endif
         ReverseMapping[typeof(DateTime)] = new DateTimeType();
         ReverseMapping[typeof(DateTimeOffset)] = new DateTimeType();
+        ReverseMapping[typeof(DBNull)] = new NullableType() { UnderlyingType = new NothingType() };
     }
 
     private static void RegisterPlainType<T>()
