@@ -19,7 +19,8 @@ on:
 jobs:
   build-and-test:
     name: Build & Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
 
     services:
       clickhouse:
@@ -30,37 +31,36 @@ jobs:
           CLICKHOUSE_DB: test
           CLICKHOUSE_USER: test
           CLICKHOUSE_PASSWORD: test1234
-          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: '1'
+          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - uses: actions/cache@v4
-      name: Cache NuGet
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-        restore-keys: |
-          ${{ runner.os }}-nuget-
-      
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: |
-          3.1.x
-          6.x
-          8.x
-          
-    - name: Test with coverage
-      run: dotnet test ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj --framework ${{ inputs.framework }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
-      env:
-        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=test;Password=test1234
-        CLICKHOUSE_VERSION: ${{ inputs.clickhouse-version }}
-    
-    - uses: codecov/codecov-action@v5      
-      if: ${{ inputs.coverage }}
-      with:
-        fail_ci_if_error: true
-        disable_search: true
-        files: ./ClickHouse.Client.Tests/coverage.${{ inputs.framework }}.opencover.xml 
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        name: Cache NuGet
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            3.1.x
+            5.x
+            8.x
+
+      - name: Test
+        run: dotnet test ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj --framework ${{ inputs.framework }} --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
+        env:
+          CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=test;Password=test1234
+          CLICKHOUSE_VERSION: ${{ inputs.clickhouse-version }}
+
+      - uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          disable_search: true
+          files: ./ClickHouse.Client.Tests/coverage.${{ inputs.framework }}.opencover.xml
