@@ -105,6 +105,6 @@ public class TypeMappingTests
                 exceptions.Add(e);
             }
         }
-        Assert.IsEmpty(exceptions);
+        ClassicAssert.IsEmpty(exceptions);
     }
 }

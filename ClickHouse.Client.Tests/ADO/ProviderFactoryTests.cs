@@ -12,16 +12,16 @@ public class ProviderFactoryTests
     public void ShouldProduceCorrectTypes()
     {
         DbProviderFactory factory = new ClickHouseConnectionFactory();
-        Assert.IsInstanceOf<ClickHouseConnection>(factory.CreateConnection());
-        Assert.IsInstanceOf<ClickHouseCommand>(factory.CreateCommand());
-        Assert.IsInstanceOf<ClickHouseDataAdapter>(factory.CreateDataAdapter());
-        Assert.IsInstanceOf<ClickHouseConnectionStringBuilder>(factory.CreateConnectionStringBuilder());
-        Assert.IsInstanceOf<ClickHouseDbParameter>(factory.CreateParameter());
+        ClassicAssert.IsInstanceOf<ClickHouseConnection>(factory.CreateConnection());
+        ClassicAssert.IsInstanceOf<ClickHouseCommand>(factory.CreateCommand());
+        ClassicAssert.IsInstanceOf<ClickHouseDataAdapter>(factory.CreateDataAdapter());
+        ClassicAssert.IsInstanceOf<ClickHouseConnectionStringBuilder>(factory.CreateConnectionStringBuilder());
+        ClassicAssert.IsInstanceOf<ClickHouseDbParameter>(factory.CreateParameter());
 #if NET7_0_OR_GREATER
-        Assert.IsInstanceOf<ClickHouseDataSource>(factory.CreateDataSource("Host=ignored"));
+        ClassicAssert.IsInstanceOf<ClickHouseDataSource>(factory.CreateDataSource("Host=ignored"));
 #endif
 
         // TODO
-        // Assert.IsInstanceOf<ClickHouseConnectionStringBuilder>(factory.CreateCommandBuilder());
+        // ClassicAssert.IsInstanceOf<ClickHouseConnectionStringBuilder>(factory.CreateCommandBuilder());
     }
 }

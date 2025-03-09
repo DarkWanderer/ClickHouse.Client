@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Client.ADO;
@@ -57,10 +58,10 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         Assert.That(bulkCopy.RowsWritten, Is.EqualTo(1));
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
-        Assert.IsTrue(reader.Read(), "Cannot read inserted data");
+        ClassicAssert.IsTrue(reader.Read(), "Cannot read inserted data");
         reader.AssertHasFieldCount(1);
         var data = reader.GetValue(0);
-        Assert.That(data, Is.EqualTo(insertedValue), "Original and actually inserted values differ");
+        Assert.That(data, Is.EqualTo(insertedValue).Using<JsonObject>(new JsonNodeEqualityComparer()), "Original and actually inserted values differ");
     }
 
 
@@ -87,7 +88,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         Assert.That(bulkCopy.RowsWritten, Is.EqualTo(1));
 
         using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
-        Assert.IsTrue(reader.Read(), "Cannot read inserted data");
+        ClassicAssert.IsTrue(reader.Read(), "Cannot read inserted data");
         reader.AssertHasFieldCount(1);
         var data = reader.GetValue(0);
         Assert.That(data, Is.EqualTo(new DateTime(1999, 12, 31)), "Original and actually inserted values differ");
@@ -268,7 +269,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         catch (ClickHouseBulkCopySerializationException ex)
         {
             Assert.That(ex.Row, Is.EqualTo(new object[] { 256 }).AsCollection);
-            Assert.IsInstanceOf<OverflowException>(ex.InnerException);
+            ClassicAssert.IsInstanceOf<OverflowException>(ex.InnerException);
         }
     }
 

@@ -53,7 +53,7 @@ public class ClickHouseOldDecimalSqlTests
         using var reader = await connection.ExecuteReaderAsync(sql);
         reader.AssertHasFieldCount(1);
         var result = reader.GetEnsureSingleRow().Single();
-        Assert.IsInstanceOf<decimal>(result);
+        ClassicAssert.IsInstanceOf<decimal>(result);
         Assert.That(result, Is.EqualTo(expected));
     }
 

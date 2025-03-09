@@ -22,8 +22,8 @@ public class ParameterCollectionTests
         Assert.That(collection, Is.All.Not.Null);
         Assert.That(collection, Is.Unique);
         Assert.That(collection.Count, Is.EqualTo(3));
-        Assert.IsTrue(collection.Contains(param2));
-        Assert.IsTrue(collection.Contains("param3"));
+        ClassicAssert.IsTrue(collection.Contains(param2));
+        ClassicAssert.IsTrue(collection.Contains("param3"));
         collection.CopyTo(new object[collection.Count], 0);
         Assert.Multiple(() =>
         {
