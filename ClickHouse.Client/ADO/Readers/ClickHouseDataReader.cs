@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
@@ -19,6 +20,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO.Readers;
 
+// TODO: implement IDbColumnSchemaGenerator
 public class ClickHouseDataReader : DbDataReader, IEnumerator<IDataReader>, IEnumerable<IDataReader>, IDataRecord
 {
     private const int BufferSize = 512 * 1024;
