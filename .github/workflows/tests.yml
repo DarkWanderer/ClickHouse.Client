@@ -98,7 +98,7 @@ jobs:
     name: Windows Tests
     runs-on: windows-latest
     steps:
-    - uses: Vampire/setup-wsl@v4
+    - uses: Vampire/setup-wsl@v5
 
     - name: Checkout
       uses: actions/checkout@v4
