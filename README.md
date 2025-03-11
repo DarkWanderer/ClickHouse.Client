@@ -31,3 +31,7 @@ Compared to other existing .NET clients, `ClickHouse.Client` has following advan
 ## Documentation
 
 Documentation for the library is available in [repository Wiki](https://github.com/DarkWanderer/ClickHouse.Client/wiki)
+
+## Acknowledgements
+
+Originally created by [Oleg V. Kozlyuk](https://github.com/DarkWanderer)
