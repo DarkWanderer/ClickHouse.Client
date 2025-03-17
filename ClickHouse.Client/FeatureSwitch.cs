@@ -1,23 +1,22 @@
-﻿using System;
-using System.Linq;
+using System;
 
-namespace ClickHouse.Client;
-
-internal class FeatureSwitch
+namespace ClickHouse.Client
 {
-    private const string Prefix = "ClickHouse.Client.";
-
-    // Field names are used as switch
-    public static readonly bool DisableReplacingParameters;
-
-    static FeatureSwitch()
+    internal class FeatureSwitch
     {
-        var fields = typeof(FeatureSwitch).GetFields().Where(f => f.FieldType == typeof(bool));
-        foreach (var field in fields)
+        private const string Prefix = "ClickHouse.Client.";
+
+        public static readonly bool DisableReplacingParameters;
+
+        static FeatureSwitch()
         {
-            var switchName = Prefix + field.Name;
-            AppContext.TryGetSwitch(switchName, out bool switchValue);
-            field.SetValue(null, switchValue);
+            DisableReplacingParameters = GetSwitchValue(nameof(DisableReplacingParameters));
+        }
+
+        private static bool GetSwitchValue(string switchName)
+        {
+            AppContext.TryGetSwitch(Prefix + switchName, out bool switchValue);
+            return switchValue;
         }
     }
 }
