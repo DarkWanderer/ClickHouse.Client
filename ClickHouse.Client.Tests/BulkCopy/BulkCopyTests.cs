@@ -470,5 +470,30 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         Assert.DoesNotThrow(() => { rentedArray[0] = 1; });
         ArrayPool<object>.Shared.Return(rentedArray);
     }
+
+    [Test]
+    public async Task ShouldInsertJson()
+    {
+        var targetTable = "test." + SanitizeTableName($"bulk_json");
+        await connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (value JSON) ENGINE Memory");
+
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = targetTable,
+        };
+
+        var jsonString = "{\"string\": \"value\"}";
+        var jsonObject = (JsonObject)JsonNode.Parse(jsonString);
+
+        await bulkCopy.InitAsync();
+        await bulkCopy.WriteToServerAsync([[jsonString], [jsonObject]]);
+
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+        while(reader.Read())
+        {
+            Assert.That(reader.GetValue(0), Is.EqualTo(jsonObject).UsingPropertiesComparer());
+        }
+    }
 }
 
