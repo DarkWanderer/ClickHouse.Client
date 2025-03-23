@@ -249,7 +249,7 @@ public static class TestUtilities
                 "{\"val\": 1.5}",
                 "{\"val\": [1,2]}",
                 "{ \"nested\": { \"double\": 1.23456, \"int\": 123456, \"string\": \"stringValue\" } }",
-                //"{ \"nested1\": { \"nested2\": {\"nested3\": {\"a\": 1, \"b\": \"c\", \"d\": null}} } }",
+                "{ \"nestedArray\": [{\"val\": 1}, {\"val\": 2}] }",
             };
 
             foreach (var example in jsonExamples)

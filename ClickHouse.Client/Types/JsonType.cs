@@ -64,6 +64,11 @@ internal class JsonType : ClickHouseType
 
 
         // Simple depth-first search to flatten the JSON object into a dictionary
+        WriteJsonObject(writer, rootObject);
+    }
+
+    internal static void WriteJsonObject(ExtendedBinaryWriter writer, JsonObject rootObject)
+    {
         Dictionary<string, JsonNode> fields = new();
         StringBuilder currentPath = new();
         FlattenJson(rootObject, ref currentPath, ref fields);
@@ -191,6 +196,12 @@ internal class JsonType : ClickHouseType
             case JsonValueKind.Null:
                 writer.Write((byte)0x00);
                 break;
+            case JsonValueKind.Object:
+                writer.Write((byte)0x30);
+                writer.Write((byte)0);
+                writer.Write7BitEncodedInt(256);
+                writer.Write((int)16);
+                break;
             default:
                 throw new SerializationException($"Unsupported JSON value kind: {kind}");
         }
@@ -221,6 +232,9 @@ internal class JsonType : ClickHouseType
                     break;
                 case JsonValueKind.Null:
                     writer.Write((byte)0x00);
+                    break;
+                case JsonValueKind.Object:
+                    WriteJsonObject(writer, (JsonObject)value);
                     break;
                 default:
                     throw new SerializationException($"Unsupported JSON value kind: {value.GetValueKind()}");

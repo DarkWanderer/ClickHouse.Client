@@ -135,7 +135,7 @@ public class ClickHouseDataReader : DbDataReader, IEnumerator<IDataReader>, IEnu
         return index;
     }
 
-    public override string GetString(int ordinal) => (string)GetValue(ordinal);
+    public override string GetString(int ordinal) => GetValue(ordinal)?.ToString();
 
     public override object GetValue(int ordinal) => CurrentRow[ordinal];
 

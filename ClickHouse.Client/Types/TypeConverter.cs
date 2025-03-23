@@ -342,10 +342,15 @@ internal static class TypeConverter
             case 0x2D: return new BooleanType();
             // case 0x2E: return new SimpleAggregateFunctionType(); // TODO function
             // case 0x2F: return new NestedType(); // TODO nested types
-            case 0x30: return new JsonType(); // TODO JSON settings
+            case 0x30:
+                var _serializationVersion = reader.ReadByte(); // <uint8_serialization_version>
+                var _maxDynamicPaths = reader.Read7BitEncodedInt(); // <var_int_max_dynamic_paths>
+                var _maxDynamicTypes = reader.ReadInt32(); // <uint8_max_dynamic_types>
+                return new JsonType(); // TODO JSON settings
             default:
                 break;
-        };
+        }
+        ;
         throw new ArgumentOutOfRangeException(nameof(value), $"Unknown type: {value}");
     }
 }
