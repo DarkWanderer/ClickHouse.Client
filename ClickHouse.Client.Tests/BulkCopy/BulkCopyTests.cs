@@ -472,6 +472,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
     }
 
     [Test]
+    [RequiredFeature(Feature.Json)]
     public async Task ShouldInsertJson()
     {
         var targetTable = "test." + SanitizeTableName($"bulk_json");
