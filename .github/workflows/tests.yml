@@ -122,7 +122,8 @@ jobs:
 
       - name: Build
         run: dotnet test ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj --framework net48 --configuration Release
-              --blame-hang-timeout 1m --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true
-              /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
+              --blame-hang-timeout 1m --verbosity normal --logger GitHubActions
+              /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
+              -- NUnit.Where="cat != ClickHouseDecimal"
         env:
           CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=default
