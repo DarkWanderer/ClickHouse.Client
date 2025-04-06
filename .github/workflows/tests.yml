@@ -122,8 +122,7 @@ jobs:
 
       - name: Build
         run: dotnet build ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj --framework net48 --configuration Release
-              --blame-hang-timeout 2m --verbosity normal --logger GitHubActions
-              /clp:ErrorsOnly /p:CollectCoverage=true
+              --verbosity normal --logger GitHubActions /clp:ErrorsOnly
 
       - name: Test
         run: nunit3-console ClickHouse.Client.Tests/bin/Release/net48/ClickHouse.Client.Tests.dll 
