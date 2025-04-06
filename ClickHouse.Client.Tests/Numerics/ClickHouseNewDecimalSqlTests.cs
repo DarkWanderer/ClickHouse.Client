@@ -9,6 +9,7 @@ using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.Numerics;
 
+[Category("ClickHouseDecimal")]
 public class ClickHouseNewDecimalSqlTests
 {
     private readonly ClickHouseConnection connection;

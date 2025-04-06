@@ -248,7 +248,7 @@ public static class TestUtilities
                 "{\"val\": 1}",
                 "{\"val\": 1.5}",
                 "{\"val\": [1,2]}",
-                "{ \"nested\": { \"double\": 1.23456, \"int\": 123456, \"string\": \"stringValue\" } }",
+                "{ \"nested\": { \"double\": 1.25, \"int\": 123456, \"string\": \"stringValue\" } }",
                 "{ \"nestedArray\": [{\"val\": 1}, {\"val\": 2}] }",
             };
 

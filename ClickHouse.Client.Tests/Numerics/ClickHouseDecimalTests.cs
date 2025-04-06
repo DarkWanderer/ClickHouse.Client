@@ -12,6 +12,7 @@ using NUnit.Framework;
 namespace ClickHouse.Client.Tests.Numerics;
 
 [Parallelizable(ParallelScope.All)]
+[Category("ClickHouseDecimal")]
 [TestFixture]
 public class ClickHouseDecimalTests
 {
