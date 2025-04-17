@@ -484,7 +484,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
             DestinationTableName = targetTable,
         };
 
-        var jsonString = "{\"string\": \"value\"}";
+        var jsonString = "{\"bool\": true}";
         var jsonObject = (JsonObject)JsonNode.Parse(jsonString);
 
         await bulkCopy.InitAsync();
