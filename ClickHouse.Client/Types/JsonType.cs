@@ -257,7 +257,7 @@ internal class JsonType : ClickHouseType
                 break;
             case JsonValueKind.False:
             case JsonValueKind.True:
-                writer.Write((byte)0x01);
+                writer.Write((byte)0x2D);
                 writer.Write(value.GetValue<bool>());
                 break;
             case JsonValueKind.Null:
