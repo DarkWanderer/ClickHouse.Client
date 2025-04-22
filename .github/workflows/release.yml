@@ -22,7 +22,7 @@ jobs:
 
     - name: Build & pack
       id: build_pack
-      run: dotnet build --configuration Release /p:Version=${{ inputs.version }}
+      run: dotnet build ClickHouse.Client\ClickHouse.Client.csproj --configuration Release /p:Version=${{ inputs.version }}
 
     - name: Upload package
       uses: actions/upload-artifact@v4

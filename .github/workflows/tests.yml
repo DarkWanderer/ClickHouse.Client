@@ -2,11 +2,11 @@ name: Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths-ignore:
-    - '**/*.md'
+      - "**/*.md"
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   coverage:
@@ -20,28 +20,29 @@ jobs:
   regress-clickhouse:
     name: ClickHouse regression
     uses: ./.github/workflows/reusable.yml
+    needs:
+      - coverage
     with:
       clickhouse-version: ${{ matrix.version }}
     strategy:
       fail-fast: false
       matrix:
         version:
-        - '21.3'
-        - '21.8'
-        - '22.3'
-        - '22.8'
-        - '22.9'
-        - '22.12'
-        - '23.3'
-        - '23.6'
-        - '23.8'
-        - '23.9'
-        - '24.12'
+          - "21.3"
+          - "21.8"
+          - "22.3"
+          - "22.8"
+          - "22.9"
+          - "22.12"
+          - "23.3"
+          - "23.6"
+          - "23.8"
+          - "23.9"
+          - "24.12"
 
   regress-dotnet:
     name: .NET regression
     uses: ./.github/workflows/reusable.yml
-    if: false
     with:
       framework: ${{ matrix.framework }}
     needs:
@@ -49,11 +50,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: ['net8.0', 'net7.0', 'net5.0', 'netcoreapp3.1']
+        framework: ["net8.0", "net6.0"]
 
   integration:
     name: Integration Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs:
       - coverage
 
@@ -66,60 +68,62 @@ jobs:
           CLICKHOUSE_DB: test
           CLICKHOUSE_USER: test
           CLICKHOUSE_PASSWORD: test1234
-          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: '1'
-          
+          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - uses: actions/cache@v4
-      name: Cache NuGet
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-        restore-keys: |
-          ${{ runner.os }}-nuget-
-      
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: |
-          3.1.x
-          6.x
-          8.x
-          
-    - name: Test with coverage
-      run: dotnet test ClickHouse.Client.IntegrationTests/ClickHouse.Client.IntegrationTests.csproj --framework net8.0 --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
-      env:
-        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=test;Password=test1234
-        CLICKHOUSE_VERSION: latest
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        name: Cache NuGet
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.x
+
+      - name: Test
+        run: dotnet test ClickHouse.Client.IntegrationTests/ClickHouse.Client.IntegrationTests.csproj --framework net8.0 --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:SkipAutoProps=true
+        env:
+          CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=test;Password=test1234
+          CLICKHOUSE_VERSION: latest
 
   windows:
     name: Windows Tests
     runs-on: windows-latest
+    timeout-minutes: 15
     steps:
-    - uses: Vampire/setup-wsl@v5
+      - uses: Vampire/setup-wsl@v5
 
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - shell: wsl-bash -u root {0}
-      run: |
+      - shell: wsl-bash -u root {0}
+        run: |
           sudo apt update
           sudo apt upgrade -y
           sudo apt install curl -y
           curl https://clickhouse.com/ | sh
           ./clickhouse server --daemon
-    
-    - uses: actions/cache@v4
-      name: Cache NuGet
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-        restore-keys: |
-          ${{ runner.os }}-nuget-
 
-    - name: Build
-      run: dotnet test ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj --configuration Release --verbosity normal --logger GitHubActions  /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
-      env:
-        CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=default
+      - uses: actions/cache@v4
+        name: Cache NuGet
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Test
+        run: dotnet test ClickHouse.Client.Tests/ClickHouse.Client.Tests.csproj 
+              --framework net48 --configuration Release --verbosity normal --logger GitHubActions 
+              /clp:ErrorsOnly /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:SkipAutoProps=true
+              --filter "FullyQualifiedName ~ ADO"
+        env:
+          CLICKHOUSE_CONNECTION: Host=localhost;Port=8123;Username=default
