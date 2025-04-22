@@ -7,7 +7,7 @@ namespace ClickHouse.Client.Copy;
 // Convenience argument collection
 internal struct Batch : IDisposable
 {
-    public object[][] Rows;
+    public IMemoryOwner<Memory<object>> Rows;
     public int Size;
     public string Query;
     public ClickHouseType[] Types;
@@ -16,7 +16,7 @@ internal struct Batch : IDisposable
     {
         if (Rows != null)
         {
-            ArrayPool<object[]>.Shared.Return(Rows, true);
+            Rows.Dispose();
             Rows = null;
         }
     }

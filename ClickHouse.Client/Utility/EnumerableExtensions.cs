@@ -23,20 +23,20 @@ public static class EnumerableExtensions
         third = list[2];
     }
 
-    public static IEnumerable<(T[], int)> BatchRented<T>(this IEnumerable<T> enumerable, int batchSize)
+    public static IEnumerable<(IMemoryOwner<T>, int)> BatchRented<T>(this IEnumerable<T> enumerable, int batchSize)
     {
-        var array = ArrayPool<T>.Shared.Rent(batchSize);
+        var array = MemoryPool<T>.Shared.Rent(batchSize);
         int counter = 0;
 
         foreach (var item in enumerable)
         {
-            array[counter++] = item;
+            array.Memory.Span[counter++] = item;
 
             if (counter >= batchSize)
             {
                 yield return (array, counter);
                 counter = 0;
-                array = ArrayPool<T>.Shared.Rent(batchSize);
+                array = MemoryPool<T>.Shared.Rent(batchSize);
             }
         }
         if (counter > 0)

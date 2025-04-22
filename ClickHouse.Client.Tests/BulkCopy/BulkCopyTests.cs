@@ -449,9 +449,9 @@ public class BulkCopyTests : AbstractConnectionTestFixture
     }
 
     [Test]
-    public async Task ShouldNotAffectSharedArrayPool()
+    public async Task ShouldNotAffectSharedMemoryPool()
     {
-        var targetTable = "test." + SanitizeTableName($"array_pool");
+        var targetTable = "test." + SanitizeTableName($"memory_pool");
 
         await connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}");
         await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (int Int32, str String, dt DateTime) ENGINE Null");
@@ -466,9 +466,8 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 0, "a", DateTime.Now }, 100));
 
-        var rentedArray = ArrayPool<object>.Shared.Rent(poolSize);
-        Assert.DoesNotThrow(() => { rentedArray[0] = 1; });
-        ArrayPool<object>.Shared.Return(rentedArray);
+        using var rentedArray = MemoryPool<object>.Shared.Rent(poolSize);
+        Assert.DoesNotThrow(() => { rentedArray.Memory.Span[0] = 1; });
     }
 
     [Test]
