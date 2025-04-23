@@ -522,7 +522,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.WriteToServerAsync(dataTable.CreateDataReader());
         
         Assert.That(bulkCopy.RowsWritten, Is.EqualTo(3));
-        await using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
         Assert.That(reader.Read(), Is.True);
         Assert.That(reader.GetInt32(0), Is.EqualTo(dataTable.Rows[0]["int"]));
         Assert.That(reader.GetString(1), Is.EqualTo(dataTable.Rows[0]["str"]));
@@ -558,7 +558,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.WriteToServerAsync(dataTable, CancellationToken.None);
         
         Assert.That(bulkCopy.RowsWritten, Is.EqualTo(3));
-        await using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
         Assert.That(reader.Read(), Is.True);
         Assert.That(reader.GetInt32(0), Is.EqualTo(dataTable.Rows[0]["int"]));
         Assert.That(reader.GetString(1), Is.EqualTo(dataTable.Rows[0]["str"]));
