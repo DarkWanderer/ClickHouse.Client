@@ -9,6 +9,7 @@ namespace ClickHouse.Client.Tests.ADO;
 
 public class SqlSchemaTests : AbstractConnectionTestFixture
 {
+#if NET5_0_OR_GREATER
     [Test]
     public async Task ShouldGetReaderColumnSchema()
     {
@@ -21,6 +22,7 @@ public class SqlSchemaTests : AbstractConnectionTestFixture
             Assert.That(schema[1].ColumnName, Is.EqualTo("str"));
         });
     }
+#endif
 
     [Test]
     public async Task ShouldGetReaderSchemaTable()

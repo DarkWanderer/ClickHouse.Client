@@ -6,7 +6,7 @@ namespace ClickHouse.Client.Tests.DependencyInjection;
 
 public class RegistrationTests
 {
-#if NET5_0_OR_GREATER
+#if NET7_0_OR_GREATER
     [Test]
     public void CanAddClickHouseDataSource()
     {
