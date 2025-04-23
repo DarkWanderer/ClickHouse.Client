@@ -74,8 +74,8 @@ public static class TestUtilities
     public static ClickHouseConnectionStringBuilder GetConnectionStringBuilder()
     {
         // Connection string must be provided pointing to a test ClickHouse server
-        var devConnectionString = "Host=localhost;Port=18123;User=default;Password=changeme;" ??
-                                  throw new InvalidOperationException("Must set CLICKHOUSE_CONNECTION environment variable pointing at ClickHouse server");
+        var devConnectionString = Environment.GetEnvironmentVariable("CLICKHOUSE_CONNECTION") ??
+            throw new InvalidOperationException("Must set CLICKHOUSE_CONNECTION environment variable pointing at ClickHouse server");
 
         return new ClickHouseConnectionStringBuilder(devConnectionString);
     }
