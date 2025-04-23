@@ -36,7 +36,7 @@ internal class BatchSerializer : IBatchSerializer
         using var writer = new ExtendedBinaryWriter(gzipStream);
 
         Memory<object> row = null;
-        var enumerator = batch.Rows.Memory.Span.Slice(0, batch.Size).GetEnumerator();
+        var enumerator = batch.Rows.AsSpan(0, batch.Size).GetEnumerator();
         try
         {
             while (enumerator.MoveNext())
