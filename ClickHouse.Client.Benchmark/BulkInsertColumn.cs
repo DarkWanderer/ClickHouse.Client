@@ -9,6 +9,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Benchmark;
 
+[MemoryDiagnoser(true)]
 public class BulkInsertColumn
 {
     private readonly ClickHouseConnection connection;

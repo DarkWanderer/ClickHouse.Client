@@ -6,6 +6,7 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Benchmark;
 
+[MemoryDiagnoser(true)]
 public class SelectColumn
 {
     private readonly ClickHouseConnection connection;
