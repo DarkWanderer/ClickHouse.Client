@@ -127,6 +127,7 @@ internal static class TypeConverter
         RegisterPlainType<Float64Type>();
 
         // Special types
+        RegisterPlainType<DynamicType>();
         RegisterPlainType<UuidType>();
         RegisterPlainType<IPv4Type>();
         RegisterPlainType<IPv6Type>();
@@ -337,7 +338,7 @@ internal static class TypeConverter
             case 0x28: return new IPv4Type();
             case 0x29: return new IPv6Type();
             // case 0x2A: return new VariantType(); // TODO nested types
-            // case 0x2B: return new VariantType(); // TODO max types
+            case 0x2B: return new DynamicType();
             // case 0x2C: return new RingType(); // TODO custom type
             case 0x2D: return new BooleanType();
             // case 0x2E: return new SimpleAggregateFunctionType(); // TODO function
