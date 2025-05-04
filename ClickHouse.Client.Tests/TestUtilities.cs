@@ -110,6 +110,9 @@ public static class TestUtilities
 
         yield return new DataTypeSample("Float32", typeof(float), "toFloat32(32e6)", 32e6);
         yield return new DataTypeSample("Float32", typeof(float), "toFloat32(-32e6)", -32e6);
+        
+        yield return new DataTypeSample("Float32", typeof(float), "toFloat32(1.1)", 1.1f);
+        yield return new DataTypeSample("Float32", typeof(float), "toFloat32(-1.1)", -1.1f);
 
         yield return new DataTypeSample("Float64", typeof(double), "toFloat64(64e6)", 64e6);
         yield return new DataTypeSample("Float64", typeof(double), "toFloat64(-64e6)", -64e6);
