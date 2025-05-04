@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Readers;
+using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Tests.Types;
@@ -14,12 +16,13 @@ public class DynamicTests : AbstractConnectionTestFixture
         .Select(sample => GetTestCaseData(sample.ExampleExpression, sample.ClickHouseType, sample.ExampleValue));
 
     [Test]
+    [RequiredFeature(Feature.Dynamic)]
     [TestCaseSource(typeof(DynamicTests), nameof(SimpleSelectQueries))]
     public async Task ShouldMatchFrameworkType(string valueSql, Type frameworkType)
     {
         using var reader =
             (ClickHouseDataReader) await connection.ExecuteReaderAsync(
-                $"select json.value from (select toJSONString(map('value', {valueSql}))::JSON as json)");
+                $"select json.value from (select map('value', {valueSql})::JSON as json)");
 
         ClassicAssert.IsTrue(reader.Read());
         var result = reader.GetValue(0);
@@ -51,7 +54,7 @@ public class DynamicTests : AbstractConnectionTestFixture
                 {
                     double @double => @double % 10,
                     float @float => @float % 10,
-                    _ => throw new ArgumentException($"{exampleValue.GetType().Name} not supported in for Float")
+                    _ => throw new ArgumentException($"{exampleValue.GetType().Name} not supported for Float")
                 };
             return new TestCaseData(
                 exampleExpression,
@@ -81,7 +84,6 @@ public class DynamicTests : AbstractConnectionTestFixture
     {
         if (clickHouseType.Contains("Decimal") ||
             clickHouseType.Contains("Enum") ||
-            clickHouseType.Contains("FixedString") ||
             clickHouseType.Contains("LowCardinality") ||
             clickHouseType.Contains("Map") ||
             clickHouseType.Contains("Nested") ||
@@ -94,7 +96,6 @@ public class DynamicTests : AbstractConnectionTestFixture
 
         switch (clickHouseType)
         {
-            case "Date32":
             case "Int128":
             case "Int256":
             case "Json":
