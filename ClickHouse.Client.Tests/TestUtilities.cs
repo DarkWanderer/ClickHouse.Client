@@ -66,6 +66,10 @@ public static class TestUtilities
         {
             builder["set_allow_experimental_json_type"] = 1;
         }
+        if (SupportedFeatures.HasFlag(Feature.Dynamic))
+        {
+            builder["set_allow_experimental_dynamic_type"] = 1;
+        }
         var connection = new ClickHouseConnection(builder.ConnectionString);
         connection.Open();
         return connection;

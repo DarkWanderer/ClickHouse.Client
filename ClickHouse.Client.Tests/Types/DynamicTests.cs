@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ClickHouse.Client.ADO;
 using ClickHouse.Client.ADO.Readers;
+using ClickHouse.Client.Tests.Attributes;
 using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.Tests.Types;
@@ -8,8 +10,11 @@ namespace ClickHouse.Client.Tests.Types;
 public class DynamicTests : AbstractConnectionTestFixture
 {
     [Test]
+    [RequiredFeature(Feature.Dynamic)]
     [TestCase("null", ExpectedResult = typeof(DBNull))]
     [TestCase("1", ExpectedResult = typeof(long))]
+    [TestCase("1000", ExpectedResult = typeof(long))]
+    [TestCase("100000", ExpectedResult = typeof(long))]
     [TestCase("-1", ExpectedResult = typeof(long))]
     [TestCase("1.2", ExpectedResult = typeof(double))]
     [TestCase("-1.2", ExpectedResult = typeof(double))]

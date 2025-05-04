@@ -318,8 +318,8 @@ internal static class TypeConverter
             case 0x14: return new DateTime64Type() { Scale = reader.Read7BitEncodedInt(), TimeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(reader.ReadString()) };
             case 0x15: return new StringType();
             case 0x16: return new FixedStringType() { Length = reader.Read7BitEncodedInt() };
-            //case 0x17: return new Enum8Type(); // TODO values
-            //case 0x18: return new Enum16Type(); // TODO values
+            // case 0x17: return new Enum8Type(); // TODO values
+            // case 0x18: return new Enum16Type(); // TODO values
             // case 0x19: return new Decimal32Type(); // TODO precision and scale
             // case 0x1A: return new Decimal64Type(); // TODO precision and scale
             // case 0x1B: return new Decimal128Type(); // TODO precision and scale
@@ -351,8 +351,7 @@ internal static class TypeConverter
             default:
                 break;
         }
-        ;
+
         throw new ArgumentOutOfRangeException(nameof(value), $"Unknown type: {value}");
     }
 }
-
