@@ -127,6 +127,7 @@ internal static class TypeConverter
         RegisterPlainType<Float64Type>();
 
         // Special types
+        RegisterPlainType<DynamicType>();
         RegisterPlainType<UuidType>();
         RegisterPlainType<IPv4Type>();
         RegisterPlainType<IPv6Type>();
@@ -317,8 +318,8 @@ internal static class TypeConverter
             case 0x14: return new DateTime64Type() { Scale = reader.Read7BitEncodedInt(), TimeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(reader.ReadString()) };
             case 0x15: return new StringType();
             case 0x16: return new FixedStringType() { Length = reader.Read7BitEncodedInt() };
-            //case 0x17: return new Enum8Type(); // TODO values
-            //case 0x18: return new Enum16Type(); // TODO values
+            // case 0x17: return new Enum8Type(); // TODO values
+            // case 0x18: return new Enum16Type(); // TODO values
             // case 0x19: return new Decimal32Type(); // TODO precision and scale
             // case 0x1A: return new Decimal64Type(); // TODO precision and scale
             // case 0x1B: return new Decimal128Type(); // TODO precision and scale
@@ -337,7 +338,7 @@ internal static class TypeConverter
             case 0x28: return new IPv4Type();
             case 0x29: return new IPv6Type();
             // case 0x2A: return new VariantType(); // TODO nested types
-            // case 0x2B: return new VariantType(); // TODO max types
+            case 0x2B: return new DynamicType();
             // case 0x2C: return new RingType(); // TODO custom type
             case 0x2D: return new BooleanType();
             // case 0x2E: return new SimpleAggregateFunctionType(); // TODO function
@@ -350,8 +351,7 @@ internal static class TypeConverter
             default:
                 break;
         }
-        ;
+
         throw new ArgumentOutOfRangeException(nameof(value), $"Unknown type: {value}");
     }
 }
-
