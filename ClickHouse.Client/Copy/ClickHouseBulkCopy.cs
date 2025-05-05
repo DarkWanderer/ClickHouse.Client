@@ -16,7 +16,7 @@ namespace ClickHouse.Client.Copy;
 
 public class ClickHouseBulkCopy : IDisposable
 {
-    private static RecyclableMemoryStreamManager MemoryStreamManager;
+    private static RecyclableMemoryStreamManager memoryStreamManager;
     private readonly ClickHouseConnection connection;
     private readonly BatchSerializer batchSerializer;
     private readonly RowBinaryFormat rowBinaryFormat;
@@ -112,7 +112,7 @@ public class ClickHouseBulkCopy : IDisposable
     {
         if (DestinationTableName is null)
             throw new InvalidOperationException($"{nameof(DestinationTableName)} is null");
-        MemoryStreamManager ??= new RecyclableMemoryStreamManager(MemoryStreamManagerOptions);
+        memoryStreamManager ??= new RecyclableMemoryStreamManager(MemoryStreamManagerOptions);
         columnNamesAndTypes = await LoadNamesAndTypesAsync(DestinationTableName, ColumnNames).ConfigureAwait(false);
     }
 
@@ -182,7 +182,7 @@ public class ClickHouseBulkCopy : IDisposable
     {
         using (batch) // Dispose object regardless whether sending succeeds
         {
-            using var stream = MemoryStreamManager.GetStream(nameof(SendBatchAsync));
+            using var stream = memoryStreamManager.GetStream(nameof(SendBatchAsync));
             // Async serialization
             await Task.Run(() => batchSerializer.Serialize(batch, stream), token).ConfigureAwait(false);
             // Seek to beginning as after writing it's at end
