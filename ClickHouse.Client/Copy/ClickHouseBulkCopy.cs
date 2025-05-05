@@ -16,11 +16,18 @@ namespace ClickHouse.Client.Copy;
 
 public class ClickHouseBulkCopy : IDisposable
 {
-    private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
+    private static readonly RecyclableMemoryStreamManager CommonMemoryStreamManager = new(new RecyclableMemoryStreamManager.Options
+    {
+        MaximumLargePoolFreeBytes = 512 * 1024 * 1024,
+        MaximumSmallPoolFreeBytes = 128 * 1024 * 1024,
+        BlockSize = 256 * 1024,
+    });
+
     private readonly ClickHouseConnection connection;
     private readonly BatchSerializer batchSerializer;
     private readonly RowBinaryFormat rowBinaryFormat;
     private readonly bool ownsConnection;
+    private readonly RecyclableMemoryStreamManager memoryStreamManager;
     private long rowsWritten;
     private (string[] names, ClickHouseType[] types) columnNamesAndTypes;
 
@@ -85,12 +92,13 @@ public class ClickHouseBulkCopy : IDisposable
         }
     }
 
-    private async Task<(string[] names, ClickHouseType[] types)> LoadNamesAndTypesAsync(string destinationTableName, IReadOnlyCollection<string> columns = null)
+    /// <summary>
+    /// Gets RecyclableMemoryStreamManager used to create recyclable streams.
+    /// </summary>
+    public RecyclableMemoryStreamManager MemoryStreamManager
     {
-        using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} WHERE 1=0").ConfigureAwait(false);
-        var types = reader.GetClickHouseColumnTypes();
-        var names = reader.GetColumnNames().Select(c => c.EncloseColumnName()).ToArray();
-        return (names, types);
+        get { return memoryStreamManager ?? CommonMemoryStreamManager; }
+        init { memoryStreamManager = value; }
     }
 
     /// <summary>
@@ -172,11 +180,19 @@ public class ClickHouseBulkCopy : IDisposable
         await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
+    private async Task<(string[] names, ClickHouseType[] types)> LoadNamesAndTypesAsync(string destinationTableName, IReadOnlyCollection<string> columns = null)
+    {
+        using var reader = (ClickHouseDataReader)await connection.ExecuteReaderAsync($"SELECT {GetColumnsExpression(columns)} FROM {DestinationTableName} WHERE 1=0").ConfigureAwait(false);
+        var types = reader.GetClickHouseColumnTypes();
+        var names = reader.GetColumnNames().Select(c => c.EncloseColumnName()).ToArray();
+        return (names, types);
+    }
+
     private async Task SendBatchAsync(Batch batch, CancellationToken token)
     {
         using (batch) // Dispose object regardless whether sending succeeds
         {
-            using var stream = MemoryStreamManager.GetStream(nameof(SendBatchAsync));
+            using var stream = MemoryStreamManager.GetStream(nameof(SendBatchAsync), 128 * 1024);
             // Async serialization
             await Task.Run(() => batchSerializer.Serialize(batch, stream), token).ConfigureAwait(false);
             // Seek to beginning as after writing it's at end
