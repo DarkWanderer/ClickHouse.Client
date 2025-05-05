@@ -16,7 +16,6 @@ namespace ClickHouse.Client.Copy;
 
 public class ClickHouseBulkCopy : IDisposable
 {
-    private static RecyclableMemoryStreamManager memoryStreamManager;
     private readonly ClickHouseConnection connection;
     private readonly BatchSerializer batchSerializer;
     private readonly RowBinaryFormat rowBinaryFormat;
@@ -25,10 +24,10 @@ public class ClickHouseBulkCopy : IDisposable
     private (string[] names, ClickHouseType[] types) columnNamesAndTypes;
 
     public ClickHouseBulkCopy(ClickHouseConnection connection)
-        : this(connection, RowBinaryFormat.RowBinary) { }
+        : this(connection, BulkCopyDefaultSettings.RowBinaryFormat) { }
 
     public ClickHouseBulkCopy(string connectionString)
-        : this(connectionString, RowBinaryFormat.RowBinary) { }
+        : this(connectionString, BulkCopyDefaultSettings.RowBinaryFormat) { }
 
     public ClickHouseBulkCopy(ClickHouseConnection connection, RowBinaryFormat rowBinaryFormat)
     {
@@ -55,12 +54,17 @@ public class ClickHouseBulkCopy : IDisposable
     /// <summary>
     /// Gets or sets size of batch in rows.
     /// </summary>
-    public int BatchSize { get; set; } = 100000;
+    public int BatchSize { get; set; } = BulkCopyDefaultSettings.BatchSize;
 
     /// <summary>
     /// Gets or sets maximum number of parallel processing tasks.
     /// </summary>
-    public int MaxDegreeOfParallelism { get; set; } = 4;
+    public int MaxDegreeOfParallelism { get; set; } = BulkCopyDefaultSettings.MaxDegreeOfParallelism;
+
+    /// <summary>
+    /// Gets pool of MemoryStreams.
+    /// </summary>
+    public RecyclableMemoryStreamManager MemoryStreamManager { get; init; } = BulkCopyDefaultSettings.MemoryStreamManager;
 
     /// <summary>
     /// Gets name of destination table to insert to.
@@ -71,11 +75,6 @@ public class ClickHouseBulkCopy : IDisposable
     /// Gets columns
     /// </summary>
     public IReadOnlyCollection<string> ColumnNames { get; init; }
-
-    /// <summary>
-    /// RecyclableMemoryStreamManager configuration options
-    /// </summary>
-    public RecyclableMemoryStreamManager.Options MemoryStreamManagerOptions { get; init; } = new();
 
     public sealed class BatchSentEventArgs : EventArgs
     {
@@ -112,7 +111,6 @@ public class ClickHouseBulkCopy : IDisposable
     {
         if (DestinationTableName is null)
             throw new InvalidOperationException($"{nameof(DestinationTableName)} is null");
-        memoryStreamManager ??= new RecyclableMemoryStreamManager(MemoryStreamManagerOptions);
         columnNamesAndTypes = await LoadNamesAndTypesAsync(DestinationTableName, ColumnNames).ConfigureAwait(false);
     }
 
@@ -182,7 +180,7 @@ public class ClickHouseBulkCopy : IDisposable
     {
         using (batch) // Dispose object regardless whether sending succeeds
         {
-            using var stream = memoryStreamManager.GetStream(nameof(SendBatchAsync));
+            using var stream = MemoryStreamManager.GetStream(nameof(SendBatchAsync));
             // Async serialization
             await Task.Run(() => batchSerializer.Serialize(batch, stream), token).ConfigureAwait(false);
             // Seek to beginning as after writing it's at end
