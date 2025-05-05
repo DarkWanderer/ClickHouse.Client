@@ -16,7 +16,7 @@ namespace ClickHouse.Client.Copy;
 
 public class ClickHouseBulkCopy : IDisposable
 {
-    private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
+    private static RecyclableMemoryStreamManager MemoryStreamManager;
     private readonly ClickHouseConnection connection;
     private readonly BatchSerializer batchSerializer;
     private readonly RowBinaryFormat rowBinaryFormat;
@@ -72,6 +72,11 @@ public class ClickHouseBulkCopy : IDisposable
     /// </summary>
     public IReadOnlyCollection<string> ColumnNames { get; init; }
 
+    /// <summary>
+    /// RecyclableMemoryStreamManager configuration options
+    /// </summary>
+    public RecyclableMemoryStreamManager.Options MemoryStreamManagerOptions { get; init; } = new();
+
     public sealed class BatchSentEventArgs : EventArgs
     {
         internal BatchSentEventArgs(long rowsWritten)
@@ -107,6 +112,7 @@ public class ClickHouseBulkCopy : IDisposable
     {
         if (DestinationTableName is null)
             throw new InvalidOperationException($"{nameof(DestinationTableName)} is null");
+        MemoryStreamManager ??= new RecyclableMemoryStreamManager(MemoryStreamManagerOptions);
         columnNamesAndTypes = await LoadNamesAndTypesAsync(DestinationTableName, ColumnNames).ConfigureAwait(false);
     }
 
