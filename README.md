@@ -1,6 +1,6 @@
 # ClickHouse.Client
 
-ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse), ultra-fast 'big data' relational database
+ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse)®, ultra-fast 'big data' relational database
 
 [![Latest version](https://img.shields.io/nuget/v/ClickHouse.Client)](https://www.nuget.org/packages/ClickHouse.Client/)
 [![Downloads](https://img.shields.io/nuget/dt/ClickHouse.Client)](https://www.nuget.org/packages/ClickHouse.Client/)
@@ -35,3 +35,4 @@ Documentation for the library is available in [repository Wiki](https://github.c
 ## Acknowledgements
 
 Originally created by [Oleg V. Kozlyuk](https://github.com/DarkWanderer)
+ClickHouse is a registered trademark of ClickHouse, Inc. https://clickhouse.com
