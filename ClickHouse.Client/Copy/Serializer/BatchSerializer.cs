@@ -35,24 +35,19 @@ internal class BatchSerializer : IBatchSerializer
 
         using var writer = new ExtendedBinaryWriter(gzipStream);
 
-        object[] row = null;
-        int counter = 0;
-        var enumerator = batch.Rows.GetEnumerator();
+        Memory<object> row = null;
+        var enumerator = batch.Rows.AsSpan(0, batch.Size).GetEnumerator();
         try
         {
             while (enumerator.MoveNext())
             {
-                row = (object[])enumerator.Current;
-                rowSerializer.Serialize(row, batch.Types, writer);
-
-                counter++;
-                if (counter >= batch.Size)
-                    break; // We've reached the batch size
+                row = enumerator.Current;
+                rowSerializer.Serialize(row.Span, batch.Types, writer);
             }
         }
         catch (Exception e)
         {
-            throw new ClickHouseBulkCopySerializationException(row, e);
+            throw new ClickHouseBulkCopySerializationException(row.ToArray(), e);
         }
     }
 }
