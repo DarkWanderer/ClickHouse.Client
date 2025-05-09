@@ -34,5 +34,5 @@ Documentation for the library is available in [repository Wiki](https://github.c
 
 ## Acknowledgements
 
-Originally created by [Oleg V. Kozlyuk](https://github.com/DarkWanderer)
-ClickHouse is a registered trademark of ClickHouse, Inc. https://clickhouse.com
+* Originally created by [Oleg V. Kozlyuk](https://github.com/DarkWanderer)
+* ClickHouse is a registered trademark of ClickHouse, Inc. https://clickhouse.com
