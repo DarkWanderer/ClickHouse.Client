@@ -39,8 +39,16 @@ public static class EnumerableExtensions
                 array = ArrayPool<T>.Shared.Rent(batchSize);
             }
         }
+
         if (counter > 0)
+        {
             yield return (array, counter);
+        }
+
+        if (counter == 0)
+        {
+            ArrayPool<T>.Shared.Return(array);
+        }
     }
 
     internal static IEnumerable<T> SkipLast1<T>(this IEnumerable<T> source, int count)
