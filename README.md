@@ -1,7 +1,3 @@
-# DISCONTINUED
-
-Project discontinued due to disagreement with company position regarding this OSS project.
-
 # ClickHouse.Client
 
 Unofficial ADO.NET client for [ClickHouse](https://github.com/ClickHouse/ClickHouse)®, ultra-fast 'big data' relational database
