@@ -125,7 +125,7 @@ public class ClickHouseBulkCopy : IDisposable
         if (reader is null)
             throw new ArgumentNullException(nameof(reader));
 
-        return WriteToServerAsync(reader.AsEnumerable(), token);
+        return WriteToServerAsync(reader.AsEnumerable().Select(r => new Memory<object>(r)), token);
     }
 
     public Task WriteToServerAsync(DataTable table, CancellationToken token)
@@ -133,13 +133,17 @@ public class ClickHouseBulkCopy : IDisposable
         if (table is null)
             throw new ArgumentNullException(nameof(table));
 
-        var rows = table.Rows.Cast<DataRow>().Select(r => r.ItemArray);
+        var rows = table.Rows.Cast<DataRow>().Select(r => new Memory<object>(r.ItemArray));
         return WriteToServerAsync(rows, token);
     }
 
-    public Task WriteToServerAsync(IEnumerable<object[]> rows) => WriteToServerAsync(rows, CancellationToken.None);
+    public Task WriteToServerAsync(IEnumerable<object[]> rows) =>
+        WriteToServerAsync(rows.Select(r => new Memory<object>(r)), CancellationToken.None);
 
-    public async Task WriteToServerAsync(IEnumerable<object[]> rows, CancellationToken token)
+    public Task WriteToServerAsync(IEnumerable<object[]> rows, CancellationToken token) =>
+        WriteToServerAsync(rows.Select(r => new Memory<object>(r)), token);
+
+    public async Task WriteToServerAsync(IEnumerable<Memory<object>> rows, CancellationToken token)
     {
         if (rows is null)
             throw new ArgumentNullException(nameof(rows));
@@ -217,7 +221,7 @@ public class ClickHouseBulkCopy : IDisposable
 
     private static string GetColumnsExpression(IReadOnlyCollection<string> columns) => columns == null || columns.Count == 0 ? "*" : string.Join(",", columns);
 
-    private IEnumerable<Batch> IntoBatches(IEnumerable<object[]> rows, string query, ClickHouseType[] types)
+    private IEnumerable<Batch> IntoBatches(IEnumerable<Memory<object>> rows, string query, ClickHouseType[] types)
     {
         foreach (var (batch, size) in rows.BatchRented(BatchSize))
         {

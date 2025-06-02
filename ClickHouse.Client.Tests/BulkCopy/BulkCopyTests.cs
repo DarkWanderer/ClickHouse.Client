@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -451,7 +452,7 @@ public class BulkCopyTests : AbstractConnectionTestFixture
     [Test]
     public async Task ShouldNotAffectSharedArrayPool()
     {
-        var targetTable = "test." + SanitizeTableName($"array_pool");
+        var targetTable = "test." + SanitizeTableName($"Array_pool");
 
         await connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}");
         await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (int Int32, str String, dt DateTime) ENGINE Null");
@@ -466,9 +467,9 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         await bulkCopy.InitAsync();
         await bulkCopy.WriteToServerAsync(Enumerable.Repeat(new object[] { 0, "a", DateTime.Now }, 100));
 
-        var rentedArray = ArrayPool<object>.Shared.Rent(poolSize);
-        Assert.DoesNotThrow(() => { rentedArray[0] = 1; });
-        ArrayPool<object>.Shared.Return(rentedArray);
+        var rentedArray = ArrayPool<Memory<object>>.Shared.Rent(poolSize);
+        Assert.DoesNotThrow(() => { rentedArray[0] = new Memory<object>(); });
+        ArrayPool<Memory<object>>.Shared.Return(rentedArray);
     }
 
     [Test]
@@ -495,6 +496,78 @@ public class BulkCopyTests : AbstractConnectionTestFixture
         {
             Assert.That(reader.GetValue(0), Is.EqualTo(jsonObject).UsingPropertiesComparer());
         }
+    }
+
+    [Test]
+    public async Task ShouldInsertDataReader()
+    {
+        var targetTable = "test." + SanitizeTableName($"bulk_datareader");
+        await connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (int Int32, str String) ENGINE Memory");
+        
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = targetTable,
+        };
+
+        var dataTable = new DataTable();
+        dataTable.Columns.Add(new DataColumn("int", typeof(int)));
+        dataTable.Columns.Add(new DataColumn("str", typeof(string)));
+        dataTable.Rows.Add(new object[] { 1, "a" });
+        dataTable.Rows.Add(new object[] { 2, "b" });
+        dataTable.Rows.Add(new object[] { 3, "c" });
+        
+        
+        await bulkCopy.InitAsync();
+        await bulkCopy.WriteToServerAsync(dataTable.CreateDataReader());
+        
+        Assert.That(bulkCopy.RowsWritten, Is.EqualTo(3));
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+        Assert.That(reader.Read(), Is.True);
+        Assert.That(reader.GetInt32(0), Is.EqualTo(dataTable.Rows[0]["int"]));
+        Assert.That(reader.GetString(1), Is.EqualTo(dataTable.Rows[0]["str"]));
+        Assert.That(reader.Read(), Is.True);
+        Assert.That(reader.GetInt32(0), Is.EqualTo(dataTable.Rows[1]["int"]));
+        Assert.That(reader.GetString(1), Is.EqualTo(dataTable.Rows[1]["str"]));
+        Assert.That(reader.Read(), Is.True);
+        Assert.That(reader.GetInt32(0), Is.EqualTo(dataTable.Rows[2]["int"]));
+        Assert.That(reader.GetString(1), Is.EqualTo(dataTable.Rows[2]["str"]));
+    }
+    
+    [Test]
+    public async Task ShouldInsertDataTable()
+    {
+        var targetTable = "test." + SanitizeTableName($"bulk_dataTable");
+        await connection.ExecuteStatementAsync($"DROP TABLE IF EXISTS {targetTable}");
+        await connection.ExecuteStatementAsync($"CREATE TABLE IF NOT EXISTS {targetTable} (int Int32, str String) ENGINE Memory");
+        
+        using var bulkCopy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = targetTable,
+        };
+
+        var dataTable = new DataTable();
+        dataTable.Columns.Add(new DataColumn("int", typeof(int)));
+        dataTable.Columns.Add(new DataColumn("str", typeof(string)));
+        dataTable.Rows.Add(new object[] { 1, "a" });
+        dataTable.Rows.Add(new object[] { 2, "b" });
+        dataTable.Rows.Add(new object[] { 3, "c" });
+        
+        
+        await bulkCopy.InitAsync();
+        await bulkCopy.WriteToServerAsync(dataTable, CancellationToken.None);
+        
+        Assert.That(bulkCopy.RowsWritten, Is.EqualTo(3));
+        using var reader = await connection.ExecuteReaderAsync($"SELECT * from {targetTable}");
+        Assert.That(reader.Read(), Is.True);
+        Assert.That(reader.GetInt32(0), Is.EqualTo(dataTable.Rows[0]["int"]));
+        Assert.That(reader.GetString(1), Is.EqualTo(dataTable.Rows[0]["str"]));
+        Assert.That(reader.Read(), Is.True);
+        Assert.That(reader.GetInt32(0), Is.EqualTo(dataTable.Rows[1]["int"]));
+        Assert.That(reader.GetString(1), Is.EqualTo(dataTable.Rows[1]["str"]));
+        Assert.That(reader.Read(), Is.True);
+        Assert.That(reader.GetInt32(0), Is.EqualTo(dataTable.Rows[2]["int"]));
+        Assert.That(reader.GetString(1), Is.EqualTo(dataTable.Rows[2]["str"]));
     }
 }
 
