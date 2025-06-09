@@ -139,6 +139,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
         await asyncResult2;
     }
 
+#if NET5_0_OR_GREATER
     // see: https://github.com/linq2db/linq2db/discussions/4966
     // see: https://github.com/DarkWanderer/ClickHouse.Client/issues/489
     [Test]
@@ -146,7 +147,7 @@ public class ConnectionTests : AbstractConnectionTestFixture
     public async Task MultiTimeCallOneCommandAndFallExceptionWhenHasQueryId()
     {
         string queryId = "MyQueryId123456";
-        var command = connection.CreateCommand();
+        var command = cancelableConnection.CreateCommand();
         command.QueryId = queryId;
 
         try
@@ -171,14 +172,13 @@ public class ConnectionTests : AbstractConnectionTestFixture
         }
     }
 
-#if NET5_0_OR_GREATER
     // see: https://github.com/DarkWanderer/ClickHouse.Client/discussions/482
     [Test]
     [Explicit("Support Cancellation")]
     public async Task SupportCancellation()
     {
         string queryId = "MyQueryId123456";
-        var command = connection.CreateCommand();
+        var command = cancelableConnection.CreateCommand();
         command.CommandText = "SELECT *\r\nFROM (SELECT sleep(3), '0' as num FROM system.numbers LIMIT 100) t1\r\nINNER JOIN (SELECT sleep(3), '0' as num FROM system.numbers LIMIT 100) t2 on t1.num = t2.num";
         command.QueryId = queryId;
 

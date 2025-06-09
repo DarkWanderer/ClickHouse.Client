@@ -46,6 +46,28 @@ public static class TestUtilities
     /// <returns></returns>
     public static ClickHouseConnection GetTestClickHouseConnection(bool compression = true, bool session = false, bool customDecimals = true)
     {
+        ClickHouseConnectionStringBuilder builder = SetupConnectionStringBuilder(compression, session, customDecimals);
+        var connection = new ClickHouseConnection(builder.ConnectionString);
+        connection.Open();
+        return connection;
+    }
+
+#if NET5_0_OR_GREATER
+    /// <summary>
+    /// Utility method to allow to redirect ClickHouse connections to different machine, in case of Windows development environment
+    /// </summary>
+    /// <returns></returns>
+    public static ClickHouseCancelableConnection GetTestClickHouseCancelableConnection(bool compression = true, bool session = false, bool customDecimals = true)
+    {
+        ClickHouseConnectionStringBuilder builder = SetupConnectionStringBuilder(compression, session, customDecimals);
+        var connection = new ClickHouseCancelableConnection(builder.ConnectionString);
+        connection.Open();
+        return connection;
+    }
+#endif
+
+    private static ClickHouseConnectionStringBuilder SetupConnectionStringBuilder(bool compression, bool session, bool customDecimals)
+    {
         var builder = GetConnectionStringBuilder();
         builder.Compression = compression;
         builder.UseSession = session;
@@ -70,9 +92,8 @@ public static class TestUtilities
         {
             builder["set_allow_experimental_dynamic_type"] = 1;
         }
-        var connection = new ClickHouseConnection(builder.ConnectionString);
-        connection.Open();
-        return connection;
+
+        return builder;
     }
 
     public static ClickHouseConnectionStringBuilder GetConnectionStringBuilder()
