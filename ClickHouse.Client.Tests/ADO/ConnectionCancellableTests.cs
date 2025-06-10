@@ -17,7 +17,7 @@ using NUnit.Framework;
 
 namespace ClickHouse.Client.Tests.ADO;
 
-public class ConnectionCancelableTests : AbstractConnectionTestFixture
+public class ConnectionCancellableTests : AbstractConnectionTestFixture
 {
     #region IHttpClientFactory
     internal class TestException : Exception
@@ -39,30 +39,30 @@ public class ConnectionCancelableTests : AbstractConnectionTestFixture
     #endregion
 
     [Test]
-    public async Task ShouldCreateCancelableConnectionWithProvidedHttpClient()
+    public async Task ShouldCreateCancellableConnectionWithProvidedHttpClient()
     {
         using var httpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
         using var httpClient = new HttpClient(httpClientHandler);
-        using var connection = new ClickHouseCancelableConnection(TestUtilities.GetConnectionStringBuilder().ToString(), httpClient);
+        using var connection = new ClickHouseCancellableConnection(TestUtilities.GetConnectionStringBuilder().ToString(), httpClient);
         await connection.OpenAsync();
         ClassicAssert.IsNotEmpty(connection.ServerVersion);
     }
 
     [Test]
-    public void ShouldCreateCancelableConnectionWithProvidedHttpClientName()
+    public void ShouldCreateCancellableConnectionWithProvidedHttpClientName()
     {
         using var httpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
         using var httpClient = new HttpClient(httpClientHandler);
-        using var connection = new ClickHouseCancelableConnection(TestUtilities.GetConnectionStringBuilder().ToString(), new HttpClientFactoryFake(), "TestMe");
+        using var connection = new ClickHouseCancellableConnection(TestUtilities.GetConnectionStringBuilder().ToString(), new HttpClientFactoryFake(), "TestMe");
         Assert.Catch<TestException>(() => connection.Open(), "HttpClientFactoryFake:CreateClient: TestMe");
     }
 
     [Test]
-    public void ShouldCreateCommandCancelable()
+    public void ShouldCreateCommandCancellable()
     {
-        using var connection = new ClickHouseCancelableConnection();
+        using var connection = new ClickHouseCancellableConnection();
         var command1 = connection.CreateCommand();
-        Assert.That(command1.GetType(), Is.EqualTo(typeof(ClickHouseCancelableCommand)));
+        Assert.That(command1.GetType(), Is.EqualTo(typeof(ClickHouseCancellableCommand)));
         Assert.That(command1.ClickHouseConnection, Is.EqualTo(connection));
     }
 
@@ -73,7 +73,7 @@ public class ConnectionCancelableTests : AbstractConnectionTestFixture
     public async Task MultiTimeCallOneCommandAndFallExceptionWhenHasQueryId()
     {
         string queryId = "MyQueryId123456";
-        var command = cancelableConnection.CreateCommand();
+        var command = cancellableConnection.CreateCommand();
         command.QueryId = queryId;
 
         try
@@ -104,7 +104,7 @@ public class ConnectionCancelableTests : AbstractConnectionTestFixture
     public async Task SupportCancellation()
     {
         string queryId = "MyQueryId123456";
-        var command = cancelableConnection.CreateCommand();
+        var command = cancellableConnection.CreateCommand();
         command.CommandText = "SELECT *\r\nFROM (SELECT sleep(3), '0' as num FROM system.numbers LIMIT 100) t1\r\nINNER JOIN (SELECT sleep(3), '0' as num FROM system.numbers LIMIT 100) t2 on t1.num = t2.num";
         command.QueryId = queryId;
 

@@ -5,11 +5,11 @@ using ClickHouse.Client.ADO.Parameters;
 namespace ClickHouse.Client.ADO;
 
 #if NET7_0_OR_GREATER
-public class ClickHouseCancelableConnectionFactory : DbProviderFactory
+public class ClickHouseCancellableConnectionFactory : DbProviderFactory
 {
-    public static ClickHouseCancelableConnectionFactory Instance => new();
+    public static ClickHouseCancellableConnectionFactory Instance => new();
 
-    public override DbConnection CreateConnection() => new ClickHouseCancelableConnection();
+    public override DbConnection CreateConnection() => new ClickHouseCancellableConnection();
 
     public override DbDataAdapter CreateDataAdapter() => new ClickHouseDataAdapter();
 
@@ -17,7 +17,7 @@ public class ClickHouseCancelableConnectionFactory : DbProviderFactory
 
     public override DbParameter CreateParameter() => new ClickHouseDbParameter();
 
-    public override DbCommand CreateCommand() => new ClickHouseCancelableCommand();
+    public override DbCommand CreateCommand() => new ClickHouseCancellableCommand();
 
     public override DbDataSource CreateDataSource(string connectionString) => new ClickHouseDataSource(connectionString);
 }

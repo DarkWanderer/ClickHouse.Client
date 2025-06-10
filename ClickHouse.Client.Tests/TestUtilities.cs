@@ -57,10 +57,10 @@ public static class TestUtilities
     /// Utility method to allow to redirect ClickHouse connections to different machine, in case of Windows development environment
     /// </summary>
     /// <returns></returns>
-    public static ClickHouseCancelableConnection GetTestClickHouseCancelableConnection(bool compression = true, bool session = false, bool customDecimals = true)
+    public static ClickHouseCancellableConnection GetTestClickHouseCancellableConnection(bool compression = true, bool session = false, bool customDecimals = true)
     {
         ClickHouseConnectionStringBuilder builder = SetupConnectionStringBuilder(compression, session, customDecimals);
-        var connection = new ClickHouseCancelableConnection(builder.ConnectionString);
+        var connection = new ClickHouseCancellableConnection(builder.ConnectionString);
         connection.Open();
         return connection;
     }

@@ -13,18 +13,18 @@ using ClickHouse.Client.Formats;
 
 namespace ClickHouse.Client.ADO;
 
-public class ClickHouseCancelableCommand : ClickHouseCommand
+public class ClickHouseCancellableCommand : ClickHouseCommand
 {
-    public ClickHouseCancelableConnection ClickHouseConnection => (ClickHouseCancelableConnection)DbConnection;
+    public ClickHouseCancellableConnection ClickHouseConnection => (ClickHouseCancellableConnection)DbConnection;
 
     internal ClickHouseParameterCollection ClickHouseParameters => (ClickHouseParameterCollection)DbParameterCollection;
 
-    public ClickHouseCancelableCommand()
+    public ClickHouseCancellableCommand()
         : base()
     {
     }
 
-    public ClickHouseCancelableCommand(ClickHouseConnection connection)
+    public ClickHouseCancellableCommand(ClickHouseConnection connection)
         : base(connection)
     {
     }
@@ -56,9 +56,9 @@ public class ClickHouseCancelableCommand : ClickHouseCommand
         }
     }
 
-    public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) => ExecuteNonQueryAsync(new ClickHouseCancelableCommandRunner(), cancellationToken);
+    public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) => ExecuteNonQueryAsync(new ClickHouseCancellableCommandRunner(), cancellationToken);
 
-    public virtual async Task<int> ExecuteNonQueryAsync(ClickHouseCancelableCommandRunner runner, CancellationToken cancellationToken)
+    public virtual async Task<int> ExecuteNonQueryAsync(ClickHouseCancellableCommandRunner runner, CancellationToken cancellationToken)
     {
         if (ClickHouseConnection == null)
             throw new InvalidOperationException("Connection is not set");
@@ -95,9 +95,9 @@ public class ClickHouseCancelableCommand : ClickHouseCommand
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>ClickHouseRawResult object containing response stream</returns>
-    public override Task<ClickHouseRawResult> ExecuteRawResultAsync(CancellationToken cancellationToken) => ExecuteRawResultAsync(new ClickHouseCancelableCommandRunner(), cancellationToken);
+    public override Task<ClickHouseRawResult> ExecuteRawResultAsync(CancellationToken cancellationToken) => ExecuteRawResultAsync(new ClickHouseCancellableCommandRunner(), cancellationToken);
 
-    public virtual async Task<ClickHouseRawResult> ExecuteRawResultAsync(ClickHouseCancelableCommandRunner runner, CancellationToken cancellationToken)
+    public virtual async Task<ClickHouseRawResult> ExecuteRawResultAsync(ClickHouseCancellableCommandRunner runner, CancellationToken cancellationToken)
     {
         if (ClickHouseConnection == null)
             throw new InvalidOperationException("Connection is not set");
@@ -127,9 +127,9 @@ public class ClickHouseCancelableCommand : ClickHouseCommand
         return null; // no here
     }
 
-    public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken) => ExecuteScalarAsync(new ClickHouseCancelableCommandRunner(), cancellationToken);
+    public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken) => ExecuteScalarAsync(new ClickHouseCancellableCommandRunner(), cancellationToken);
 
-    public virtual async Task<object> ExecuteScalarAsync(ClickHouseCancelableCommandRunner runner, CancellationToken cancellationToken)
+    public virtual async Task<object> ExecuteScalarAsync(ClickHouseCancellableCommandRunner runner, CancellationToken cancellationToken)
     {
         using var lcts = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken, cancellationToken);
         using var reader = await ExecuteDbDataReaderAsync(runner, CommandBehavior.Default, lcts.Token).ConfigureAwait(false);
@@ -137,9 +137,9 @@ public class ClickHouseCancelableCommand : ClickHouseCommand
     }
 
     protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken) =>
-        ExecuteDbDataReaderAsync(new ClickHouseCancelableCommandRunner(), behavior, cancellationToken);
+        ExecuteDbDataReaderAsync(new ClickHouseCancellableCommandRunner(), behavior, cancellationToken);
 
-    protected virtual async Task<DbDataReader> ExecuteDbDataReaderAsync(ClickHouseCancelableCommandRunner runner, CommandBehavior behavior, CancellationToken cancellationToken)
+    protected virtual async Task<DbDataReader> ExecuteDbDataReaderAsync(ClickHouseCancellableCommandRunner runner, CommandBehavior behavior, CancellationToken cancellationToken)
     {
         if (ClickHouseConnection == null)
             throw new InvalidOperationException("Connection is not set");

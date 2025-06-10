@@ -17,11 +17,11 @@ using ClickHouse.Client.Utility;
 
 namespace ClickHouse.Client.ADO;
 
-public class ClickHouseCancelableCommandRunner
+public class ClickHouseCancellableCommandRunner
 {
     private string queryId;
 
-    public ClickHouseCancelableCommandRunner()
+    public ClickHouseCancellableCommandRunner()
     {
         queryId = Guid.NewGuid().ToString("N");
     }
@@ -33,7 +33,7 @@ public class ClickHouseCancelableCommandRunner
 
     public QueryStats QueryStats { get; private set; }
 
-    public async Task<HttpResponseMessage> PostSqlQueryAsync(ClickHouseCancelableCommand command, string sqlQuery, CancellationToken token)
+    public async Task<HttpResponseMessage> PostSqlQueryAsync(ClickHouseCancellableCommand command, string sqlQuery, CancellationToken token)
     {
         if (command.ClickHouseConnection == null)
             throw new InvalidOperationException("Connection not set");
@@ -66,7 +66,7 @@ public class ClickHouseCancelableCommandRunner
         return await ClickHouseConnection.HandleError(response, sqlQuery, activity).ConfigureAwait(false);
     }
 
-    private static HttpRequestMessage BuildHttpRequestMessageWithQueryParams(ClickHouseCancelableCommand command, string sqlQuery, ClickHouseUriBuilder uriBuilder)
+    private static HttpRequestMessage BuildHttpRequestMessageWithQueryParams(ClickHouseCancellableCommand command, string sqlQuery, ClickHouseUriBuilder uriBuilder)
     {
         if (command.ClickHouseParameters != null)
         {
@@ -96,7 +96,7 @@ public class ClickHouseCancelableCommandRunner
         return postMessage;
     }
 
-    private static HttpRequestMessage BuildHttpRequestMessageWithFormData(ClickHouseCancelableCommand command, string sqlQuery, ClickHouseUriBuilder uriBuilder)
+    private static HttpRequestMessage BuildHttpRequestMessageWithFormData(ClickHouseCancellableCommand command, string sqlQuery, ClickHouseUriBuilder uriBuilder)
     {
         var content = new MultipartFormDataContent();
 

@@ -11,14 +11,14 @@ public class AbstractConnectionTestFixture : IDisposable
     protected readonly ClickHouseConnection connection;
 
 #if NET7_0_OR_GREATER
-    protected readonly ClickHouseCancelableConnection cancelableConnection;
+    protected readonly ClickHouseCancellableConnection cancellableConnection;
 #endif
 
     protected AbstractConnectionTestFixture()
     {
         connection = TestUtilities.GetTestClickHouseConnection();
 #if NET7_0_OR_GREATER
-        cancelableConnection = TestUtilities.GetTestClickHouseCancelableConnection();
+        cancellableConnection = TestUtilities.GetTestClickHouseCancellableConnection();
 #endif
         using var command = connection.CreateCommand();
         command.CommandText = "CREATE DATABASE IF NOT EXISTS test;";
