@@ -9,9 +9,10 @@ using ClickHouse.Client.ADO.Parameters;
 using ClickHouse.Client.ADO.Readers;
 using ClickHouse.Client.Formats;
 
+#if NET7_0_OR_GREATER
+
 namespace ClickHouse.Client.ADO;
 
-#if NET5_0_OR_GREATER
 public class ClickHouseCancelableCommand : ClickHouseCommand
 {
     public ClickHouseCancelableConnection ClickHouseConnection => (ClickHouseCancelableConnection)DbConnection;

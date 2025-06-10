@@ -10,14 +10,14 @@ public class AbstractConnectionTestFixture : IDisposable
 {
     protected readonly ClickHouseConnection connection;
 
-#if NET5_0_OR_GREATER
+#if NET7_0_OR_GREATER
     protected readonly ClickHouseCancelableConnection cancelableConnection;
 #endif
 
     protected AbstractConnectionTestFixture()
     {
         connection = TestUtilities.GetTestClickHouseConnection();
-#if NET5_0_OR_GREATER
+#if NET7_0_OR_GREATER
         cancelableConnection = TestUtilities.GetTestClickHouseCancelableConnection();
 #endif
         using var command = connection.CreateCommand();

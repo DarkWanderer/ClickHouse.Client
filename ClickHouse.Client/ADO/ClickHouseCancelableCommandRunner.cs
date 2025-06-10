@@ -13,9 +13,10 @@ using ClickHouse.Client.Formats;
 using ClickHouse.Client.Json;
 using ClickHouse.Client.Utility;
 
+#if NET7_0_OR_GREATER
+
 namespace ClickHouse.Client.ADO;
 
-#if NET5_0_OR_GREATER
 public class ClickHouseCancelableCommandRunner
 {
     private string queryId;

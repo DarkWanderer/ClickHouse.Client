@@ -52,7 +52,7 @@ public static class TestUtilities
         return connection;
     }
 
-#if NET5_0_OR_GREATER
+#if NET7_0_OR_GREATER
     /// <summary>
     /// Utility method to allow to redirect ClickHouse connections to different machine, in case of Windows development environment
     /// </summary>

@@ -1,9 +1,10 @@
 ﻿using System.Data.Common;
 using System.Net.Http;
 
+#if NET7_0_OR_GREATER
+
 namespace ClickHouse.Client.ADO;
 
-#if NET5_0_OR_GREATER
 public class ClickHouseCancelableConnection : ClickHouseConnection
 {
     public ClickHouseCancelableConnection()
@@ -17,7 +18,6 @@ public class ClickHouseCancelableConnection : ClickHouseConnection
 
     public ClickHouseCancelableConnection(string connectionString, IHttpClientFactory httpClientFactory, string httpClientName = "")
         : base(connectionString, httpClientFactory, httpClientName) { }
-
 
     public new ClickHouseCancelableCommand CreateCommand() => new ClickHouseCancelableCommand(this);
 
