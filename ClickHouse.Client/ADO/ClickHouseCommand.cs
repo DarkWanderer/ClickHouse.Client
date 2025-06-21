@@ -45,6 +45,8 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
 
     public override UpdateRowSource UpdatedRowSource { get; set; }
 
+    public CancellationToken CancellationToken => cts.Token;
+
     /// <summary>
     /// Gets or sets QueryId associated with command
     /// After query execution, will be set by value provided by server
@@ -95,7 +97,7 @@ public class ClickHouseCommand : DbCommand, IClickHouseCommand, IDisposable
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>ClickHouseRawResult object containing response stream</returns>
-    public async Task<ClickHouseRawResult> ExecuteRawResultAsync(CancellationToken cancellationToken)
+    public virtual async Task<ClickHouseRawResult> ExecuteRawResultAsync(CancellationToken cancellationToken)
     {
         if (connection == null)
             throw new InvalidOperationException("Connection is not set");
